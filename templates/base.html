@@ -1,48 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>freenet.org</title>
+    <link rel="stylesheet" href="/css/bulma.min.css" />
+  </head>
 
-<head>
-  <meta charset="utf-8">
-  <title>freenet.org</title>
-  <link rel="stylesheet" href="/static/css/bulma.min.css">
-</head>
+  <body>
+    <section class="section content">
+      <div class="container">
+        <nav class="navbar has-shadow is-spaced" role="navigation" aria-label="main navigation">
+          <div class="navbar-brand">
+              <a class="navbar-item" href="/"> Home </a>
 
-<body>
-  <nav class="navbar" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-      <a class="navbar-item" href="/">
-        <img src="/static/images/logo.png" width="112" height="28">
-      </a>
+              <a class="navbar-item" href="/about"> About </a>
 
-      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-      </a>
-    </div>
-
-    <div id="navbarBasicExample" class="navbar-menu">
-      <div class="navbar-start">
-        <a class="navbar-item" href="/">
-          Home
-        </a>
-
-        <a class="navbar-item" href="/about">
-          About
-        </a>
-
-        <a class="navbar-item" href="/contact">
-          Contact
-        </a>
+              <a class="navbar-item" href="/contact"> Contact </a>
+          </div>
+        </nav>
       </div>
-    </div>
-  </nav>
+    </section>
 
-  <section class="section">
-    <div class="container">
-      {% block content %} {% endblock %}
-    </div>
-  </section>
-</body>
-
+    <section class="section">
+      <div class="container">{% block content %} {% endblock %}</div>
+    </section>
+  </body>
 </html>
