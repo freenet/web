@@ -1,5 +1,6 @@
 +++
 title = "Home"
+template = "index.html"
 +++
 
 This page is built with [Kweb](https://kweb.io/), which requires
