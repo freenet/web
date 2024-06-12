@@ -2,7 +2,7 @@
 title = "Home"
 +++
 
-<h2 class="title is-2">Declare your digital independence</h2>
+<h3 class="title is-3">Declare your digital independence</h3>
 
 The centralization of the internet poses a fundamental threat to
 individual freedom. In 2024, a few corporations control most internet
@@ -23,7 +23,7 @@ social media, email, and e-commerce. These applications are designed for
 scalability and interoperability, secured through modern cryptographic
 techniques.
 
-<h3 class="title is-3">Status (June 2024)</h3>
+<h4 class="title is-4">Status (June 2024)</h4>
 
 Freenet is nearing an initial network launch. At this stage it will
 primarily be of interest to developers interested in building
@@ -35,7 +35,7 @@ Manual](https://docs.freenet.org/)[Chat on
 Matrix](https://matrix.to/#/#freenet-locutus:matrix.org)[Visit
 GitHub](https://github.com/freenet/freenet-core)
 
-<h2 class="title is-2">Latest News</h2>
+<h3 class="title is-3">Latest News</h3>
 
 -   **June 11th, 2024** - [Weekly dev
     meeting](https://freenet.org/blog/1127/weekly-dev-meeting---gateway-deployment-freenet-chat.html) -
