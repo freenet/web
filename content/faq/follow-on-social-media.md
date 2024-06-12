@@ -1,3 +1,7 @@
+---
+title: "Can I follow Freenet on social media?"
+---
+
 # Can I follow Freenet on social media?
 
 Yes, you can follow [\@FreenetOrg](https://twitter.com/freenetorg) on

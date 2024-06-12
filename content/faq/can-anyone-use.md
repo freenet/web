@@ -1,3 +1,7 @@
+---
+title: "Can anyone use Freenet?"
+---
+
 # Can anyone use Freenet?
 
 While Freenet is designed to be accessible to most users, approximately

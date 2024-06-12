@@ -1,3 +1,7 @@
+---
+title: "What is Freenet?"
+---
+
 # What is Freenet?
 
 Freenet is a fully decentralized, peer-to-peer network and a drop-in

@@ -1,4 +1,8 @@
-# What are the key components of Freenet\'s architecture?
+---
+title: "What are the key components of Freenet's architecture?"
+---
+
+# What are the key components of Freenet's architecture?
 
 Delegates, contracts, and user interfaces (UIs) each serve distinct
 roles in the Freenet ecosystem. Contracts control public data, or

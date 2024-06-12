@@ -1,4 +1,8 @@
-# What is the project\'s history?
+---
+title: "What is the project's history?"
+---
+
+# What is the project's history?
 
 Freenet was initially developed by Ian Clarke at the University of
 Edinburgh in 1999 as a decentralized system for information storage and

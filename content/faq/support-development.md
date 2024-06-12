@@ -1,3 +1,7 @@
+---
+title: "How can I financially support Freenet development?"
+---
+
 # How can I financially support Freenet development?
 
 Founded in 2001, Freenet is a 501c3 non-profit organization dedicated to

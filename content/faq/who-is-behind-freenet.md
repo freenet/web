@@ -1,3 +1,7 @@
+---
+title: "Who is behind Freenet?"
+---
+
 # Who is behind Freenet?
 
 Freenet was started by Ian Clarke in 1999 and grew out of his

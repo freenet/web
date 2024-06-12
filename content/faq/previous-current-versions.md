@@ -1,3 +1,7 @@
+---
+title: "How do the previous and current versions of Freenet differ?"
+---
+
 # How do the previous and current versions of Freenet differ?
 
 The previous and current versions of Freenet have several key

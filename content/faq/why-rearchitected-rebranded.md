@@ -1,3 +1,7 @@
+---
+title: "Why was Freenet rearchitected and rebranded?"
+---
+
 # Why was Freenet rearchitected and rebranded?
 
 In 2019, Ian began developing a successor to the original Freenet,

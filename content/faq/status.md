@@ -1,3 +1,7 @@
+---
+title: "What is the status of Freenet?"
+---
+
 # What is the status of Freenet?
 
 As of June 2024, we are very close to getting the network up; see our

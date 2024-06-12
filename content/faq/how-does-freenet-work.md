@@ -1,3 +1,7 @@
+---
+title: "How does Freenet work?"
+---
+
 # How does Freenet work?
 
 Freenet is a global key-value store that relies on [small world
