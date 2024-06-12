@@ -1,19 +1,6 @@
 +++
-title = "Blog"
+title = "Freenet Blog"
 +++
-
-# Freenet Blog
-
-This page is built with [Kweb](https://kweb.io/), which requires
-JavaScript to be enabled.
-
-::::::::::::::::::::::::::::::::::::::::::: section
-
-[ **Freenet**](/)[ Dev](/dev)[ FAQ](/faq)[ Blog](/blog)[ Donate](/donate)
-
-:::::::::::::::::::::::::::::::::::::::: section
-
-# Freenet Blog
 
 [](/blog/1127/weekly-dev-meeting---gateway-deployment-freenet-chat.html)
 
