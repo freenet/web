@@ -1,3 +1,7 @@
++++
+title = "Home"
++++
+
 ## Declare your digital independence
 
 The centralization of the internet poses a fundamental threat to individual freedom. In 2024, a few corporations control most internet services and infrastructure. These corporations wield immense power over most of us with little accountability, enabling them to censor content, exploit our data, and exclude users from services they depend on ---all with profound implications for democracy. We need a solution urgently.
