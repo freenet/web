@@ -1,8 +1,7 @@
-# Development
 +++
-title = "Development"
+title = "Build on Freenet"
 +++
 
-# Development
+# Build on Freenet
 
-This is the development page.
+This is the Build on Freenet page.
