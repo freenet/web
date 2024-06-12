@@ -1,29 +1,19 @@
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches:
-      - main  # Set this to the branch you want to deploy from
-
+# On every push this script is executed
+on: push
+name: Build and deploy GH Pages
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    if: github.ref == 'refs/heads/main'
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Install Zola
-      run: |
-        curl -sSf https://sh.rustup.rs | sh -s -- -y
-        source $HOME/.cargo/env
-        cargo install zola
-
-    - name: Build the site
-      run: zola build
-
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./public
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: build_and_deploy
+        uses: shalzz/zola-deploy-action@v0.17.2
+        env:
+          # Target branch
+          PAGES_BRANCH: gh-pages
+          # Provide personal access token
+          TOKEN: ${{ secrets.TOKEN }}
+          # Or if publishing to the same repo, use the automatic token
+          #TOKEN: ${{ secrets.GITHUB_TOKEN }}
