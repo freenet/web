@@ -1,6 +1,5 @@
 +++
 title = "Freenet: Frequently Asked Questions"
-title = "Frequently Asked Questions"
 +++
 
 - [What is Freenet?](#what-is-freenet)
