@@ -29,11 +29,9 @@ Freenet is nearing an initial network launch. At this stage it will
 primarily be of interest to developers interested in building
 decentralized systems on Freenet.
 
-[Watch Ian's
-Talk](https://youtu.be/yBtyNIqZios?si=vnFje0OQFYkni7NZ)[Read User
-Manual](https://docs.freenet.org/)[Chat on
-Matrix](https://matrix.to/#/#freenet-locutus:matrix.org)[Visit
-GitHub](https://github.com/freenet/freenet-core)
+<h4 class="title is-4">Useful Links</h4>
+
+<div id="K17" class="buttons"><a id="K18" class="button is-medium-blue" href="https://youtu.be/yBtyNIqZios?si=vnFje0OQFYkni7NZ"><span id="K19" class="icon"><i id="K1a" class="fas fa-video"></i></span><span id="K1b">Watch Ian's Talk</span></a><a id="K1c" class="button is-medium-teal" href="https://docs.freenet.org/"><span id="K1d" class="icon"><i id="K1e" class="fas fa-book"></i></span><span id="K1f">Read User Manual</span></a><a id="K1g" class="button is-medium-purple" href="https://matrix.to/#/#freenet-locutus:matrix.org"><span id="K1h" class="icon"><i id="K1i" class="fas fa-comments"></i></span><span id="K1j">Chat on Matrix</span></a><a id="K1k" class="button is-medium-orange" href="https://github.com/freenet/freenet-core"><span id="K1l" class="icon"><i id="K1m" class="fab fa-github"></i></span><span id="K1n">Visit GitHub</span></a></div>
 
 <h3 class="title is-3">Latest News</h3>
 
