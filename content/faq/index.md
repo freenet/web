@@ -1,10 +1,6 @@
 +++
-title = "FAQ"
+title = "Frequently Asked Questions"
 +++
-
-# FAQ
-
-This is the FAQ page.
 
 - [What is Freenet?](what-is-freenet/)
 - [How does Freenet work?](how-does-freenet-work/)
