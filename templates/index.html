@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="title">
-  This is my blog made with Zola.
-</h1>
+{% if current_path == '/' %}
+  {% include 'content/home.md' %}
+{% elif current_path == '/about/' %}
+  {% include 'content/about.md' %}
+{% elif current_path == '/contact/' %}
+  {% include 'content/contact.md' %}
+{% endif %}
 {% endblock %}
