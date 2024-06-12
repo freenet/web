@@ -25,11 +25,11 @@
       <div class="container">
         {% block content %}
         {% if current_path == '/' %}
-          {% include 'content/home.md' %}
+          {% content path="home.md" %}
         {% elif current_path == '/about/' %}
-          {% include 'content/about.md' %}
+          {% content path="about.md" %}
         {% elif current_path == '/contact/' %}
-          {% include 'content/contact.md' %}
+          {% content path="contact.md" %}
         {% endif %}
         {% endblock %}
       </div>
