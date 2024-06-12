@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}{{ page.title }}{% endblock %}
+{% block title %}
+  {% if page.title == "Home" %}
+    Freenet
+  {% else %}
+    Freenet: {{ page.title }}
+  {% endif %}
+{% endblock %}
 
 {% block content %}
 <article class="content">
