@@ -15,3 +15,6 @@ highlight_theme = "base16-ocean-dark"
 
 [[content]]
 path = "content/about/philosophy/index.md"
+
+[[content]]
+path = "content/blog/index.md"
