@@ -11,18 +11,49 @@
 <body>
   <section class="section content">
     <div class="container">
-      <nav class="navbar has-shadow is-spaced" role="navigation" aria-label="main navigation">
+      <nav class="navbar is-spaced" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
           <a class="navbar-item {% if current_path == '/' %}is-active{% endif %}" href="/"> Home </a>
-          <a class="navbar-item {% if current_path == '/about/' %}is-active{% endif %}" href="/about/"> About </a>
-          <a class="navbar-item {% if current_path == '/dev/' %}is-active{% endif %}" href="/dev/"> Dev </a>
+          <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-start">
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link {% if current_path | contains(pat='/about/') %}is-active{% endif %}">
+                About
+              </a>
+
+              <div class="navbar-dropdown">
+                <a class="navbar-item {% if current_path == '/about/history/' %}is-active{% endif %}" href="/about/history/"> History </a>
+                <a class="navbar-item {% if current_path == '/about/motivation/' %}is-active{% endif %}" href="/about/motivation/"> Motivation </a>
+                <a class="navbar-item {% if current_path == '/about/community/' %}is-active{% endif %}" href="/about/community/"> Community </a>
+              </div>
+            </div>
+
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link {% if current_path | contains(pat='/developers/') %}is-active{% endif %}">
+                Developers
+              </a>
+
+              <div class="navbar-dropdown">
+                <a class="navbar-item {% if current_path == '/developers/build/' %}is-active{% endif %}" href="/developers/build/"> Build on Freenet </a>
+                <a class="navbar-item {% if current_path == '/developers/development/' %}is-active{% endif %}" href="/developers/development/"> Development </a>
+              </div>
+            </div>
+
+            <a class="navbar-item {% if current_path == '/faq/' %}is-active{% endif %}" href="/faq/"> FAQ </a>
+            <a class="navbar-item {% if current_path == '/blog/' %}is-active{% endif %}" href="/blog/"> Blog </a>
+          </div>
         </div>
       </nav>
     </div>
-  </section>
 
-  <section class="section">
-    <div class="container">
+    <div class="container content">
       {% block content %} {% endblock %}
     </div>
   </section>
