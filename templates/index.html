@@ -2,10 +2,10 @@
 
 {% block content %}
 {% if current_path == '/' %}
-  {% include 'home.md' %}
+  {% include 'content/home.md' %}
 {% elif current_path == '/about/' %}
-  {% include 'about.md' %}
+  {% include 'content/about.md' %}
 {% elif current_path == '/contact/' %}
-  {% include 'contact.md' %}
+  {% include 'content/contact.md' %}
 {% endif %}
 {% endblock %}
