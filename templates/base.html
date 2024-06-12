@@ -11,11 +11,11 @@
       <div class="container">
         <nav class="navbar has-shadow is-spaced" role="navigation" aria-label="main navigation">
           <div class="navbar-brand">
-              <a class="navbar-item {% if section.url == '/' %}is-active{% endif %}" href="/"> Home </a>
+              <a class="navbar-item {% if page.url == '/' %}is-active{% endif %}" href="/"> Home </a>
 
-              <a class="navbar-item {% if section.url == '/about/' %}is-active{% endif %}" href="/about"> About </a>
+              <a class="navbar-item {% if page.url == '/about/' %}is-active{% endif %}" href="/about"> About </a>
 
-              <a class="navbar-item {% if section.url == '/contact/' %}is-active{% endif %}" href="/contact"> Contact </a>
+              <a class="navbar-item {% if page.url == '/contact/' %}is-active{% endif %}" href="/contact"> Contact </a>
           </div>
         </nav>
       </div>
