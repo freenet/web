@@ -4,4 +4,41 @@
 <h1 class="title">
   This is my blog made with Zola.
 </h1>
-{% endblock content %}
+{% endblock content %}<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>freenet.org</title>
+    <link rel="stylesheet" href="/css/bulma.min.css" />
+  </head>
+
+  <body>
+    <section class="section content">
+      <div class="container">
+        <nav class="navbar has-shadow is-spaced" role="navigation" aria-label="main navigation">
+          <div class="navbar-brand">
+              <a class="navbar-item {% if current_path == '/' %}is-active{% endif %}" href="/"> Home </a>
+
+              <a class="navbar-item {% if current_path == '/about/' %}is-active{% endif %}" href="/about"> About </a>
+
+              <a class="navbar-item {% if current_path == '/contact/' %}is-active{% endif %}" href="/contact"> Contact </a>
+          </div>
+        </nav>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        {% block content %}
+        {% if current_path == '/' %}
+          {% include 'content/home.md' %}
+        {% elif current_path == '/about/' %}
+          {% include 'content/about.md' %}
+        {% elif current_path == '/contact/' %}
+          {% include 'content/contact.md' %}
+        {% endif %}
+        {% endblock %}
+      </div>
+    </section>
+  </body>
+</html>
