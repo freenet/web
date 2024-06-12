@@ -24,7 +24,13 @@
     <section class="section">
       <div class="container">
         {% block content %}
-        {% include 'home.md' %}
+        {% if current_path == '/' %}
+          {% include 'home.md' %}
+        {% elif current_path == '/about/' %}
+          {% include 'about.md' %}
+        {% elif current_path == '/contact/' %}
+          {% include 'contact.md' %}
+        {% endif %}
         {% endblock %}
       </div>
     </section>
