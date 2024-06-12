@@ -10,10 +10,10 @@ jobs:
         uses: actions/checkout@v4
       - name: build_and_deploy
         uses: shalzz/zola-deploy-action@v0.18.0
-        env:
-          # Target branch
-          PAGES_BRANCH: gh-pages
-          # Provide personal access token
-          TOKEN: ${{ secrets.TOKEN }}
-          # Or if publishing to the same repo, use the automatic token
-          #TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        # Target branch
+        PAGES_BRANCH: gh-pages
+        # Provide personal access token
+        TOKEN: ${{ secrets.TOKEN }}
+        # Or if publishing to the same repo, use the automatic token
+        #TOKEN: ${{ secrets.GITHUB_TOKEN }}
