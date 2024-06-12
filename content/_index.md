@@ -2,7 +2,7 @@
 title = "Home"
 +++
 
-<h3 class="title is-3">Declare your digital independence</h3>
+<h3 class="title is-3 mt-5">Declare your digital independence</h3>
 
 The centralization of the internet poses a fundamental threat to
 individual freedom. In 2024, a few corporations control most internet
