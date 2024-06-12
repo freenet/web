@@ -3,6 +3,7 @@ title = "Home"
 +++
 
 ## Declare your digital independence
+{.title.is-2}
 
 The centralization of the internet poses a fundamental threat to
 individual freedom. In 2024, a few corporations control most internet
@@ -24,6 +25,7 @@ scalability and interoperability, secured through modern cryptographic
 techniques.
 
 ### Status (June 2024)
+{.title.is-3}
 
 Freenet is nearing an initial network launch. At this stage it will
 primarily be of interest to developers interested in building
@@ -36,6 +38,7 @@ Matrix](https://matrix.to/#/#freenet-locutus:matrix.org)[Visit
 GitHub](https://github.com/freenet/freenet-core)
 
 ## Latest News
+{.title.is-2}
 
 -   **June 11th, 2024** - [Weekly dev
     meeting](https://freenet.org/blog/1127/weekly-dev-meeting---gateway-deployment-freenet-chat.html) -
