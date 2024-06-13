@@ -4,17 +4,15 @@
 <div class="container">
     <h1 class="title">{{ page.title }}</h1>
 
-    <div class="content">
-        <ul>
-        {% for section in sections %}
-            {% for page in section.pages %}
-            <li>
-                <a class="has-text-link" href="{{ page.permalink }}">{{ page.title }}</a><br>
-                <small class="has-text-grey">{{ page.date | date(format="long") }}</small>
-            </li>
-            {% endfor %}
+    <ul>
+    {% for section in sections %}
+        {% for page in section.pages %}
+        <li>
+            <a class="has-text-link" href="{{ page.permalink }}">{{ page.title }}</a><br>
+            <small class="has-text-grey">{{ page.date | date(format="long") }}</small>
+        </li>
         {% endfor %}
-        </ul>
-    </div>
+    {% endfor %}
+    </ul>
 </div>
 {% endblock content %}
