@@ -5,13 +5,11 @@
     <h1 class="title">{{ page.title }}</h1>
 
     <ul>
-    {% for section in sections %}
-        {% for page in section.pages %}
+    {% for page in pages %}
         <li>
             <a class="has-text-link" href="{{ page.permalink }}">{{ page.title }}</a><br>
             <small class="has-text-grey">{{ page.date | date(format="long") }}</small>
         </li>
-        {% endfor %}
     {% endfor %}
     </ul>
 </div>
