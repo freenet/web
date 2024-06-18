@@ -1,7 +1,3 @@
-{% extends "base.html" %}
-
-{% block title %}Freenet{% endblock %}
-
-{% block content %}
-{{ section.content | safe }}
-{% endblock %}
+{{ define "main" }}
+{{ .Content }}
+{{ end }}
