@@ -1,7 +1,6 @@
 baseURL = "https://freenet.org"
 languageCode = "en-us"
 title = "Freenet"
-theme = "your-theme-name"
 
 # Enable syntax highlighting
 [markup]
