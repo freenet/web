@@ -5,7 +5,7 @@
     <h1 class="title">{{ page.title }}</h1>
 
     <ul>
-    {% for toc_item in site.toc %}
+    {% for toc_item in page.toc %}
         {% if toc_item.section == "blog" %}
             <li>
                 <a class="has-text-link" href="{{ toc_item.permalink }}">{{ toc_item.title }}</a><br>
