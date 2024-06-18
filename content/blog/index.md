@@ -1,4 +1,4 @@
-+++
-title = "Freenet Blog"
-template = "blog_index.html"
-+++
+---
+title: "Freenet Blog"
+layout: "blog_index"
+---

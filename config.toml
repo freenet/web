@@ -1,21 +1,18 @@
-# The URL the site will be built for
-base_url = "https://freenet.org"
+baseURL = "https://freenet.org"
+languageCode = "en-us"
+title = "Freenet"
+theme = "your-theme-name"
 
-# Whether to automatically compile all Sass files in the sass directory
-compile_sass = true
+# Enable syntax highlighting
+[markup]
+  [markup.highlight]
+    noClasses = false
+    style = "base16-ocean-dark"
 
-# Whether to build a search index to be used later on by a JavaScript library
-build_search_index = false
+# Enable Sass/SCSS
+[params]
+  compile_sass = true
 
-[markdown]
-# Whether to do syntax highlighting
-# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
-highlight_code = true
-highlight_theme = "base16-ocean-dark"
-
-[[content]]
-path = "content/about/philosophy/index.md"
-
-[[content]]
-path = "content/blog/index.md"
-template = "blog_index.html"
+# Configure the blog section
+[outputs]
+  section = ["HTML", "RSS"]
