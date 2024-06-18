@@ -16,3 +16,8 @@ theme = "your-theme-name"
 # Configure the blog section
 [outputs]
   section = ["HTML", "RSS"]
+
+# Enable Table of Contents
+[markup.tableOfContents]
+  startLevel = 2
+  endLevel = 3
