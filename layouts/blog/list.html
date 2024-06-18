@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="title">{{ page.title }}</h1>
+
+    <ul>
+    {% for toc_item in page.toc %}
+        {% if toc_item.section == "blog" %}
+            <li>
+                <a class="has-text-link" href="{{ toc_item.permalink }}">{{ toc_item.title }}</a><br>
+                <small class="has-text-grey">{{ toc_item.date | date(format="long") }}</small>
+            </li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+</div>
+{% endblock content %}
