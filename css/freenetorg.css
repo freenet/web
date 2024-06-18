@@ -1,0 +1,114 @@
+/*
+ *         Freenet.org - web application
+ *         Copyright (C) 2022  Freenet Project Inc
+ *
+ *         This program is free software: you can redistribute it and/or modify
+ *         it under the terms of the GNU Affero General Public License as
+ *         published by the Free Software Foundation, either version 3 of the
+ *         License, or (at your option) any later version.
+ *
+ *         This program is distributed in the hope that it will be useful,
+ *         but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *         GNU Affero General Public License for more details.
+ *
+ *         You should have received a copy of the GNU Affero General Public License
+ *         along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+
+ body{
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+}
+
+/* Default padding for small screens (e.g., mobile devices) */
+.container {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+/* Increase padding for medium screens (e.g., tablets) */
+@media (min-width: 768px) {
+    .container {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+}
+
+/* Increase padding for large screens (e.g., desktops) */
+@media (min-width: 1024px) {
+    .container {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+}
+
+/* Increase padding for extra large screens */
+@media (min-width: 1280px) {
+    .container {
+        padding-left: 80px;
+        padding-right: 80px;
+    }
+}
+
+
+.rMStart {
+    display: none;
+}
+
+p.page-end-spacer {
+    padding-bottom: 200px;
+}
+
+/* Custom dark blue button */
+.button.is-dark-blue {
+    background-color: #1a3d6d;
+    color: #ffffff;
+}
+
+/* Custom dark teal button */
+.button.is-dark-teal {
+    background-color: #006d6d;
+    color: #ffffff;
+}
+
+/* Custom dark purple button */
+.button.is-dark-purple {
+    background-color: #4b006e;
+    color: #ffffff;
+}
+
+/* Custom dark orange button */
+.button.is-dark-orange {
+    background-color: #b34d00;
+    color: #ffffff;
+}
+
+/* Custom medium blue button */
+.button.is-medium-blue {
+    background-color: #2a4d8d;
+    color: #ffffff;
+}
+
+/* Custom medium teal button */
+.button.is-medium-teal {
+    background-color: #008282;
+    color: #ffffff;
+}
+
+/* Custom medium purple button */
+.button.is-medium-purple {
+    background-color: #5c0088;
+    color: #ffffff;
+}
+
+/* Custom medium orange button */
+.button.is-medium-orange {
+    background-color: #cc5e00;
+    color: #ffffff;
+}
+
+.navbar-brand-with-border {
+    border-bottom: 1px solid #dbdbdb; /* Adjust the color and thickness of the border as needed */
+    display: inline-block; /* Make the container inline to fit the content width */
+}
