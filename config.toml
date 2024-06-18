@@ -18,3 +18,4 @@ path = "content/about/philosophy/index.md"
 
 [[content]]
 path = "content/blog/index.md"
+template = "blog_index.html"
