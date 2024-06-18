@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if page.title == "Home" %}
+    Freenet
+  {% else %}
+    Freenet: {{ page.title }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<article class="content">
+  <h1 class="title">{{ page.title }}</h1>
+  {{ page.content | safe }}
+</article>
+{% endblock %}
