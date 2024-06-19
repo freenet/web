@@ -1,0 +1,17 @@
+# Theme configuration for Freenet website
+
+name = "Freenet Theme"
+license = "MIT"
+licenselink = "https://opensource.org/licenses/MIT"
+description = "A simple theme created for use with the Freenet website."
+homepage = "https://freenetproject.org"
+tags = ["simple", "clean", "responsive"]
+features = ["blog", "responsive", "minimal"]
+
+[author]
+  name = "Freenet Developers"
+  homepage = "https://freenetproject.org"
+
+[original]
+  author = "Freenet Developers"
+  homepage = "https://freenetproject.org"
