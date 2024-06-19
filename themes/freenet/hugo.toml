@@ -1,0 +1,9 @@
+baseURL = 'https://example.org/'
+languageCode = 'en-us'
+title = 'My New Hugo Site'
+
+
+[module]
+  [module.hugoVersion]
+    extended = false
+    min = "0.116.0"

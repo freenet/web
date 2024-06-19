@@ -1,0 +1,10 @@
+# Minimal theme.toml example
+
+name = "Freenet Theme"
+license = "MIT"
+licenselink = "https://opensource.org/licenses/MIT"
+description = "A minimal Hugo theme for Freenet"
+homepage = "https://freenet.org"
+tags = ["minimal", "example"]
+author = "Your Name"
+min_version = "0.30.0"

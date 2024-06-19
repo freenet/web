@@ -1,0 +1,56 @@
+baseURL = 'https://freenet.org/'
+languageCode = 'en-us'
+title = 'Freenet'
+
+theme = 'freenet'
+
+[menu]
+
+  [[menu.main]]
+    name = "Home"
+    url = "/"
+    weight = 1
+
+  [[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = 2
+
+  [[menu.main]]
+    name = "Community"
+    url = "/about/community/"
+    weight = 3
+    parent = "About"
+
+  [[menu.main]]
+    name = "Philosophy"
+    url = "/about/philosophy/"
+    weight = 4
+    parent = "About"
+
+  [[menu.main]]
+    name = "Dev"
+    url = "/dev/"
+    weight = 5
+
+  [[menu.main]]
+    name = "Build"
+    url = "/dev/apps/"
+    weight = 6
+    parent = "Dev"
+
+  [[menu.main]]
+    name = "Platform"
+    url = "/dev/platform/"
+    weight = 7
+    parent = "Dev"
+
+  [[menu.main]]
+    name = "FAQ"
+    url = "/faq/"
+    weight = 8
+
+  [[menu.main]]
+    name = " Blog"
+    url = "/blog/" 
+    weight = 9
