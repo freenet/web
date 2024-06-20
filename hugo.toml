@@ -1,8 +1,7 @@
 baseURL = "https://freenet.org"
 languageCode = 'en-us'
 title = 'Freenet'
-
-theme = 'freenet'
+theme = "freenet"
 
 [menu]
 
@@ -34,7 +33,7 @@ theme = 'freenet'
     weight = 5
 
   [[menu.main]]
-    name = "Build"
+    name = "Apps"
     url = "/dev/apps/"
     weight = 6
     parent = "Dev"
