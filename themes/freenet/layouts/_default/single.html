@@ -1,6 +1,6 @@
 {{ define "main" }}
   {{ if eq .Section "blog" }}
-    {{ template "blog.html" . }}
+    {{ partial "blog.html" . }}
   {{ else }}
     <h1>{{ .Title }}</h1>
 
