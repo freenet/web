@@ -1,0 +1,33 @@
+.navbar-item:hover .logo-text {
+    color: #007bff; /* Change this to your preferred hover color */
+  }
+
+  .logo-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  
+  .logo-img {
+    max-height: 3rem;
+  }
+  
+  .logo-text {
+    margin-left: 0.5rem;
+    font-family: 'Lato', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+  }
+  
+  @media (max-width: 768px) {
+    .logo-text {
+      font-size: 1.2rem;
+      margin-left: 0.3rem;
+    }
+  
+    .navbar-menu {
+      display: none; /* Hide the menu on smaller screens or use a hamburger menu */
+    }
+  }
+  

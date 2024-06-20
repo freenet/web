@@ -12,6 +12,12 @@
   
   {{- with index site.Menus $menuID }}
     <nav class="navbar" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand">
+        <a class="navbar-item logo-container" href="/">
+          <img src="/img/freenet_logo.svg" alt="Freenet Logo" class="logo-img">
+          <span class="logo-text">Freenet</span>
+        </a>
+      </div>
       <div class="navbar-menu is-active">
         <div class="navbar-start">
           {{- partial "inline/menu/walk.html" (dict "page" $page "menuEntries" .) }}
@@ -23,6 +29,9 @@
   {{- define "partials/inline/menu/walk.html" }}
   {{- $page := .page }}
   {{- range .menuEntries }}
+    {{- if eq .Name "Home" }}
+      {{- continue }}
+    {{- end }}
     {{- $attrs := dict "href" .URL }}
     {{- if $page.IsMenuCurrent .Menu . }}
       {{- $attrs = merge $attrs (dict "class" "navbar-item is-active" "aria-current" "page") }}
