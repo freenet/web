@@ -1,6 +1,23 @@
-+++
-title = "Home"
-+++
+---
+title: "Home"
+links:
+  - url: "https://youtu.be/yBtyNIqZios?si=vnFje0OQFYkni7NZ"
+    text: "Watch Ian's Talk"
+    icon: "fas fa-video"
+    color: "is-medium-blue"
+  - url: "https://docs.freenet.org/"
+    text: "Read User Manual"
+    icon: "fas fa-book"
+    color: "is-medium-teal"
+  - url: "https://matrix.to/#/#freenet-locutus:matrix.org"
+    text: "Chat on Matrix"
+    icon: "fas fa-comments"
+    color: "is-medium-purple"
+  - url: "https://github.com/freenet/freenet-core"
+    text: "Visit GitHub"
+    icon: "fab fa-github"
+    color: "is-medium-orange"
+---
 
 ### Declare your digital independence
 
@@ -24,10 +41,7 @@ building decentralized systems on Freenet.
 
 #### Useful Links
 
-[Watch Ian's Talk](https://youtu.be/yBtyNIqZios?si=vnFje0OQFYkni7NZ)  
-[Read User Manual](https://docs.freenet.org/)  
-[Chat on Matrix](https://matrix.to/#/#freenet-locutus:matrix.org)  
-[Visit GitHub](https://github.com/freenet/freenet-core)
+{{< buttons >}}
 
 ### Latest News
 
