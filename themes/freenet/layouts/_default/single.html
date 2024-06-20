@@ -1,12 +1,8 @@
 {{ define "main" }}
-  {{ if eq .Section "blog" }}
-    {{ partial "partials/blog.html" . }}
-  {{ else }}
-    <h1>{{ .Title }}</h1>
+  <h1>{{ .Title }}</h1>
 
-    {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
-    {{ $dateHuman := .Date | time.Format ":date_long" }}
+  {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
+  {{ $dateHuman := .Date | time.Format ":date_long" }}
 
-    {{ .Content }}
-  {{ end }}
+  {{ .Content }}
 {{ end }}
