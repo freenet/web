@@ -1,0 +1,134 @@
+/* Hover effect for navbar item */
+.navbar-item:hover .logo-text {
+    color: #007bff; /* Preferred hover color */
+}
+
+/* Logo container styling */
+.logo-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.logo-img {
+    max-height: 3rem;
+}
+
+.logo-text {
+    margin-left: 0.5rem;
+    font-family: 'Lato', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .logo-text {
+        font-size: 1.2rem;
+        margin-left: 0.3rem;
+    }
+
+    .navbar-menu {
+        display: none; /* Hide menu on smaller screens */
+    }
+}
+
+/* Box and date styling */
+.box h2 {
+    margin-bottom: 0.25rem; /* Reduced bottom margin */
+}
+
+.date {
+    font-size: 0.875rem; /* Equivalent to Bulma's is-size-7 */
+    color: #7a7a7a; /* Lighter grey for the date */
+    margin: 0 0 0.5rem; /* Remove top margin and adjust bottom margin */
+    line-height: 1.2; /* Reduced line height */
+}
+
+/* Global body font */
+body {
+    font-family: Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif;
+}
+
+/* Container padding adjustments */
+.container {
+    padding: 0 16px; /* Default padding for small screens */
+}
+
+@media (min-width: 768px) {
+    .container {
+        padding: 0 24px; /* Increase padding for medium screens */
+    }
+}
+
+@media (min-width: 1024px) {
+    .container {
+        padding: 0 40px; /* Increase padding for large screens */
+    }
+}
+
+@media (min-width: 1280px) {
+    .container {
+        padding: 0 80px; /* Increase padding for extra large screens */
+    }
+}
+
+/* Remove start element */
+.rMStart {
+    display: none;
+}
+
+/* Page end spacer */
+p.page-end-spacer {
+    padding-bottom: 200px;
+}
+
+/* Custom button styles */
+.button {
+    &.is-dark-blue {
+        background-color: #1a3d6d;
+        color: #ffffff;
+    }
+
+    &.is-dark-teal {
+        background-color: #006d6d;
+        color: #ffffff;
+    }
+
+    &.is-dark-purple {
+        background-color: #4b006e;
+        color: #ffffff;
+    }
+
+    &.is-dark-orange {
+        background-color: #b34d00;
+        color: #ffffff;
+    }
+
+    &.is-medium-blue {
+        background-color: #2a4d8d;
+        color: #ffffff;
+    }
+
+    &.is-medium-teal {
+        background-color: #008282;
+        color: #ffffff;
+    }
+
+    &.is-medium-purple {
+        background-color: #5c0088;
+        color: #ffffff;
+    }
+
+    &.is-medium-orange {
+        background-color: #cc5e00;
+        color: #ffffff;
+    }
+}
+
+/* Navbar brand with border */
+.navbar-brand-with-border {
+    border-bottom: 1px solid #dbdbdb; /* Adjust the color and thickness as needed */
+    display: inline-block; /* Fit the content width */
+}
