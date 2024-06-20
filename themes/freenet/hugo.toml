@@ -1,4 +1,4 @@
-baseURL = 'https://freenet.org'
+baseURL = "https://freenet.org"
 languageCode = 'en-us'
 title = 'My New Hugo Site'
 
