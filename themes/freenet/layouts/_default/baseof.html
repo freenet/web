@@ -8,7 +8,9 @@
     {{ partial "header.html" . }}
   </header>
   <main>
+    <div class="content">
     {{ block "main" . }}{{ end }}
+    </div>
   </main>
   <footer>
     {{ partial "footer.html" . }}
