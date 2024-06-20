@@ -2,3 +2,4 @@
 title = "Philosophy"
 +++
 
+### Freenet Philosophy

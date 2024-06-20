@@ -5,17 +5,19 @@
 </head>
 <body>
   <section class="section content">
-  <header>
-    {{ partial "header.html" . }}
-  </header>
-  <main>
-    <div class="content">
-    {{ block "main" . }}{{ end }}
+    <div class="container">
+      <header>
+        {{ partial "header.html" . }}
+      </header>
+      <main>
+        <div class="section content">
+        {{ block "main" . }}{{ end }}
+        </div>
+      </main>
+      <footer>
+        {{ partial "footer.html" . }}
+      </footer>
     </div>
-  </main>
-  <footer>
-    {{ partial "footer.html" . }}
-  </footer>
   </section>
 </body>
 </html>

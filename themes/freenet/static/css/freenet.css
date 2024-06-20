@@ -31,3 +31,15 @@
     }
   }
   
+  .box h2 {
+    margin-bottom: 0.25rem; /* reduce bottom margin */
+  }
+  
+  .date {
+    font-size: 0.875rem; /* equivalent to Bulma's is-size-7 */
+    color: #7a7a7a; /* lighter grey for the date */
+    margin-top: 0; /* remove top margin */
+    margin-bottom: 0.5rem; /* adjust bottom margin */
+    line-height: 1.2; /* reduce line height */
+  }
+  
