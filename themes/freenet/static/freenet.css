@@ -23,14 +23,28 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .logo-text {
         font-size: 1.2rem;
         margin-left: 0.3rem;
     }
 
     .navbar-menu {
-        display: none; /* Hide menu on smaller screens */
+        display: none !important; /* Hide menu on smaller screens */
+    }
+
+    .navbar-burger {
+        display: block !important; /* Show burger menu icon */
+    }
+}
+
+@media (min-width: 768px) {
+    .navbar-menu {
+        display: flex !important; /* Show menu on larger screens */
+    }
+
+    .navbar-burger {
+        display: none !important; /* Hide burger menu icon */
     }
 }
 
