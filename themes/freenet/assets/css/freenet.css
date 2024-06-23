@@ -1,3 +1,34 @@
+/* Try to adjust break point */
+
+@media screen and (max-width: 1117px) {
+    .navbar-menu {
+      display: none;
+    }
+  
+    .navbar-burger {
+      display: block;
+    }
+  }
+  
+  @media screen and (min-width: 861px) {
+    .navbar-menu {
+      display: block;
+    }
+  
+    .navbar-burger {
+      display: none;
+    }
+  }
+  
+  .navbar-menu.is-active .navbar-item.has-dropdown:hover .navbar-dropdown {
+    display: block;
+  }
+  
+  .navbar-menu .navbar-item.has-dropdown .navbar-dropdown {
+    display: none;
+  }
+  
+
 /* Hover effect for navbar item */
 .navbar-item:hover .logo-text {
     color: #007bff; /* Preferred hover color */
@@ -22,32 +53,6 @@
     color: #333;
 }
 
-/* Responsive adjustments */
-@media (max-width: 639px) {
-    .logo-text {
-        font-size: 1.2rem;
-        margin-left: 0.3rem;
-    }
-
-    .navbar-menu {
-        display: none !important; /* Hide menu on smaller screens */
-    }
-
-    .navbar-burger {
-        display: block !important; /* Show burger menu icon */
-    }
-}
-
-@media (min-width: 640px) {
-    .navbar-menu {
-        display: flex !important; /* Show menu on larger screens */
-    }
-
-    .navbar-burger {
-        display: none !important; /* Hide burger menu icon */
-    }
-}
-
 /* Box and date styling */
 .box h2 {
     margin-bottom: 0.25rem; /* Reduced bottom margin */
@@ -70,23 +75,6 @@ body {
     padding: 0 16px; /* Default padding for small screens */
 }
 
-@media (min-width: 768px) {
-    .container {
-        padding: 0 24px; /* Increase padding for medium screens */
-    }
-}
-
-@media (min-width: 1024px) {
-    .container {
-        padding: 0 40px; /* Increase padding for large screens */
-    }
-}
-
-@media (min-width: 1280px) {
-    .container {
-        padding: 0 80px; /* Increase padding for extra large screens */
-    }
-}
 
 /* Remove start element */
 .rMStart {
