@@ -1,107 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="utf-8">
-  <title>Freenet</title>
-  <link rel="stylesheet" href="/css/bulma.min.css" />
-  <link rel="stylesheet" href="/css/freenetorg.css" />
-</head>
-
-<body>
-  <section class="section content">
-    <div class="container">
-      <nav class="navbar is-spaced" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
-          <a class="navbar-item is-active" href="/"> Home </a>
-          <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-          </a>
-        </div>
-
-        <div id="navbarBasicExample" class="navbar-menu">
-          <div class="navbar-start">
-            <div class="navbar-item has-dropdown is-hoverable">
-              <a class="navbar-link ">
-                About
-              </a>
-
-              <div class="navbar-dropdown">
-                <a class="navbar-item " href="/about/philosophy/"> Philosophy </a>
-                <a class="navbar-item " href="/about/community/"> Community </a>
-              </div>
-            </div>
-
-            <div class="navbar-item has-dropdown is-hoverable">
-              <a class="navbar-link ">
-                Developers
-              </a>
-
-              <div class="navbar-dropdown">
-                <a class="navbar-item " href="/developers/build/"> Build on Freenet </a>
-                <a class="navbar-item " href="/developers/development/"> Development </a>
-              </div>
-            </div>
-
-            <a class="navbar-item " href="/faq/"> FAQ </a>
-            <a class="navbar-item " href="/blog/"> Blog </a>
-          </div>
-        </div>
-      </nav>
-    </div>
-
-    <div class="container content">
-      
-<h3 id="declare-your-digital-independence">Declare your digital independence</h3>
-<p>The centralization of the internet poses a fundamental threat to individual freedom. In 2024, a few corporations control most internet services and infrastructure. These corporations wield immense power over most of us with little accountability, enabling them to censor content, exploit our data, and exclude users from services they depend on ---all with profound implications for democracy. We need a solution urgently.</p>
-<p>Introducing Freenet --- a decentralized replacement for the world wide web. Acting as a global, shared, decentralized computing platform, Freenet can either be accessed via a standard web browser or integrated into third-party applications.</p>
-<p>Freenet is not merely a tool for developers; it offers a pathway for anyone seeking greater control and freedom in their digital interactions. You can build or use decentralized services for messaging, social media, email, and e-commerce. These applications are designed for scalability and interoperability, secured through modern cryptographic techniques.</p>
-<h4 id="status-june-2024">Status (June 2024)</h4>
-<p>Freenet is nearing an initial network launch. At this stage it will primarily be of interest to developers interested in building decentralized systems on Freenet.</p>
-<h4 id="useful-links">Useful Links</h4>
-<p><a href="https://youtu.be/yBtyNIqZios?si=vnFje0OQFYkni7NZ">Watch Ian's Talk</a><br />
-<a href="https://docs.freenet.org/">Read User Manual</a><br />
-<a href="https://matrix.to/#/#freenet-locutus:matrix.org">Chat on Matrix</a><br />
-<a href="https://github.com/freenet/freenet-core">Visit GitHub</a></p>
-<h3 id="latest-news">Latest News</h3>
-<ul>
-<li><strong>June 11th, 2024</strong> - <a href="https://freenet.org/blog/1127/weekly-dev-meeting---gateway-deployment-freenet-chat.html">Weekly dev meeting</a> - Gateway deployment, freenet-chat</li>
-<li><strong>June 10th, 2024</strong> - Ian Clarke breaks down his vision for a decentralized Internet - <a href="https://x.com/FreenetOrg/status/1800261209096077710">X</a> / <a href="https://youtu.be/enTAromEeHo?si=r7PY0i4EY-9ezbkI">YouTube</a> / <a href="https://rumble.com/v50yavb-ian-clarke-breaks-down-his-vision-for-a-decentralized-internet.html">Rumble</a></li>
-<li><strong>September 7th, 2023</strong> - Talk + Q&amp;A - Building Decentralized Software on Freenet - <a href="https://twitter.com/FreenetOrg/status/1704994853887643912">X</a> / <a href="https://youtu.be/yBtyNIqZios?si=jYYgRFylAsZklYQ0">YouTube</a> / <a href="https://rumble.com/v3joywo-ian-clarke-explains-the-next-generation-of-freenet.html">Rumble</a></li>
-<li><strong>June 9, 2023</strong> - AmA with Ian about Freenet on <a href="https://www.reddit.com/r/privacy/comments/14565vr/ama_ian_clarke_creator_of_freenet_2023_a_dropin/">r/privacy</a> subreddit</li>
-<li><strong>May 20, 2023</strong> - Freenet on <a href="https://yro.slashdot.org/story/23/05/20/1947259/freenet-2023-a-drop-in-decentralized-replacement-for-the-web---and-more">Slashdot</a></li>
-</ul>
-
-
-    </div>
-  </section>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Get all "navbar-burger" elements
-    const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
-
-    // Check if there are any navbar burgers
-    if ($navbarBurgers.length > 0) {
-
-      // Add a click event on each of them
-      $navbarBurgers.forEach(el => {
-        el.addEventListener('click', () => {
-
-          // Get the target from the "data-target" attribute
-          const target = el.dataset.target;
-          const $target = document.getElementById(target);
-
-          // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
-          el.classList.toggle('is-active');
-          $target.classList.toggle('is-active');
-
-        });
-      });
-    }
-  });
-</script>
-</body>
-
-</html>
+<!doctype html><html lang=en-us dir=ltr><head><meta name=generator content="Hugo 0.123.7"><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Freenet</title>
+<link rel=stylesheet href=/fontawesome/css/fontawesome.min.css><link rel=stylesheet href=/fontawesome/css/solid.min.css><link rel=stylesheet href=/fontawesome/css/brands.min.css><link rel=stylesheet href=/bulma.min.css><link rel=stylesheet href=https://freenet.org/css/freenet.min.6fac63cda103bd92bee79db76b04b7b1d9b3089de2be412d74ef7bc37096d6d1.css><script src=https://freenet.org/js/main.js></script></head><body><section class="section content"><div class=container><header><nav class=navbar role=navigation aria-label="main navigation"><div class=navbar-brand><a class="navbar-item logo-container" href=/><img src=/img/freenet_logo.svg alt="Freenet Logo" class=logo-img>
+<span class=logo-text>Freenet</span>
+</a><a role=button class=navbar-burger aria-label=menu aria-expanded=false data-target=freenetNavbar><span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span></a></div><div id=freenetNavbar class=navbar-menu><div class=navbar-start><a class=navbar-item href=/get-started/>Get Started</a><div class="navbar-item has-dropdown is-hoverable"><a class=navbar-link>Developers</a><div class=navbar-dropdown><a class=navbar-item href=/dev/core/>Core</a>
+<a class=navbar-item href=/dev/apps/>Apps</a></div></div><div class="navbar-item has-dropdown is-hoverable"><a class=navbar-link>Resources</a><div class=navbar-dropdown><a class=navbar-item href=/resources/faq/>FAQ</a>
+<a class=navbar-item href=/resources/blog/>Blog</a>
+<a class=navbar-item href=/resources/history/>History</a></div></div><a class=navbar-item href=/donate/>Donate</a></div><div class=navbar-end></div></div></nav></header><main><div class="section content"><h3 id=declare-your-digital-independence>Declare your digital independence</h3><p>The centralization of the internet poses a fundamental threat to individual freedom. In 2024, a few corporations control
+most internet services and infrastructure. These corporations wield immense power over most of us with little
+accountability, enabling them to censor content, exploit our data, and exclude users from services they depend on &mdash;all
+with profound implications for democracy. We need a solution urgently.</p><p>Introducing Freenet &mdash; a decentralized replacement for the world wide web. Acting as a global, shared, decentralized
+computing platform, Freenet can either be accessed via a standard web browser or integrated into third-party
+applications.</p><p>Freenet is not merely a tool for developers; it offers a pathway for anyone seeking greater control and freedom in their
+digital interactions. You can build or use decentralized services for messaging, social media, email, and e-commerce.
+These applications are designed for scalability and interoperability, secured through modern cryptographic techniques.</p><h4 id=status-june-2024>Status (June 2024)</h4><p>Freenet is nearing an initial network launch. At this stage it will primarily be of interest to developers interested in
+building decentralized systems on Freenet.</p><h4 id=useful-links>Useful Links</h4><div class=buttons><a class="button is-medium-blue" href="https://youtu.be/yBtyNIqZios?si=vnFje0OQFYkni7NZ"><span class=icon><i class="fas fa-video"></i></span>
+<span>Watch Ian's Talk</span>
+</a><a class="button is-medium-teal" href=https://docs.freenet.org/><span class=icon><i class="fas fa-book"></i></span>
+<span>Read User Manual</span>
+</a><a class="button is-medium-purple" href=https://matrix.to/#/#freenet-locutus:matrix.org><span class=icon><i class="fas fa-comments"></i></span>
+<span>Chat on Matrix</span>
+</a><a class="button is-medium-orange" href=https://github.com/freenet/freenet-core><span class=icon><i class="fab fa-github"></i></span>
+<span>Visit GitHub</span></a></div><h3 id=latest-news>Latest News</h3><ul><li><strong>June 11th, 2024</strong> -
+<a href=https://freenet.org/blog/1127/weekly-dev-meeting---gateway-deployment-freenet-chat.html>Weekly dev meeting</a> -
+Gateway deployment, freenet-chat</li><li><strong>June 10th, 2024</strong> - Ian Clarke breaks down his vision for a decentralized Internet -
+<a href=https://x.com/FreenetOrg/status/1800261209096077710>X</a> / <a href="https://youtu.be/enTAromEeHo?si=r7PY0i4EY-9ezbkI">YouTube</a>
+/ <a href=https://rumble.com/v50yavb-ian-clarke-breaks-down-his-vision-for-a-decentralized-internet.html>Rumble</a></li><li><strong>September 7th, 2023</strong> - Talk + Q&amp;A - Building Decentralized Software on Freenet -
+<a href=https://twitter.com/FreenetOrg/status/1704994853887643912>X</a> /
+<a href="https://youtu.be/yBtyNIqZios?si=jYYgRFylAsZklYQ0">YouTube</a> /
+<a href=https://rumble.com/v3joywo-ian-clarke-explains-the-next-generation-of-freenet.html>Rumble</a></li><li><strong>June 9, 2023</strong> - AmA with Ian about Freenet on
+<a href=https://www.reddit.com/r/privacy/comments/14565vr/ama_ian_clarke_creator_of_freenet_2023_a_dropin/>r/privacy</a>
+subreddit</li><li><strong>May 20, 2023</strong> - Freenet on
+<a href=https://yro.slashdot.org/story/23/05/20/1947259/freenet-2023-a-drop-in-decentralized-replacement-for-the-web---and-more>Slashdot</a></li></ul></div></main><footer></footer></div></section></body></html>
