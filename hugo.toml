@@ -1,4 +1,4 @@
-baseURL = "http://hugo.freenet.org/"
+baseURL = "https://hugo.freenet.org/"
 languageCode = 'en-us'
 title = 'Freenet'
 theme = "freenet"
