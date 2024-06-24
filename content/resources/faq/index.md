@@ -1,6 +1,8 @@
-+++
-name = "FAQ"
-+++
+---
+title: "FAQ"
+date: 2024-06-24
+draft: false
+---
 
 - [What is Freenet?](#what-is-freenet)
 - [How does Freenet work?](#how-does-freenet-work)

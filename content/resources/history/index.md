@@ -1,3 +1,9 @@
+---
+title: "Freenet's History"
+date: 2024-06-24
+draft: false
+---
+
 # History of Freenet
 
 ## Introduction
