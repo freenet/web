@@ -1,0 +1,20 @@
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Weekly dev meeting - progressing Towards Network Stability | Freenet</title>
+<link rel=stylesheet href=/fontawesome/css/fontawesome.min.css><link rel=stylesheet href=/fontawesome/css/solid.min.css><link rel=stylesheet href=/fontawesome/css/brands.min.css><link rel=stylesheet href=/bulma.min.css><link rel=stylesheet href=/css/freenet.min.28d615b1dfe231f45e1caed2c01cdbcac06aa2317be52bad20316950c3d23a01.css><script src=https://hugo.freenet.org/js/main.js></script></head><body><section class="section content"><div class=container><header><nav class=navbar role=navigation aria-label="main navigation"><div class=navbar-brand><a class="navbar-item logo-container" href=/><img src=/img/freenet_logo.svg alt="Freenet Logo" class=logo-img>
+<span class=logo-text>Freenet</span>
+</a><a role=button class=navbar-burger aria-label=menu aria-expanded=false data-target=freenetNavbar><span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span></a></div><div id=freenetNavbar class=navbar-menu><div class=navbar-start><a class=navbar-item href=/get-started/>Get Started</a><div class="navbar-item has-dropdown is-hoverable"><a class=navbar-link>Developers</a><div class=navbar-dropdown><a class=navbar-item href=/dev/core/>Core</a>
+<a class=navbar-item href=/dev/apps/>Apps</a></div></div><div class="navbar-item has-dropdown is-hoverable"><a class=navbar-link>Resources</a><div class=navbar-dropdown><a class=navbar-item href=/resources/faq/>FAQ</a>
+<a class=navbar-item href=/resources/blog/>Blog</a>
+<a class=navbar-item href=/resources/history/>History</a></div></div><a class=navbar-item href=/donate/>Donate</a></div><div class=navbar-end></div></div></nav></header><main><div class="section content"><h1>Weekly dev meeting - progressing Towards Network Stability</h1><h3 id=summary>Summary:</h3><p>In this week&rsquo;s Freenet developer meeting, Ian Clarke and Ignacio Duart discussed significant advancements and remaining
+challenges before getting the network up and running. The primary focus was on refining the connection and configuration
+processes within Freenet&rsquo;s system. Key highlights include:</p><ul><li><p><strong>Configuration Management</strong>: The developers have implemented a system to set and save default configurations, which
+are crucial for initializing and maintaining stable operations after restarts. The configuration files are currently
+managed using TOML due to its robust support in Rust.</p></li><li><p><strong>Connection Stability and Logic Errors</strong>: Recent developments have mostly resolved previous issues with connection
+stability. However, some logic errors persist in the connect operation, affecting how peers establish and maintain
+connections. The team is close to resolving these, with a few last adjustments needed.</p></li><li><p><strong>Testing and Network Simulation</strong>: Extensive local network testing is underway, aiming to mimic real-world conditions
+as closely as possible before proceeding to broader network deployment. The team discussed strategies to handle
+potential issues in a real-world environment, emphasizing the importance of robust testing phases.</p></li><li><p><strong>Developer Tools and Documentation</strong>: Improvements in developer tools and documentation are in progress, with a
+specific focus on enhancing the onboarding process for new developers through updated tutorials and guides.</p></li><li><p><strong>Upcoming Objectives</strong>: The immediate goal is to finalize the current phase of testing, address the identified bugs,
+and prepare for a public release. Parallel efforts are being made to prepare the infrastructure for wider testing and
+eventual deployment.</p></li></ul></div></main><footer></footer></div></section></body></html>
