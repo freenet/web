@@ -1,4 +1,4 @@
-baseURL = "https://freenet.github.io/web/"
+baseURL = "https://hugo.freenet.org/"
 languageCode = 'en-us'
 title = 'Freenet'
 theme = "freenet"
