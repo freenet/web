@@ -1,34 +1,3 @@
-/* Try to adjust break point */
-
-@media screen and (max-width: 1117px) {
-    .navbar-menu {
-      display: none;
-    }
-  
-    .navbar-burger {
-      display: block;
-    }
-  }
-  
-  @media screen and (min-width: 861px) {
-    .navbar-menu {
-      display: block;
-    }
-  
-    .navbar-burger {
-      display: none;
-    }
-  }
-  
-  .navbar-menu.is-active .navbar-item.has-dropdown:hover .navbar-dropdown {
-    display: block;
-  }
-  
-  .navbar-menu .navbar-item.has-dropdown .navbar-dropdown {
-    display: none;
-  }
-  
-
 /* Hover effect for navbar item */
 .navbar-item:hover .logo-text {
     color: #007bff; /* Preferred hover color */

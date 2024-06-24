@@ -21,8 +21,8 @@ theme = "freenet"
     weight = 3
 
   [[menu.main]]
-    name = "Platform"
-    url = "/dev/platform/"
+    name = "Core"
+    url = "/dev/core/"
     weight = 4
     parent = "Developers"
 
