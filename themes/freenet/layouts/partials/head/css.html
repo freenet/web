@@ -1,7 +1,7 @@
-<link rel="stylesheet" href="{{ "fontawesome/css/fontawesome.min.css" | absURL }}">
-<link rel="stylesheet" href="{{ "fontawesome/css/solid.min.css" | absURL }}">
-<link rel="stylesheet" href="{{ "fontawesome/css/brands.min.css" | absURL }}">
-<link rel="stylesheet" href="{{ "bulma.min.css" | absURL }}">
+<link rel="stylesheet" href="{{ "fontawesome/css/fontawesome.min.css" | relURL }}">
+<link rel="stylesheet" href="{{ "fontawesome/css/solid.min.css" | relURL }}">
+<link rel="stylesheet" href="{{ "fontawesome/css/brands.min.css" | relURL }}">
+<link rel="stylesheet" href="{{ "bulma.min.css" | relURL }}">
 {{ $freenetCSS := resources.Get "css/freenet.css" | resources.ToCSS }}
 {{ if hugo.IsProduction }}
   {{ $freenetCSS = $freenetCSS | resources.Minify | resources.Fingerprint }}
@@ -9,3 +9,4 @@
   {{ $freenetCSS = $freenetCSS | resources.Fingerprint }}
 {{ end }}
 <link rel="stylesheet" href="{{ $freenetCSS.Permalink }}">
+
