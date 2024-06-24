@@ -8,5 +8,5 @@
 {{ else }}
   {{ $freenetCSS = $freenetCSS | resources.Fingerprint }}
 {{ end }}
-<link rel="stylesheet" href="{{ $freenetCSS.Permalink }}">
+<link rel="stylesheet" href="{{ $freenetCSS.RelPermalink }}">
 
