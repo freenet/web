@@ -1,5 +1,7 @@
 ---
 title: "Home"
+date: 2024-06-11T00:00:00Z
+draft: false
 links:
   - url: "https://youtu.be/yBtyNIqZios?si=vnFje0OQFYkni7NZ"
     text: "Watch Ian's Talk"
