@@ -11,118 +11,52 @@ theme = "freenet"
     weight = 1
 
   [[menu.main]]
-    name = "About"
-    url = "/about/"
+    name = "Get Started"
+    url = "/get-started/"
     weight = 2
 
   [[menu.main]]
-    name = "Philosophy"
-    url = "/about/philosophy/"
-    weight = 4
-    parent = "About"
-
-  [[menu.main]]
-    name = "Team"
-    url = "/about/team/"
-    weight = 5
-    parent = "About"
-
-  [[menu.main]]
-    name = "History"
-    url = "/about/history/"
-    weight = 6
-    parent = "About"
-
-  [[menu.main]]
-    name = "Media/Press"
-    url = "/about/media/"
-    weight = 7
-    parent = "About"
-
-  [[menu.main]]
-    name = "Community"
-    url = "/community/"
-    weight = 8
-
-  [[menu.main]]
-    name = "Get Involved"
-    url = "/community/get-involved/"
-    weight = 9
-    parent = "Community"
-
-  [[menu.main]]
-    name = "Events"
-    url = "/community/events/"
-    weight = 10
-    parent = "Community"
-
-  [[menu.main]]
-    name = "Forums/Discussion"
-    url = "/community/forums/"
-    weight = 11
-    parent = "Community"
-
-  [[menu.main]]
-    name = "Support"
-    url = "/community/support/"
-    weight = 12
-    parent = "Community"
-
-  [[menu.main]]
     name = "Developers"
-    url = "/developers/"
-    weight = 13
-
-  [[menu.main]]
-    name = "Getting Started"
-    url = "/developers/getting-started/"
-    weight = 14
-    parent = "Developers"
-
-  [[menu.main]]
-    name = "Documentation"
-    url = "/developers/documentation/"
-    weight = 15
-    parent = "Developers"
+    url = "/dev/"
+    weight = 3
 
   [[menu.main]]
     name = "Platform"
-    url = "/developers/platform/"
-    weight = 16
+    url = "/dev/platform/"
+    weight = 4
     parent = "Developers"
 
   [[menu.main]]
     name = "Apps"
-    url = "/developers/apps/"
-    weight = 17
-    parent = "Developers"
-
-  [[menu.main]]
-    name = "Contribute"
-    url = "/developers/contribute/"
-    weight = 18
+    url = "/dev/apps/"
+    weight = 5
     parent = "Developers"
 
   [[menu.main]]
     name = "Resources"
     url = "/resources/"
-    weight = 19
+    weight = 6
 
   [[menu.main]]
     name = "FAQ"
     url = "/resources/faq/"
-    weight = 20
+    weight = 7
     parent = "Resources"
 
   [[menu.main]]
     name = "Blog"
     url = "/resources/blog/"
-    weight = 21
+    weight = 8
     parent = "Resources"
 
   [[menu.main]]
-    name = "Tutorials"
-    url = "/resources/tutorials/"
-    weight = 22
+    name = "History"
+    url = "/resources/history/"
+    weight = 9
     parent = "Resources"
 
+
+  [[menu.main]]
+    name = "Donate"
+    url = "/donate/"
+    weight = 11
