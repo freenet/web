@@ -1,6 +1,8 @@
 
 ### Cryptographically Certified Donations
 
+Thanks for your interest in supporting Freenet.
+
 When you make a donation to Freenet, we want to give you a special certificate
 to acknowledge your contribution. This certificate isn't just a simple thank
 you—it's a digital token that could unlock additional features within Freenet in
