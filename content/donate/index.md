@@ -1,5 +1,5 @@
 
-### Cryptographically Certified Donations
+### Certified Donations
 
 Thanks for your interest in supporting Freenet.
 
