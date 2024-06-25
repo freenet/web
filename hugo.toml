@@ -39,9 +39,10 @@ theme = "freenet"
     parent = "Resources"
 
   [[menu.main]]
-    name = "Blog"
-    url = "/blog/"
+    name = "News"
+    url = "/news/"
     weight = 8
+    parent = "Resources"
 
   [[menu.main]]
     name = "History"
