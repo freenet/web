@@ -4,18 +4,7 @@ date: 2024-06-24
 draft: false
 ---
 
--   [What is Freenet?](#what-is-freenet)
--   [How does Freenet work?](#how-does-freenet-work)
--   [What is the project's history?](#what-is-the-projects-history)
--   [How do the previous and current versions of Freenet differ?](#how-do-the-previous-and-current-versions-of-freenet-differ)
--   [Will the new Freenet be backwards compatible with the old Freenet?](#will-the-new-freenet-be-backwards-compatible-with-the-old-freenet)
--   [Why was Freenet rearchitected and rebranded?](#faq-5)
--   [What are the key components of Freenet's architecture?](#what-are-the-key-components-of-freenets-architecture)
--   [Who is behind Freenet?](#who-is-behind-freenet)
--   [What is the status of Freenet?](#what-is-the-status-of-freenet)
--   [Can anyone use Freenet?](#can-anyone-use-freenet)
--   [Can I follow Freenet on social media?](#can-i-follow-freenet-on-social-media)
--   [How can I financially support Freenet development?](#how-can-i-financially-support-freenet-development)
+{{< toc >}}
 
 # What is Freenet? {#what-is-freenet}
 
