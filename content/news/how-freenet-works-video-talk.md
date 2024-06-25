@@ -7,7 +7,7 @@ tags = ["video-talk", "front-page"]
 #### June 10, 2024
 
 Freenet's architect Ian Clarke explains how we solve problems like efficiently finding data,
-adapating to changing network conditions, and managing a peer's resource usage. Q&A 
+adapat to changing network conditions, and managing a peer's resource usage. Q&A 
 includes how Freenet compares to other networks, the history of Freenet, and how Freenet adapts
 to geography.
 
