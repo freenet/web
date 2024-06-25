@@ -1,64 +1,29 @@
 ---
-title: "Certified Donations"
+title: "Donate to Freenet"
 date: 2024-06-24
 draft: false
 ---
 
-### Certified Donations
+Founded in 2001, Freenet is a 501c3 non-profit organization dedicated to
+the development and propagation of technologies for open and democratic
+information distribution over the Internet. We advocate for unrestricted
+exchange of intellectual, scientific, literary, social, artistic,
+creative, human rights, and cultural expressions, free from interference
+by state, private, or special interests.
 
-Thanks for your interest in supporting Freenet.
+#### Donate via PayPal or Credit Card
 
-When you make a donation to Freenet, we want to give you a special certificate
-to acknowledge your contribution. This certificate isn't just a simple thank
-you—it's a digital token that could unlock additional features within Freenet in
-the future. Here's how it works, broken down step-by-step:
+[![Donate with PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/donate?hosted_button_id=EQ9E7DPHB6ETY)
 
-1. **Key Generation**: When you decide to make a donation, your web browser will
-   generate a unique pair of cryptographic keys for you. Think of these as a
-   lock (public key) and key (private key). 
+#### Donate via Cryptocurrency
 
-2. **Blinding for Privacy**: To ensure your privacy and security, your public
-   key (the lock) is "blinded." This means it's scrambled in a way that hides
-   its true form. This blinded key is then sent to our server.
+Freenet is **not** a cryptocurrency, but we do accept cryptocurrency
+donations. For large donations (over \$5,000) please contact us before
+sending. For smaller donations, please use the following wallets:
 
-3. **Donation and Signing**: When you complete your donation, our server will
-   use a special digital signature to sign your blinded public key. Different
-   donation amounts are signed with different keys to recognize varying levels
-   of support.
 
-4. **Unblinding**: After signing, the server sends the signed, still-blinded
-   public key back to your browser. Your browser then "unblinds" it, revealing
-   the signed version of your original public key.
-
-5. **Your Certificate**: Finally, your browser gives you:
-   - The private key (the key to your lock), encoded in a way you can easily
-     save.
-   - The signed public key (the lock), which proves your donation and its
-     amount.
-
-### Why This Matters
-
-This cryptographic certificate is unique to you and your donation. It proves
-that you supported Freenet at a specific level without revealing any personal
-information. While these certificates are not transferable (sharing your private
-key would defeat the purpose), they can serve as a foundation for future
-features, like a reputation system within Freenet. This could help reduce spam
-by ensuring only genuine supporters can send certain types of messages or access
-specific features.
-
-### Clear and Secure
-
-Unlike NFTs or other digital tokens often associated with speculative trading,
-our donation certificates are designed purely for functionality within the
-Freenet ecosystem. They are not meant to be traded or sold but to enhance your
-experience and recognition within the Freenet community.
-
-By donating, you're not only supporting the development of Freenet but also
-receiving a secure, private token of appreciation that could offer additional
-benefits down the line.
-
----
-
-This explanation simplifies the process while highlighting the key points and
-benefits, ensuring that technical users understand the purpose and value of the
-system without drawing comparisons to less reputable digital assets.
+| Cryptocurrency | Address                                               |
+|----------------|-------------------------------------------------------|
+| Bitcoin        | `3M3fbA7RDYdvYeaoR69cDCtVJqEodo9vth`                  |
+| Zcash          | `t1VHw1PHgzvMqEEd31ZBt3Vyy2UrG4J8utB`                 |
+| Ethereum       | `0x79158A5Dbd9C0737CB27411817BD2759f5b9a9Ae`          |

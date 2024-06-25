@@ -20,7 +20,8 @@ Freenet was initially developed in 1999 at the University of Edinburgh by Ian Cl
 
 - **1999**: Development of the original Freenet began at the University of Edinburgh.
 - **2005**: A significant rewrite of Freenet was initiated, further enhancing its capabilities.
-- **2019**: Development of a successor to the original Freenet, internally named "Locutus," commenced. This project was a ground-up reimagining of Freenet, incorporating lessons learned and addressing modern challenges.
+- **2012**: Work started on "Tahrir", a potential successor to Freenet, but it was later discontinued.
+- **2019**: Work began on a successor to the original Freenet, internally named "Locutus". This project was a ground-up reimagining of Freenet, incorporating lessons learned and addressing modern challenges.
 
 ### The Split and Rebranding
 
