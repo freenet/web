@@ -9,14 +9,3 @@
   {{ end }}
 {{ end }}
 </ul>
-{{ $headings := .Page.Content | markdownify | plainify | findRE "(?m)^# (.+)$" }}
-<ul>
-{{ range $headings }}
-  {{ $heading := index . 1 }}
-  {{ if eq $heading "Why was Freenet rearchitected and rebranded?" }}
-    <li><a href="#faq-5">{{ $heading }}</a></li>
-  {{ else }}
-    <li><a href="#{{ $heading | urlize }}">{{ $heading }}</a></li>
-  {{ end }}
-{{ end }}
-</ul>
