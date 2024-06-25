@@ -49,3 +49,5 @@ building decentralized systems on Freenet.
 ### Latest News
 
 {{< latest-news >}}
+
+[More news...](news)
