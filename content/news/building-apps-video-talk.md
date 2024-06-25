@@ -6,6 +6,9 @@ tags = ["video-talk", "front-page"]
 
 #### September 7, 2023
 
+Freenet architect Ian Clarke explains how to build apps on Freenet, including the basic components
+of Freenet's architecture like contracts, delegates, and user interfaces.
+
 {{< youtube id="yBtyNIqZios?si=KL2x2ovRspGYKMeR" >}}
 
 ### Also available on
