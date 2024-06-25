@@ -44,6 +44,12 @@ theme = "freenet"
     weight = 8
     parent = "Resources"
 
+[[menu.main]]
+    name = "Video Talks"
+    url = "/resources/video-talks/"
+    weight = 10
+    parent = "Resources"
+
   [[menu.main]]
     name = "History"
     url = "/resources/history/"

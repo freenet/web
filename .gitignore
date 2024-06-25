@@ -1,3 +1,4 @@
 .aider*
-public/
-resources/
+public
+/resources
+!/*/resources

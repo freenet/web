@@ -6,10 +6,10 @@
   {{ range first 5 $sortedNews }}
     <li>
       <strong>{{ .Date.Format "January 2, 2006" }}</strong> - 
-      <a href="{{ .Permalink }}">{{ .Title }}</a>
       {{ if in .Params.tags "video-talk" }}
-        <i class="fas fa-video"></i>
+      <i class="fas fa-video"></i>
       {{ end }}
+      <a href="{{ .Permalink }}">{{ .Title }}</a>
     </li>
   {{ end }}
 </ul>
