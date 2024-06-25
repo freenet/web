@@ -1,6 +1,7 @@
 +++
 title = "Proof-of-Trust: A Wealth-Unbiased Consensus Mechanism for Distributed Systems"
 date = 2023-08-28
+tags = ["front-page"]
 +++
 
 Traditional approaches to rate-limiting the creation of things like coins, tokens, and identities in distributed

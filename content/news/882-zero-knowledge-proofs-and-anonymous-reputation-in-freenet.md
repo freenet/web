@@ -1,6 +1,7 @@
 +++
 title = "Zero-Knowledge Proofs and Anonymous Reputation in Freenet"
 date = 2023-10-29
+tags = ["front-page"]
 +++
 
 Zero-knowledge proofs are one of the most significant developments in cryptography since the invention of public-key

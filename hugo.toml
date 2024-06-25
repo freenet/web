@@ -34,7 +34,7 @@ theme = "freenet"
 
   [[menu.main]]
     name = "FAQ"
-    url = "/resources/faq/"
+    url = "/faq/"
     weight = 7
     parent = "Resources"
 
