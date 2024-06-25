@@ -1,4 +1,4 @@
-name: Freenet Hugo Deploy
+name: Freenet Deploy
 
 on:
   push:
@@ -23,12 +23,14 @@ jobs:
           hugo-version: 'latest'
           extended: true
 
-      - name: Build
-        run: hugo --minify
+      - name: Build Hugo Site
+        run: |
+          cd hugo-site
+          hugo --minify
 
-      - name: Deploy
+      - name: Deploy Hugo Site
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+          publish_dir: ./hugo-site/public
           cname: freenet.org
