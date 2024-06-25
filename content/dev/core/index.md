@@ -14,6 +14,6 @@ Welcome to the Core Development page for Freenet. This section is dedicated to t
 
 {{< latest-news tag="dev-meeting" >}}
 
-## Recently Merged Pull Requests
+## Recently Merged Features
 
 {{< merged-pull-requests >}}
