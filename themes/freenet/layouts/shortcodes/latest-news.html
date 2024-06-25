@@ -7,6 +7,9 @@
     <li>
       <strong>{{ .Date.Format "January 2, 2006" }}</strong> - 
       <a href="{{ .Permalink }}">{{ .Title }}</a>
+      {{ if in .Params.tags "video-talk" }}
+        <i class="fas fa-video"></i>
+      {{ end }}
     </li>
   {{ end }}
 </ul>
