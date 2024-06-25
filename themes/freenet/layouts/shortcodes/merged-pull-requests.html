@@ -8,7 +8,7 @@
     const pullRequests = await response.json();
     const mergedPullRequests = pullRequests
       .filter(pr => pr.merged_at && !pr.title.includes('Bump'))
-      .slice(0, 7);
+      .slice(0, 5);
 
     const container = document.getElementById('merged-pull-requests');
     container.innerHTML = '';
