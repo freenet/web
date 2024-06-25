@@ -8,6 +8,8 @@ draft: false
 
 # What is Freenet? {#what-is-freenet}
 
+# What is Freenet? {#what-is-freenet}
+
 Freenet is a fully decentralized, peer-to-peer network and a drop-in
 replacement for the world wide web. It operates as a global shared
 computer, providing a platform for sophisticated decentralized software
