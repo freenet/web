@@ -16,35 +16,4 @@ Welcome to the Core Development page for Freenet. This section is dedicated to t
 
 ## Recently Merged Pull Requests
 
-{{< rawhtml >}}
-<div id="merged-pull-requests">
-  <p>Loading...</p>
-</div>
-
-<script>
-  async function fetchMergedPullRequests() {
-    const response = await fetch('https://api.github.com/repos/freenet/freenet-core/pulls?state=closed&per_page=5');
-    const pullRequests = await response.json();
-    const mergedPullRequests = pullRequests.filter(pr => pr.merged_at);
-
-    const container = document.getElementById('merged-pull-requests');
-    container.innerHTML = '';
-
-    if (mergedPullRequests.length === 0) {
-      container.innerHTML = '<p>No recently merged pull requests found.</p>';
-      return;
-    }
-
-    const list = document.createElement('ul');
-    mergedPullRequests.forEach(pr => {
-      const listItem = document.createElement('li');
-      listItem.innerHTML = `<a href="${pr.html_url}" target="_blank">${pr.title}</a> by ${pr.user.login}`;
-      list.appendChild(listItem);
-    });
-
-    container.appendChild(list);
-  }
-
-  fetchMergedPullRequests();
-</script>
-{{< /rawhtml >}}
+{{< merged-pull-requests >}}
