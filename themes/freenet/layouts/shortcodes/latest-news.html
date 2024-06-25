@@ -1,6 +1,7 @@
+{{ $tag := .Get "tag" }}
 {{ $news := where (where .Site.Pages "Section" "news") "File.Path" "not in" "content/news/_index.md" }}
 {{ $news := where $news "Type" "not in" "section" }}
-{{ $news := where $news "Params.tags" "intersect" (slice "front-page") }}
+{{ $news := where $news "Params.tags" "intersect" (slice $tag) }}
 {{ $sortedNews := sort $news "Date" "desc" }}
 <ul>
   {{ range first 5 $sortedNews }}
