@@ -6,7 +6,7 @@
   async function fetchMergedPullRequests() {
     const response = await fetch('https://api.github.com/repos/freenet/freenet-core/pulls?state=closed&per_page=5');
     const pullRequests = await response.json();
-    const mergedPullRequests = pullRequests.filter(pr => pr.merged_at && pr.user.login !== 'dependabot[bot]');
+    const mergedPullRequests = pullRequests.filter(pr => pr.merged_at && !pr.title.includes('Bump'));
 
     const container = document.getElementById('merged-pull-requests');
     container.innerHTML = '';
