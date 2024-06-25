@@ -19,7 +19,12 @@
     const list = document.createElement('ul');
     mergedPullRequests.forEach(pr => {
       const listItem = document.createElement('li');
-      listItem.innerHTML = `<a href="${pr.html_url}" target="_blank">${pr.title}</a> by ${pr.user.login}`;
+      const date = new Date(pr.merged_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      listItem.innerHTML = `<strong>${date}</strong> - <a href="${pr.html_url}" target="_blank">${pr.title}</a> by ${pr.user.login}`;
       list.appendChild(listItem);
     });
 
