@@ -4,6 +4,8 @@ date = 2024-06-10
 tags = ["video-talk", "front-page"]
 +++
 
+#### June 10, 2024
+
 {{< youtube id="enTAromEeHo?si=7jKPaxZv3X7tMmYh" >}}
 
 ### Also available on

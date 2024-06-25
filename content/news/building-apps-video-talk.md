@@ -1,10 +1,12 @@
 +++
 title = "How to Build Apps on Freenet"
 date = 2023-09-07
-tags = ["video-talk"]
+tags = ["video-talk", "front-page"]
 +++
 
-{{< youtube id="enTAromEeHo?si=7jKPaxZv3X7tMmYh" >}}
+#### September 7, 2023
+
+{{< youtube id="yBtyNIqZios?si=KL2x2ovRspGYKMeR" >}}
 
 ### Also available on
 
