@@ -4,20 +4,20 @@ date: 2024-06-24
 draft: false
 ---
 
--   [What is Freenet?](#faq-0)
--   [How does Freenet work?](#faq-1)
--   [What is the project\'s history?](#faq-2)
--   [How do the previous and current versions of Freenet differ?](#faq-3)
--   [Will the new Freenet be backwards compatible with the old Freenet?](#faq-4)
+-   [What is Freenet?](#what-is-freenet)
+-   [How does Freenet work?](#how-does-freenet-work)
+-   [What is the project's history?](#what-is-the-projects-history)
+-   [How do the previous and current versions of Freenet differ?](#how-do-the-previous-and-current-versions-of-freenet-differ)
+-   [Will the new Freenet be backwards compatible with the old Freenet?](#will-the-new-freenet-be-backwards-compatible-with-the-old-freenet)
 -   [Why was Freenet rearchitected and rebranded?](#faq-5)
--   [What are the key components of Freenet\'s architecture?](#faq-6)
--   [Who is behind Freenet?](#faq-7)
--   [What is the status of Freenet?](#faq-8)
--   [Can anyone use Freenet?](#faq-9)
--   [Can I follow Freenet on social media?](#faq-10)
--   [How can I financially support Freenet development?](#faq-11)
+-   [What are the key components of Freenet's architecture?](#what-are-the-key-components-of-freenets-architecture)
+-   [Who is behind Freenet?](#who-is-behind-freenet)
+-   [What is the status of Freenet?](#what-is-the-status-of-freenet)
+-   [Can anyone use Freenet?](#can-anyone-use-freenet)
+-   [Can I follow Freenet on social media?](#can-i-follow-freenet-on-social-media)
+-   [How can I financially support Freenet development?](#how-can-i-financially-support-freenet-development)
 
-# What is Freenet?
+# What is Freenet? {#what-is-freenet}
 
 Freenet is a fully decentralized, peer-to-peer network and a drop-in
 replacement for the world wide web. It operates as a global shared
@@ -29,7 +29,7 @@ used seamlessly through your web browser. The platform\'s user-friendly
 decentralized applications are scalable, interoperable, and secured with
 cryptography.
 
-# How does Freenet work?
+# How does Freenet work? {#how-does-freenet-work}
 
 Freenet is a global key-value store that relies on [small world
 routing](https://en.wikipedia.org/wiki/Small-world_routing) for
@@ -63,7 +63,7 @@ reading, and modifying contracts and their state.
 For a much more detailed explanation please see our [user
 manual](https://docs.freenet.org/introduction.html).
 
-# What is the project\'s history?
+# What is the project's history? {#what-is-the-projects-history}
 
 Freenet was initially developed by Ian Clarke at the University of
 Edinburgh in 1999 as a decentralized system for information storage and
@@ -78,7 +78,7 @@ development and operation, and adapted to today\'s challenges. In March
 project](https://www.hyphanet.org/pages/about.html), and what was known
 as \"Locutus\" was officially branded as \"Freenet.\"
 
-# How do the previous and current versions of Freenet differ?
+# How do the previous and current versions of Freenet differ? {#how-do-the-previous-and-current-versions-of-freenet-differ}
 
 The previous and current versions of Freenet have several key
 differences:
@@ -103,7 +103,7 @@ differences:
     anonymity, the current version does not offer built-in anonymity but
     allows for a choice of anonymizing systems to be layered on top.
 
-# Will the new Freenet be backwards compatible with the old Freenet?
+# Will the new Freenet be backwards compatible with the old Freenet? {#will-the-new-freenet-be-backwards-compatible-with-the-old-freenet}
 
 No, the new Freenet is a fundamental redesign making backwards
 compatibility impractical.
@@ -139,7 +139,7 @@ felt this was the necessary path forward to ensure the project\'s
 continued relevance and success in a world very different than when he
 designed the previous architecture.
 
-# What are the key components of Freenet\'s architecture?
+# What are the key components of Freenet's architecture? {#what-are-the-key-components-of-freenets-architecture}
 
 Delegates, contracts, and user interfaces (UIs) each serve distinct
 roles in the Freenet ecosystem. Contracts control public data, or
@@ -149,7 +149,7 @@ between these and the user through a web browser. See the [user
 manual](https://docs.freenet.org/components/overview.html) for more
 detail.
 
-# Who is behind Freenet?
+# Who is behind Freenet? {#who-is-behind-freenet}
 
 Freenet was started by Ian Clarke in 1999 and grew out of his
 undergraduate
@@ -164,7 +164,7 @@ Clarke, Steven Starr, and Michael Grube, with Ian serving as President
 and Steven as Chief Strategy Officer. Along with Ian, the development
 team consists of Nacho Duart and Hector Alberto Santos Rodriguez.
 
-# What is the status of Freenet?
+# What is the status of Freenet? {#what-is-the-status-of-freenet}
 
 As of June 2024, we are very close to getting the network up; see our
 [blog](https://freenet.org/blog) for regular status updates. In the
@@ -172,7 +172,7 @@ meantime you can already
 [experiment](https://docs.freenet.org/tutorial.html) with building a
 decentralized app to test on your own computer.
 
-# Can anyone use Freenet?
+# Can anyone use Freenet? {#can-anyone-use-freenet}
 
 While Freenet is designed to be accessible to most users, approximately
 10-20% of users might experience connectivity issues due to being behind
@@ -185,13 +185,13 @@ services. We recommend choosing ISPs that offer less restrictive NAT
 configurations to ensure a better overall internet experience and
 seamless use of Freenet.
 
-# Can I follow Freenet on social media?
+# Can I follow Freenet on social media? {#can-i-follow-freenet-on-social-media}
 
 Yes, you can follow [\@FreenetOrg](https://twitter.com/freenetorg) on
 Twitter/X or discuss [r/freenet](https://www.reddit.com/r/Freenet/) on
 Reddit.
 
-# How can I financially support Freenet development?
+# How can I financially support Freenet development? {#how-can-i-financially-support-freenet-development}
 
 Founded in 2001, Freenet is a 501c3 non-profit organization dedicated to
 the development and propagation of technologies for open and democratic
