@@ -1,0 +1,10 @@
+{{ $news := where .Site.Pages "Section" "news" }}
+{{ $sortedNews := sort $news "Date" "desc" }}
+<ul>
+  {{ range first 5 $sortedNews }}
+    <li>
+      <strong>{{ .Date.Format "January 2, 2006" }}</strong> - 
+      <a href="{{ .Permalink }}">{{ .Title }}</a>
+    </li>
+  {{ end }}
+</ul>

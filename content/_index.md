@@ -48,18 +48,4 @@ building decentralized systems on Freenet.
 
 ### Latest News
 
-- **June 11th, 2024** -
-  [Weekly dev meeting](https://freenet.org/blog/1127/weekly-dev-meeting---gateway-deployment-freenet-chat.html) -
-  Gateway deployment, freenet-chat
-- **June 10th, 2024** - Ian Clarke breaks down his vision for a decentralized Internet -
-  [X](https://x.com/FreenetOrg/status/1800261209096077710) / [YouTube](https://youtu.be/enTAromEeHo?si=r7PY0i4EY-9ezbkI)
-  / [Rumble](https://rumble.com/v50yavb-ian-clarke-breaks-down-his-vision-for-a-decentralized-internet.html)
-- **September 7th, 2023** - Talk + Q&A - Building Decentralized Software on Freenet -
-  [X](https://twitter.com/FreenetOrg/status/1704994853887643912) /
-  [YouTube](https://youtu.be/yBtyNIqZios?si=jYYgRFylAsZklYQ0) /
-  [Rumble](https://rumble.com/v3joywo-ian-clarke-explains-the-next-generation-of-freenet.html)
-- **June 9, 2023** - AmA with Ian about Freenet on
-  [r/privacy](https://www.reddit.com/r/privacy/comments/14565vr/ama_ian_clarke_creator_of_freenet_2023_a_dropin/)
-  subreddit
-- **May 20, 2023** - Freenet on
-  [Slashdot](https://yro.slashdot.org/story/23/05/20/1947259/freenet-2023-a-drop-in-decentralized-replacement-for-the-web---and-more)
+{{< latest-news >}}
