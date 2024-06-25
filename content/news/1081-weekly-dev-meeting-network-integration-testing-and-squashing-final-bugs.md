@@ -1,4 +1,5 @@
 +++
+tags = ["dev-meeting"]
 title = "Weekly dev meeting - network integration testing and squashing final bugs"
 date = 2024-05-11
 +++
