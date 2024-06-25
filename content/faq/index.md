@@ -6,7 +6,7 @@ draft: false
 
 {{< toc >}}
 
-# What is Freenet? {#what-is-freenet}
+{{< toc >}}
 
 # What is Freenet? {#what-is-freenet}
 
