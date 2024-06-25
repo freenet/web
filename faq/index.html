@@ -6,4 +6,105 @@
 <span aria-hidden=true></span></a></div><div id=freenetNavbar class=navbar-menu><div class=navbar-start><div class="navbar-item has-dropdown is-hoverable"><a class=navbar-link>Developers</a><div class=navbar-dropdown><a class=navbar-item href=/dev/core/>Core</a>
 <a class=navbar-item href=/dev/apps/>Apps</a></div></div><div class="navbar-item has-dropdown is-hoverable"><a class=navbar-link>Resources</a><div class=navbar-dropdown><a class=navbar-item href=/faq/>FAQ</a>
 <a class=navbar-item href=/news/>News</a>
-<a class=navbar-item href=/resources/history/>History</a></div></div><a class=navbar-item href=/donate/>Donate</a></div><div class=navbar-end></div></div></nav></header><main><div class="section content"><h1>Frequently Asked Questions</h1></div></main><footer></footer></div></section></body></html>
+<a class=navbar-item href=/resources/history/>History</a></div></div><a class=navbar-item href=/donate/>Donate</a></div><div class=navbar-end></div></div></nav></header><main><div class="section content"><h1>Frequently Asked Questions</h1><ul><li><a href=#faq-0>What is Freenet?</a></li><li><a href=#faq-1>How does Freenet work?</a></li><li><a href=#faq-2>What is the project's history?</a></li><li><a href=#faq-3>How do the previous and current versions of Freenet differ?</a></li><li><a href=#faq-4>Will the new Freenet be backwards compatible with the old Freenet?</a></li><li><a href=#faq-5>Why was Freenet rearchitected and rebranded?</a></li><li><a href=#faq-6>What are the key components of Freenet's architecture?</a></li><li><a href=#faq-7>Who is behind Freenet?</a></li><li><a href=#faq-8>What is the status of Freenet?</a></li><li><a href=#faq-9>Can anyone use Freenet?</a></li><li><a href=#faq-10>Can I follow Freenet on social media?</a></li><li><a href=#faq-11>How can I financially support Freenet development?</a></li></ul><h1 id=what-is-freenet>What is Freenet?</h1><p>Freenet is a fully decentralized, peer-to-peer network and a drop-in
+replacement for the world wide web. It operates as a global shared
+computer, providing a platform for sophisticated decentralized software
+systems. Freenet allows developers to create decentralized alternatives
+to centralized services, including messaging, social media, email, and
+e-commerce. It's designed for simplicity and flexibility and can be
+used seamlessly through your web browser. The platform's user-friendly
+decentralized applications are scalable, interoperable, and secured with
+cryptography.</p><h1 id=how-does-freenet-work>How does Freenet work?</h1><p>Freenet is a global key-value store that relies on <a href=https://en.wikipedia.org/wiki/Small-world_routing>small world
+routing</a> for
+decentralization and scalability. Keys in this key-value store are
+<a href=https://en.wikipedia.org/wiki/WebAssembly>WebAssembly</a> code which
+specify:</p><ul><li>When is a value permitted under this key?<ul><li>eg. verify that the value is cryptographically signed with a
+particular public key</li></ul></li><li>Under what circumstances may the value be modified<ul><li>eg. modifications must be signed</li></ul></li><li>How can the value be efficiently synchronized between peers in the
+network</li></ul><p>These webassembly keys are also known as
+<a href=https://docs.freenet.org/components/contracts.html>contracts</a>, and the
+values are also known as the contract's <strong>state</strong>.</p><p>Like the web, most people will interact with Freenet through their web
+browser. Freenet provides a local <a href=https://docs.freenet.org/components/ui.html>HTTP
+proxy</a> that allows data
+such as a <a href=https://en.wikipedia.org/wiki/Single-page_application>single-page
+application</a> to
+be downloaded to a web browser. This application can then connect to the
+Freenet peer through a
+<a href=https://en.wikipedia.org/wiki/WebSocket>websocket</a> connection and
+through this interact with the Freenet network, including creating,
+reading, and modifying contracts and their state.</p><p>For a much more detailed explanation please see our <a href=https://docs.freenet.org/introduction.html>user
+manual</a>.</p><h1 id=what-is-the-projects-history>What is the project's history?</h1><p>Freenet was initially developed by Ian Clarke at the University of
+Edinburgh in 1999 as a decentralized system for information storage and
+retrieval, offering users the ability to publish or retrieve information
+anonymously.</p><p>In 2019, Ian began work on a successor to the original Freenet, which
+was internally known as "Locutus." This project, a redesign from the
+ground up, incorporated lessons learned from the original Freenet's
+development and operation, and adapted to today's challenges. In March
+2023, the original version of Freenet was separated into its <a href=https://www.hyphanet.org/pages/about.html>own
+project</a>, and what was known
+as "Locutus" was officially branded as "Freenet."</p><h1 id=how-do-the-previous-and-current-versions-of-freenet-differ>How do the previous and current versions of Freenet differ?</h1><p>The previous and current versions of Freenet have several key
+differences:</p><ul><li><p>Functionality: The previous version was analogous to a decentralized
+hard drive, while the current version is analogous to a full
+decentralized computer.</p></li><li><p>Real-time Interaction: The current version allows users to subscribe
+to data and be notified immediately if it changes. This is essential
+for systems like instant messaging or group chat.</p></li><li><p>Programming Language: Unlike the previous version, which was
+developed in Java, the current Freenet is implemented in Rust. This
+allows for better efficiency and integration into a wide variety of
+platforms (Windows, Mac, Android, MacOS, etc).</p></li><li><p>Transparency: The current version is a drop-in replacement for the
+world wide web and is just as easy to use.</p></li><li><p>Anonymity: While the previous version was designed with a focus on
+anonymity, the current version does not offer built-in anonymity but
+allows for a choice of anonymizing systems to be layered on top.</p></li></ul><h1 id=will-the-new-freenet-be-backwards-compatible-with-the-old-freenet>Will the new Freenet be backwards compatible with the old Freenet?</h1><p>No, the new Freenet is a fundamental redesign making backwards
+compatibility impractical.</p><h1 id=faq-5>Why was Freenet rearchitected and rebranded?</h1><p>In 2019, Ian began developing a successor to the original Freenet,
+internally named "Locutus." This redesign was a ground-up reimagining,
+incorporating lessons learned from the original Freenet and addressing
+modern challenges. The original Freenet, although groundbreaking, was
+built for an earlier era.</p><p>This isn't the first time Freenet has undergone significant changes.
+Around 2005, we transitioned from version 0.5 to 0.7, which was a
+complete rewrite introducing "friend-to-friend" networking.</p><p>In March 2023, the original Freenet (developed from 2005 onwards) was
+spun off into an independent project called "Hyphanet" under its
+existing maintainers. Concurrently, "Locutus" was rebranded as
+"Freenet," also known as "Freenet 2023," to signal this new
+direction and focus. The rearchitected Freenet is faster, more flexible,
+and better equipped to offer a robust, decentralized alternative to the
+increasingly centralized web.</p><p>To ease the transition the old freenetproject.org domain was redirected
+to hyphanet's website, while the recently acquired freenet.org domain
+was used for the new architecture.</p><p>It is important to note that the maintainers of the original Freenet did
+not agree with the decision to rearchitect and rebrand. However, as the
+architect of the Freenet Project, and after over a year of debate, Ian
+felt this was the necessary path forward to ensure the project's
+continued relevance and success in a world very different than when he
+designed the previous architecture.</p><h1 id=what-are-the-key-components-of-freenets-architecture>What are the key components of Freenet's architecture?</h1><p>Delegates, contracts, and user interfaces (UIs) each serve distinct
+roles in the Freenet ecosystem. Contracts control public data, or
+"shared state." Delegates act as the user's agent and can store
+private data on the user's behalf, while UIs provide an interface
+between these and the user through a web browser. See the <a href=https://docs.freenet.org/components/overview.html>user
+manual</a> for more
+detail.</p><h1 id=who-is-behind-freenet>Who is behind Freenet?</h1><p>Freenet was started by Ian Clarke in 1999 and grew out of his
+undergraduate
+<a href=https://cs.baylor.edu/~donahoo/classes/5321/papers/C99.pdf>paper</a> "A
+Distributed Decentralized Information Storage and Retrieval System."</p><p>To further the goals of the project, Ian Clarke and Steven Starr
+co-founded The Freenet 501c3 non-profit in 2001.</p><p>In 2024, the Freenet non-profit board of directors consists of Ian
+Clarke, Steven Starr, and Michael Grube, with Ian serving as President
+and Steven as Chief Strategy Officer. Along with Ian, the development
+team consists of Nacho Duart and Hector Alberto Santos Rodriguez.</p><h1 id=what-is-the-status-of-freenet>What is the status of Freenet?</h1><p>As of June 2024, we are very close to getting the network up; see our
+<a href=https://freenet.org/blog>blog</a> for regular status updates. In the
+meantime you can already
+<a href=https://docs.freenet.org/tutorial.html>experiment</a> with building a
+decentralized app to test on your own computer.</p><h1 id=can-anyone-use-freenet>Can anyone use Freenet?</h1><p>While Freenet is designed to be accessible to most users, approximately
+10-20% of users might experience connectivity issues due to being behind
+symmetric NATs or restrictive firewalls. These network configurations,
+often implemented by ISPs, can prevent direct peer-to-peer connections,
+which are essential for Freenet's decentralized network. Users behind
+such configurations might also face difficulties with other applications
+requiring low-latency connections, such as multiplayer games and VoIP
+services. We recommend choosing ISPs that offer less restrictive NAT
+configurations to ensure a better overall internet experience and
+seamless use of Freenet.</p><h1 id=can-i-follow-freenet-on-social-media>Can I follow Freenet on social media?</h1><p>Yes, you can follow <a href=https://twitter.com/freenetorg>@FreenetOrg</a> on
+Twitter/X or discuss <a href=https://www.reddit.com/r/Freenet/>r/freenet</a> on
+Reddit.</p><h1 id=how-can-i-financially-support-freenet-development>How can I financially support Freenet development?</h1><p>Founded in 2001, Freenet is a 501c3 non-profit organization dedicated to
+the development and propagation of technologies for open and democratic
+information distribution over the Internet. We advocate for unrestricted
+exchange of intellectual, scientific, literary, social, artistic,
+creative, human rights, and cultural expressions, free from interference
+by state, private, or special interests.</p><h4 id=donate-via-paypal-or-credit-card>Donate via PayPal or Credit Card</h4><p><a href="https://www.paypal.com/donate?hosted_button_id=EQ9E7DPHB6ETY"><img src=https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif alt="Donate with PayPal"></a></p><h4 id=donate-via-cryptocurrency>Donate via Cryptocurrency</h4><p>Freenet is <strong>not</strong> a cryptocurrency, but we do accept cryptocurrency
+donations. For large donations (over $5,000) please contact us before
+sending. For smaller donations, please use the following wallets:</p><table><thead><tr><th>Cryptocurrency</th><th>Address</th></tr></thead><tbody><tr><td>Bitcoin</td><td><code>3M3fbA7RDYdvYeaoR69cDCtVJqEodo9vth</code></td></tr><tr><td>Zcash</td><td><code>t1VHw1PHgzvMqEEd31ZBt3Vyy2UrG4J8utB</code></td></tr><tr><td>Ethereum</td><td><code>0x79158A5Dbd9C0737CB27411817BD2759f5b9a9Ae</code></td></tr></tbody></table></div></main><footer></footer></div></section></body></html>
