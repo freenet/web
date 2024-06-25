@@ -16,6 +16,7 @@ Welcome to the Core Development page for Freenet. This section is dedicated to t
 
 ## Recently Merged Pull Requests
 
+{{< rawhtml >}}
 <div id="merged-pull-requests">
   <p>Loading...</p>
 </div>
@@ -46,3 +47,4 @@ Welcome to the Core Development page for Freenet. This section is dedicated to t
 
   fetchMergedPullRequests();
 </script>
+{{< /rawhtml >}}
