@@ -4,7 +4,7 @@ date: 2024-06-11T00:00:00Z
 draft: false
 layout: "single"
 links:
-  - url: "https://youtu.be/yBtyNIqZios?si=vnFje0OQFYkni7NZ"
+  - url: "content/resources/video-talks.md"
     text: "Watch Ian's Talk"
     icon: "fas fa-video"
     color: "is-medium-blue"
