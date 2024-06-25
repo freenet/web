@@ -1,4 +1,4 @@
-{{ $news := where .Site.Pages "Section" "news" }}
+{{ $news := where (where .Site.Pages "Section" "news") "File.Path" "not in" "content/news/_index.md" }}
 {{ $sortedNews := sort $news "Date" "desc" }}
 <ul>
   {{ range first 5 $sortedNews }}
