@@ -1,6 +1,5 @@
-{{ $tag := .Get "tag" }}
-{{ $news := where (where .Site.Pages "Section" "news") "File.Path" "not in" "content/news/_index.md" }}
-{{ $news := where $news "Type" "not in" "section" }}
+{{ $tag := .Get "tag" | default "front-page" }}
+{{ $news := where .Site.RegularPages "Section" "news" }}
 {{ $news := where $news "Params.tags" "intersect" (slice $tag) }}
 {{ $sortedNews := sort $news "Date" "desc" }}
 <ul>
