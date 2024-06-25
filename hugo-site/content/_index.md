@@ -5,7 +5,7 @@ draft: false
 layout: "single"
 links:
   - url: "/resources/video-talks/"
-    text: "Videos"
+    text: "Video Talks"
     icon: "fas fa-video"
     color: "is-medium-blue"
   - url: "https://docs.freenet.org/"
