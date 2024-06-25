@@ -9,7 +9,5 @@ Here you will find a collection of video talks about Freenet.
 
 ## June 10th, 2024
 
-<a href="https://youtu.be/enTAromEeHo?si=7jKPaxZv3X7tMmYh" style="text-decoration: none;">
-  <i class="fab fa-youtube" style="color: #FF0000; font-size: 24px;"></i> Watch the video
-</a>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/enTAromEeHo?si=7jKPaxZv3X7tMmYh" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
