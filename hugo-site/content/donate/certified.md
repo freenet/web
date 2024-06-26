@@ -1,7 +1,8 @@
 ---
 title: "Certified Donations"
 date: 2024-06-24
-draft: true
+draft: false
+menu: none
 ---
 
 ### Certified Donations
