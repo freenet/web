@@ -3,7 +3,7 @@ use stripe::{
     Client, CreatePaymentIntent, Currency, PaymentIntent,
     PaymentIntentStatus, CreateCustomer, Customer,
 };
-use stripe::{StripeError, ErrorCode};
+use stripe::StripeError;
 use std::str::FromStr;
 
 #[derive(Deserialize)]
@@ -40,7 +40,7 @@ pub async fn create_payment_intent(donation: DonationRequest) -> Result<Donation
     .await?;
 
     let currency = Currency::from_str(&donation.currency)
-        .map_err(|_| StripeError::from(ErrorCode::InvalidRequestError).with_message("Invalid currency"))?;
+        .map_err(|_| StripeError::InvalidRequest { message: "Invalid currency".to_string() })?;
 
     let mut create_intent = CreatePaymentIntent::new(donation.amount as i64, currency);
     create_intent.statement_descriptor = Some("Freenet Donation");
@@ -58,7 +58,8 @@ pub async fn create_payment_intent(donation: DonationRequest) -> Result<Donation
                 customer_id: customer.id.to_string(),
             })
         }
-        _ => Err(Box::new(StripeError::from(ErrorCode::InvalidRequestError)
-            .with_message(format!("Unexpected payment intent status: {:?}", pi.status))))
+        _ => Err(Box::new(StripeError::InvalidRequest { 
+            message: format!("Unexpected payment intent status: {:?}", pi.status) 
+        }))
     }
 }
