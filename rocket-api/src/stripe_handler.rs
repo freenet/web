@@ -1,7 +1,7 @@
 use rocket::serde::{Deserialize, Serialize};
 use stripe::{
     Client, CreatePaymentIntent, Currency, PaymentIntent,
-    PaymentIntentStatus, CreateCustomer, Customer,
+    PaymentIntentStatus, CreateCustomer, Customer, Error as StripeError,
 };
 use std::str::FromStr;
 
@@ -19,7 +19,7 @@ pub struct DonationResponse {
     customer_id: String,
 }
 
-pub async fn create_payment_intent(donation: DonationRequest) -> Result<DonationResponse, stripe::Error> {
+pub async fn create_payment_intent(donation: DonationRequest) -> Result<DonationResponse, StripeError> {
     let secret_key = std::env::var("STRIPE_SECRET_KEY").expect("Missing STRIPE_SECRET_KEY in env");
     let client = Client::new(secret_key);
 
@@ -39,7 +39,7 @@ pub async fn create_payment_intent(donation: DonationRequest) -> Result<Donation
     .await?;
 
     let currency = Currency::from_str(&donation.currency)
-        .map_err(|_| stripe::Error::InvalidRequestError { message: "Invalid currency".to_string() })?;
+        .map_err(|_| StripeError::InvalidRequestError { message: "Invalid currency".to_string() })?;
 
     let mut create_intent = CreatePaymentIntent::new(donation.amount as i64, currency);
     create_intent.statement_descriptor = Some("Freenet Donation");
@@ -57,7 +57,7 @@ pub async fn create_payment_intent(donation: DonationRequest) -> Result<Donation
                 customer_id: customer.id.to_string(),
             })
         }
-        _ => Err(stripe::Error::InvalidRequestError { 
+        _ => Err(StripeError::InvalidRequestError { 
             message: format!("Unexpected payment intent status: {:?}", pi.status) 
         })
     }
