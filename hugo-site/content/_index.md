@@ -37,8 +37,10 @@ web browser or seamlessly integrated into third-party applications like games.
 
 Freenet is flexible enough to build entirely decentralized alternatives to
 existing centralized services, such as messaging, social media, email, and
-e-commerce. All services built on Freenet are interoperable, scalable by
-default, and secured through modern cryptographic techniques.
+e-commerce. Every component of every service built on Freenet is interoperable
+by default, ensuring seamless integration and interaction across the platform.
+Additionally, all services are scalable by default and secured through modern
+cryptographic techniques.
 
 #### Status (June 2024)
 
