@@ -45,7 +45,7 @@ by default, ensuring seamless integration and interaction across the platform.
 Services are also scalable by default and secured through modern cryptographic
 techniques, keeping control in the hands of users, not tech oligarchs.
 
-#### Status (<span id="current-date"></span>)
+#### Status (before the current date: <span id="current-date"></span>)
 
 <script>
   document.addEventListener('DOMContentLoaded', (event) => {
