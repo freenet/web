@@ -33,31 +33,31 @@ theme = "freenet"
     weight = 6
 
   [[menu.main]]
-    name = "FAQ"
-    url = "/faq/"
+    name = "News"
+    url = "/news/"
     weight = 7
     parent = "Resources"
 
   [[menu.main]]
-    name = "News"
-    url = "/news/"
+    name = "FAQ"
+    url = "/faq/"
     weight = 8
     parent = "Resources"
 
-[[menu.main]]
+  [[menu.main]]
     name = "Video Talks"
     url = "/resources/video-talks/"
-    weight = 10
-    parent = "Resources"
-
-  [[menu.main]]
-    name = "History"
-    url = "/resources/history/"
     weight = 9
     parent = "Resources"
-
 
   [[menu.main]]
     name = "Donate"
     url = "/donate/"
+    weight = 10
+
+  [[menu.main]]
+    name = "History"
+    url = "/resources/history/"
     weight = 11
+    parent = "Resources"
+
