@@ -1,6 +1,7 @@
 #[macro_use] extern crate rocket;
 
 mod routes;
+mod stripe_handler;
 
 #[launch]
 fn rocket() -> _ {
