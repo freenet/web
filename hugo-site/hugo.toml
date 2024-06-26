@@ -39,14 +39,14 @@ theme = "freenet"
     parent = "Resources"
 
   [[menu.main]]
-    name = "FAQ"
-    url = "/faq/"
+    name = "Video Talks"
+    url = "/resources/video-talks/"
     weight = 8
     parent = "Resources"
 
   [[menu.main]]
-    name = "Video Talks"
-    url = "/resources/video-talks/"
+    name = "FAQ"
+    url = "/faq/"
     weight = 9
     parent = "Resources"
 
