@@ -40,7 +40,7 @@ pub async fn create_payment_intent(donation: DonationRequest) -> Result<Donation
     .await?;
 
     let currency = Currency::from_str(&donation.currency)
-        .map_err(|_| StripeError::from(ErrorCode::InvalidRequestError))?;
+        .map_err(|_| StripeError::from(ErrorCode::InvalidRequest))?;
 
     let mut create_intent = CreatePaymentIntent::new(donation.amount as i64, currency);
     create_intent.statement_descriptor = Some("Freenet Donation");
@@ -58,6 +58,6 @@ pub async fn create_payment_intent(donation: DonationRequest) -> Result<Donation
                 customer_id: customer.id.to_string(),
             })
         }
-        _ => Err(Box::new(StripeError::from(ErrorCode::InvalidRequestError)))
+        _ => Err(Box::new(StripeError::from(ErrorCode::InvalidRequest)))
     }
 }
