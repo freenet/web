@@ -27,9 +27,9 @@ pub async fn create_payment_intent(donation: DonationRequest) -> Result<Donation
     let customer = Customer::create(
         &client,
         CreateCustomer {
-            name: donation.name,
-            email: donation.email,
-            description: Some("Freenet Donor".to_string()),
+            name: donation.name.as_deref(),
+            email: donation.email.as_deref(),
+            description: Some("Freenet Donor"),
             metadata: Some(std::collections::HashMap::from([
                 (String::from("donation_source"), String::from("freenet_website")),
             ])),
@@ -41,7 +41,7 @@ pub async fn create_payment_intent(donation: DonationRequest) -> Result<Donation
     let currency = Currency::from_str(&donation.currency)
         .map_err(|_| stripe::Error::InvalidRequestError { message: "Invalid currency".to_string() })?;
 
-    let mut create_intent = CreatePaymentIntent::new(donation.amount, currency);
+    let mut create_intent = CreatePaymentIntent::new(donation.amount as i64, currency);
     create_intent.statement_descriptor = Some("Freenet Donation");
     create_intent.customer = Some(customer.id.clone());
     create_intent.metadata = Some(std::collections::HashMap::from([
@@ -54,7 +54,7 @@ pub async fn create_payment_intent(donation: DonationRequest) -> Result<Donation
         PaymentIntentStatus::RequiresPaymentMethod => {
             Ok(DonationResponse {
                 client_secret: pi.client_secret.unwrap(),
-                customer_id: customer.id,
+                customer_id: customer.id.to_string(),
             })
         }
         _ => Err(stripe::Error::InvalidRequestError { 
