@@ -22,25 +22,29 @@ links:
     color: "is-medium-orange"
 ---
 
-### Declare your digital independence
+### Declare Your Digital Independence
 
-The centralization of the internet poses a fundamental threat to individual freedom. In 2024, a few corporations control
-most internet services and infrastructure. These corporations wield immense power over most of us with little
-accountability, enabling them to censor content, exploit our data, and exclude users from services they depend on ---all
-with profound implications for democracy. We need a solution urgently.
+The centralization of the internet poses a fundamental threat to individual
+freedom. In 2024, a few corporations control most internet services and
+infrastructure. These corporations wield immense power with little
+accountability, enabling them to censor content, exploit our data, and exclude
+users from essential services—all with profound implications for individual 
+liberty and democracy. The need for a solution is urgent.
 
-Introducing Freenet --- a decentralized replacement for the world wide web. Acting as a global, shared, decentralized
-computing platform, Freenet can either be accessed via a standard web browser or integrated into third-party
-applications.
+Introducing Freenet—a decentralized replacement for the World Wide Web. Acting
+as a global, shared computing platform, Freenet can be accessed via a standard
+web browser or integrated into third-party applications.
 
-Freenet is not merely a tool for developers; it offers a pathway for anyone seeking greater control and freedom in their
-digital interactions. You can build or use decentralized services for messaging, social media, email, and e-commerce.
-These applications are designed for scalability and interoperability, secured through modern cryptographic techniques.
+Freenet is flexible enough to build entirely decentralized alternatives to
+existing centralized services, such as messaging, social media, email, and
+e-commerce. All services built on Freenet are interoperable, scalable by
+default, and secured through modern cryptographic techniques.
 
 #### Status (June 2024)
 
-Freenet is nearing an initial network launch. At this stage it will primarily be of interest to developers interested in
-building decentralized systems on Freenet.
+Freenet is nearing an initial network launch. At this stage it will primarily be
+of interest to developers interested in building decentralized systems on
+Freenet.
 
 #### Useful Links
 
