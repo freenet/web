@@ -34,7 +34,7 @@ Introducing Freenet—a decentralized replacement for the World Wide Web. Acting
 as a global, shared computing platform, Freenet can be accessed via a standard
 web browser or seamlessly integrated into software like games.
 
-Freenet brings the potential for new solutions to old problems like spam,
+Freenet enables new solutions to old problems like spam,
 [DDoS](https://en.wikipedia.org/wiki/Denial-of-service_attack), keeping private
 data private, and much more.
 
@@ -47,7 +47,7 @@ techniques, keeping control in the hands of users, not tech oligarchs.
 
 #### Status (25th June 2024)
 
-Freenet is nearing an initial network launch as we track down some final bugs. 
+Freenet is nearing an initial network launch as we track down some final bugs.
 At this stage it will primarily be of interest to developers interested in
 building decentralized systems on Freenet.
 
