@@ -30,7 +30,8 @@ undermining democracy. We need a solution urgently.
 
 Introducing Freenet—a decentralized replacement for the World Wide Web. Acting
 as a global, shared computing platform, Freenet can be accessed via a standard
-web browser or seamlessly integrated into software like games.
+web browser or seamlessly integrated into software like games, group chat, and
+more.
 
 Freenet enables new solutions to old problems like spam,
 [DDoS](https://en.wikipedia.org/wiki/Denial-of-service_attack), keeping private
@@ -41,7 +42,7 @@ existing centralized services, such as messaging, social media, email, and
 e-commerce. Every component of every service built on Freenet is interoperable
 by default, ensuring seamless integration and interaction across the platform.
 Services are also scalable by default and secured through modern cryptographic
-techniques, keeping control in the hands of users, not tech oligarchs.
+techniques, putting control back in the hands of users, not tech oligarchs.
 
 #### Status {{<yesterday-date>}}
 
