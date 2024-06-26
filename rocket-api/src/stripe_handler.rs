@@ -40,9 +40,8 @@ pub async fn create_payment_intent(donation: DonationRequest) -> Result<Donation
     .await?;
 
     let currency = Currency::from_str(&donation.currency)
-        .map_err(|_| StripeError::ApiError {
+        .map_err(|_| StripeError::InvalidRequestError {
             message: "Invalid currency".to_string(),
-            code: None,
             param: Some("currency".to_string()),
             type_: None,
         })?;
@@ -63,9 +62,8 @@ pub async fn create_payment_intent(donation: DonationRequest) -> Result<Donation
                 customer_id: customer.id.to_string(),
             })
         }
-        _ => Err(Box::new(StripeError::ApiError {
+        _ => Err(Box::new(StripeError::InvalidRequestError {
             message: "Unexpected PaymentIntent status".to_string(),
-            code: None,
             param: None,
             type_: None,
         }))
