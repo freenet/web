@@ -28,7 +28,7 @@ The centralization of the internet poses a fundamental threat to individual
 freedom. In 2024, a few corporations control most online services and
 infrastructure, wielding immense power with little accountability. They can
 censor content, exploit data, and exclude users from essential services,
-undermining democracy. We urgently need a solution.
+undermining democracy. We need a solution urgently.
 
 Introducing Freenet—a decentralized replacement for the World Wide Web. Acting
 as a global, shared computing platform, Freenet can be accessed via a standard
