@@ -3,7 +3,7 @@ use stripe::{
     Client, CreatePaymentIntent, Currency, PaymentIntent,
     PaymentIntentStatus, CreateCustomer, Customer,
 };
-use stripe::error::Error as StripeError;
+use stripe::Error as StripeError;
 use std::str::FromStr;
 
 #[derive(Deserialize)]
