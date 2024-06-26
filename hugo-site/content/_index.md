@@ -33,7 +33,7 @@ liberty and democracy. The need for a solution is urgent.
 
 Introducing Freenet—a decentralized replacement for the World Wide Web. Acting
 as a global, shared computing platform, Freenet can be accessed via a standard
-web browser or integrated into third-party applications.
+web browser or seamlessly integrated into third-party applications like games.
 
 Freenet is flexible enough to build entirely decentralized alternatives to
 existing centralized services, such as messaging, social media, email, and
