@@ -48,8 +48,6 @@ techniques, keeping control in the hands of users, not tech oligarchs.
 #### Status (25th June 2024)
 
 Freenet is nearing an initial network launch as we track down some final bugs.
-At this stage it will primarily be of interest to developers interested in
-building decentralized systems on Freenet.
 
 #### Useful Links
 
