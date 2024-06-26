@@ -25,18 +25,18 @@ links:
 ### Declare Your Digital Independence
 
 The centralization of the internet poses a fundamental threat to individual
-freedom. In 2024, a few corporations control most internet services and
-infrastructure. These corporations wield immense power with little
-accountability, enabling them to censor content, exploit our data, and exclude
-users from essential services—all with profound implications for individual 
-liberty and democracy. The need for a solution is urgent.
+freedom. In 2024, a few corporations control most online services and
+infrastructure, wielding immense power with little accountability. They can
+censor content, exploit data, and exclude users from essential services,
+undermining democracy. We urgently need a solution.
 
 Introducing Freenet—a decentralized replacement for the World Wide Web. Acting
 as a global, shared computing platform, Freenet can be accessed via a standard
 web browser or seamlessly integrated into third-party applications like games.
 
-Freenet brings the potential for new solutions to old problems like spam, [DDoS](https://en.wikipedia.org/wiki/Denial-of-service_attack),
-keeping private data private, and much more.
+Freenet brings the potential for new solutions to old problems like spam,
+[DDoS](https://en.wikipedia.org/wiki/Denial-of-service_attack), keeping private
+data private, and much more.
 
 Freenet is flexible enough to build entirely decentralized alternatives to
 existing centralized services, such as messaging, social media, email, and
