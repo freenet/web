@@ -45,15 +45,7 @@ by default, ensuring seamless integration and interaction across the platform.
 Services are also scalable by default and secured through modern cryptographic
 techniques, keeping control in the hands of users, not tech oligarchs.
 
-#### Status (before the current date: <span id="current-date"></span>)
-
-<script>
-  document.addEventListener('DOMContentLoaded', (event) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    const today  = new Date();
-    document.getElementById('current-date').innerText = today.toLocaleDateString('en-GB', options);
-  });
-</script>
+#### Status (before the current date: {{< current-date >}})
 
 Freenet is nearing an initial network launch as we track down some final bugs.
 
