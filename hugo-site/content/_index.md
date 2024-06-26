@@ -45,11 +45,11 @@ by default, ensuring seamless integration and interaction across the platform.
 Services are also scalable by default and secured through modern cryptographic
 techniques, keeping control in the hands of users, not tech oligarchs.
 
-#### Status (June 2024)
+#### Status (25th June 2024)
 
-Freenet is nearing an initial network launch. At this stage it will primarily be
-of interest to developers interested in building decentralized systems on
-Freenet.
+Freenet is nearing an initial network launch as we track down some final bugs. 
+At this stage it will primarily be of interest to developers interested in
+building decentralized systems on Freenet.
 
 #### Useful Links
 
