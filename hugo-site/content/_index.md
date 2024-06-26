@@ -35,12 +35,15 @@ Introducing Freenet—a decentralized replacement for the World Wide Web. Acting
 as a global, shared computing platform, Freenet can be accessed via a standard
 web browser or seamlessly integrated into third-party applications like games.
 
+Freenet brings the potential for new solutions to old problems like spam, [DDoS](https://en.wikipedia.org/wiki/Denial-of-service_attack),
+keeping private data private, and much more.
+
 Freenet is flexible enough to build entirely decentralized alternatives to
 existing centralized services, such as messaging, social media, email, and
 e-commerce. Every component of every service built on Freenet is interoperable
 by default, ensuring seamless integration and interaction across the platform.
-Additionally, all services are scalable by default and secured through modern
-cryptographic techniques.
+Services are also scalable by default and secured through modern cryptographic
+techniques, keeping control in the hands of users, not tech oligarchs.
 
 #### Status (June 2024)
 
