@@ -1,7 +1,7 @@
 use rocket::serde::{Deserialize, Serialize};
-use async_stripe::{
+use stripe::{
     Client, CreatePaymentIntent, Currency, PaymentIntent,
-    PaymentIntentStatus,
+    PaymentIntentStatus, CreateCustomer, Customer,
 };
 use std::str::FromStr;
 
@@ -9,31 +9,56 @@ use std::str::FromStr;
 pub struct DonationRequest {
     amount: u64,
     currency: String,
+    name: Option<String>,
+    email: Option<String>,
 }
 
 #[derive(Serialize)]
 pub struct DonationResponse {
     client_secret: String,
+    customer_id: String,
 }
 
-pub async fn create_payment_intent(donation: DonationRequest) -> Result<DonationResponse, async_stripe::Error> {
+pub async fn create_payment_intent(donation: DonationRequest) -> Result<DonationResponse, stripe::Error> {
     let secret_key = std::env::var("STRIPE_SECRET_KEY").expect("Missing STRIPE_SECRET_KEY in env");
     let client = Client::new(secret_key);
 
+    // Create a customer
+    let customer = Customer::create(
+        &client,
+        CreateCustomer {
+            name: donation.name,
+            email: donation.email,
+            description: Some("Freenet Donor".to_string()),
+            metadata: Some(std::collections::HashMap::from([
+                (String::from("donation_source"), String::from("freenet_website")),
+            ])),
+            ..Default::default()
+        },
+    )
+    .await?;
+
     let currency = Currency::from_str(&donation.currency)
-        .map_err(|_| async_stripe::Error::Unexpected("Invalid currency".to_string()))?;
+        .map_err(|_| stripe::Error::InvalidRequestError { message: "Invalid currency".to_string() })?;
 
     let mut create_intent = CreatePaymentIntent::new(donation.amount, currency);
     create_intent.statement_descriptor = Some("Freenet Donation");
+    create_intent.customer = Some(customer.id.clone());
+    create_intent.metadata = Some(std::collections::HashMap::from([
+        (String::from("donation_type"), String::from("one_time")),
+    ]));
 
     let pi = PaymentIntent::create(&client, create_intent).await?;
 
     match pi.status {
-        PaymentIntentStatus::Succeeded | PaymentIntentStatus::RequiresPaymentMethod => {
+        PaymentIntentStatus::RequiresPaymentMethod => {
             Ok(DonationResponse {
                 client_secret: pi.client_secret.unwrap(),
+                customer_id: customer.id,
             })
         }
-        _ => Err(async_stripe::Error::Unexpected(format!("Unexpected payment intent status: {:?}", pi.status)))
+        _ => Err(stripe::Error::InvalidRequestError { 
+            message: format!("Unexpected payment intent status: {:?}", pi.status) 
+        })
     }
 }
