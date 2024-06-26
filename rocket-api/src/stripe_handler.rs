@@ -1,8 +1,9 @@
 use rocket::serde::{Deserialize, Serialize};
 use stripe::{
     Client, CreatePaymentIntent, Currency, PaymentIntent,
-    PaymentIntentStatus, CreateCustomer, Customer, Error as StripeError,
+    PaymentIntentStatus, CreateCustomer, Customer,
 };
+use stripe::error::Error as StripeError;
 use std::str::FromStr;
 
 #[derive(Deserialize)]
