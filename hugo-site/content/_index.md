@@ -1,5 +1,5 @@
 ---
-title: "Home"
+title: "Declare Your Digital Independence"
 date: 2024-06-11T00:00:00Z
 draft: false
 layout: "single"
@@ -21,8 +21,6 @@ links:
     icon: "fab fa-github"
     color: "is-medium-orange"
 ---
-
-### Declare Your Digital Independence
 
 The centralization of the internet poses a fundamental threat to individual
 freedom. In 2024, a few corporations control most online services and
