@@ -18,6 +18,17 @@ fn get_message() -> Json<Message> {
     })
 }
 
+use rocket::serde::json::Json;
+use crate::stripe_handler::{DonationRequest, DonationResponse, create_payment_intent};
+
 pub fn routes() -> Vec<rocket::Route> {
-    routes![index, get_message]
+    routes![index, get_message, create_donation]
+}
+
+#[post("/create-donation", data = "<donation>")]
+pub async fn create_donation(donation: Json<DonationRequest>) -> Result<Json<DonationResponse>, String> {
+    match create_payment_intent(donation.into_inner()).await {
+        Ok(response) => Ok(Json(response)),
+        Err(e) => Err(format!("Error creating payment intent: {}", e)),
+    }
 }
