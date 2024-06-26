@@ -45,7 +45,7 @@ by default, ensuring seamless integration and interaction across the platform.
 Services are also scalable by default and secured through modern cryptographic
 techniques, keeping control in the hands of users, not tech oligarchs.
 
-#### Status ({{< yesterday-date >}})
+#### Status ({{<yesterday-date>}})
 
 Freenet is nearing an initial network launch as we track down some final bugs.
 
