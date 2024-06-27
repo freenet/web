@@ -3,6 +3,19 @@ languageCode = 'en-us'
 title = 'Freenet'
 theme = "freenet"
 
+# Enable RSS feed generation
+[outputs]
+  home = ["HTML", "RSS"]
+  section = ["HTML", "RSS"]
+
+# Configure RSS feed
+[outputFormats.RSS]
+  mediatype = "application/rss+xml"
+  baseName = "feed"
+
+[services.rss]
+  limit = 20 # Number of items in the feed
+
 [menu]
 
   [[menu.main]]
