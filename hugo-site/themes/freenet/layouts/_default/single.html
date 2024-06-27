@@ -1,8 +1,11 @@
 {{ define "main" }}
   <h1>{{ .Title }}</h1>
 
-  {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
-  {{ $dateHuman := .Date | time.Format ":date_long" }}
+  {{ if eq .Section "news" }}
+    {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
+    {{ $dateHuman := .Date | time.Format ":date_long" }}
+    <p class="date">{{ $dateHuman }}</p>
+  {{ end }}
 
   {{ .Content }}
 {{ end }}
