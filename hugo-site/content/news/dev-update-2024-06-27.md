@@ -1,7 +1,7 @@
 +++
 title = "Development Update"
 date = 2024-06-27
-tags = ["front-page"]
+tags = ["front-page", "dev-meeting"]
 +++
 
 For the past two weeks we've been [working](https://github.com/freenet/freenet-core/pull/1131) on 
