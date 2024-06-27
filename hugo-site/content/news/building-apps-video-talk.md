@@ -4,8 +4,6 @@ date = 2023-09-07
 tags = ["video-talk", "front-page"]
 +++
 
-#### September 7, 2023
-
 Freenet architect Ian Clarke explains how to build apps on Freenet, including the basic components
 of Freenet's architecture like contracts, delegates, and user interfaces.
 
