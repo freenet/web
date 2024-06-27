@@ -1,6 +1,6 @@
 ---
 title: "Declare Your Digital Independence"
-date: 2024-06-27T00:00:00Z
+date: 2024-06-11T00:00:00Z
 draft: false
 layout: "single"
 links:
@@ -43,7 +43,7 @@ by default, ensuring seamless integration and interaction across the platform.
 Services are also scalable by default and secured through modern cryptographic
 techniques, putting control back in the hands of users, not tech oligarchs.
 
-#### Status {{<current-date>}}
+#### Status {{<yesterday-date>}}
 
 Freenet is nearing an initial network launch as we track down some final bugs.
 
@@ -53,10 +53,6 @@ Freenet is nearing an initial network launch as we track down some final bugs.
 
 ### News
 
-- **June 27, 2024** - [Development Update](https://freenet.org/news/dev-update-2024-06-27/)
-- **June 10, 2024** - [How Freenet Works](https://freenet.org/news/how-freenet-works-video-talk/)
-- **June 10, 2024** - [Weekly Dev Meeting - Gateway deployment, freenet-chat](https://freenet.org/news/1127-weekly-dev-meeting-gateway-deployment-freenet-chat/)
-- **October 29, 2023** - [Zero-Knowledge Proofs and Anonymous Reputation in Freenet](https://freenet.org/news/882-zero-knowledge-proofs-and-anonymous-reputation-in-freenet/)
-- **September 7, 2023** - [How to Build Apps on Freenet](https://freenet.org/news/building-apps-video-talk/)
+{{< latest-news tag="front-page" >}}
 
 [More news...](news)
