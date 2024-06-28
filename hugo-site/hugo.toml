@@ -68,9 +68,4 @@ theme = "freenet"
     url = "/donate/"
     weight = 10
 
-  [[menu.main]]
-    name = "History"
-    url = "/resources/history/"
-    weight = 11
-    parent = "Resources"
 
