@@ -19,6 +19,10 @@ theme = "freenet"
 [menu]
 
   [[menu.main]]
+    name = "Why Freenet"
+    url = "/resources/why-freenet/"
+    weight = 11
+    parent = "Resources"
     name = "Home"
     url = "/"
     weight = 1
