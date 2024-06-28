@@ -2,3 +2,7 @@
 public
 /resources
 !/*/resources
+.env
+*.sqlite
+.vscode/
+node_modules/
