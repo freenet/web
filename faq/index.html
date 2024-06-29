@@ -72,15 +72,16 @@ Freenet ecosystem. Contracts control public data, or &ldquo;shared state.&rdquo;
 act as the user&rsquo;s agent and can store private data on the user&rsquo;s behalf, while
 UIs provide an interface between these and the user through a web browser. See
 the <a href=https://docs.freenet.org/components/overview.html>user manual</a> for more
-detail.</p><p>Your FAQ draft is clear and informative, but it could benefit from a bit of
-restructuring and additional details for better flow and comprehension. Here&rsquo;s a
-revised version:</p><hr><h1 id=how-does-freenet-compare-to-other-decentralized-systems>How does Freenet compare to other decentralized systems?</h1><p>Freenet stands out as an all-in-one operating system for decentralized apps.
-Once installed, it provides seamless access to a wide range of applications
-directly within your browser, eliminating the need for additional installations
-or configurations. In contrast, most other systems function more like toolkits
-for building decentralized apps, where developers integrate peer-to-peer
-functionality into existing applications. This often requires extra components
-and setup for end-users.</p><p><strong>Unique Architectural Approach</strong></p><p>Freenet operates as a global key-value store where keys correspond to
+detail.</p><h1 id=how-does-freenet-compare-to-other-decentralized-systems>How does Freenet compare to other decentralized systems?</h1><p><strong>1. Freenet as an End-to-End Solution</strong></p><p>Freenet functions as an end-to-end operating system for decentralized apps.
+Similar to how you install a web browser once and gain access to applications
+like Gmail, Facebook, and Reddit without installing additional software, Freenet
+provides seamless access to a wide range of decentralized applications directly
+within your browser.</p><p>With Freenet, you can:</p><ul><li>Discover apps through a decentralized search engine.</li><li>Obtain apps through Freenet.</li><li>Use apps entirely on Freenet.</li></ul><p>Additionally, you don&rsquo;t have to use Freenet through a browser. The &ldquo;Freenet
+core&rdquo; is small (&lt;10MB) and can be easily embedded in other software, which
+can then communicate with the Freenet core over an HTTP/WebSocket API.</p><p>In contrast, most other systems function more like toolkits for building
+decentralized apps—akin to providing a crankshaft rather than a complete car.
+Developers use them to integrate peer-to-peer functionality into existing
+applications, often requiring extra components and setup for end-users.</p><p><strong>2. Unique Architectural Approach</strong></p><p>Freenet operates as a global key-value store where keys correspond to
 WebAssembly (Wasm) code, referred to as &ldquo;contracts.&rdquo; These contracts define the
 properties and behavior of the associated values (or &ldquo;state&rdquo;). Specifically,
 they govern:</p><ol><li><strong>Validity:</strong> Is the value valid for this key? For instance, the contract
@@ -88,15 +89,14 @@ might verify that the data is signed by a specific public key.</li><li><strong>M
 contract might stipulate that any modification must be signed by a specific
 key.</li><li><strong>Efficient Synchronization:</strong> How to efficiently synchronize values between
 peers? Freenet ensures eventual consistency by treating values as commutative
-monoids, allowing updates in any order while still producing the same result.</li></ol><p>This architectural approach makes Freenet a powerful, general-purpose platform
-for building decentralized systems. It ensures consistency, security, and
-flexibility, enabling developers to create robust decentralized applications
+monoids, allowing updates in any order while still producing the same result.</li></ol><p>This unique architectural approach makes Freenet a powerful, general-purpose
+platform for building decentralized systems. It ensures consistency, security,
+and flexibility, enabling developers to create robust decentralized applications
 without dealing with the underlying complexities.</p><p>In contrast, other decentralized systems often act as toolkits for building
 decentralized apps. Developers integrate decentralized storage and functionality
 into their applications, which can necessitate additional components and setup
 for end-users. These systems provide the building blocks, but developers and
-users must manage the integration and operation of these components themselves.</p><hr><p>This version maintains the clarity of your original draft while improving
-readability and emphasizing Freenet&rsquo;s unique advantages.</p><h1 id=who-is-behind-freenet>Who is behind Freenet?</h1><p>Freenet was started by Ian Clarke in 1999 and grew out of his undergraduate
+users must manage the integration and operation of these components themselves.</p><h1 id=who-is-behind-freenet>Who is behind Freenet?</h1><p>Freenet was started by Ian Clarke in 1999 and grew out of his undergraduate
 <a href=https://cs.baylor.edu/~donahoo/classes/5321/papers/C99.pdf>paper</a> &ldquo;A
 Distributed Decentralized Information Storage and Retrieval System.&rdquo;</p><p>To further the goals of the project, Ian Clarke and Steven Starr co-founded The
 Freenet 501c3 non-profit in 2001.</p><p>In 2024, the Freenet non-profit board of directors consists of Ian Clarke,
