@@ -1,5 +1,7 @@
 #[macro_use] extern crate rocket;
 
+#[macro_use] extern crate rocket;
+
 mod routes;
 mod stripe_handler;
 
@@ -26,18 +28,9 @@ impl Fairing for CORS {
     }
 }
 
-#[rocket::main]
-async fn main() -> Result<(), rocket::Error> {
-    let _ = rocket::build()
-        .attach(CORS)
-        .mount("/", routes::routes())
-        .launch()
-        .await?;
-    Ok(())
-}
-mod stripe_handler;
-
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes::routes())
+    rocket::build()
+        .attach(CORS)
+        .mount("/", routes::routes())
 }
