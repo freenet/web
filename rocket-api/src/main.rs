@@ -1,7 +1,5 @@
 #[macro_use] extern crate rocket;
 
-#[macro_use] extern crate rocket;
-
 mod routes;
 mod stripe_handler;
 
