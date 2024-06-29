@@ -13,7 +13,7 @@ draft: false
   differ?](#how-do-the-previous-and-current-versions-of-freenet-differ)
 - [Will the new Freenet be backwards compatible with the old
   Freenet?](#will-the-new-freenet-be-backwards-compatible-with-the-old-freenet)
-- [Why was Freenet rearchitected and rebranded?](#faq-5)
+- [Why was Freenet rearchitected and rebranded?](#why-was-freenet-rearchitected-and-rebranded)
 - [How does Freenet compare to other decentralized
   systems?](#how-does-freenet-compare-to-other-decentralized-systems)
 - [Who is behind Freenet?](#who-is-behind-freenet)
@@ -104,7 +104,7 @@ The previous and current versions of Freenet have several key differences:
 No, the new Freenet is a fundamental redesign making backwards compatibility
 impractical.
 
-# Why was Freenet rearchitected and rebranded? {#faq-5}
+# Why was Freenet rearchitected and rebranded? {#why-was-freenet-rearchitected-and-rebranded}
 
 In 2019, Ian began developing a successor to the original Freenet, internally
 named "Locutus." This redesign was a ground-up reimagining, incorporating
