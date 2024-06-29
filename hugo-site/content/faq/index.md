@@ -144,23 +144,32 @@ UIs provide an interface between these and the user through a web browser. See
 the [user manual](https://docs.freenet.org/components/overview.html) for more
 detail.
 
-Your FAQ draft is clear and informative, but it could benefit from a bit of
-restructuring and additional details for better flow and comprehension. Here's a
-revised version:
-
----
-
 # How does Freenet compare to other decentralized systems? {#how-does-freenet-compare-to-other-decentralized-systems}
 
-Freenet stands out as an all-in-one operating system for decentralized apps.
-Once installed, it provides seamless access to a wide range of applications
-directly within your browser, eliminating the need for additional installations
-or configurations. In contrast, most other systems function more like toolkits
-for building decentralized apps, where developers integrate peer-to-peer
-functionality into existing applications. This often requires extra components
-and setup for end-users.
+**1. Freenet as an End-to-End Solution**
 
-**Unique Architectural Approach**
+Freenet functions as an end-to-end operating system for decentralized apps.
+Similar to how you install a web browser once and gain access to applications
+like Gmail, Facebook, and Reddit without installing additional software, Freenet
+provides seamless access to a wide range of decentralized applications directly
+within your browser.
+
+With Freenet, you can:
+
+- Discover apps through a decentralized search engine.
+- Obtain apps through Freenet.
+- Use apps entirely on Freenet.
+
+Additionally, you don't have to use Freenet through a browser. The "Freenet
+core" is small (<10MB) and can be easily embedded in other software, which 
+can then communicate with the Freenet core over an HTTP/WebSocket API.
+
+In contrast, most other systems function more like toolkits for building
+decentralized apps—akin to providing a crankshaft rather than a complete car.
+Developers use them to integrate peer-to-peer functionality into existing 
+applications, often requiring extra components and setup for end-users.
+
+**2. Unique Architectural Approach**
 
 Freenet operates as a global key-value store where keys correspond to
 WebAssembly (Wasm) code, referred to as "contracts." These contracts define the
@@ -176,9 +185,9 @@ they govern:
    peers? Freenet ensures eventual consistency by treating values as commutative
    monoids, allowing updates in any order while still producing the same result.
 
-This architectural approach makes Freenet a powerful, general-purpose platform
-for building decentralized systems. It ensures consistency, security, and
-flexibility, enabling developers to create robust decentralized applications
+This unique architectural approach makes Freenet a powerful, general-purpose 
+platform for building decentralized systems. It ensures consistency, security, 
+and flexibility, enabling developers to create robust decentralized applications
 without dealing with the underlying complexities.
 
 In contrast, other decentralized systems often act as toolkits for building
@@ -186,11 +195,6 @@ decentralized apps. Developers integrate decentralized storage and functionality
 into their applications, which can necessitate additional components and setup
 for end-users. These systems provide the building blocks, but developers and
 users must manage the integration and operation of these components themselves.
-
----
-
-This version maintains the clarity of your original draft while improving
-readability and emphasizing Freenet's unique advantages.
 
 # Who is behind Freenet? {#who-is-behind-freenet}
 
