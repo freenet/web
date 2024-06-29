@@ -14,13 +14,10 @@ draft: false
 - [Will the new Freenet be backwards compatible with the old
   Freenet?](#will-the-new-freenet-be-backwards-compatible-with-the-old-freenet)
 - [Why was Freenet rearchitected and rebranded?](#faq-5)
-- [What are the key components of Freenet's
-  architecture?](#what-are-the-key-components-of-freenets-architecture)
 - [How does Freenet compare to other decentralized
   systems?](#how-does-freenet-compare-to-other-decentralized-systems)
 - [Who is behind Freenet?](#who-is-behind-freenet)
 - [What is the status of Freenet?](#what-is-the-status-of-freenet)
-- [Can anyone use Freenet?](#can-anyone-use-freenet)
 - [Can I follow Freenet on social media?](#can-i-follow-freenet-on-social-media)
 - [How can I financially support Freenet
   development?](#how-can-i-financially-support-freenet-development)
@@ -134,15 +131,6 @@ agree with the decision to rearchitect and rebrand. However, as the architect of
 the Freenet Project, and after over a year of debate, Ian felt this was the
 necessary path forward to ensure the project's continued relevance and success
 in a world very different than when he designed the previous architecture.
-
-# What are the key components of Freenet's architecture? {#what-are-the-key-components-of-freenets-architecture}
-
-Delegates, contracts, and user interfaces (UIs) each serve distinct roles in the
-Freenet ecosystem. Contracts control public data, or "shared state." Delegates
-act as the user's agent and can store private data on the user's behalf, while
-UIs provide an interface between these and the user through a web browser. See
-the [user manual](https://docs.freenet.org/components/overview.html) for more
-detail.
 
 # How does Freenet compare to other decentralized systems? {#how-does-freenet-compare-to-other-decentralized-systems}
 
