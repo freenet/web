@@ -42,10 +42,10 @@ and scalability. Keys in this key-value store are
 [WebAssembly](https://en.wikipedia.org/wiki/WebAssembly) code which specify:
 
 - When is a value permitted under this key?
-    - eg. verify that the value is cryptographically signed with a particular
-      public key
+  - eg. verify that the value is cryptographically signed with a particular
+    public key
 - Under what circumstances may the value be modified
-    - eg. modifications must be signed
+  - eg. modifications must be signed
 - How can the value be efficiently synchronized between peers in the network
 
 These webassembly keys are also known as
@@ -161,12 +161,12 @@ With Freenet, you can:
 - Use apps entirely on Freenet.
 
 Additionally, you don't have to use Freenet through a browser. The "Freenet
-core" is small (<10MB) and can be easily embedded in other software, which 
+core" is small (<10MB) and can be easily embedded in other software, which
 can then communicate with the Freenet core over an HTTP/WebSocket API.
 
 In contrast, most other systems function more like toolkits for building
 decentralized apps—akin to providing a crankshaft rather than a complete car.
-Developers use them to integrate peer-to-peer functionality into existing 
+Developers use them to integrate peer-to-peer functionality into existing
 applications, often requiring extra components and setup for end-users.
 
 **2. Unique Architectural Approach**
@@ -185,8 +185,8 @@ they govern:
    peers? Freenet ensures eventual consistency by treating values as commutative
    monoids, allowing updates in any order while still producing the same result.
 
-This unique architectural approach makes Freenet a powerful, general-purpose 
-platform for building decentralized systems. It ensures consistency, security, 
+This unique architectural approach makes Freenet a powerful, general-purpose
+platform for building decentralized systems. It ensures consistency, security,
 and flexibility, enabling developers to create robust decentralized applications
 without dealing with the underlying complexities.
 
@@ -255,7 +255,7 @@ For large donations (over \$5,000) please contact us before sending. For smaller
 donations, please use the following wallets:
 
 | Cryptocurrency | Address                                      |
-|----------------|----------------------------------------------|
+| -------------- | -------------------------------------------- |
 | Bitcoin        | `3M3fbA7RDYdvYeaoR69cDCtVJqEodo9vth`         |
 | Zcash          | `t1VHw1PHgzvMqEEd31ZBt3Vyy2UrG4J8utB`        |
 | Ethereum       | `0x79158A5Dbd9C0737CB27411817BD2759f5b9a9Ae` |
