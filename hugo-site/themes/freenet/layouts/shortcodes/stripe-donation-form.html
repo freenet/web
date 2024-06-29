@@ -1,5 +1,13 @@
 <div id="stripe-donation-form">
   <form id="payment-form">
+    <input type="number" id="amount" placeholder="Amount" required>
+    <select id="currency" required>
+      <option value="usd">USD</option>
+      <option value="eur">EUR</option>
+      <option value="gbp">GBP</option>
+    </select>
+    <input type="text" id="name" placeholder="Name (optional)">
+    <input type="email" id="email" placeholder="Email (optional)">
     <div id="payment-element">
       <!-- Stripe Elements will be inserted here -->
     </div>
@@ -11,24 +19,48 @@
 <script src="https://js.stripe.com/v3/"></script>
 <script>
   const stripe = Stripe('pk_live_51PUf6RCCPv9UL23Gw8QzBFY3LxQMWmw2qp9k2MOyJQpaAPF5jpomsZ5K81JDvG8BW05PSqm2LjjGqfaepzHNWk8y007raWcjJX');
-  const elements = stripe.elements();
-  const paymentElement = elements.create('payment');
-  paymentElement.mount('#payment-element');
+  let elements;
 
   const form = document.getElementById('payment-form');
-  form.addEventListener('submit', async (event) => {
+  form.addEventListener('submit', handleSubmit);
+
+  async function handleSubmit(event) {
     event.preventDefault();
-    
-    const {error} = await stripe.confirmPayment({
+
+    const amount = document.getElementById('amount').value;
+    const currency = document.getElementById('currency').value;
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+
+    const response = await fetch('http://localhost:8000/create-donation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: parseInt(amount) * 100, currency, name, email })
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      const messageContainer = document.querySelector('#error-message');
+      messageContainer.textContent = errorMessage;
+      return;
+    }
+
+    const { client_secret } = await response.json();
+
+    elements = stripe.elements({ clientSecret: client_secret });
+    const paymentElement = elements.create('payment');
+    paymentElement.mount('#payment-element');
+
+    const result = await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: 'https://your-site.com/donation-success',
       },
     });
 
-    if (error) {
+    if (result.error) {
       const messageContainer = document.querySelector('#error-message');
-      messageContainer.textContent = error.message;
+      messageContainer.textContent = result.error.message;
     }
-  });
+  }
 </script>
