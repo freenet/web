@@ -217,18 +217,6 @@ As of June 2024, we are very close to getting the network up; see our
 can already [experiment](https://docs.freenet.org/tutorial.html) with building a
 decentralized app to test on your own computer.
 
-# Can anyone use Freenet? {#can-anyone-use-freenet}
-
-While Freenet is designed to be accessible to most users, approximately 10-20%
-of users might experience connectivity issues due to being behind symmetric NATs
-or restrictive firewalls. These network configurations, often implemented by
-ISPs, can prevent direct peer-to-peer connections, which are essential for
-Freenet's decentralized network. Users behind such configurations might also
-face difficulties with other applications requiring low-latency connections,
-such as multiplayer games and VoIP services. We recommend choosing ISPs that
-offer less restrictive NAT configurations to ensure a better overall internet
-experience and seamless use of Freenet.
-
 # Can I follow Freenet on social media? {#can-i-follow-freenet-on-social-media}
 
 Yes, you can follow [\@FreenetOrg](https://twitter.com/freenetorg) on Twitter/X
