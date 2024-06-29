@@ -6,3 +6,4 @@ public
 *.sqlite
 .vscode/
 node_modules/
+.idea/
