@@ -180,7 +180,7 @@ interoperable by default.
 # Who is behind Freenet? {#who-is-behind-freenet}
 
 Freenet was started by Ian Clarke in 1999 and grew out of his undergraduate
-[paper](https://cs.baylor.edu/~donahoo/classes/5321/papers/C99.pdf) "A
+[paper](/pdf/DDISRS.pdf) "A
 Distributed Decentralized Information Storage and Retrieval System."
 
 To further the goals of the project, Ian Clarke and Steven Starr co-founded The
