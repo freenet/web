@@ -2,10 +2,10 @@
 public
 /resources
 !/*/resources
-.env
 *.sqlite
 .vscode/
 node_modules/
 .idea/
-# Ignore .env file containing sensitive information
-.env
+
+# Ignore all .env files
+**/.env

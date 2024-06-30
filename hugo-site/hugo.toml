@@ -68,4 +68,6 @@ theme = "freenet"
     url = "/donate/"
     weight = 10
 
+[params]
+  stripePublishableKey = "your_stripe_publishable_key_here"
 
