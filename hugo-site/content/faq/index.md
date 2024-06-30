@@ -174,15 +174,8 @@ they govern:
    monoids, allowing updates in any order while still producing the same result.
 
 This unique architectural approach makes Freenet a powerful, general-purpose
-platform for building decentralized systems. It ensures consistency, security,
-and flexibility, enabling developers to create robust decentralized applications
-without dealing with the underlying complexities.
-
-In contrast, other decentralized systems often act as toolkits for building
-decentralized apps. Developers integrate decentralized storage and functionality
-into their applications, which can necessitate additional components and setup
-for end-users. These systems provide the building blocks, but developers and
-users must manage the integration and operation of these components themselves.
+platform for building decentralized systems that are scalable and 
+interoperable by default.
 
 # Who is behind Freenet? {#who-is-behind-freenet}
 
