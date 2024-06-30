@@ -45,7 +45,14 @@ techniques, putting control back in the hands of users, not tech oligarchs.
 
 #### Status {{<yesterday-date>}}
 
-Freenet is nearing an initial network launch as we track down some final bugs.
+For the past two weeks we've been [working](https://github.com/freenet/freenet-core/pull/1131) 
+on a refactor of part of the transport code to address a bug that would have 
+negatively impacted the user experience by preventing peers from connecting to 
+each other.
+
+Once the refactor is complete and the bug is fixed, we should be ready to 
+release the next version and start testing the network with a larger group of 
+users.
 
 #### Useful Links
 
