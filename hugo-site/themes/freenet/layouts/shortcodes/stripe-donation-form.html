@@ -18,7 +18,7 @@
 
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-  const stripe = Stripe('pk_live_51PUf6RCCPv9UL23Gw8QzBFY3LxQMWmw2qp9k2MOyJQpaAPF5jpomsZ5K81JDvG8BW05PSqm2LjjGqfaepzHNWk8y007raWcjJX');
+  const stripe = Stripe('{{ .Site.Params.stripePublishableKey }}');
   let elements;
 
   const form = document.getElementById('payment-form');
