@@ -55,15 +55,15 @@ Freenet was initially developed in 1999 at the University of Edinburgh by Ian Cl
 
 ## Decision Rationale
 
-The decision to rebrand Locutus as Freenet 2023 and spin off the original Freenet as Hyphanet was 
-made after over a year of debate. As the architect of Freenet and the president of the Freenet 
-non-profit, Ian Clarke made this decision to focus resources on the new architecture. This was 
-driven by the need for a fresh approach to address significant changes and challenges since the 
-original codebase was designed. The goal is to create software that can gain sufficient adoption 
+The decision to rebrand Locutus as Freenet 2023 and spin off the original Freenet as Hyphanet was
+made after over a year of debate. As the architect of Freenet and the president of the Freenet
+non-profit, Ian Clarke made this decision to focus resources on the new architecture. This was
+driven by the need for a fresh approach to address significant changes and challenges since the
+original codebase was designed. The goal is to create software that can gain sufficient adoption
 to tackle serious issues with centralization.
 
 ## Conclusion
 
-This timeline and summary clarify the evolution and current status of Freenet and its related 
-projects. The renaming and restructuring were strategic decisions aimed at addressing modern 
+This timeline and summary clarify the evolution and current status of Freenet and its related
+projects. The renaming and restructuring were strategic decisions aimed at addressing modern
 challenges and ensuring the project's long-term success.

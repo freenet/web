@@ -18,7 +18,7 @@ the future. Here's how it works, broken down step-by-step:
 
 1. **Key Generation**: When you decide to make a donation, your web browser will
    generate a unique pair of cryptographic keys for you. Think of these as a
-   lock (public key) and key (private key). 
+   lock (public key) and key (private key).
 
 2. **Blinding for Privacy**: To ensure your privacy and security, your public
    key (the lock) is "blinded." This means it's scrambled in a way that hides

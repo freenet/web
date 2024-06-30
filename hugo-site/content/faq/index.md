@@ -134,7 +134,7 @@ in a world very different than when he designed the previous architecture.
 
 # How does Freenet compare to other decentralized systems? {#how-does-freenet-compare-to-other-decentralized-systems}
 
-**1. Freenet as an End-to-End Solution**
+**1. Freenet is a Complete Solution**
 
 Freenet functions as an end-to-end operating system for decentralized apps.
 Similar to how you install a web browser once and gain access to applications
@@ -174,8 +174,16 @@ they govern:
    monoids, allowing updates in any order while still producing the same result.
 
 This unique architectural approach makes Freenet a powerful, general-purpose
-platform for building decentralized systems that are scalable and 
+platform for building decentralized systems that are scalable and
 interoperable by default.
+
+**3. Truly Decentralized, not Federated**
+
+Freenet is fully decentralized, unlike federated systems where multiple
+entities control different servers. Moving from a centralized system to a
+federated one is like going from a dictatorship to feudalism—an improvement,
+but users still have to trust the system operators. Freenet eliminates this
+need for trust by distributing control, ensuring the sovereignty of each user.
 
 # Who is behind Freenet? {#who-is-behind-freenet}
 
