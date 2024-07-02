@@ -1,17 +1,20 @@
 <div id="stripe-donation-form">
   <form id="payment-form">
-    <input type="number" id="amount" placeholder="Amount" required>
+    <div id="amount-options">
+      <label><input type="radio" name="amount" value="10" required> $10</label>
+      <label><input type="radio" name="amount" value="50"> $50</label>
+      <label><input type="radio" name="amount" value="100"> $100</label>
+      <label><input type="radio" name="amount" value="500"> $500</label>
+    </div>
     <select id="currency" required>
       <option value="usd">USD</option>
       <option value="eur">EUR</option>
       <option value="gbp">GBP</option>
     </select>
-    <input type="text" id="name" placeholder="Name (optional)">
-    <input type="email" id="email" placeholder="Email (optional)">
     <div id="payment-element">
       <!-- Stripe Elements will be inserted here -->
     </div>
-    <button id="submit">Donate</button>
+    <button id="submit" class="button is-primary">Donate</button>
     <div id="error-message"></div>
   </form>
 </div>
@@ -27,16 +30,14 @@
   async function handleSubmit(event) {
     event.preventDefault();
 
-    const amount = document.getElementById('amount').value;
+    const amount = document.querySelector('input[name="amount"]:checked').value;
     const currency = document.getElementById('currency').value;
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
 
     try {
       const response = await fetch('http://localhost:8000/create-donation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: parseInt(amount) * 100, currency, name, email })
+        body: JSON.stringify({ amount: parseInt(amount) * 100, currency })
       });
 
       if (!response.ok) {
