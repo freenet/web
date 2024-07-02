@@ -6,6 +6,13 @@ mod stripe_handler;
 
 use rocket::fairing::AdHoc;
 use rocket::shield::{Shield, XssFilter, Referrer};
+use rocket::http::Status;
+use rocket::Request;
+
+#[catch(404)]
+fn not_found(req: &Request) -> String {
+    format!("Sorry, '{}' is not a valid path.", req.uri())
+}
 
 #[launch]
 fn rocket() -> _ {
@@ -24,4 +31,5 @@ fn rocket() -> _ {
             res.set_raw_header("X-Content-Type-Options", "nosniff");
         })))
         .mount("/", routes::routes())
+        .register("/", catchers![not_found])
 }
