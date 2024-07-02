@@ -4,6 +4,7 @@ use rocket::fairing::{Fairing, Info, Kind};
 use serde::{Serialize, Deserialize};
 use rocket::serde::json::Json;
 use crate::stripe_handler::{DonationRequest, DonationResponse, create_payment_intent};
+use rocket::http::Status;
 
 pub struct CORS;
 
@@ -42,10 +43,10 @@ fn get_message() -> Json<Message> {
 }
 
 #[post("/create-donation", data = "<donation>")]
-pub async fn create_donation(donation: Json<DonationRequest>) -> Result<Json<DonationResponse>, String> {
+pub async fn create_donation(donation: Json<DonationRequest>) -> Result<Json<DonationResponse>, (Status, String)> {
     match create_payment_intent(donation.into_inner()).await {
         Ok(response) => Ok(Json(response)),
-        Err(e) => Err(format!("Error creating donation: {}", e)),
+        Err(e) => Err((Status::InternalServerError, format!("Error creating donation: {}", e))),
     }
 }
 
