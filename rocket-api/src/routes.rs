@@ -82,19 +82,16 @@ pub fn options_create_donation() -> Status {
     Status::Ok
 }
 
-#[get("/verify-payment/<payment_intent_id>")]
-pub async fn verify_payment(payment_intent_id: String) -> Result<Status, (Status, String)> {
-    match verify_payment_intent(payment_intent_id).await {
-        Ok(is_valid) => {
-            if is_valid {
-                Ok(Status::Ok)
-            } else {
-                Ok(Status::PaymentRequired)
-            }
-        },
+use rocket::serde::json::Json;
+use crate::stripe_handler::{SignCertificateRequest, SignCertificateResponse, sign_certificate};
+
+#[post("/sign-certificate", data = "<request>")]
+pub async fn sign_certificate(request: Json<SignCertificateRequest>) -> Result<Json<SignCertificateResponse>, (Status, String)> {
+    match sign_certificate(request.into_inner()).await {
+        Ok(response) => Ok(Json(response)),
         Err(e) => {
-            eprintln!("Error verifying payment: {}", e);
-            Err((Status::InternalServerError, format!("Error verifying payment: {}", e)))
+            eprintln!("Error signing certificate: {}", e);
+            Err((Status::InternalServerError, format!("Error signing certificate: {}", e)))
         },
     }
 }
