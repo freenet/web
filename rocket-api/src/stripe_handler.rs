@@ -5,13 +5,7 @@ use stripe::{
 };
 use stripe::StripeError;
 use std::str::FromStr;
-use stripe::PaymentIntentId;
-
-use rocket::serde::{Deserialize, Serialize};
-use stripe::{Client, PaymentIntent, PaymentIntentStatus};
-use std::str::FromStr;
-use elliptic_curve::{SecretKey, PublicKey};
-use p256::NistP256;
+use p256::{SecretKey, PublicKey, NistP256};
 
 #[derive(Deserialize)]
 pub struct SignCertificateRequest {
