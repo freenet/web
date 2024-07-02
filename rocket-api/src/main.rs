@@ -5,6 +5,7 @@ mod routes;
 mod stripe_handler;
 
 use rocket::fairing::AdHoc;
+use rocket::shield::Shield;
 
 #[launch]
 fn rocket() -> _ {
@@ -15,5 +16,6 @@ fn rocket() -> _ {
         .attach(AdHoc::on_response("Powered-By Header", |_, res| Box::pin(async move {
             res.set_raw_header("X-Powered-By", "Freenet Rocket API");
         })))
+        .attach(Shield::new())
         .mount("/", routes::routes())
 }
