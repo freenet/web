@@ -1,21 +1,23 @@
-<div id="stripe-donation-form">
+<div id="stripe-donation-form" style="max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
   <form id="payment-form">
-    <div id="amount-options">
-      <label><input type="radio" name="amount" value="10" required> $10</label>
-      <label><input type="radio" name="amount" value="50"> $50</label>
-      <label><input type="radio" name="amount" value="100"> $100</label>
+    <div id="amount-options" style="margin-bottom: 20px;">
+      <label style="margin-right: 10px;"><input type="radio" name="amount" value="10" required> $10</label>
+      <label style="margin-right: 10px;"><input type="radio" name="amount" value="50"> $50</label>
+      <label style="margin-right: 10px;"><input type="radio" name="amount" value="100"> $100</label>
       <label><input type="radio" name="amount" value="500"> $500</label>
     </div>
-    <select id="currency" required>
-      <option value="usd">USD</option>
-      <option value="eur">EUR</option>
-      <option value="gbp">GBP</option>
-    </select>
-    <div id="payment-element">
+    <div style="margin-bottom: 20px;">
+      <select id="currency" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+        <option value="usd">USD</option>
+        <option value="eur">EUR</option>
+        <option value="gbp">GBP</option>
+      </select>
+    </div>
+    <div id="payment-element" style="margin-bottom: 20px;">
       <!-- Stripe Elements will be inserted here -->
     </div>
-    <button id="submit" class="button is-primary">Donate</button>
-    <div id="error-message"></div>
+    <button id="submit" class="button is-primary" style="width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px;">Donate</button>
+    <div id="error-message" style="margin-top: 20px; color: red;"></div>
   </form>
 </div>
 
@@ -34,7 +36,7 @@
     const currency = document.getElementById('currency').value;
 
     try {
-      const response = await fetch('http://localhost:8000/create-donation', {
+      const response = await fetch('/create-donation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: parseInt(amount) * 100, currency })
