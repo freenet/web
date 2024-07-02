@@ -30,14 +30,18 @@
 
   async function initializeStripe() {
     try {
+      const initialAmount = document.querySelector('input[name="amount"]:checked').value || '10';
+      const initialCurrency = document.getElementById('currency').value || 'usd';
+
       const response = await fetch('/create-donation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: 1000, currency: 'usd' })
+        body: JSON.stringify({ amount: parseInt(initialAmount) * 100, currency: initialCurrency })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to initialize Stripe');
+        const errorText = await response.text();
+        throw new Error(`Failed to initialize Stripe: ${errorText}`);
       }
 
       const { client_secret } = await response.json();
@@ -46,6 +50,7 @@
       const paymentElement = elements.create('payment');
       paymentElement.mount('#payment-element');
     } catch (error) {
+      console.error('Stripe initialization error:', error);
       const messageContainer = document.querySelector('#error-message');
       messageContainer.textContent = error.message;
     }
