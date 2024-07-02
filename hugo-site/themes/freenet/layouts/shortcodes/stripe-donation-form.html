@@ -46,9 +46,11 @@
 
       const { client_secret, customer_id } = await response.json();
 
-      elements = stripe.elements({ clientSecret: client_secret });
-      const paymentElement = elements.create('payment');
-      paymentElement.mount('#payment-element');
+      if (!elements) {
+        elements = stripe.elements({ clientSecret: client_secret });
+        const paymentElement = elements.create('payment');
+        paymentElement.mount('#payment-element');
+      }
 
       const result = await stripe.confirmPayment({
         elements,
@@ -59,6 +61,9 @@
 
       if (result.error) {
         throw new Error(result.error.message);
+      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+        // Payment successful, you can redirect or show a success message
+        window.location.href = '/donation-success';
       }
     } catch (error) {
       const messageContainer = document.querySelector('#error-message');
