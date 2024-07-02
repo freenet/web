@@ -73,6 +73,11 @@ pub async fn create_donation(donation: Json<DonationRequest>) -> Result<Json<Don
     }
 }
 
+#[options("/create-donation")]
+pub fn options_create_donation() -> Status {
+    Status::Ok
+}
+
 pub fn routes() -> Vec<rocket::Route> {
-    routes![index, get_message, create_donation]
+    routes![index, get_message, create_donation, options_create_donation]
 }
