@@ -43,7 +43,7 @@ pub async fn create_payment_intent(donation: DonationRequest) -> Result<Donation
         .map_err(|_| StripeError::ClientError("Invalid currency".to_string()))?;
 
     let mut create_intent = CreatePaymentIntent::new(donation.amount as i64, currency);
-    create_intent.statement_descriptor = Some("Freenet Donation");
+    create_intent.statement_descriptor_suffix = Some("Freenet");
     create_intent.customer = Some(customer.id.clone());
     create_intent.metadata = Some(std::collections::HashMap::from([
         (String::from("donation_type"), String::from("one_time")),
