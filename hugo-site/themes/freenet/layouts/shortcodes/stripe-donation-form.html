@@ -32,35 +32,37 @@
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
 
-    const response = await fetch('http://localhost:8000/create-donation', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: parseInt(amount) * 100, currency, name, email })
-    });
+    try {
+      const response = await fetch('http://localhost:8000/create-donation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: parseInt(amount) * 100, currency, name, email })
+      });
 
-    if (!response.ok) {
-      const errorMessage = await response.text();
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(errorMessage);
+      }
+
+      const { client_secret, customer_id } = await response.json();
+
+      elements = stripe.elements({ clientSecret: client_secret });
+      const paymentElement = elements.create('payment');
+      paymentElement.mount('#payment-element');
+
+      const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/donation-success`,
+        },
+      });
+
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+    } catch (error) {
       const messageContainer = document.querySelector('#error-message');
-      messageContainer.textContent = errorMessage;
-      return;
-    }
-
-    const { client_secret } = await response.json();
-
-    elements = stripe.elements({ clientSecret: client_secret });
-    const paymentElement = elements.create('payment');
-    paymentElement.mount('#payment-element');
-
-    const result = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: 'https://your-site.com/donation-success',
-      },
-    });
-
-    if (result.error) {
-      const messageContainer = document.querySelector('#error-message');
-      messageContainer.textContent = result.error.message;
+      messageContainer.textContent = error.message;
     }
   }
 </script>
