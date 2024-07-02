@@ -5,6 +5,7 @@ use serde::{Serialize, Deserialize};
 use rocket::serde::json::Json;
 use crate::stripe_handler::{DonationRequest, DonationResponse, create_payment_intent};
 use rocket::http::Status;
+use std::time::Instant;
 
 pub struct CORS;
 
@@ -22,6 +23,28 @@ impl Fairing for CORS {
         response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS"));
         response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+    }
+}
+
+pub struct RequestTimer;
+
+#[rocket::async_trait]
+impl Fairing for RequestTimer {
+    fn info(&self) -> Info {
+        Info {
+            name: "Request Timer",
+            kind: Kind::Request | Kind::Response
+        }
+    }
+
+    async fn on_request(&self, request: &mut Request<'_>, _: &mut Data<'_>) {
+        request.local_cache(|| Instant::now());
+    }
+
+    async fn on_response<'r>(&self, request: &'r Request<'_>, _: &mut Response<'r>) {
+        let start_time = request.local_cache(|| Instant::now());
+        let duration = start_time.elapsed();
+        println!("Request to {} took {}ms", request.uri(), duration.as_millis());
     }
 }
 
