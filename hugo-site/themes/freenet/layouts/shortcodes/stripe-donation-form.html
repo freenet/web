@@ -34,7 +34,7 @@
       const initialAmount = checkedAmountInput ? checkedAmountInput.value : '10';
       const initialCurrency = document.getElementById('currency').value || 'usd';
 
-      const response = await fetch('/create-donation', {
+      const response = await fetch('http://127.0.0.1:8000/create-donation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: parseInt(initialAmount) * 100, currency: initialCurrency })
@@ -70,7 +70,7 @@
     const currency = document.getElementById('currency').value;
 
     try {
-      const response = await fetch('/create-donation', {
+      const response = await fetch('http://127.0.0.1:8000/create-donation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: parseInt(amount) * 100, currency })
