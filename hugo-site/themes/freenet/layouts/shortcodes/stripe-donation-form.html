@@ -1,7 +1,7 @@
 <div id="stripe-donation-form" style="max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
   <form id="payment-form">
     <div id="amount-options" style="margin-bottom: 20px;">
-      <label style="margin-right: 10px;"><input type="radio" name="amount" value="10" required> $10</label>
+      <label style="margin-right: 10px;"><input type="radio" name="amount" value="10" required checked> $10</label>
       <label style="margin-right: 10px;"><input type="radio" name="amount" value="50"> $50</label>
       <label style="margin-right: 10px;"><input type="radio" name="amount" value="100"> $100</label>
       <label><input type="radio" name="amount" value="500"> $500</label>
@@ -30,7 +30,8 @@
 
   async function initializeStripe() {
     try {
-      const initialAmount = document.querySelector('input[name="amount"]:checked').value || '10';
+      const checkedAmountInput = document.querySelector('input[name="amount"]:checked');
+      const initialAmount = checkedAmountInput ? checkedAmountInput.value : '10';
       const initialCurrency = document.getElementById('currency').value || 'usd';
 
       const response = await fetch('/create-donation', {
