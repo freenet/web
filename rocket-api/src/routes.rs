@@ -37,7 +37,7 @@ fn index() -> &'static str {
 #[get("/message")]
 fn get_message() -> Json<Message> {
     Json(Message {
-        content: String::from("This is a message from the Rocket API!"),
+        content: String::from("Welcome to the Freenet API! This message confirms that the API is functioning correctly."),
     })
 }
 
