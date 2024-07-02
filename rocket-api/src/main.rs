@@ -31,6 +31,5 @@ fn rocket() -> _ {
             res.set_raw_header("X-Content-Type-Options", "nosniff");
         })))
         .mount("/", routes::routes())
-        .mount("/", routes![routes::create_donation])
         .register("/", catchers![not_found])
 }
