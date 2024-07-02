@@ -6,7 +6,6 @@ mod stripe_handler;
 
 use rocket::fairing::AdHoc;
 use rocket::shield::{Shield, XssFilter, Referrer};
-use rocket::http::Status;
 use rocket::Request;
 
 #[catch(404)]

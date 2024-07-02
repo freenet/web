@@ -5,12 +5,13 @@ use stripe::{
 };
 use stripe::StripeError;
 use std::str::FromStr;
+use stripe::PaymentIntentId;
 
 pub async fn verify_payment_intent(payment_intent_id: String) -> Result<bool, Box<dyn std::error::Error>> {
     let secret_key = std::env::var("STRIPE_SECRET_KEY").expect("Missing STRIPE_SECRET_KEY in env");
     let client = Client::new(secret_key);
 
-    let pi = PaymentIntent::retrieve(&client, &payment_intent_id, &[]).await?;
+    let pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&payment_intent_id)?, &[]).await?;
 
     Ok(pi.status == PaymentIntentStatus::Succeeded)
 }
