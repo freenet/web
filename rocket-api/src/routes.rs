@@ -6,6 +6,7 @@ use rocket::serde::json::Json;
 use crate::stripe_handler::{DonationRequest, DonationResponse, create_payment_intent};
 use rocket::http::Status;
 use std::time::Instant;
+use crate::stripe_handler::verify_payment_intent;
 
 pub struct CORS;
 
@@ -81,6 +82,23 @@ pub fn options_create_donation() -> Status {
     Status::Ok
 }
 
+#[get("/verify-payment/<payment_intent_id>")]
+pub async fn verify_payment(payment_intent_id: String) -> Result<Status, (Status, String)> {
+    match verify_payment_intent(payment_intent_id).await {
+        Ok(is_valid) => {
+            if is_valid {
+                Ok(Status::Ok)
+            } else {
+                Ok(Status::PaymentRequired)
+            }
+        },
+        Err(e) => {
+            eprintln!("Error verifying payment: {}", e);
+            Err((Status::InternalServerError, format!("Error verifying payment: {}", e)))
+        },
+    }
+}
+
 pub fn routes() -> Vec<rocket::Route> {
-    routes![index, get_message, create_donation, options_create_donation]
+    routes![index, get_message, create_donation, options_create_donation, verify_payment]
 }
