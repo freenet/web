@@ -5,7 +5,7 @@ mod routes;
 mod stripe_handler;
 
 use rocket::fairing::AdHoc;
-use rocket::shield::Shield;
+use rocket::shield::{Shield, XssFilter, Referrer};
 
 #[launch]
 fn rocket() -> _ {
@@ -16,6 +16,9 @@ fn rocket() -> _ {
         .attach(AdHoc::on_response("Powered-By Header", |_, res| Box::pin(async move {
             res.set_raw_header("X-Powered-By", "Freenet Rocket API");
         })))
-        .attach(Shield::new())
+        .attach(Shield::new()
+            .enable(XssFilter::EnableBlock)
+            .enable(Referrer::NoReferrer)
+            .enable(Referrer::StrictOriginWhenCrossOrigin))
         .mount("/", routes::routes())
 }
