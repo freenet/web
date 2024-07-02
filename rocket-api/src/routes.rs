@@ -69,7 +69,10 @@ fn get_message() -> Json<Message> {
 pub async fn create_donation(donation: Json<DonationRequest>) -> Result<Json<DonationResponse>, (Status, String)> {
     match create_payment_intent(donation.into_inner()).await {
         Ok(response) => Ok(Json(response)),
-        Err(e) => Err((Status::InternalServerError, format!("Error creating donation: {}", e))),
+        Err(e) => {
+            eprintln!("Error creating donation: {}", e);
+            Err((Status::InternalServerError, format!("Error creating donation: {}", e)))
+        },
     }
 }
 

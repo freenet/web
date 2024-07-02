@@ -41,6 +41,9 @@
       });
 
       if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('API endpoint not found. Please check your server configuration.');
+        }
         const errorText = await response.text();
         throw new Error(`Failed to initialize Stripe: ${errorText}`);
       }
@@ -53,7 +56,7 @@
     } catch (error) {
       console.error('Stripe initialization error:', error);
       const messageContainer = document.querySelector('#error-message');
-      messageContainer.textContent = error.message;
+      messageContainer.textContent = `Error: ${error.message}. Please try again later or contact support.`;
     }
   }
 
