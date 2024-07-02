@@ -2,10 +2,6 @@
 public
 /resources
 !/*/resources
-*.sqlite
-.vscode/
-node_modules/
-.idea/
-
-# Ignore all .env files
-**/.env
+target
+.env
+.idea
