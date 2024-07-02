@@ -5,7 +5,7 @@ mod routes;
 mod stripe_handler;
 
 use rocket::fairing::AdHoc;
-use rocket::shield::{Shield, XssFilter, Referrer};
+use rocket::shield::{Shield, XssFilter, Referrer, ContentTypeOptions};
 
 #[launch]
 fn rocket() -> _ {
@@ -19,6 +19,7 @@ fn rocket() -> _ {
         .attach(Shield::new()
             .enable(XssFilter::EnableBlock)
             .enable(Referrer::NoReferrer)
-            .enable(Referrer::StrictOriginWhenCrossOrigin))
+            .enable(Referrer::StrictOriginWhenCrossOrigin)
+            .enable(ContentTypeOptions::NoSniff))
         .mount("/", routes::routes())
 }
