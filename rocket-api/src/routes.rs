@@ -3,7 +3,7 @@ use rocket::{Request, Response, Data};
 use rocket::fairing::{Fairing, Info, Kind};
 use serde::{Serialize, Deserialize};
 use rocket::serde::json::Json;
-use crate::stripe_handler::{DonationRequest, DonationResponse, create_payment_intent, SignCertificateRequest, SignCertificateResponse, sign_certificate};
+use crate::stripe_handler::{SignCertificateRequest, SignCertificateResponse, sign_certificate};
 use rocket::http::Status;
 use std::time::Instant;
 
@@ -65,21 +65,6 @@ fn get_message() -> Json<Message> {
     })
 }
 
-#[post("/create-donation", data = "<donation>")]
-pub async fn create_donation(donation: Json<DonationRequest>) -> Result<Json<DonationResponse>, (Status, String)> {
-    match create_payment_intent(donation.into_inner()).await {
-        Ok(response) => Ok(Json(response)),
-        Err(e) => {
-            eprintln!("Error creating donation: {}", e);
-            Err((Status::InternalServerError, format!("Error creating donation: {}", e)))
-        },
-    }
-}
-
-#[options("/create-donation")]
-pub fn options_create_donation() -> Status {
-    Status::Ok
-}
 
 #[post("/sign-certificate", data = "<request>")]
 pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Result<Json<SignCertificateResponse>, (Status, String)> {
@@ -98,5 +83,5 @@ pub fn options_sign_certificate() -> Status {
 }
 
 pub fn routes() -> Vec<rocket::Route> {
-    routes![index, get_message, create_donation, options_create_donation, sign_certificate_route]
+    routes![index, get_message, sign_certificate_route, options_sign_certificate]
 }
