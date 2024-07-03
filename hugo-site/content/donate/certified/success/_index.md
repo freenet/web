@@ -15,71 +15,85 @@ Your donation to Freenet has been successfully processed. We greatly appreciate 
 
 <div id="certificateSection" style="display: none;">
   <h3>Your Donation Certificate</h3>
-  <p>Public Key: <span id="publicKey"></span></p>
-  <p>Signature: <span id="signature"></span></p>
+  <p>Signed Public Key (base64):</p>
+  <textarea id="signedPublicKey" rows="4" cols="50" readonly></textarea>
+  <p>Private Key (base64):</p>
+  <textarea id="privateKey" rows="4" cols="50" readonly></textarea>
   <button id="downloadCertificate">Download Certificate</button>
 </div>
 
 <div id="errorMessage" style="display: none; color: red;"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/elliptic@6.5.4/dist/elliptic.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const urlParams = new URLSearchParams(window.location.search);
   const paymentIntent = urlParams.get('payment_intent');
-  const clientSecret = urlParams.get('payment_intent_client_secret');
 
-  if (paymentIntent && clientSecret) {
-    verifyPaymentAndGenerateCertificate(paymentIntent);
+  if (paymentIntent) {
+    generateAndSignCertificate(paymentIntent);
   } else {
     showError('Payment information not found.');
   }
 });
 
-async function verifyPaymentAndGenerateCertificate(paymentIntentId) {
+async function generateAndSignCertificate(paymentIntentId) {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/verify-payment/${paymentIntentId}`);
-    if (response.ok) {
-      generateCertificate(paymentIntentId);
-    } else {
-      showError('Payment verification failed. Please contact support.');
+    // Generate EC key pair
+    const ec = new elliptic.ec('secp256k1');
+    const keyPair = ec.genKeyPair();
+    const publicKey = keyPair.getPublic('hex');
+    const privateKey = keyPair.getPrivate('hex');
+
+    // Blind the public key
+    const blindingFactor = ec.genKeyPair().getPrivate('hex');
+    const blindedPublicKey = ec.g.mul(blindingFactor).encode('hex');
+
+    // Send blinded public key to server for signing
+    const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paymentIntentId, blindedPublicKey })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to sign certificate');
     }
+
+    const { blindSignature } = await response.json();
+
+    // Unblind the signature
+    const unblindedSignature = ec.g.mul(ec.keyFromPrivate(blindSignature, 'hex').getPrivate())
+      .add(ec.g.mul(blindingFactor).neg())
+      .encode('hex');
+
+    // Display the certificate
+    document.getElementById('signedPublicKey').value = btoa(publicKey + '|' + unblindedSignature);
+    document.getElementById('privateKey').value = btoa(privateKey);
+    document.getElementById('certificateSection').style.display = 'block';
+    document.getElementById('certificate-info').style.display = 'none';
+
+    // Set up download button
+    document.getElementById('downloadCertificate').addEventListener('click', function() {
+      const certificateData = {
+        publicKey: publicKey,
+        signature: unblindedSignature,
+        privateKey: privateKey
+      };
+      const blob = new Blob([JSON.stringify(certificateData, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'freenet_donation_certificate.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
   } catch (error) {
-    showError('Error verifying payment: ' + error.message);
+    showError('Error generating certificate: ' + error.message);
   }
-}
-
-function generateCertificate(paymentIntentId) {
-  const crypt = new JSEncrypt({default_key_size: 2048});
-  const privateKey = crypt.getPrivateKey();
-  const publicKey = crypt.getPublicKey();
-
-  // In a real-world scenario, you would send the public key to the server for signing
-  // For this example, we'll just use a placeholder signature
-  const signature = 'PLACEHOLDER_SIGNATURE';
-
-  document.getElementById('publicKey').textContent = publicKey;
-  document.getElementById('signature').textContent = signature;
-  document.getElementById('certificateSection').style.display = 'block';
-  document.getElementById('certificate-info').style.display = 'none';
-
-  document.getElementById('downloadCertificate').addEventListener('click', function() {
-    const certificateData = {
-      paymentIntentId: paymentIntentId,
-      publicKey: publicKey,
-      signature: signature,
-      privateKey: privateKey // Note: In a real-world scenario, you wouldn't include the private key in the download
-    };
-    const blob = new Blob([JSON.stringify(certificateData, null, 2)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'freenet_donation_certificate.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
 }
 
 function showError(message) {
