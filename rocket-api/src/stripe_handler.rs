@@ -1,11 +1,14 @@
 use rocket::serde::{Deserialize, Serialize};
 use stripe::{
-    Client, CreatePaymentIntent, Currency, PaymentIntent,
-    PaymentIntentStatus, CreateCustomer, Customer,
+    Client, PaymentIntent, PaymentIntentStatus,
 };
 use stripe::StripeError;
 use std::str::FromStr;
-use p256::{ecdsa::{SigningKey, Signature, signature::Signer}, elliptic_curve::sec1::ToEncodedPoint};
+use p256::{
+    ecdsa::{SigningKey, Signature, signature::Signer},
+    elliptic_curve::sec1::ToEncodedPoint,
+    PublicKey,
+};
 
 #[derive(Deserialize)]
 pub struct SignCertificateRequest {
@@ -33,7 +36,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     let signing_key = SigningKey::from_slice(&hex::decode(server_secret_key)?)?;
 
     // Parse the blinded public key
-    let blinded_public_key = p256::PublicKey::from_sec1_bytes(&hex::decode(request.blinded_public_key)?)?;
+    let blinded_public_key = PublicKey::from_sec1_bytes(&hex::decode(request.blinded_public_key)?)?;
 
     // Sign the blinded public key
     let blind_signature: Signature = signing_key.sign(blinded_public_key.as_affine().to_encoded_point(false).as_bytes());
