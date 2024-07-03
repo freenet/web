@@ -92,6 +92,11 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Re
     }
 }
 
+#[options("/sign-certificate")]
+pub fn options_sign_certificate() -> Status {
+    Status::Ok
+}
+
 pub fn routes() -> Vec<rocket::Route> {
     routes![index, get_message, create_donation, options_create_donation, sign_certificate_route]
 }
