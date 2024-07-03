@@ -5,7 +5,7 @@ use stripe::{
 };
 use stripe::StripeError;
 use std::str::FromStr;
-use p256::{ecdsa::{SigningKey, Signature}, elliptic_curve::sec1::ToEncodedPoint};
+use p256::{ecdsa::{SigningKey, Signature, signature::Signer}, elliptic_curve::sec1::ToEncodedPoint};
 
 #[derive(Deserialize)]
 pub struct SignCertificateRequest {
