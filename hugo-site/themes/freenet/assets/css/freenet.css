@@ -5,21 +5,30 @@
 
 /* Logo container styling */
 .logo-container {
-    display: flex;
-    align-items: center;
-    position: relative;
+    display: flex !important;
+    align-items: center !important;
+    position: relative !important;
 }
 
 .logo-img {
-    max-height: 3rem;
+    max-height: 3.75rem !important;
 }
 
 .logo-text {
-    margin-left: 0.5rem;
-    font-family: 'Lato', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #333;
+    margin-left: 0.5rem !important;
+    font-family: 'Lato', sans-serif !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: #007FFF !important;
+}
+
+/* Override Bulma's navbar-item styles for the logo */
+.navbar-item.logo-container {
+    padding: 0.5rem 0.75rem !important;
+}
+
+.navbar-item img.logo-img {
+    max-height: 3.75rem !important;
 }
 
 /* Box and date styling */
