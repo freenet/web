@@ -17,15 +17,12 @@ Your donation to Freenet has been successfully processed. We greatly appreciate 
   <h3>Your Donation Certificate</h3>
   <p>Signed Public Key (base64):</p>
   <textarea id="signedPublicKey" rows="4" cols="50" readonly></textarea>
-  <p>Private Key (base64):</p>
-  <textarea id="privateKey" rows="4" cols="50" readonly></textarea>
   <button id="downloadCertificate">Download Certificate</button>
 </div>
 
 <div id="errorMessage" style="display: none; color: red;"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/elliptic@6.5.4/dist/elliptic.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -40,7 +37,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function generateAndSignCertificate(paymentIntentId) {
   try {
-    // Generate EC key pair
     const ec = new elliptic.ec('secp256k1');
     const keyPair = ec.genKeyPair();
     const publicKey = keyPair.getPublic('hex');
@@ -70,7 +66,6 @@ async function generateAndSignCertificate(paymentIntentId) {
 
     // Display the certificate
     document.getElementById('signedPublicKey').value = btoa(publicKey + '|' + unblindedSignature);
-    document.getElementById('privateKey').value = btoa(privateKey);
     document.getElementById('certificateSection').style.display = 'block';
     document.getElementById('certificate-info').style.display = 'none';
 
@@ -78,8 +73,7 @@ async function generateAndSignCertificate(paymentIntentId) {
     document.getElementById('downloadCertificate').addEventListener('click', function() {
       const certificateData = {
         publicKey: publicKey,
-        signature: unblindedSignature,
-        privateKey: privateKey
+        signature: unblindedSignature
       };
       const blob = new Blob([JSON.stringify(certificateData, null, 2)], {type: 'application/json'});
       const url = URL.createObjectURL(blob);
