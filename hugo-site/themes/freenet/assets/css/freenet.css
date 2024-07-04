@@ -51,11 +51,11 @@ body {
 
 /* Hyperlink color */
 a {
-    color: #0052cc;
+    color: #007FFF;
 }
 
 a:hover {
-    color: #003d99;
+    color: #0052cc;
 }
 
 /* Container padding adjustments */
