@@ -1,5 +1,6 @@
 .aider*
 public
+hugo-site/resources
 /resources
 !/*/resources
 target
