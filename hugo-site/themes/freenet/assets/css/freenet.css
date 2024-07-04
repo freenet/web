@@ -34,14 +34,20 @@
     line-height: 1.2; /* Reduced line height */
 }
 
-/* Global body font */
+/* Global body font and color */
 body {
     font-family: Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    color: #333333;
 }
 
 /* Container padding adjustments */
 .container {
     padding: 0 16px; /* Default padding for small screens */
+}
+
+/* Heading colors */
+h1, h2, h3, h4, h5, h6 {
+    color: #333333;
 }
 
 
