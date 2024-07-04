@@ -118,3 +118,18 @@ p.page-end-spacer {
     border-bottom: 1px solid #dbdbdb; /* Adjust the color and thickness as needed */
     display: inline-block; /* Fit the content width */
 }
+
+/* Burger menu color */
+.navbar-burger span {
+    background-color: #007FFF;
+}
+
+/* Down arrow color in dropdown */
+.navbar-link:not(.is-arrowless)::after {
+    border-color: #007FFF;
+}
+
+/* X color when burger is active */
+.navbar-burger.is-active span {
+    background-color: #007FFF;
+}
