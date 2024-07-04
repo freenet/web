@@ -2,7 +2,6 @@
 public
 hugo-site/resources
 /resources
-!/*/resources
 target
 .env
 .idea
