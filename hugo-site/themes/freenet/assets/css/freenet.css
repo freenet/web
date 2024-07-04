@@ -49,6 +49,15 @@ body {
     color: #000000;
 }
 
+/* Hyperlink color */
+a {
+    color: #007FFF;
+}
+
+a:hover {
+    color: #0052cc;
+}
+
 /* Container padding adjustments */
 .container {
     padding: 0 16px; /* Default padding for small screens */
