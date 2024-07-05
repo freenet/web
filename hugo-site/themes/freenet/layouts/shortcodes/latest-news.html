@@ -8,6 +8,8 @@
       <strong>{{ .Date.Format "January 2, 2006" }}</strong> - 
       {{ if in .Params.tags "video-talk" }}
       <i class="fas fa-video"></i>
+      {{ else if in .Params.tags "dev-meeting" }}
+      <i class="fas fa-cog"></i>
       {{ end }}
       <a href="{{ .Permalink }}">{{ .Title }}</a>
     </li>
