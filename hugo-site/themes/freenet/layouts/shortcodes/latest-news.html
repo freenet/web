@@ -10,11 +10,6 @@
       <i class="fas fa-video"></i>
       {{ end }}
       <a href="{{ .Permalink }}">{{ .Title }}</a>
-      {{ if eq $tag "video-talk" }}
-        <div class="content my-3">
-          <p>{{ replace .Summary "Freenet's architect" "Ian Clarke" }}</p>
-        </div>
-      {{ end }}
     </li>
   {{ end }}
 </ul>
