@@ -222,4 +222,13 @@ p.page-end-spacer {
     .navbar-brand-with-border {
         border-bottom-color: #3a3a3a;
     }
+
+    /* GitHub link in footer */
+    footer a[href*="github.com"] {
+        color: #4da6ff;
+    }
+
+    footer a[href*="github.com"]:hover {
+        color: #80bfff;
+    }
 }
