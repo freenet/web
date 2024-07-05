@@ -1,5 +1,4 @@
 {{ $tag := .Get "tag" | default "front-page" }}
-{{ $showDescription := .Get "show_description" | default false }}
 {{ $news := where .Site.RegularPages "Section" "news" }}
 {{ $news := where $news "Params.tags" "intersect" (slice $tag) }}
 {{ $sortedNews := sort $news "Date" "desc" }}
@@ -11,8 +10,8 @@
       <i class="fas fa-video"></i>
       {{ end }}
       <a href="{{ .Permalink }}">{{ .Title }}</a>
-      {{ if $showDescription }}
-        <p>{{ .Description }}</p>
+      {{ if eq $tag "video-talk" }}
+        <p>{{ .Summary }}</p>
       {{ end }}
     </li>
   {{ end }}
