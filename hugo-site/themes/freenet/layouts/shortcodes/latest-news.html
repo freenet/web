@@ -11,7 +11,7 @@
       {{ end }}
       <a href="{{ .Permalink }}">{{ .Title }}</a>
       {{ if eq $tag "video-talk" }}
-        <p>{{ .Summary }}</p>
+        <p style="margin-bottom: 1rem;">{{ .Summary }}</p>
       {{ end }}
     </li>
   {{ end }}
