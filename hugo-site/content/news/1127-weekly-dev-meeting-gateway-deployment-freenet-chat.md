@@ -1,7 +1,7 @@
 +++
 title = "Weekly Dev Meeting - Gateway deployment, freenet-chat"
 date = 2024-06-10
-tags = ["front-page", "dev-meeting"]
+tags = ["dev-meeting"]
 +++
 
 **Freenet Chat Development:**
