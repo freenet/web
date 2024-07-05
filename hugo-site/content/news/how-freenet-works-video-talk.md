@@ -4,7 +4,7 @@ date = 2024-06-10
 tags = ["video-talk", "front-page"]
 +++
 
-Freenet's architect Ian Clarke explains how we solve problems like efficiently finding data,
+Ian Clarke, the creator of Freenet, explains how we solve problems like efficiently finding data,
 adapt to changing network conditions, and managing a peer's resource usage. Q&A
 includes how Freenet compares to other networks, the history of Freenet, and how Freenet adapts
 to geography.
