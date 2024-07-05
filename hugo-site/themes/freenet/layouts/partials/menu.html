@@ -64,7 +64,7 @@
       <a
         {{- range $k, $v := $attrs }}
           {{- with $v }}
-            {{- printf ` %s="%s"` $k (. | safeHTMLAttr) | safeHTMLAttr }}
+            {{- printf ` %s="%s"` $k . | safeHTMLAttr }}
           {{- end }}
         {{- end -}}
       >{{ $name }}</a>
