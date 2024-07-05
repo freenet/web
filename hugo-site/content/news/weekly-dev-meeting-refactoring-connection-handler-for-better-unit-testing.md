@@ -1,7 +1,7 @@
 +++
 tags = ["dev-meeting"]
 title = "Weekly Dev Meeting - Refactoring Connection Handler for Better Unit Testing" 
-date = 2024-05-03
+date = 2024-07-05
 +++
 
 This week we've been focussed on a crucial refactoring task to improve how we manage
