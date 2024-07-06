@@ -1,7 +1,5 @@
 use rocket::serde::{Deserialize, Serialize};
-use stripe::{
-    Client, PaymentIntent, PaymentIntentStatus,
-};
+use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use p256::{
     ecdsa::{SigningKey, Signature, signature::Signer},

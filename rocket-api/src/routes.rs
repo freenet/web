@@ -1,11 +1,11 @@
-use rocket::http::{Header, Status};
-use rocket::{Request, Response, Data};
+use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse};
 use rocket::fairing::{Fairing, Info, Kind};
-use serde::{Serialize, Deserialize};
+use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
-use crate::stripe_handler::{SignCertificateRequest, SignCertificateResponse, sign_certificate};
+use rocket::{Data, Request, Response};
+use serde::{Deserialize, Serialize};
 use std::time::Instant;
-use stripe::{Client, PaymentIntent, CreatePaymentIntent, Currency};
+use stripe::{Client, CreatePaymentIntent, Currency, PaymentIntent};
 
 pub struct CORS;
 
