@@ -106,10 +106,10 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     };
 
     let params = CreatePaymentIntent {
-        amount: Some(request.amount),
-        currency: Some(currency),
+        amount: request.amount,
+        currency,
         automatic_payment_methods: Some(stripe::CreatePaymentIntentAutomaticPaymentMethods {
-            enabled: Some(true),
+            enabled: true,
             allow_redirects: None,
         }),
         ..Default::default()
