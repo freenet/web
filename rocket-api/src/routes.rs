@@ -105,14 +105,11 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         _ => return Err((Status::BadRequest, "Invalid currency".to_string())),
     };
 
-    let params = CreatePaymentIntent {
-        amount: request.amount,
-        currency,
-        automatic_payment_methods: Some(stripe::CreatePaymentIntentAutomaticPaymentMethods {
+    let params = CreatePaymentIntent::new(request.amount, currency)
+        .automatic_payment_methods(stripe::CreatePaymentIntentAutomaticPaymentMethods {
             enabled: true,
-        }),
-        ..CreatePaymentIntent::default()
-    };
+            allow_redirects: None,
+        });
 
     match PaymentIntent::create(&client, params).await {
         Ok(intent) => Ok(Json(DonationResponse {
