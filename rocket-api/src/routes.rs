@@ -96,7 +96,7 @@ pub fn options_sign_certificate() -> Status {
 #[derive(Debug)]
 pub enum DonationError {
     InvalidCurrency,
-    StripeError(stripe::Error),
+    StripeError(stripe::StripeError),
     EnvError(std::env::VarError),
 }
 
