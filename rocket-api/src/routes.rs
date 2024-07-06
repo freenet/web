@@ -1,11 +1,12 @@
 use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse};
+use crate::config::{Client, Response};
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
-use rocket::{Data, Request, Response};
+use rocket::{Data, Request};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
-use stripe::{Client, Currency};
+use stripe::Currency;
 
 pub struct CORS;
 
