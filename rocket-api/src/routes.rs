@@ -93,7 +93,6 @@ pub fn options_sign_certificate() -> Status {
     Status::Ok
 }
 
-#[post("/create-donation", data = "<request>")]
 #[derive(Debug)]
 pub enum DonationError {
     InvalidCurrency,
@@ -111,6 +110,7 @@ impl<'r> rocket::response::Responder<'r, 'static> for DonationError {
     }
 }
 
+#[post("/create-donation", data = "<request>")]
 pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<DonationResponse>, DonationError> {
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(secret_key);
@@ -168,5 +168,11 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
 }
 
 pub fn routes() -> Vec<rocket::Route> {
-    routes![index, get_message, sign_certificate_route, options_sign_certificate, create_donation]
+    routes![
+        index,
+        get_message,
+        sign_certificate_route,
+        options_sign_certificate,
+        create_donation
+    ]
 }
