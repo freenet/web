@@ -1,10 +1,9 @@
-use rocket::http::Header;
+use rocket::http::{Header, Status};
 use rocket::{Request, Response, Data};
 use rocket::fairing::{Fairing, Info, Kind};
 use serde::{Serialize, Deserialize};
 use rocket::serde::json::Json;
 use crate::stripe_handler::{SignCertificateRequest, SignCertificateResponse, sign_certificate};
-use rocket::http::Status;
 use std::time::Instant;
 use stripe::{Client, PaymentIntent, CreatePaymentIntent, Currency};
 
@@ -107,7 +106,7 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     };
 
     let params = CreatePaymentIntent {
-        amount: request.amount as i64,
+        amount: request.amount,
         currency,
         automatic_payment_methods: Some(stripe::CreatePaymentIntentAutomaticPaymentMethods {
             enabled: true,
