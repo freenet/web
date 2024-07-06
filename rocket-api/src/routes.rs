@@ -60,8 +60,9 @@ pub struct DonationRequest {
 }
 
 #[derive(Serialize)]
-struct DonationResponse {
-    client_secret: String,
+#[derive(Serialize)]
+pub struct DonationResponse {
+    pub client_secret: String,
 }
 
 #[get("/")]
@@ -122,17 +123,16 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         _ => return Err(DonationError::InvalidCurrency),
     };
 
-    let intent = stripe::PaymentIntent::create(
-        &client,
-        stripe::CreatePaymentIntent {
-            amount: request.amount,
-            currency,
-            payment_method_types: Some(vec!["card".to_string()]),
-            ..Default::default()
-        },
-    )
-    .await
-    .map_err(DonationError::StripeError)?;
+    let params = stripe::CreatePaymentIntent {
+        amount: request.amount,
+        currency,
+        payment_method_types: Some(vec!["card".to_string()]),
+        ..Default::default()
+    };
+
+    let intent = stripe::PaymentIntent::create(&client, params)
+        .await
+        .map_err(DonationError::StripeError)?;
 
     Ok(Json(DonationResponse {
         client_secret: intent.client_secret.unwrap_or_default(),
