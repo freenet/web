@@ -6,6 +6,7 @@ use rocket::serde::json::Json;
 use crate::stripe_handler::{SignCertificateRequest, SignCertificateResponse, sign_certificate};
 use rocket::http::Status;
 use std::time::Instant;
+use stripe::{Client, PaymentIntent, PaymentIntentCreateParams, Currency};
 
 pub struct CORS;
 
@@ -53,6 +54,17 @@ struct Message {
     content: String,
 }
 
+#[derive(Deserialize)]
+struct DonationRequest {
+    amount: u64,
+    currency: String,
+}
+
+#[derive(Serialize)]
+struct DonationResponse {
+    client_secret: String,
+}
+
 #[get("/")]
 fn index() -> &'static str {
     "Hello, world!"
@@ -82,6 +94,32 @@ pub fn options_sign_certificate() -> Status {
     Status::Ok
 }
 
+#[post("/create-donation", data = "<request>")]
+pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<DonationResponse>, (Status, String)> {
+    let secret_key = std::env::var("STRIPE_SECRET_KEY").expect("Missing STRIPE_SECRET_KEY in env");
+    let client = Client::new(secret_key);
+
+    let currency = match request.currency.as_str() {
+        "usd" => Currency::USD,
+        "eur" => Currency::EUR,
+        "gbp" => Currency::GBP,
+        _ => return Err((Status::BadRequest, "Invalid currency".to_string())),
+    };
+
+    let params = PaymentIntentCreateParams {
+        amount: request.amount,
+        currency,
+        ..Default::default()
+    };
+
+    match PaymentIntent::create(&client, params).await {
+        Ok(intent) => Ok(Json(DonationResponse {
+            client_secret: intent.client_secret.unwrap(),
+        })),
+        Err(e) => Err((Status::InternalServerError, format!("Failed to create payment intent: {}", e))),
+    }
+}
+
 pub fn routes() -> Vec<rocket::Route> {
-    routes![index, get_message, sign_certificate_route, options_sign_certificate]
+    routes![index, get_message, sign_certificate_route, options_sign_certificate, create_donation]
 }
