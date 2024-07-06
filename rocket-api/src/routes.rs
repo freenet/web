@@ -105,42 +105,13 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         _ => return Err((Status::BadRequest, "Invalid currency".to_string())),
     };
 
-    let params = CreatePaymentIntent {
-        amount: request.amount,
-        currency,
-        automatic_payment_methods: Some(stripe::CreatePaymentIntentAutomaticPaymentMethods {
+    let params = CreatePaymentIntent::new(request.amount, currency)
+        .automatic_payment_methods(Some(stripe::CreatePaymentIntentAutomaticPaymentMethods {
             enabled: true,
             allow_redirects: None,
-        }),
-        capture_method: None,
-        confirm: None,
-        confirmation_method: None,
-        customer: None,
-        description: None,
-        metadata: None,
-        on_behalf_of: None,
-        payment_method: None,
-        payment_method_types: None,
-        receipt_email: None,
-        return_url: None,
-        setup_future_usage: None,
-        shipping: None,
-        statement_descriptor: None,
-        statement_descriptor_suffix: None,
-        transfer_data: None,
-        transfer_group: None,
-        application_fee_amount: None,
-        off_session: None,
-        mandate_data: None,
-        payment_method_options: None,
-        radar_options: None,
-        error_on_requires_action: None,
-        expand: &[],
-        mandate: None,
-        use_stripe_sdk: None,
-        payment_method_data: None,
-        client_secret: None,
-    };
+        }))
+        .expand(&[])
+        .payment_method_types(Some(vec!["card".to_string()]));
 
     match PaymentIntent::create(&client, params).await {
         Ok(intent) => Ok(Json(DonationResponse {
