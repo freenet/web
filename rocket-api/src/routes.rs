@@ -134,6 +134,12 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         mandate_data: None,
         payment_method_options: None,
         radar_options: None,
+        error_on_requires_action: None,
+        expand: &[],
+        mandate: None,
+        use_stripe_sdk: None,
+        payment_method_data: None,
+        client_secret: None,
     };
 
     match PaymentIntent::create(&client, params).await {
