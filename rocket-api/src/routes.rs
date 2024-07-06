@@ -54,6 +54,7 @@ struct Message {
 }
 
 #[derive(Deserialize)]
+#[derive(Debug)]
 pub struct DonationRequest {
     pub amount: i64,
     pub currency: String,
