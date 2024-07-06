@@ -110,9 +110,8 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         currency,
         automatic_payment_methods: Some(stripe::CreatePaymentIntentAutomaticPaymentMethods {
             enabled: true,
-            ..Default::default()
         }),
-        ..Default::default()
+        ..CreatePaymentIntent::default()
     };
 
     match PaymentIntent::create(&client, params).await {
