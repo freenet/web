@@ -56,7 +56,7 @@
     } catch (error) {
       console.error('Stripe initialization error:', error);
       const messageContainer = document.querySelector('#error-message');
-      messageContainer.textContent = `Error: ${error.message}. Please try again later or contact support.`;
+      messageContainer.textContent = '{{ .Get "error-message" }}' || `Error: ${error.message}. Please try again later or contact support.`;
     }
   }
 
