@@ -56,7 +56,7 @@ struct Message {
 
 #[derive(Deserialize)]
 struct DonationRequest {
-    amount: u64,
+    amount: i64,
     currency: String,
 }
 
@@ -107,8 +107,12 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     };
 
     let params = CreatePaymentIntent {
-        amount: Some(request.amount),
-        currency: Some(currency),
+        amount: request.amount as i64,
+        currency,
+        automatic_payment_methods: Some(stripe::CreatePaymentIntentAutomaticPaymentMethods {
+            enabled: true,
+            ..Default::default()
+        }),
         ..Default::default()
     };
 
