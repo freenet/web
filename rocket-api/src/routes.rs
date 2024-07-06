@@ -94,15 +94,32 @@ pub fn options_sign_certificate() -> Status {
 }
 
 #[post("/create-donation", data = "<request>")]
-pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<DonationResponse>, (Status, String)> {
-    let secret_key = std::env::var("STRIPE_SECRET_KEY").expect("Missing STRIPE_SECRET_KEY in env");
+#[derive(Debug)]
+pub enum DonationError {
+    InvalidCurrency,
+    StripeError(stripe::Error),
+    EnvError(std::env::VarError),
+}
+
+impl<'r> rocket::response::Responder<'r, 'static> for DonationError {
+    fn respond_to(self, _: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
+        match self {
+            DonationError::InvalidCurrency => Err(Status::BadRequest),
+            DonationError::StripeError(_) => Err(Status::InternalServerError),
+            DonationError::EnvError(_) => Err(Status::InternalServerError),
+        }
+    }
+}
+
+pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<DonationResponse>, DonationError> {
+    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(secret_key);
 
     let currency = match request.currency.as_str() {
         "usd" => Currency::USD,
         "eur" => Currency::EUR,
         "gbp" => Currency::GBP,
-        _ => return Err((Status::BadRequest, "Invalid currency".to_string())),
+        _ => return Err(DonationError::InvalidCurrency),
     };
 
     let params = CreatePaymentIntent {
@@ -142,12 +159,12 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         use_stripe_sdk: None,
     };
 
-    match PaymentIntent::create(&client, params).await {
-        Ok(intent) => Ok(Json(DonationResponse {
+    PaymentIntent::create(&client, params)
+        .await
+        .map_err(DonationError::StripeError)
+        .map(|intent| Json(DonationResponse {
             client_secret: intent.client_secret.unwrap(),
-        })),
-        Err(e) => Err((Status::InternalServerError, format!("Failed to create payment intent: {}", e))),
-    }
+        }))
 }
 
 pub fn routes() -> Vec<rocket::Route> {
