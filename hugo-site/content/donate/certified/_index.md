@@ -9,7 +9,7 @@ menu:
 
 ## Certified Donations
 
-{{< stripe-donation-form >}}
+{{< stripe-donation-form error-message="The Certified Donations back-end isn't currently running, please notify webmaster@freenet.org" >}}
 
 Thanks for your interest in supporting Freenet.
 
