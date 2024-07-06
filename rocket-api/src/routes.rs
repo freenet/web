@@ -122,49 +122,19 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         _ => return Err(DonationError::InvalidCurrency),
     };
 
-    let params = CreatePaymentIntent {
-        amount: request.amount,
-        currency,
-        automatic_payment_methods: Some(stripe::CreatePaymentIntentAutomaticPaymentMethods {
-            enabled: true,
-            allow_redirects: None,
-        }),
-        payment_method_types: Some(vec!["card".to_string()]),
-        expand: &[],
-        application_fee_amount: None,
-        capture_method: None,
-        confirm: None,
-        confirmation_method: None,
-        customer: None,
-        description: None,
-        error_on_requires_action: None,
-        mandate: None,
-        mandate_data: None,
-        metadata: None,
-        off_session: None,
-        on_behalf_of: None,
-        payment_method: None,
-        payment_method_configuration: None,
-        payment_method_data: None,
-        payment_method_options: None,
-        radar_options: None,
-        receipt_email: None,
-        return_url: None,
-        setup_future_usage: None,
-        shipping: None,
-        statement_descriptor: None,
-        statement_descriptor_suffix: None,
-        transfer_data: None,
-        transfer_group: None,
-        use_stripe_sdk: None,
-    };
+    let params = stripe::CreatePaymentIntent::new(request.amount, currency);
+    let params = params.automatic_payment_methods(stripe::CreatePaymentIntentAutomaticPaymentMethods {
+        enabled: true,
+        allow_redirects: None,
+    });
 
-    PaymentIntent::create(&client, params)
+    let intent = stripe::PaymentIntent::create(&client, params)
         .await
-        .map_err(DonationError::StripeError)
-        .map(|intent| Json(DonationResponse {
-            client_secret: intent.client_secret.unwrap(),
-        }))
+        .map_err(DonationError::StripeError)?;
+
+    Ok(Json(DonationResponse {
+        client_secret: intent.client_secret.unwrap(),
+    }))
 }
 
 pub fn routes() -> Vec<rocket::Route> {
