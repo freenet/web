@@ -6,7 +6,7 @@ use rocket::serde::json::Json;
 use crate::stripe_handler::{SignCertificateRequest, SignCertificateResponse, sign_certificate};
 use rocket::http::Status;
 use std::time::Instant;
-use stripe::{Client, PaymentIntent, PaymentIntentCreateParams, Currency};
+use stripe::{Client, PaymentIntent, CreatePaymentIntent, Currency};
 
 pub struct CORS;
 
@@ -106,9 +106,9 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         _ => return Err((Status::BadRequest, "Invalid currency".to_string())),
     };
 
-    let params = PaymentIntentCreateParams {
-        amount: request.amount,
-        currency,
+    let params = CreatePaymentIntent {
+        amount: Some(request.amount),
+        currency: Some(currency),
         ..Default::default()
     };
 
