@@ -123,10 +123,6 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     };
 
     let params = stripe::CreatePaymentIntent::new(request.amount, currency);
-    let params = params.automatic_payment_methods(stripe::AutomaticPaymentMethods {
-        enabled: true,
-    });
-
     let intent = stripe::PaymentIntent::create(&client, params)
         .await
         .map_err(DonationError::StripeError)?;
