@@ -122,10 +122,16 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         _ => return Err(DonationError::InvalidCurrency),
     };
 
-    let params = stripe::PaymentIntentCreateParams::new(request.amount, currency);
-    let intent = stripe::PaymentIntent::create(&client, params)
-        .await
-        .map_err(DonationError::StripeError)?;
+    let intent = stripe::PaymentIntent::create(
+        &client,
+        stripe::CreatePaymentIntent {
+            amount: request.amount,
+            currency,
+            ..Default::default()
+        },
+    )
+    .await
+    .map_err(DonationError::StripeError)?;
 
     Ok(Json(DonationResponse {
         client_secret: intent.client_secret.unwrap_or_default(),
