@@ -5,7 +5,7 @@ use rocket::serde::json::Json;
 use rocket::{Data, Request, Response};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
-use stripe::{Client, CreatePaymentIntent, Currency, PaymentIntent};
+use stripe::{Client, Currency};
 
 pub struct CORS;
 
@@ -122,11 +122,11 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         _ => return Err(DonationError::InvalidCurrency),
     };
 
-    let params = stripe::CreatePaymentIntent::new(request.amount, currency);
-    let params = params.automatic_payment_methods(stripe::CreatePaymentIntentAutomaticPaymentMethods {
-        enabled: true,
-        allow_redirects: None,
-    });
+    let params = stripe::CreatePaymentIntent::new(request.amount, currency)
+        .automatic_payment_methods(stripe::AutomaticPaymentMethods {
+            enabled: true,
+            allow_redirects: None,
+        });
 
     let intent = stripe::PaymentIntent::create(&client, params)
         .await
