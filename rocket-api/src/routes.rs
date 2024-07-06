@@ -60,7 +60,6 @@ pub struct DonationRequest {
 }
 
 #[derive(Serialize)]
-#[derive(Serialize)]
 pub struct DonationResponse {
     pub client_secret: String,
 }
