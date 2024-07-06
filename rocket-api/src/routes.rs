@@ -125,10 +125,10 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     let intent = stripe::PaymentIntent::create(
         &client,
         stripe::CreatePaymentIntent {
-            amount: Some(request.amount),
-            currency: Some(currency),
+            amount: request.amount,
+            currency,
             payment_method_types: Some(vec!["card".to_string()]),
-            ..stripe::CreatePaymentIntent::new()
+            ..Default::default()
         },
     )
     .await
