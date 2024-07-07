@@ -1,6 +1,6 @@
 use fantoccini::{Locator, ClientBuilder, wait::Wait};
 use rocket::local::asynchronous::Client as RocketClient;
-use crate::rocket;
+use rocket_api::rocket;
 
 #[rocket::async_test]
 async fn test_certified_donation_process() {
