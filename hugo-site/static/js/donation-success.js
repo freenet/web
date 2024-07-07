@@ -21,17 +21,21 @@ async function generateAndSignCertificate(paymentIntentId) {
     const blindedPublicKey = ec.g.mul(blindingFactor).encode('hex');
 
     // Send blinded public key to server for signing
-    const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
+    const response = await fetch('/api/sign-certificate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ paymentIntentId, blindedPublicKey })
     });
 
     if (!response.ok) {
-      throw new Error('Failed to sign certificate');
+      throw new Error(`Failed to sign certificate: ${response.status} ${response.statusText}`);
     }
 
-    const { blindSignature } = await response.json();
+    const data = await response.json();
+    if (!data.blindSignature) {
+      throw new Error('Invalid response from server: missing blindSignature');
+    }
+    const { blindSignature } = data;
 
     // Unblind the signature
     const unblindedSignature = ec.g.mul(ec.keyFromPrivate(blindSignature, 'hex').getPrivate())
