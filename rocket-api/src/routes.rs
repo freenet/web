@@ -6,6 +6,7 @@ use rocket::{Data, Request, Response};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use stripe::{Client, Currency};
+use log::{info, error};
 
 pub struct CORS;
 
@@ -79,10 +80,14 @@ fn get_message() -> Json<Message> {
 
 #[post("/sign-certificate", data = "<request>")]
 pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Result<Json<SignCertificateResponse>, (Status, String)> {
+    info!("Received sign-certificate request: {:?}", request);
     match sign_certificate(request.into_inner()).await {
-        Ok(response) => Ok(Json(response)),
+        Ok(response) => {
+            info!("Certificate signed successfully");
+            Ok(Json(response))
+        },
         Err(e) => {
-            eprintln!("Error signing certificate: {}", e);
+            error!("Error signing certificate: {}", e);
             Err((Status::InternalServerError, format!("Error signing certificate: {}", e)))
         },
     }
@@ -118,14 +123,22 @@ impl<'r> rocket::response::Responder<'r, 'static> for DonationError {
 
 #[post("/create-donation", data = "<request>")]
 pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<DonationResponse>, DonationError> {
-    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(|e| DonationError::EnvError(Box::new(e)))?;
+    info!("Received create-donation request: {:?}", request);
+    
+    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(|e| {
+        error!("Failed to get STRIPE_SECRET_KEY: {:?}", e);
+        DonationError::EnvError(Box::new(e))
+    })?;
     let client = Client::new(secret_key);
 
     let currency = match request.currency.as_str() {
         "usd" => Currency::USD,
         "eur" => Currency::EUR,
         "gbp" => Currency::GBP,
-        _ => return Err(DonationError::InvalidCurrency),
+        _ => {
+            error!("Invalid currency: {}", request.currency);
+            return Err(DonationError::InvalidCurrency);
+        }
     };
 
     let mut params = stripe::CreatePaymentIntent::new(request.amount, currency);
@@ -133,8 +146,12 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
 
     let intent = stripe::PaymentIntent::create(&client, params)
         .await
-        .map_err(|e| DonationError::StripeError(Box::new(e)))?;
+        .map_err(|e| {
+            error!("Stripe error: {:?}", e);
+            DonationError::StripeError(Box::new(e))
+        })?;
 
+    info!("Payment intent created successfully");
     Ok(Json(DonationResponse {
         client_secret: intent.client_secret.unwrap_or_default(),
     }))
