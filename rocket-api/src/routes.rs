@@ -68,8 +68,10 @@ pub struct DonationResponse {
 
 
 #[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
+fn index() -> Json<serde_json::Value> {
+    Json(serde_json::json!({
+        "message": "Hello, world!"
+    }))
 }
 
 #[get("/message")]
