@@ -19,6 +19,7 @@ pub struct SignCertificateRequest {
 
 #[derive(Debug, Serialize)]
 pub struct SignCertificateResponse {
+    pub blind_signature: String,
     blind_signature: String,
 }
 
