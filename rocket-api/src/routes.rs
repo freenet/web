@@ -93,10 +93,14 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Js
         },
         Err(e) => {
             error!("Error signing certificate: {}", e);
-            Json(serde_json::json!({
-                "success": false,
-                "error": format!("Error signing certificate: {}", e)
-            }))
+            Response::build()
+                .status(Status::InternalServerError)
+                .header(ContentType::JSON)
+                .sized_body(Cursor::new(serde_json::json!({
+                    "success": false,
+                    "error": format!("Error signing certificate: {}", e)
+                }).to_string()))
+                .ok()
         },
     }
 }
