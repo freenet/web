@@ -1,10 +1,14 @@
 use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse};
 use rocket::fairing::{Fairing, Info, Kind};
+use rocket::form::Form;
+use rocket::fs::TempFile;
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
 use rocket::{Data, Request, Response};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
+use std::path::Path;
+use std::fs;
 use stripe::{Client, Currency};
 use log::{info, error};
 
@@ -68,7 +72,7 @@ pub struct DonationResponse {
 
 #[derive(FromForm)]
 pub struct UploadForm<'f> {
-    #[field(validate = ext(["pdf", "doc", "docx", "jpg", "jpeg"]))]
+    #[field(validate = ext(ContentType::PDF, ContentType::DOC, ContentType::DOCX, ContentType::JPEG))]
     file: TempFile<'f>,
 }
 
