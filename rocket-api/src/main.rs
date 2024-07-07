@@ -8,6 +8,7 @@ mod stripe_handler;
 use rocket::fairing::AdHoc;
 use rocket::shield::{Shield, XssFilter, Referrer};
 use rocket::Request;
+use env_logger::Env;
 
 #[catch(404)]
 fn not_found(req: &Request) -> String {
@@ -17,6 +18,7 @@ fn not_found(req: &Request) -> String {
 #[launch]
 fn rocket() -> _ {
     dotenv().ok();
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     rocket::build()
         .attach(routes::CORS)
         .attach(routes::RequestTimer)
