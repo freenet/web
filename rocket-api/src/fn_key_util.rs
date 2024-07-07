@@ -21,3 +21,9 @@ fn main() {
     rand::thread_rng().fill_bytes(&mut key);
     general_purpose::STANDARD.encode(&key)
 }
+
+fn generate_stripe_secret_key() -> String {
+    let mut key = [0u8; 32];
+    rand::thread_rng().fill_bytes(&mut key);
+    general_purpose::STANDARD.encode(&key)
+}
