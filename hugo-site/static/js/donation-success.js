@@ -1,3 +1,6 @@
+// Note: The choice of elliptic curve is crucial for security.
+// Always use a curve recommended by experts and keep up to date with the latest cryptographic standards.
+
 document.addEventListener('DOMContentLoaded', function() {
   const urlParams = new URLSearchParams(window.location.search);
   const paymentIntent = urlParams.get('payment_intent');
@@ -11,7 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function generateAndSignCertificate(paymentIntentId) {
   try {
-    const ec = new elliptic.ec('secp256k1');
+    // Using Curve25519 as it's considered more secure than secp256k1
+    // according to SafeCurves (http://safecurves.cr.yp.to/)
+    const ec = new elliptic.ec('curve25519');
     const keyPair = ec.genKeyPair();
     const publicKey = keyPair.getPublic('hex');
     const privateKey = keyPair.getPrivate('hex');
