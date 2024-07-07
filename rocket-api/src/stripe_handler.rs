@@ -1,5 +1,5 @@
 use rocket::serde::{Deserialize, Serialize};
-use stripe::{Client, PaymentIntent, PaymentIntentStatus, Metadata};
+use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use std::collections::HashMap;
 use p256::{
@@ -42,7 +42,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
         metadata: Some(metadata),
         ..Default::default()
     };
-    pi = PaymentIntent::update(&client, &pi.id, params).await?;
+    PaymentIntent::update(&client, &pi.id, params).await?;
 
     // Load the server's signing key
     let server_secret_key = std::env::var("SERVER_SIGNING_KEY").expect("Missing SERVER_SIGNING_KEY in env");
