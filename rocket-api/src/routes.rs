@@ -11,6 +11,7 @@ use stripe::{Client, Currency};
 use log::{info, error};
 use std::path::Path;
 use std::fs;
+use rocket::data::ToByteUnit;
 
 pub struct CORS;
 
@@ -72,8 +73,8 @@ pub struct DonationResponse {
 
 #[derive(FromForm)]
 pub struct UploadForm<'f> {
-    #[field(validate = ext(ContentType::PDF, ContentType::DOC, ContentType::JPEG))]
-    #[field(validate = size(max = 5.megabytes()))]
+    #[field(validate = ext(["pdf", "doc", "docx", "jpg", "jpeg"]))]
+    #[field(validate = size(5.megabytes()))]
     file: TempFile<'f>,
 }
 
