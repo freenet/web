@@ -21,17 +21,25 @@
 <script src="/hugo-site/themes/freenet/assets/js/elliptic.min.js"></script>
 <script src="/js/donation-success.js"></script>
 <script>
-function copyCertificate() {
+async function copyCertificate() {
   const certificateElement = document.getElementById('certificate');
-  certificateElement.select();
-  document.execCommand('copy');
-  alert('Certificate copied to clipboard!');
+  try {
+    await navigator.clipboard.writeText(certificateElement.value);
+    alert('Certificate copied to clipboard!');
+  } catch (err) {
+    console.error('Failed to copy certificate: ', err);
+    alert('Failed to copy certificate. Please try again.');
+  }
 }
 
-function copyPrivateKey() {
+async function copyPrivateKey() {
   const privateKeyElement = document.getElementById('privateKey');
-  privateKeyElement.select();
-  document.execCommand('copy');
-  alert('Private key copied to clipboard. Remember to keep it secret!');
+  try {
+    await navigator.clipboard.writeText(privateKeyElement.value);
+    alert('Private key copied to clipboard. Remember to keep it secret!');
+  } catch (err) {
+    console.error('Failed to copy private key: ', err);
+    alert('Failed to copy private key. Please try again.');
+  }
 }
 </script>
