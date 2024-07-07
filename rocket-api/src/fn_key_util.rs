@@ -1,4 +1,4 @@
-use clap::{Arg, Command};
+use clap::{Command};
 use rand::Rng;
 use rand::distributions::Alphanumeric;
 

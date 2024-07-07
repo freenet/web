@@ -19,6 +19,7 @@ base64 = "0.21.0"
 rand_core = "0.6.4"
 sha2 = "0.10.6"
 clap = { version = "3.0", features = ["derive"] }
+rand = "0.8"
 
 [[bin]]
 name = "fn-key-util"
