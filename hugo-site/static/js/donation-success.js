@@ -23,7 +23,7 @@ async function generateAndSignCertificate(paymentIntentId) {
 
     // Export the public key
     const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
-    const publicKey = bufferToHex(publicKeyBuffer);
+    const publicKey = bufferToBase64(publicKeyBuffer);
 
     // Generate a random blinding factor
     const blindingFactor = await window.crypto.subtle.generateKey(
@@ -42,7 +42,7 @@ async function generateAndSignCertificate(paymentIntentId) {
     const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ payment_intent_id: paymentIntentId, blinded_public_key: bufferToHex(blindedPublicKey) })
+      body: JSON.stringify({ payment_intent_id: paymentIntentId, blinded_public_key: bufferToBase64(blindedPublicKey) })
     });
 
     if (!response.ok) {
@@ -67,19 +67,19 @@ async function generateAndSignCertificate(paymentIntentId) {
     if (!data.blind_signature) {
       throw new Error(`Failed to sign certificate: ${data.blind_signature}`);
     }
-    const blindSignature = hexToBuffer(data.blind_signature);
+    const blindSignature = base64ToBuffer(data.blind_signature);
 
     // Unblind the signature
     const unblindedSignature = await unblindSignature(blindSignature, blindingFactor);
 
     // Armor the certificate and private key
     const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
-${publicKey}|${bufferToHex(unblindedSignature)}
+${publicKey}|${bufferToBase64(unblindedSignature)}
 -----END FREENET DONATION CERTIFICATE-----`;
 
     const privateKeyBuffer = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
     const armoredPrivateKey = `-----BEGIN FREENET DONATION PRIVATE KEY-----
-${bufferToHex(privateKeyBuffer)}
+${bufferToBase64(privateKeyBuffer)}
 -----END FREENET DONATION PRIVATE KEY-----`;
 
     // Display the certificate and private key
