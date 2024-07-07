@@ -7,13 +7,13 @@ use p256::{
     PublicKey,
 };
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
     payment_intent_id: String,
     blinded_public_key: String,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct SignCertificateResponse {
     blind_signature: String,
 }
