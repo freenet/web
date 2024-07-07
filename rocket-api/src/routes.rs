@@ -1,12 +1,16 @@
 use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse};
 use rocket::fairing::{Fairing, Info, Kind};
-use rocket::http::{Header, Status};
+use rocket::http::{Header, Status, ContentType};
 use rocket::serde::json::Json;
 use rocket::{Data, Request, Response};
+use rocket::form::Form;
+use rocket::fs::TempFile;
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use stripe::{Client, Currency};
 use log::{info, error};
+use std::path::Path;
+use std::fs;
 
 pub struct CORS;
 
@@ -24,6 +28,7 @@ impl Fairing for CORS {
         response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS"));
         response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+        response.set_header(Header::new("Access-Control-Max-Age", "86400"));
     }
 }
 
@@ -63,6 +68,13 @@ pub struct DonationRequest {
 #[derive(Serialize)]
 pub struct DonationResponse {
     pub client_secret: String,
+}
+
+#[derive(FromForm)]
+pub struct UploadForm<'f> {
+    #[field(validate = ext(ContentType::PDF, ContentType::DOC, ContentType::JPEG))]
+    #[field(validate = size(max = 5.megabytes()))]
+    file: TempFile<'f>,
 }
 
 #[get("/")]
@@ -162,6 +174,27 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     }))
 }
 
+#[post("/upload", data = "<form>")]
+pub async fn upload(mut form: Form<UploadForm<'_>>) -> Result<String, Status> {
+    let file = &mut form.file;
+    let file_name = file.name().unwrap_or("unknown").to_string();
+    let upload_dir = Path::new("uploads");
+
+    if !upload_dir.exists() {
+        fs::create_dir(upload_dir).map_err(|_| Status::InternalServerError)?;
+    }
+
+    let file_path = upload_dir.join(&file_name);
+    file.persist_to(&file_path).await.map_err(|_| Status::InternalServerError)?;
+
+    Ok(format!("File '{}' uploaded successfully", file_name))
+}
+
+#[options("/upload")]
+pub fn options_upload() -> Status {
+    Status::Ok
+}
+
 pub fn routes() -> Vec<rocket::Route> {
     routes![
         index,
@@ -169,6 +202,8 @@ pub fn routes() -> Vec<rocket::Route> {
         sign_certificate_route,
         options_sign_certificate,
         create_donation,
-        options_create_donation
+        options_create_donation,
+        upload,
+        options_upload
     ]
 }
