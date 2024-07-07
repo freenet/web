@@ -3,6 +3,7 @@ use fantoccini::{Client, Locator};
 use rand::RngCore;
 use base64::{Engine as _, engine::general_purpose};
 
+#[allow(dead_code)]
 fn main() {
     let matches = Command::new("Freenet Key Utility")
         .version("1.0")
@@ -28,6 +29,7 @@ fn main() {
     }
 }
 
+#[allow(dead_code)]
 fn generate_stripe_secret_key() -> String {
     let mut key = [0u8; 32];
     rand::thread_rng().fill_bytes(&mut key);
