@@ -1,29 +1,9 @@
 {{ define "main" }}
 <section class="section">
   <div class="container">
-    <h1 class="title">{{ .Title }}</h1>
-
     <div class="content">
       {{ .Content }}
-
-      <div id="certificate-info">
-        <p>Your donation certificate is being generated. Please wait...</p>
-      </div>
-
-      <div id="certificateSection" style="display: none;">
-        <h3>Your Donation Certificate</h3>
-        <p>Signed Public Key (base64):</p>
-        <textarea id="signedPublicKey" rows="4" cols="50" readonly></textarea>
-        <button id="downloadCertificate" class="button is-primary">Download Certificate</button>
-      </div>
-
-      <div id="errorMessage" style="display: none; color: red;"></div>
     </div>
   </div>
 </section>
-
-{{ $elliptic := resources.Get "js/elliptic.min.js" }}
-<script src="{{ $elliptic.RelPermalink }}"></script>
-{{ $donationSuccess := resources.Get "js/donation-success.js" | minify }}
-<script src="{{ $donationSuccess.RelPermalink }}"></script>
 {{ end }}

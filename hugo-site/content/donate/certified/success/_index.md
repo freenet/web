@@ -9,6 +9,8 @@ url: "/donate/certified/success"
 
 Your donation to Freenet has been successfully processed. We greatly appreciate your support!
 
+{{< donation-success >}}
+
 If you have any questions or concerns, please don't hesitate to [contact us](/community/support).
 
 Thank you again for supporting Freenet!
