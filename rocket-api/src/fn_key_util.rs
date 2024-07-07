@@ -30,6 +30,7 @@ fn main() {
 
 #[allow(dead_code)]
 #[allow(dead_code)]
+#[allow(dead_code)]
 fn generate_stripe_secret_key() -> String {
     let mut key = [0u8; 32];
     rand::thread_rng().fill_bytes(&mut key);
