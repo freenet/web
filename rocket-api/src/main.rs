@@ -22,9 +22,6 @@ fn rocket() -> _ {
     rocket::build()
         .attach(routes::CORS)
         .attach(routes::RequestTimer)
-        .configure(rocket::Config::figment().merge(("limits", rocket::data::Limits::new()
-            .limit("file", 5.mebibytes())
-            .limit("data-form", 6.mebibytes()))))
         .attach(AdHoc::on_response("Powered-By Header", |_, res| Box::pin(async move {
             res.set_raw_header("X-Powered-By", "Freenet Rocket API");
         })))

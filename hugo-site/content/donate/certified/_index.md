@@ -1,7 +1,7 @@
 ---
 title: "Certified Donations"
 date: 2024-06-24
-draft: false
+draft: true
 menu: 
   main:
     parent: "Donate"
