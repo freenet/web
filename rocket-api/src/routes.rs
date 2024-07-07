@@ -1,7 +1,6 @@
 use crate::stripe_handler::{sign_certificate, SignCertificateRequest};
 use rocket::fairing::{Fairing, Info, Kind};
-use rocket::http::{Header, Status, ContentType};
-use std::io::Cursor;
+use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
 use rocket::{Data, Request, Response};
 use serde::{Deserialize, Serialize};
