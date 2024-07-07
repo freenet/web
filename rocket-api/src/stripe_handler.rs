@@ -38,10 +38,8 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     // Mark the payment intent as used for certificate signing
     let mut metadata = HashMap::new();
     metadata.insert("certificate_signed".to_string(), "true".to_string());
-    let params = stripe::PaymentIntentUpdateParams {
-        metadata: Some(Metadata::from(metadata)),
-        ..Default::default()
-    };
+    let params = stripe::UpdatePaymentIntent::new()
+        .metadata(Some(Metadata::from(metadata)));
     pi = PaymentIntent::update(&client, &pi.id, params).await?;
 
     // Load the server's signing key
