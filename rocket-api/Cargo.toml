@@ -24,4 +24,5 @@ rand = "0.8"
 [[bin]]
 name = "fn-key-util"
 path = "src/fn_key_util.rs"
+[dependencies]
 fantoccini = "0.17"
