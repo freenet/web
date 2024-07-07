@@ -92,9 +92,8 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Js
         },
         Err(e) => {
             error!("Error signing certificate: {}", e);
-            Json(SignCertificateResponse {
-                blind_signature: format!("Error signing certificate: {}", e),
-            })
+            error!("Error signing certificate: {}", e);
+            Status::InternalServerError
         },
     }
 }
