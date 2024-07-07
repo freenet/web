@@ -1,6 +1,6 @@
 use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse};
 use rocket::fairing::{Fairing, Info, Kind};
-use rocket::http::{Header, Status, ContentType};
+use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
 use rocket::{Data, Request, Response};
 use rocket::form::Form;
@@ -74,7 +74,6 @@ pub struct DonationResponse {
 #[derive(FromForm)]
 pub struct UploadForm<'f> {
     #[field(validate = ext(["pdf", "doc", "docx", "jpg", "jpeg"]))]
-    #[field(validate = size(5.megabytes()))]
     file: TempFile<'f>,
 }
 
