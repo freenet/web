@@ -11,20 +11,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function generateAndSignCertificate(paymentIntentId) {
   try {
-    // Using Ed25519, which is more commonly used for signatures
-    const ec = new elliptic.eddsa('ed25519');
-    const keyPair = ec.keyFromSecret(); // Generates a new key pair
-    const publicKey = keyPair.getPublic('hex');
-    const privateKey = keyPair.getSecret('hex');
+    // Generate a key pair
+    const keyPair = await window.crypto.subtle.generateKey(
+      {
+        name: "ECDSA",
+        namedCurve: "P-256"
+      },
+      true,
+      ["sign", "verify"]
+    );
 
-    // For Ed25519, we don't need to blind the public key
-    const blindedPublicKey = publicKey;
+    // Export the public key
+    const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
+    const publicKey = bufferToHex(publicKeyBuffer);
+
+    // Generate a random blinding factor
+    const blindingFactor = await window.crypto.subtle.generateKey(
+      {
+        name: "ECDSA",
+        namedCurve: "P-256"
+      },
+      true,
+      ["sign", "verify"]
+    );
+
+    // Blind the public key
+    const blindedPublicKey = await blindPublicKey(publicKeyBuffer, blindingFactor);
 
     // Send blinded public key to server for signing
     const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ payment_intent_id: paymentIntentId, blinded_public_key: blindedPublicKey })
+      body: JSON.stringify({ payment_intent_id: paymentIntentId, blinded_public_key: bufferToHex(blindedPublicKey) })
     });
 
     if (!response.ok) {
@@ -36,18 +54,19 @@ async function generateAndSignCertificate(paymentIntentId) {
     if (!data.blind_signature) {
       throw new Error('Invalid response from server: missing blind_signature');
     }
-    const blindSignature = data.blind_signature;
+    const blindSignature = hexToBuffer(data.blind_signature);
 
-    // For Ed25519, we don't need to unblind the signature
-    const unblindedSignature = blindSignature;
+    // Unblind the signature
+    const unblindedSignature = await unblindSignature(blindSignature, blindingFactor);
 
     // Armor the certificate and private key
     const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
-${publicKey}|${unblindedSignature}
+${publicKey}|${bufferToHex(unblindedSignature)}
 -----END FREENET DONATION CERTIFICATE-----`;
 
+    const privateKeyBuffer = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
     const armoredPrivateKey = `-----BEGIN FREENET DONATION PRIVATE KEY-----
-${privateKey}
+${bufferToHex(privateKeyBuffer)}
 -----END FREENET DONATION PRIVATE KEY-----`;
 
     // Display the certificate and private key
@@ -74,7 +93,7 @@ ${privateKey}
     });
 
     // Verify the certificate
-    if (verifyCertificate(publicKey, unblindedSignature)) {
+    if (await verifyCertificate(keyPair.publicKey, unblindedSignature)) {
       console.log("Certificate verified successfully");
     } else {
       console.error("Certificate verification failed");
@@ -83,13 +102,60 @@ ${privateKey}
   } catch (error) {
     showError('Error generating certificate: ' + error.message);
   }
+}
 
-  function verifyCertificate(publicKey, signature) {
-    const ec = new elliptic.eddsa('ed25519');
-    const key = ec.keyFromPublic(publicKey, 'hex');
+async function blindPublicKey(publicKey, blindingFactor) {
+  const publicKeyPoint = await window.crypto.subtle.importKey(
+    "raw",
+    publicKey,
+    {
+      name: "ECDSA",
+      namedCurve: "P-256"
+    },
+    true,
+    ["verify"]
+  );
+
+  const blindingFactorPoint = await window.crypto.subtle.exportKey("raw", blindingFactor.publicKey);
+  
+  // Perform point addition (this is a simplified representation, actual ECC operations are more complex)
+  const blindedPublicKey = new Uint8Array(publicKey.byteLength);
+  for (let i = 0; i < publicKey.byteLength; i++) {
+    blindedPublicKey[i] = publicKey[i] ^ blindingFactorPoint[i];
+  }
+
+  return blindedPublicKey;
+}
+
+async function unblindSignature(blindSignature, blindingFactor) {
+  const blindingFactorPoint = await window.crypto.subtle.exportKey("raw", blindingFactor.publicKey);
+  
+  // Perform point subtraction (this is a simplified representation, actual ECC operations are more complex)
+  const unblindedSignature = new Uint8Array(blindSignature.byteLength);
+  for (let i = 0; i < blindSignature.byteLength; i++) {
+    unblindedSignature[i] = blindSignature[i] ^ blindingFactorPoint[i];
+  }
+
+  return unblindedSignature;
+}
+
+async function verifyCertificate(publicKey, signature) {
+  try {
     // In a real scenario, we would verify the signature against a known message
     // For now, we'll just check if the signature is valid for an empty message
-    return key.verify('', signature);
+    const result = await window.crypto.subtle.verify(
+      {
+        name: "ECDSA",
+        hash: {name: "SHA-256"},
+      },
+      publicKey,
+      signature,
+      new Uint8Array(0)
+    );
+    return result;
+  } catch (error) {
+    console.error("Verification error:", error);
+    return false;
   }
 }
 
@@ -98,4 +164,14 @@ function showError(message) {
   errorElement.textContent = message;
   errorElement.style.display = 'block';
   document.getElementById('certificate-info').style.display = 'none';
+}
+
+function bufferToHex(buffer) {
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function hexToBuffer(hex) {
+  return new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 }
