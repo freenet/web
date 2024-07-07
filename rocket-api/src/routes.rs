@@ -1,6 +1,7 @@
 use crate::stripe_handler::{sign_certificate, SignCertificateRequest};
 use rocket::fairing::{Fairing, Info, Kind};
-use rocket::http::{Header, Status};
+use rocket::http::{Header, Status, ContentType};
+use std::io::Cursor;
 use rocket::serde::json::Json;
 use rocket::{Data, Request, Response};
 use serde::{Deserialize, Serialize};
@@ -93,14 +94,10 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Js
         },
         Err(e) => {
             error!("Error signing certificate: {}", e);
-            Response::build()
-                .status(Status::InternalServerError)
-                .header(ContentType::JSON)
-                .sized_body(Cursor::new(serde_json::json!({
-                    "success": false,
-                    "error": format!("Error signing certificate: {}", e)
-                }).to_string()))
-                .ok()
+            Json(serde_json::json!({
+                "success": false,
+                "error": format!("Error signing certificate: {}", e)
+            }))
         },
     }
 }
