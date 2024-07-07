@@ -51,12 +51,8 @@ async function generateAndSignCertificate(paymentIntentId) {
     }
 
     const data = await response.json();
-    if (!data.success) {
-      throw new Error(`Failed to sign certificate: ${data.error}`);
-    }
-
     if (!data.blind_signature) {
-      throw new Error('Invalid response from server: missing blind_signature');
+      throw new Error(`Failed to sign certificate: ${data.blind_signature}`);
     }
     const blindSignature = hexToBuffer(data.blind_signature);
 
