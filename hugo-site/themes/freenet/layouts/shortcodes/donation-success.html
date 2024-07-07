@@ -11,7 +11,5 @@
 
 <div id="errorMessage" style="display: none; color: red;"></div>
 
-{{ $elliptic := resources.Get "js/elliptic.min.js" }}
-<script src="{{ $elliptic.RelPermalink }}"></script>
-{{ $donationSuccess := resources.Get "js/donation-success.js" | minify }}
-<script src="{{ $donationSuccess.RelPermalink }}"></script>
+<script src="/js/elliptic.min.js"></script>
+<script src="/js/donation-success.js"></script>
