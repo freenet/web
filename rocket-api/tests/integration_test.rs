@@ -1,6 +1,7 @@
 use fantoccini::{Client, Locator};
 use rocket::local::asynchronous::Client as RocketClient;
 use rocket_api::rocket;
+use fantoccini::ClientBuilder;
 
 #[rocket::async_test]
 async fn test_certified_donation_process() {
@@ -9,7 +10,10 @@ async fn test_certified_donation_process() {
     let client = RocketClient::tracked(rocket).await.unwrap();
 
     // Create a new WebDriver client
-    let mut c = Client::new("http://localhost:4444").await.expect("failed to connect to WebDriver");
+    let mut c = ClientBuilder::native()
+        .connect("http://localhost:4444")
+        .await
+        .expect("failed to connect to WebDriver");
 
     // Navigate to the donation success page
     c.goto("http://localhost:1313/donate/certified/success/?payment_intent=test_payment_intent")
@@ -17,7 +21,7 @@ async fn test_certified_donation_process() {
         .expect("failed to navigate");
 
     // Wait for the certificate and private key to be generated
-    c.wait_for_find(Locator::Css("#certificate"))
+    c.wait().on(Locator::Css("#certificate"))
         .await
         .expect("failed to find certificate");
 

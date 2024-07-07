@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tokio;
+    use rocket::tokio;
     use rocket_api::stripe_handler::{sign_certificate, SignCertificateRequest};
     use rocket_api::fn_key_util::generate_stripe_secret_key;
     use std::env;
