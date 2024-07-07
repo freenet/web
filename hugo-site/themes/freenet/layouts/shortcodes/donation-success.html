@@ -4,12 +4,34 @@
 
 <div id="certificateSection" style="display: none;">
   <h3>Your Donation Certificate</h3>
-  <p>Signed Public Key (base64):</p>
-  <textarea id="signedPublicKey" rows="4" cols="50" readonly></textarea>
-  <button id="downloadCertificate" class="button is-primary">Download Certificate</button>
+  <div>
+    <h3>Donation Certificate (can be shared)</h3>
+    <textarea id="certificate" rows="4" cols="50" readonly></textarea>
+  </div>
+  <div>
+    <h3>Private Key (keep this secret!)</h3>
+    <textarea id="privateKey" rows="4" cols="50" readonly></textarea>
+  </div>
+  <p><strong>Warning:</strong> Keep your private key secret. Only share the certificate.</p>
+  <button id="downloadCertificate" class="button is-primary">Download Certificate and Private Key</button>
 </div>
 
 <div id="errorMessage" style="display: none; color: red;"></div>
 
 <script src="/hugo-site/themes/freenet/assets/js/elliptic.min.js"></script>
 <script src="/js/donation-success.js"></script>
+<script>
+function copyCertificate() {
+  const certificateElement = document.getElementById('certificate');
+  certificateElement.select();
+  document.execCommand('copy');
+  alert('Certificate copied to clipboard!');
+}
+
+function copyPrivateKey() {
+  const privateKeyElement = document.getElementById('privateKey');
+  privateKeyElement.select();
+  document.execCommand('copy');
+  alert('Private key copied to clipboard. Remember to keep it secret!');
+}
+</script>
