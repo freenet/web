@@ -3,15 +3,10 @@ use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
 use rocket::{Data, Request, Response};
-use rocket::form::Form;
-use rocket::fs::TempFile;
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use stripe::{Client, Currency};
 use log::{info, error};
-use std::path::Path;
-use std::fs;
-use rocket::data::ToByteUnit;
 
 pub struct CORS;
 
