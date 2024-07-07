@@ -16,11 +16,11 @@ fn main() {
     }
 }
 
-fn generate_stripe_secret_key() {
+fn generate_stripe_secret_key() -> String {
     let key: String = rand::thread_rng()
         .sample_iter(&Alphanumeric)
         .take(32)
         .map(char::from)
         .collect();
-    println!("Generated STRIPE_SECRET_KEY: {}", key);
+    key
 }
