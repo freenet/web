@@ -19,6 +19,12 @@ theme = "freenet"
 [menu]
 
   [[menu.main]]
+    name = "Certified"
+    url = "/donate/certified/"
+    weight = 11
+    parent = "Donate"
+
+  [[menu.main]]
     name = "Home"
     url = "/"
     weight = 1
