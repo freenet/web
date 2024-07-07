@@ -1,14 +1,10 @@
 use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse};
 use rocket::fairing::{Fairing, Info, Kind};
-use rocket::form::Form;
-use rocket::fs::TempFile;
-use rocket::http::{ContentType, Header, Status};
+use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
 use rocket::{Data, Request, Response};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
-use std::path::Path;
-use std::fs;
 use stripe::{Client, Currency};
 use log::{info, error};
 
@@ -70,24 +66,6 @@ pub struct DonationResponse {
     pub client_secret: String,
 }
 
-#[derive(FromForm)]
-pub struct UploadForm<'f> {
-    #[field(validate = validate_file_type)]
-    file: TempFile<'f>,
-}
-
-fn validate_file_type(file: &TempFile<'_>) -> rocket::form::Result<'_> {
-    let allowed_types = [ContentType::PDF, ContentType::JPEG];
-    if let Some(content_type) = file.content_type() {
-        if allowed_types.contains(content_type) {
-            Ok(())
-        } else {
-            Err(rocket::form::Error::validation("File type not allowed"))?
-        }
-    } else {
-        Err(rocket::form::Error::validation("Unknown file type"))?
-    }
-}
 
 #[get("/")]
 fn index() -> &'static str {
@@ -186,26 +164,6 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     }))
 }
 
-#[post("/upload", data = "<form>")]
-pub async fn upload(mut form: Form<UploadForm<'_>>) -> Result<String, Status> {
-    let file = &mut form.file;
-    let file_name = file.name().unwrap_or("unknown").to_string();
-    let upload_dir = Path::new("uploads");
-
-    if !upload_dir.exists() {
-        fs::create_dir(upload_dir).map_err(|_| Status::InternalServerError)?;
-    }
-
-    let file_path = upload_dir.join(&file_name);
-    file.persist_to(&file_path).await.map_err(|_| Status::InternalServerError)?;
-
-    Ok(format!("File '{}' uploaded successfully", file_name))
-}
-
-#[options("/upload")]
-pub fn options_upload() -> Status {
-    Status::Ok
-}
 
 pub fn routes() -> Vec<rocket::Route> {
     routes![
