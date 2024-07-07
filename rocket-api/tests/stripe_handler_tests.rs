@@ -3,8 +3,8 @@ mod tests {
     use super::*;
     use std::env;
 
-    #[test]
-    fn test_generate_stripe_secret_key() {
+    #[tokio::test]
+    async fn test_generate_stripe_secret_key() {
         let key = generate_stripe_secret_key();
         env::set_var("STRIPE_SECRET_KEY", key);
 
@@ -13,7 +13,7 @@ mod tests {
             blinded_public_key: "test_blinded_public_key".to_string(),
         };
 
-        let result = sign_certificate(request);
+        let result = sign_certificate(request).await;
         assert!(result.is_ok());
     }
 }

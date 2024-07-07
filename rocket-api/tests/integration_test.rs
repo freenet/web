@@ -1,6 +1,5 @@
 use fantoccini::{Client, Locator};
 use rocket::local::asynchronous::Client as RocketClient;
-use rocket::http::Status;
 use rocket_api::rocket;
 
 #[rocket::async_test]
