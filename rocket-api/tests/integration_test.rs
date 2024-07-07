@@ -1,7 +1,8 @@
-use fantoccini::{Client, Locator};
+use fantoccini::{Locator};
 use rocket::local::asynchronous::Client as RocketClient;
 use rocket_api::rocket;
 use fantoccini::ClientBuilder;
+use fantoccini::Wait;
 
 #[rocket::async_test]
 async fn test_certified_donation_process() {
@@ -21,7 +22,7 @@ async fn test_certified_donation_process() {
         .expect("failed to navigate");
 
     // Wait for the certificate and private key to be generated
-    c.wait().on(Locator::Css("#certificate"))
+    c.wait().for_element(Locator::Css("#certificate"))
         .await
         .expect("failed to find certificate");
 
