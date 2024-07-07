@@ -1,5 +1,4 @@
 use clap::Command;
-use fantoccini::{Client, Locator};
 use rand::RngCore;
 use base64::{Engine as _, engine::general_purpose};
 
