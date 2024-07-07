@@ -3,7 +3,6 @@ use rocket::fairing::{Fairing, Info, Kind};
 use rocket::form::Form;
 use rocket::fs::TempFile;
 use rocket::http::{ContentType, Header, Status};
-use rocket::form::FromFormField;
 use rocket::serde::json::Json;
 use rocket::{Data, Request, Response};
 use serde::{Deserialize, Serialize};
@@ -77,16 +76,16 @@ pub struct UploadForm<'f> {
     file: TempFile<'f>,
 }
 
-fn validate_file_type<'v>(file: &TempFile<'_>) -> Result<(), &'v str> {
+fn validate_file_type(file: &TempFile<'_>) -> rocket::form::Result<'_> {
     let allowed_types = [ContentType::PDF, ContentType::JPEG];
     if let Some(content_type) = file.content_type() {
         if allowed_types.contains(content_type) {
             Ok(())
         } else {
-            Err("File type not allowed")
+            Err(rocket::form::Error::validation("File type not allowed"))?
         }
     } else {
-        Err("Unknown file type")
+        Err(rocket::form::Error::validation("Unknown file type"))?
     }
 }
 
