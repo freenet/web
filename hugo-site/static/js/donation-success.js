@@ -45,6 +45,11 @@ async function generateAndSignCertificate(paymentIntentId) {
       body: JSON.stringify({ payment_intent_id: paymentIntentId, blinded_public_key: bufferToHex(blindedPublicKey) })
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error signing certificate: ${errorText}`);
+    }
+
     const data = await response.json();
     if (!data.success) {
       throw new Error(`Failed to sign certificate: ${data.error}`);
