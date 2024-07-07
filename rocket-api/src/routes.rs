@@ -72,7 +72,7 @@ pub struct DonationResponse {
 
 #[derive(FromForm)]
 pub struct UploadForm<'f> {
-    #[field(validate = ext(&[ContentType::PDF, ContentType::MSWORD, ContentType::JPEG]))]
+    #[field(validate = ext(&[ContentType::PDF, ContentType::JPEG]))]
     file: TempFile<'f>,
 }
 
