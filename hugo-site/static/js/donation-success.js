@@ -46,8 +46,8 @@ async function generateAndSignCertificate(paymentIntentId) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Error signing certificate: ${errorText}`);
+      const errorData = await response.json();
+      throw new Error(`Error signing certificate: ${errorData.message || 'Unknown error'}`);
     }
 
     const data = await response.json();
