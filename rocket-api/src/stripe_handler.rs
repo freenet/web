@@ -5,8 +5,10 @@ use std::collections::HashMap;
 use p256::{
     ecdsa::{SigningKey, Signature, signature::Signer},
     elliptic_curve::sec1::ToEncodedPoint,
-    PublicKey,
+    PublicKey, SecretKey,
 };
+use rand_core::OsRng;
+use sha2::{Sha256, Digest};
 use base64::{Engine as _, engine::general_purpose};
 
 #[derive(Debug, Deserialize)]
@@ -51,11 +53,25 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     // Parse the blinded public key
     let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(&request.blinded_public_key)?)?;
 
-    // Sign the blinded public key
-    let blind_signature: Signature = signing_key.sign(blinded_public_key.as_affine().to_encoded_point(false).as_bytes());
+    // Generate a random nonce
+    let nonce = SecretKey::random(&mut OsRng);
+    let nonce_bytes = nonce.to_bytes();
+
+    // Combine the blinded public key and nonce, and hash them
+    let mut hasher = Sha256::new();
+    hasher.update(blinded_public_key.as_affine().to_encoded_point(false).as_bytes());
+    hasher.update(&nonce_bytes);
+    let message = hasher.finalize();
+
+    // Sign the hash
+    let blind_signature: Signature = signing_key.sign(&message);
+
+    // Combine the signature and nonce
+    let mut combined = blind_signature.to_bytes().to_vec();
+    combined.extend_from_slice(&nonce_bytes);
 
     Ok(SignCertificateResponse {
-        blind_signature: general_purpose::STANDARD.encode(blind_signature.to_bytes()),
+        blind_signature: general_purpose::STANDARD.encode(combined),
     })
 }
 
