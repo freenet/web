@@ -47,7 +47,8 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     PaymentIntent::update(&client, &pi.id, params).await?;
 
     // Load the server's signing key
-    let server_secret_key = std::env::var("SERVER_SIGNING_KEY").expect("Missing SERVER_SIGNING_KEY in env");
+    let server_secret_key = std::env::var("SERVER_SIGNING_KEY")
+        .map_err(|_| "Missing SERVER_SIGNING_KEY in env")?;
     let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(server_secret_key)?)?;
 
     // Parse the blinded public key
