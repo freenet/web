@@ -1,6 +1,6 @@
 use clap::{Command};
-use rand::Rng;
-use rand::distributions::Alphanumeric;
+use rand::RngCore;
+use base64::{Engine as _, engine::general_purpose};
 
 fn main() {
     let matches = Command::new("Freenet Key Utility")
@@ -17,10 +17,7 @@ fn main() {
 }
 
 fn generate_stripe_secret_key() -> String {
-    let key: String = rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(32)
-        .map(char::from)
-        .collect();
-    key
+    let mut key = [0u8; 32];
+    rand::thread_rng().fill_bytes(&mut key);
+    general_purpose::STANDARD.encode(&key)
 }
