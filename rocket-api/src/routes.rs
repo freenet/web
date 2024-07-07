@@ -202,8 +202,6 @@ pub fn routes() -> Vec<rocket::Route> {
         sign_certificate_route,
         options_sign_certificate,
         create_donation,
-        options_create_donation,
-        upload,
-        options_upload
+        options_create_donation
     ]
 }
