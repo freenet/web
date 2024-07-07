@@ -43,16 +43,26 @@ async function generateAndSignCertificate(paymentIntentId) {
       .add(ec.g.mul(blindingFactor).neg())
       .encode('hex');
 
-    // Display the certificate
-    document.getElementById('signedPublicKey').value = btoa(publicKey + '|' + unblindedSignature);
+    // Armor the certificate and private key
+    const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
+${publicKey}|${unblindedSignature}
+-----END FREENET DONATION CERTIFICATE-----`;
+
+    const armoredPrivateKey = `-----BEGIN FREENET DONATION PRIVATE KEY-----
+${privateKey}
+-----END FREENET DONATION PRIVATE KEY-----`;
+
+    // Display the certificate and private key
+    document.getElementById('certificate').value = armoredCertificate;
+    document.getElementById('privateKey').value = armoredPrivateKey;
     document.getElementById('certificateSection').style.display = 'block';
     document.getElementById('certificate-info').style.display = 'none';
 
     // Set up download button
     document.getElementById('downloadCertificate').addEventListener('click', function() {
       const certificateData = {
-        publicKey: publicKey,
-        signature: unblindedSignature
+        certificate: armoredCertificate,
+        privateKey: armoredPrivateKey
       };
       const blob = new Blob([JSON.stringify(certificateData, null, 2)], {type: 'application/json'});
       const url = URL.createObjectURL(blob);
