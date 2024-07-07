@@ -2,7 +2,7 @@ use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertif
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::form::Form;
 use rocket::fs::TempFile;
-use rocket::http::{ContentType, Header, Status};
+use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
 use rocket::{Data, Request, Response};
 use serde::{Deserialize, Serialize};
