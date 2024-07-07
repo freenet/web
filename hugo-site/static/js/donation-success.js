@@ -46,11 +46,24 @@ async function generateAndSignCertificate(paymentIntentId) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Error signing certificate: ${errorData.message || 'Unknown error'}`);
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const errorData = await response.json();
+        throw new Error(`Error signing certificate: ${errorData.message || 'Unknown error'}`);
+      } else {
+        const errorText = await response.text();
+        throw new Error(`Error signing certificate: ${errorText}`);
+      }
     }
 
-    const data = await response.json();
+    const contentType = response.headers.get('content-type');
+    let data;
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const errorText = await response.text();
+      throw new Error(`Unexpected response format: ${errorText}`);
+    }
     if (!data.blind_signature) {
       throw new Error(`Failed to sign certificate: ${data.blind_signature}`);
     }
