@@ -20,7 +20,6 @@ pub struct SignCertificateRequest {
 #[derive(Debug, Serialize)]
 pub struct SignCertificateResponse {
     pub blind_signature: String,
-    blind_signature: String,
 }
 
 pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, Box<dyn std::error::Error>> {
