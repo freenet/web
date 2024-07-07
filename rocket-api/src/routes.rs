@@ -83,7 +83,7 @@ fn get_message() -> Json<Message> {
 
 
 #[post("/sign-certificate", data = "<request>")]
-pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Json<SignCertificateResponse> {
+pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Result<Json<SignCertificateResponse>, Status> {
     info!("Received sign-certificate request: {:?}", request);
     match sign_certificate(request.into_inner()).await {
         Ok(response) => {
@@ -93,7 +93,7 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Js
         Err(e) => {
             error!("Error signing certificate: {}", e);
             error!("Error signing certificate: {}", e);
-            Status::InternalServerError
+            Err(Status::InternalServerError)
         },
     }
 }
