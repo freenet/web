@@ -21,7 +21,7 @@ async function generateAndSignCertificate(paymentIntentId) {
     const blindedPublicKey = ec.g.mul(blindingFactor).encode('hex');
 
     // Send blinded public key to server for signing
-    const response = await fetch('/api/sign-certificate', {
+    const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ paymentIntentId, blindedPublicKey })
