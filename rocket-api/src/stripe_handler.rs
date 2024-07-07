@@ -46,13 +46,20 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     };
     PaymentIntent::update(&client, &pi.id, params).await?;
 
+    // Sign the certificate
+    let signature = sign_with_key(&client, &request.blinded_public_key)?;
+
+    Ok(SignCertificateResponse { blind_signature: signature })
+}
+
+fn sign_with_key(client: &Client, blinded_public_key: &str) -> Result<String, Box<dyn std::error::Error>> {
     // Load the server's signing key
     let server_secret_key = std::env::var("SERVER_SIGNING_KEY")
         .map_err(|_| "Missing SERVER_SIGNING_KEY in env")?;
     let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(server_secret_key)?)?;
 
     // Parse the blinded public key
-    let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(&request.blinded_public_key)?)?;
+    let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(blinded_public_key)?)?;
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
@@ -71,9 +78,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     let mut combined = blind_signature.to_bytes().to_vec();
     combined.extend_from_slice(&nonce_bytes);
 
-    Ok(SignCertificateResponse {
-        blind_signature: general_purpose::STANDARD.encode(combined),
-    })
+    Ok(general_purpose::STANDARD.encode(combined))
 }
 
 // The create_payment_intent function and associated structs have been removed
