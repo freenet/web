@@ -25,7 +25,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     let client = Client::new(secret_key);
 
     // Verify payment intent
-    let mut pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await?;
+    let pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await?;
     if pi.status != PaymentIntentStatus::Succeeded {
         return Err("Payment not successful".into());
     }
