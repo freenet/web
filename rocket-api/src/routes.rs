@@ -98,6 +98,11 @@ pub fn options_sign_certificate() -> Status {
     Status::Ok
 }
 
+#[options("/create-donation")]
+pub fn options_create_donation() -> Status {
+    Status::Ok
+}
+
 #[derive(Debug)]
 pub enum DonationError {
     InvalidCurrency,
@@ -163,6 +168,7 @@ pub fn routes() -> Vec<rocket::Route> {
         get_message,
         sign_certificate_route,
         options_sign_certificate,
-        create_donation
+        create_donation,
+        options_create_donation
     ]
 }
