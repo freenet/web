@@ -6,6 +6,7 @@ use p256::{
     elliptic_curve::sec1::ToEncodedPoint,
     PublicKey,
 };
+use base64::{Engine as _, engine::general_purpose};
 
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
@@ -30,16 +31,16 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
 
     // Load the server's signing key
     let server_secret_key = std::env::var("SERVER_SIGNING_KEY").expect("Missing SERVER_SIGNING_KEY in env");
-    let signing_key = SigningKey::from_slice(&hex::decode(server_secret_key)?)?;
+    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(server_secret_key)?)?;
 
     // Parse the blinded public key
-    let blinded_public_key = PublicKey::from_sec1_bytes(&hex::decode(request.blinded_public_key)?)?;
+    let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(&request.blinded_public_key)?)?;
 
     // Sign the blinded public key
     let blind_signature: Signature = signing_key.sign(blinded_public_key.as_affine().to_encoded_point(false).as_bytes());
 
     Ok(SignCertificateResponse {
-        blind_signature: hex::encode(blind_signature.to_bytes()),
+        blind_signature: general_purpose::STANDARD.encode(blind_signature.to_bytes()),
     })
 }
 
