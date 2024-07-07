@@ -83,22 +83,18 @@ fn get_message() -> Json<Message> {
 
 
 #[post("/sign-certificate", data = "<request>")]
-pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Json<serde_json::Value> {
+pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Json<SignCertificateResponse> {
     info!("Received sign-certificate request: {:?}", request);
     match sign_certificate(request.into_inner()).await {
         Ok(response) => {
             info!("Certificate signed successfully");
-            Json(serde_json::json!({
-                "success": true,
-                "blind_signature": response.blind_signature
-            }))
+            Json(response)
         },
         Err(e) => {
             error!("Error signing certificate: {}", e);
-            Json(serde_json::json!({
-                "success": false,
-                "error": format!("Error signing certificate: {}", e)
-            }))
+            Json(SignCertificateResponse {
+                blind_signature: format!("Error signing certificate: {}", e),
+            })
         },
     }
 }
