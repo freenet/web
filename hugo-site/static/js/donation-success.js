@@ -25,23 +25,23 @@ async function generateAndSignCertificate(paymentIntentId) {
     const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paymentIntentId, blindedPublicKey })
+      body: JSON.stringify({ payment_intent_id: paymentIntentId, blinded_public_key: blindedPublicKey })
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to sign certificate: ${response.status} ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(`Failed to sign certificate: ${errorData.error || response.statusText}`);
     }
 
     const data = await response.json();
-    if (!data.blindSignature) {
-      throw new Error('Invalid response from server: missing blindSignature');
+    if (!data.blind_signature) {
+      throw new Error('Invalid response from server: missing blind_signature');
     }
-    const { blindSignature } = data;
+    const blindSignature = data.blind_signature;
 
     // Unblind the signature
-    const unblindedSignature = ec.g.mul(ec.keyFromPrivate(blindSignature, 'hex').getPrivate())
-      .add(ec.g.mul(blindingFactor).neg())
-      .encode('hex');
+    const blindSignaturePoint = ec.keyFromPublic(blindSignature, 'hex').getPublic();
+    const unblindedSignature = blindSignaturePoint.add(ec.g.mul(blindingFactor).neg()).encode('hex');
 
     // Armor the certificate and private key
     const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
@@ -74,8 +74,23 @@ ${privateKey}
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     });
+
+    // Verify the certificate
+    if (verifyCertificate(publicKey, unblindedSignature)) {
+      console.log("Certificate verified successfully");
+    } else {
+      console.error("Certificate verification failed");
+      showError('Certificate verification failed. Please contact support.');
+    }
   } catch (error) {
     showError('Error generating certificate: ' + error.message);
+  }
+
+  function verifyCertificate(publicKey, signature) {
+    const ec = new elliptic.ec('curve25519');
+    const publicKeyPoint = ec.keyFromPublic(publicKey, 'hex').getPublic();
+    const signaturePoint = ec.keyFromPublic(signature, 'hex').getPublic();
+    return publicKeyPoint.eq(signaturePoint);
   }
 }
 
