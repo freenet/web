@@ -88,10 +88,9 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Re
     match sign_certificate(request.into_inner()).await {
         Ok(response) => {
             info!("Certificate signed successfully");
-            Json(response)
+            Ok(Json(response))
         },
         Err(e) => {
-            error!("Error signing certificate: {}", e);
             error!("Error signing certificate: {}", e);
             Err(Status::InternalServerError)
         },
