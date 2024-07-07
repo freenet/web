@@ -1,6 +1,7 @@
 use rocket::serde::{Deserialize, Serialize};
-use stripe::{Client, PaymentIntent, PaymentIntentStatus};
+use stripe::{Client, PaymentIntent, PaymentIntentStatus, Metadata};
 use std::str::FromStr;
+use std::collections::HashMap;
 use p256::{
     ecdsa::{SigningKey, Signature, signature::Signer},
     elliptic_curve::sec1::ToEncodedPoint,
@@ -24,10 +25,24 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     let client = Client::new(secret_key);
 
     // Verify payment intent
-    let pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await?;
+    let mut pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await?;
     if pi.status != PaymentIntentStatus::Succeeded {
         return Err("Payment not successful".into());
     }
+
+    // Check if the certificate has already been signed
+    if pi.metadata.get("certificate_signed").is_some() {
+        return Err("Certificate already signed for this payment".into());
+    }
+
+    // Mark the payment intent as used for certificate signing
+    let mut metadata = HashMap::new();
+    metadata.insert("certificate_signed".to_string(), "true".to_string());
+    let params = stripe::PaymentIntentUpdateParams {
+        metadata: Some(Metadata::from(metadata)),
+        ..Default::default()
+    };
+    pi = PaymentIntent::update(&client, &pi.id, params).await?;
 
     // Load the server's signing key
     let server_secret_key = std::env::var("SERVER_SIGNING_KEY").expect("Missing SERVER_SIGNING_KEY in env");
