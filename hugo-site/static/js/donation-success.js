@@ -154,11 +154,11 @@ async function blindPublicKey(publicKey, blindingFactor) {
     "raw",
     publicKey,
     {
-      name: "ECDSA",
+      name: "ECDH",
       namedCurve: "P-256"
     },
     true,
-    ["verify"]
+    []
   );
 
   const blindingFactorPoint = await window.crypto.subtle.importKey(
