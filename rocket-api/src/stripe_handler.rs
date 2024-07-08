@@ -31,6 +31,8 @@ pub struct SignCertificateResponse {
 }
 
 pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, Box<dyn std::error::Error>> {
+    log::info!("Starting sign_certificate function with request: {:?}", request);
+
     let stripe_secret_key = match std::env::var("STRIPE_SECRET_KEY") {
         Ok(key) => {
             log::info!("STRIPE_SECRET_KEY found: {}", key);
@@ -65,7 +67,18 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     PaymentIntent::update(&client, &pi.id, params).await?;
 
     // Sign the certificate
-    let signature = sign_with_key(&request.blinded_public_key)?;
+    log::info!("Payment intent verified successfully");
+
+    let signature = match sign_with_key(&request.blinded_public_key) {
+        Ok(sig) => {
+            log::info!("Certificate signed successfully");
+            sig
+        },
+        Err(e) => {
+            log::error!("Error in sign_with_key: {}", e);
+            return Err(e);
+        }
+    };
 
     Ok(SignCertificateResponse { blind_signature: signature })
 }
@@ -82,16 +95,30 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error:
             panic!("SERVER_SIGNING_KEY environment variable not set");
         }
     };
-    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_secret_key)).map_err(|e| {
+    log::info!("Starting sign_with_key function with blinded_public_key: {}", blinded_public_key);
+
+    let signing_key = match SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_secret_key)).map_err(|e| {
         log::error!("Failed to decode SERVER_SIGNING_KEY: {}", e);
         e
-    })?)?;
+    })?) {
+        Ok(key) => key,
+        Err(e) => {
+            log::error!("Failed to create signing key: {}", e);
+            return Err(e);
+        }
+    };
 
     // Parse the blinded public key
-    let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(pad_base64(blinded_public_key)).map_err(|e| {
+    let blinded_public_key = match PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(pad_base64(blinded_public_key)).map_err(|e| {
         log::error!("Failed to decode blinded public key: {}", e);
         e
-    })?)?;
+    })?) {
+        Ok(key) => key,
+        Err(e) => {
+            log::error!("Failed to parse blinded public key: {}", e);
+            return Err(e);
+        }
+    };
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
@@ -104,7 +131,13 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error:
     let message = hasher.finalize();
 
     // Sign the hash
-    let blind_signature: Signature = ecdsa::signature::Signer::<Signature>::sign(&signing_key, &message);
+    let blind_signature: Signature = match ecdsa::signature::Signer::<Signature>::sign(&signing_key, &message) {
+        Ok(sig) => sig,
+        Err(e) => {
+            log::error!("Failed to sign the message: {}", e);
+            return Err(e);
+        }
+    };
 
     // Combine the signature and nonce
     let mut combined = blind_signature.to_bytes().to_vec();
