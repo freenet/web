@@ -60,11 +60,11 @@ async function generateAndSignCertificate(paymentIntentId) {
     // Generate a random blinding factor
     const blindingFactor = await window.crypto.subtle.generateKey(
       {
-        name: "ECDSA",
+        name: "ECDH",
         namedCurve: "P-256"
       },
       true,
-      ["sign", "verify"]
+      ["deriveBits"]
     );
 
     // Blind the public key
@@ -165,11 +165,11 @@ async function blindPublicKey(publicKey, blindingFactor) {
     "raw",
     await window.crypto.subtle.exportKey("raw", blindingFactor.publicKey),
     {
-      name: "ECDSA",
+      name: "ECDH",
       namedCurve: "P-256"
     },
     true,
-    ["verify"]
+    []
   );
 
   // Perform point addition using the Web Crypto API
@@ -186,7 +186,7 @@ async function blindPublicKey(publicKey, blindingFactor) {
 }
 
 async function unblindSignature(blindSignature, blindingFactor) {
-  const blindingFactorPoint = await window.crypto.subtle.exportKey("raw", blindingFactor.publicKey);
+  const blindingFactorPoint = await window.crypto.subtle.exportKey("raw", blindingFactor.privateKey);
   
   // Perform point subtraction (this is a simplified representation, actual ECC operations are more complex)
   const unblindedSignature = new Uint8Array(blindSignature.byteLength);
