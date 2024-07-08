@@ -23,6 +23,7 @@ fn internal_error() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
+    log::info!("Starting Freenet Certified Donation API");
     match dotenv() {
         Ok(path) => log::info!(".env file loaded successfully from: {:?}", path),
         Err(e) => log::error!("Failed to load .env file: {}", e),
