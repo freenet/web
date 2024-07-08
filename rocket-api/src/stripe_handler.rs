@@ -4,7 +4,6 @@ use std::str::FromStr;
 use std::collections::HashMap;
 use p256::{
     ecdsa::{self, SigningKey, Signature},
-    ecdsa::signature::Signer,
     elliptic_curve::sec1::ToEncodedPoint,
     PublicKey, SecretKey,
 };
@@ -105,10 +104,7 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error:
     let message = hasher.finalize();
 
     // Sign the hash
-    let blind_signature: Signature = ecdsa::signature::Signer::<Signature>::sign(&signing_key, &message).map_err(|e| {
-        log::error!("Failed to sign the message: {}", e);
-        e
-    })?;
+    let blind_signature: Signature = ecdsa::signature::Signer::<Signature>::sign(&signing_key, &message);
 
     // Combine the signature and nonce
     let mut combined = blind_signature.to_bytes().to_vec();
