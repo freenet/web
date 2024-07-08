@@ -23,8 +23,8 @@ pub struct SignCertificateResponse {
 }
 
 pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, Box<dyn std::error::Error>> {
-    let secret_key = std::env::var("STRIPE_SECRET_KEY").expect("Missing STRIPE_SECRET_KEY in env");
-    let client = Client::new(secret_key);
+    let stripe_secret_key = std::env::var("STRIPE_SECRET_KEY").expect("STRIPE_SECRET_KEY environment variable not set");
+    let client = Client::new(stripe_secret_key);
 
     // Verify payment intent
     let pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await?;
