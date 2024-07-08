@@ -9,7 +9,7 @@ fn main() {
         .author("Your Name <your.email@example.com>")
         .about("Performs various Freenet-related tasks")
         .subcommand(Command::new("generate-key")
-            .about("Generates a new STRIPE_SECRET_KEY"))
+            .about("Generates a new "))
         .get_matches();
 
     if let Some(_) = matches.subcommand_matches("generate-key") {
@@ -19,12 +19,12 @@ fn main() {
         .author("Your Name <your.email@example.com>")
         .about("Performs various Freenet-related tasks")
         .subcommand(Command::new("generate-key")
-            .about("Generates a new STRIPE_SECRET_KEY"))
+            .about("Generates a new "))
         .get_matches();
 
     if let Some(_) = matches.subcommand_matches("generate-key") {
         let key = generate_stripe_secret_key();
-        println!("Generated STRIPE_SECRET_KEY: {}", key);
+        println!("Generated : {}", key);
     }
 }
 
@@ -38,7 +38,7 @@ pub fn generate_stripe_secret_key() -> String {
 }
 
         let key = generate_stripe_secret_key();
-        println!("Generated STRIPE_SECRET_KEY: {}", key);
+        println!("Generated : {}", key);
     }
 }
 
