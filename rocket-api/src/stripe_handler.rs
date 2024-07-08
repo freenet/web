@@ -17,6 +17,14 @@ pub struct SignCertificateRequest {
     blinded_public_key: String,
 }
 
+fn pad_base64(base64_str: &str) -> String {
+    let mut padded = base64_str.to_string();
+    while padded.len() % 4 != 0 {
+        padded.push('=');
+    }
+    padded
+}
+
 #[derive(Debug, Serialize)]
 pub struct SignCertificateResponse {
     pub blind_signature: String,
@@ -74,10 +82,10 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error:
             panic!("SERVER_SIGNING_KEY environment variable not set");
         }
     };
-    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(server_secret_key)?)?;
+    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_secret_key))?)?;
 
     // Parse the blinded public key
-    let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(blinded_public_key)?)?;
+    let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(pad_base64(blinded_public_key))?)?;
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
