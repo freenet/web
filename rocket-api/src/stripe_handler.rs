@@ -171,20 +171,15 @@ fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError>
             CertificateError::KeyError("Missing 'y' coordinate".to_string())
         })?;
 
-    let x = general_purpose::STANDARD.decode(x)
-        .map_err(|e| {
-            log::error!("Failed to decode 'x' coordinate: {}", e);
-            CertificateError::Base64Error(e)
-        })?;
-    let y = general_purpose::STANDARD.decode(y)
-        .map_err(|e| {
-            log::error!("Failed to decode 'y' coordinate: {}", e);
-            CertificateError::Base64Error(e)
-        })?;
-
     let mut public_key_bytes = vec![0x04]; // Uncompressed point format
-    public_key_bytes.extend_from_slice(&x);
-    public_key_bytes.extend_from_slice(&y);
+    public_key_bytes.extend_from_slice(&general_purpose::STANDARD.decode(x).map_err(|e| {
+        log::error!("Failed to decode 'x' coordinate: {}", e);
+        CertificateError::Base64Error(e)
+    })?);
+    public_key_bytes.extend_from_slice(&general_purpose::STANDARD.decode(y).map_err(|e| {
+        log::error!("Failed to decode 'y' coordinate: {}", e);
+        CertificateError::Base64Error(e)
+    })?);
 
     let blinded_public_key = PublicKey::from_sec1_bytes(&public_key_bytes)
         .map_err(|e| {
