@@ -76,7 +76,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
         },
         Err(e) => {
             log::error!("Error in sign_with_key: {}", e);
-            return Err(Box::new(e));
+            return Err(Box::new(e) as Box<dyn std::error::Error>);
         }
     };
 
@@ -116,7 +116,7 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error:
         Ok(key) => key,
         Err(e) => {
             log::error!("Failed to parse blinded public key: {}", e);
-            return Err(e);
+            return Err(Box::new(e) as Box<dyn std::error::Error>);
         }
     };
 
@@ -135,7 +135,7 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error:
         Ok(sig) => sig,
         Err(e) => {
             log::error!("Failed to sign the message: {}", e);
-            return Err(Box::new(e));
+            return Err(Box::new(e) as Box<dyn std::error::Error>);
         }
     };
 
