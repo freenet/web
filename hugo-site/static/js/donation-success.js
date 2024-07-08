@@ -96,7 +96,7 @@ async function generateAndSignCertificate(paymentIntentId) {
       const errorText = await response.text();
       throw new Error(`Unexpected response format: ${errorText}`);
     }
-    if (!data.blind_signature && data.message === "Certificate already signed for this payment") {
+    if (!data.blind_signature && data.message === "CERTIFICATE_ALREADY_SIGNED") {
       showError('Certificate already signed for this payment.');
     }
     const blindSignature = base64ToBuffer(data.blind_signature);
