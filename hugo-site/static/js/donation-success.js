@@ -78,7 +78,7 @@ async function generateAndSignCertificate(paymentIntentId) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         payment_intent_id: paymentIntentId, 
-        blinded_public_key: JSON.parse(atob(blindedPublicKey))  // Parse the base64 encoded JSON
+        blinded_public_key: blindedPublicKey  // Now this is already a JSON object
       })
     });
 
@@ -192,12 +192,10 @@ async function blindPublicKey(publicKeyJwk, blindingFactor) {
   );
 
   const blindedPublicKeyJwk = await window.crypto.subtle.exportKey("jwk", blindedPublicKey);
-  return btoa(JSON.stringify({
-    kty: blindedPublicKeyJwk.kty,
-    crv: blindedPublicKeyJwk.crv,
+  return {
     x: blindedPublicKeyJwk.x,
     y: blindedPublicKeyJwk.y
-  }));
+  };
 }
 
 async function unblindSignature(blindSignature, blindingFactor) {
