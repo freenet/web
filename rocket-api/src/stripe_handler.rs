@@ -70,6 +70,7 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error:
         },
         Err(e) => {
             log::error!("Environment variable SERVER_SIGNING_KEY not found: {}", e);
+            log::error!("Current environment variables: {:?}", std::env::vars().collect::<Vec<_>>());
             panic!("SERVER_SIGNING_KEY environment variable not set");
         }
     };
