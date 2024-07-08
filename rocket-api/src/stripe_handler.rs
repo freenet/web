@@ -1,5 +1,5 @@
 use rocket::serde::{Deserialize, Serialize};
-use async_stripe::{Client, PaymentIntent, PaymentIntentStatus};
+use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use std::collections::HashMap;
 use p256::{
@@ -14,13 +14,13 @@ use std::error::Error as StdError;
 
 #[derive(Debug)]
 pub enum CertificateError {
-    StripeError(async_stripe::StripeError),
+    StripeError(stripe::StripeError),
     PaymentNotSuccessful,
     CertificateAlreadySigned,
     SigningError(String),
     Base64Error(base64::DecodeError),
     KeyError(String),
-    ParseIdError(async_stripe::ParseIdError),
+    ParseIdError(stripe::ParseIdError),
 }
 
 impl std::fmt::Display for CertificateError {
@@ -39,8 +39,8 @@ impl std::fmt::Display for CertificateError {
 
 impl StdError for CertificateError {}
 
-impl From<async_stripe::StripeError> for CertificateError {
-    fn from(error: async_stripe::StripeError) -> Self {
+impl From<stripe::StripeError> for CertificateError {
+    fn from(error: stripe::StripeError) -> Self {
         CertificateError::StripeError(error)
     }
 }
@@ -51,8 +51,8 @@ impl From<base64::DecodeError> for CertificateError {
     }
 }
 
-impl From<async_stripe::ParseIdError> for CertificateError {
-    fn from(error: async_stripe::ParseIdError) -> Self {
+impl From<stripe::ParseIdError> for CertificateError {
+    fn from(error: stripe::ParseIdError) -> Self {
         CertificateError::ParseIdError(error)
     }
 }
@@ -93,7 +93,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     let client = Client::new(stripe_secret_key);
 
     // Verify payment intent
-    let pi = PaymentIntent::retrieve(&client, &async_stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await?;
+    let pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await?;
     if pi.status != PaymentIntentStatus::Succeeded {
         return Err(CertificateError::PaymentNotSuccessful);
     }
@@ -106,7 +106,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     // Mark the payment intent as used for certificate signing
     let mut metadata = HashMap::new();
     metadata.insert("certificate_signed".to_string(), "true".to_string());
-    let params = async_stripe::UpdatePaymentIntent {
+    let params = stripe::UpdatePaymentIntent {
         metadata: Some(metadata),
         ..Default::default()
     };
