@@ -9,6 +9,7 @@ use rocket::fairing::AdHoc;
 use rocket::shield::{Shield, XssFilter, Referrer};
 use rocket::Request;
 use env_logger::Env;
+use dotenv::dotenv;
 
 #[catch(404)]
 fn not_found(req: &Request) -> String {
