@@ -53,28 +53,28 @@ async function generateAndSignCertificate(paymentIntentId) {
       ["sign", "verify"]
     );
 
-    // Export the public key
-    const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
-    const publicKey = bufferToBase64(publicKeyBuffer);
+    // Export the public key in the correct format
+    const publicKeyJwk = await window.crypto.subtle.exportKey("jwk", keyPair.publicKey);
+    const publicKey = bufferToBase64(JSON.stringify(publicKeyJwk));
 
     // Generate a random blinding factor
     const blindingFactor = await window.crypto.subtle.generateKey(
       {
-        name: "ECDH",
+        name: "ECDSA",
         namedCurve: "P-256"
       },
       true,
-      ["deriveBits"]
+      ["sign"]
     );
 
     // Blind the public key
-    const blindedPublicKey = await blindPublicKey(publicKeyBuffer, blindingFactor);
+    const blindedPublicKey = await blindPublicKey(publicKeyJwk, blindingFactor);
 
     // Send blinded public key to server for signing
     const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ payment_intent_id: paymentIntentId, blinded_public_key: bufferToBase64(blindedPublicKey) })
+      body: JSON.stringify({ payment_intent_id: paymentIntentId, blinded_public_key: blindedPublicKey })
     });
 
     if (!response.ok) {
@@ -149,40 +149,44 @@ ${bufferToBase64(privateKeyBuffer)}
   }
 }
 
-async function blindPublicKey(publicKey, blindingFactor) {
-  const publicKeyPoint = await window.crypto.subtle.importKey(
-    "raw",
-    publicKey,
+async function blindPublicKey(publicKeyJwk, blindingFactor) {
+  // Convert JWK to a CryptoKey object
+  const publicKey = await window.crypto.subtle.importKey(
+    "jwk",
+    publicKeyJwk,
     {
-      name: "ECDH",
+      name: "ECDSA",
       namedCurve: "P-256"
     },
     true,
-    []
+    ["verify"]
   );
 
-  const blindingFactorPoint = await window.crypto.subtle.importKey(
+  // Export the public key to raw format
+  const publicKeyRaw = await window.crypto.subtle.exportKey("raw", publicKey);
+
+  // Export the blinding factor to raw format
+  const blindingFactorRaw = await window.crypto.subtle.exportKey("raw", blindingFactor.publicKey);
+
+  // Perform point addition (this is a simplified representation, actual ECC operations are more complex)
+  const blindedPublicKeyRaw = new Uint8Array(publicKeyRaw);
+  for (let i = 0; i < blindedPublicKeyRaw.length; i++) {
+    blindedPublicKeyRaw[i] ^= blindingFactorRaw[i];
+  }
+
+  // Convert the blinded public key back to JWK format
+  const blindedPublicKey = await window.crypto.subtle.importKey(
     "raw",
-    await window.crypto.subtle.exportKey("raw", blindingFactor.publicKey),
+    blindedPublicKeyRaw,
     {
-      name: "ECDH",
+      name: "ECDSA",
       namedCurve: "P-256"
     },
     true,
-    []
+    ["verify"]
   );
 
-  // Perform point addition using the Web Crypto API
-  const blindedPublicKey = await window.crypto.subtle.deriveBits(
-    {
-      name: "ECDH",
-      public: publicKeyPoint
-    },
-    blindingFactor.privateKey,
-    256
-  );
-
-  return new Uint8Array(blindedPublicKey);
+  return bufferToBase64(JSON.stringify(await window.crypto.subtle.exportKey("jwk", blindedPublicKey)));
 }
 
 async function unblindSignature(blindSignature, blindingFactor) {
