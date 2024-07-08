@@ -3,13 +3,30 @@ use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use std::collections::HashMap;
 use p256::{
-    ecdsa::{self, SigningKey, Signature},
+    ecdsa::{self, SigningKey, Signature, signature::Signer},
     elliptic_curve::sec1::ToEncodedPoint,
     PublicKey, SecretKey,
 };
 use rand_core::OsRng;
 use sha2::{Sha256, Digest};
 use base64::{Engine as _, engine::general_purpose};
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum CertificateError {
+    #[error("Stripe error: {0}")]
+    StripeError(#[from] stripe::StripeError),
+    #[error("Payment not successful")]
+    PaymentNotSuccessful,
+    #[error("Certificate already signed")]
+    CertificateAlreadySigned,
+    #[error("Signing error: {0}")]
+    SigningError(String),
+    #[error("Base64 decoding error: {0}")]
+    Base64Error(#[from] base64::DecodeError),
+    #[error("Key error: {0}")]
+    KeyError(String),
+}
 
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
@@ -30,7 +47,7 @@ pub struct SignCertificateResponse {
     pub blind_signature: String,
 }
 
-pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, Box<dyn std::error::Error>> {
+pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, CertificateError> {
     log::info!("Starting sign_certificate function with request: {:?}", request);
 
     let stripe_secret_key = match std::env::var("STRIPE_SECRET_KEY") {
@@ -49,12 +66,12 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     // Verify payment intent
     let pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await?;
     if pi.status != PaymentIntentStatus::Succeeded {
-        return Err("Payment not successful".into());
+        return Err(CertificateError::PaymentNotSuccessful);
     }
 
     // Check if the certificate has already been signed
     if pi.metadata.get("certificate_signed").is_some() {
-        return Err("CERTIFICATE_ALREADY_SIGNED".into());
+        return Err(CertificateError::CertificateAlreadySigned);
     }
 
     // Mark the payment intent as used for certificate signing
@@ -83,7 +100,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     Ok(SignCertificateResponse { blind_signature: signature })
 }
 
-fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error::Error>> {
+fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
     let server_secret_key = match std::env::var("SERVER_SIGNING_KEY") {
         Ok(key) => {
             log::info!("SERVER_SIGNING_KEY found");
@@ -131,13 +148,7 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error:
     let message = hasher.finalize();
 
     // Sign the hash
-    let blind_signature: Signature = match ecdsa::signature::Signer::sign(&signing_key, &message) {
-        Ok(sig) => sig,
-        Err(e) => {
-            log::error!("Failed to sign the message: {}", e);
-            return Err(Box::new(e) as Box<dyn std::error::Error>);
-        }
-    };
+    let blind_signature: Signature = signing_key.sign(&message);
 
     // Combine the signature and nonce
     let mut combined = blind_signature.to_bytes().to_vec();
