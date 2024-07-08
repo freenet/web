@@ -5,7 +5,19 @@ function bufferToBase64(buffer) {
     for (let i = 0; i < len; i++) {
         binary += String.fromCharCode(bytes[i]);
     }
-    return window.btoa(binary);
+    return window.btoa(binary).replace(/=+$/, '');
+}
+
+function base64ToBuffer(base64) {
+    // Add padding if necessary
+    const paddedBase64 = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
+    const binary = window.atob(paddedBase64);
+    const len = binary.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
