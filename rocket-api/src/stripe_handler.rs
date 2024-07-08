@@ -3,7 +3,7 @@ use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use std::collections::HashMap;
 use p256::{
-    ecdsa::{SigningKey, Signature, signature::Signer},
+    ecdsa::{self, SigningKey, Signature, signature::Signer},
     elliptic_curve::sec1::ToEncodedPoint,
     PublicKey, SecretKey,
 };
