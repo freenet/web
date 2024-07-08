@@ -161,15 +161,28 @@ async function blindPublicKey(publicKey, blindingFactor) {
     ["verify"]
   );
 
-  const blindingFactorPoint = await window.crypto.subtle.exportKey("raw", blindingFactor.publicKey);
-  
-  // Perform point addition (this is a simplified representation, actual ECC operations are more complex)
-  const blindedPublicKey = new Uint8Array(publicKey.byteLength);
-  for (let i = 0; i < publicKey.byteLength; i++) {
-    blindedPublicKey[i] = publicKey[i] ^ blindingFactorPoint[i];
-  }
+  const blindingFactorPoint = await window.crypto.subtle.importKey(
+    "raw",
+    await window.crypto.subtle.exportKey("raw", blindingFactor.publicKey),
+    {
+      name: "ECDSA",
+      namedCurve: "P-256"
+    },
+    true,
+    ["verify"]
+  );
 
-  return blindedPublicKey;
+  // Perform point addition using the Web Crypto API
+  const blindedPublicKey = await window.crypto.subtle.deriveBits(
+    {
+      name: "ECDH",
+      public: publicKeyPoint
+    },
+    blindingFactor.privateKey,
+    256
+  );
+
+  return new Uint8Array(blindedPublicKey);
 }
 
 async function unblindSignature(blindSignature, blindingFactor) {
