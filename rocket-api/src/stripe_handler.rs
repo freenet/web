@@ -159,12 +159,33 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
     // Parse the blinded public key from JWK format
     let blinded_public_key_json: serde_json::Value = serde_json::from_str(blinded_public_key)
         .map_err(|e| {
-            log::error!("Failed to parse blinded public key JSON: {}", e);
-            CertificateError::KeyError(e.to_string())
+            log::error!("Failed to parse blinded public key JSON: {}. Received blinded_public_key: '{}'", e, blinded_public_key);
+            CertificateError::KeyError(format!("Invalid JSON: {}", e))
         })?;
 
-    let x = general_purpose::STANDARD.decode(blinded_public_key_json["x"].as_str().unwrap())?;
-    let y = general_purpose::STANDARD.decode(blinded_public_key_json["y"].as_str().unwrap())?;
+    log::debug!("Parsed blinded public key JSON: {:?}", blinded_public_key_json);
+
+    let x = blinded_public_key_json["x"].as_str()
+        .ok_or_else(|| {
+            log::error!("Missing 'x' coordinate in blinded public key JSON");
+            CertificateError::KeyError("Missing 'x' coordinate".to_string())
+        })?;
+    let y = blinded_public_key_json["y"].as_str()
+        .ok_or_else(|| {
+            log::error!("Missing 'y' coordinate in blinded public key JSON");
+            CertificateError::KeyError("Missing 'y' coordinate".to_string())
+        })?;
+
+    let x = general_purpose::STANDARD.decode(x)
+        .map_err(|e| {
+            log::error!("Failed to decode 'x' coordinate: {}", e);
+            CertificateError::Base64Error(e)
+        })?;
+    let y = general_purpose::STANDARD.decode(y)
+        .map_err(|e| {
+            log::error!("Failed to decode 'y' coordinate: {}", e);
+            CertificateError::Base64Error(e)
+        })?;
 
     let mut public_key_bytes = vec![0x04]; // Uncompressed point format
     public_key_bytes.extend_from_slice(&x);

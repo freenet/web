@@ -70,11 +70,16 @@ async function generateAndSignCertificate(paymentIntentId) {
     // Blind the public key
     const blindedPublicKey = await blindPublicKey(publicKeyJwk, blindingFactor);
 
+    console.log('Blinded public key:', blindedPublicKey);
+
     // Send blinded public key to server for signing
     const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ payment_intent_id: paymentIntentId, blinded_public_key: blindedPublicKey })
+      body: JSON.stringify({ 
+        payment_intent_id: paymentIntentId, 
+        blinded_public_key: JSON.parse(atob(blindedPublicKey))  // Parse the base64 encoded JSON
+      })
     });
 
     if (!response.ok) {
@@ -186,7 +191,13 @@ async function blindPublicKey(publicKeyJwk, blindingFactor) {
     ["verify"]
   );
 
-  return bufferToBase64(JSON.stringify(await window.crypto.subtle.exportKey("jwk", blindedPublicKey)));
+  const blindedPublicKeyJwk = await window.crypto.subtle.exportKey("jwk", blindedPublicKey);
+  return btoa(JSON.stringify({
+    kty: blindedPublicKeyJwk.kty,
+    crv: blindedPublicKeyJwk.crv,
+    x: blindedPublicKeyJwk.x,
+    y: blindedPublicKeyJwk.y
+  }));
 }
 
 async function unblindSignature(blindSignature, blindingFactor) {
