@@ -10,22 +10,51 @@ use p256::{
 use rand_core::OsRng;
 use sha2::{Sha256, Digest};
 use base64::{Engine as _, engine::general_purpose};
-use thiserror::Error;
+use std::error::Error as StdError;
 
-#[derive(Error, Debug)]
+#[derive(Debug)]
 pub enum CertificateError {
-    #[error("Stripe error: {0}")]
-    StripeError(#[from] stripe::StripeError),
-    #[error("Payment not successful")]
+    StripeError(stripe::StripeError),
     PaymentNotSuccessful,
-    #[error("Certificate already signed")]
     CertificateAlreadySigned,
-    #[error("Signing error: {0}")]
     SigningError(String),
-    #[error("Base64 decoding error: {0}")]
-    Base64Error(#[from] base64::DecodeError),
-    #[error("Key error: {0}")]
+    Base64Error(base64::DecodeError),
     KeyError(String),
+    ParseIdError(stripe::ParseIdError),
+}
+
+impl std::fmt::Display for CertificateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CertificateError::StripeError(e) => write!(f, "Stripe error: {}", e),
+            CertificateError::PaymentNotSuccessful => write!(f, "Payment not successful"),
+            CertificateError::CertificateAlreadySigned => write!(f, "Certificate already signed"),
+            CertificateError::SigningError(e) => write!(f, "Signing error: {}", e),
+            CertificateError::Base64Error(e) => write!(f, "Base64 decoding error: {}", e),
+            CertificateError::KeyError(e) => write!(f, "Key error: {}", e),
+            CertificateError::ParseIdError(e) => write!(f, "Parse ID error: {}", e),
+        }
+    }
+}
+
+impl StdError for CertificateError {}
+
+impl From<stripe::StripeError> for CertificateError {
+    fn from(error: stripe::StripeError) -> Self {
+        CertificateError::StripeError(error)
+    }
+}
+
+impl From<base64::DecodeError> for CertificateError {
+    fn from(error: base64::DecodeError) -> Self {
+        CertificateError::Base64Error(error)
+    }
+}
+
+impl From<stripe::ParseIdError> for CertificateError {
+    fn from(error: stripe::ParseIdError) -> Self {
+        CertificateError::ParseIdError(error)
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -86,16 +115,12 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     // Sign the certificate
     log::info!("Payment intent verified successfully");
 
-    let signature = match sign_with_key(&request.blinded_public_key) {
-        Ok(sig) => {
-            log::info!("Certificate signed successfully");
-            sig
-        },
-        Err(e) => {
-            log::error!("Error in sign_with_key: {}", e);
-            return Err(Box::new(e) as Box<dyn std::error::Error>);
-        }
-    };
+    let signature = sign_with_key(&request.blinded_public_key).map_err(|e| {
+        log::error!("Error in sign_with_key: {:?}", e);
+        e
+    })?;
+
+    log::info!("Certificate signed successfully");
 
     Ok(SignCertificateResponse { blind_signature: signature })
 }
@@ -114,28 +139,18 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
     };
     log::info!("Starting sign_with_key function with blinded_public_key: {}", blinded_public_key);
 
-    let signing_key = match SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_secret_key)).map_err(|e| {
-        log::error!("Failed to decode SERVER_SIGNING_KEY: {}", e);
-        e
-    })?) {
-        Ok(key) => key,
-        Err(e) => {
+    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_secret_key))?)
+        .map_err(|e| {
             log::error!("Failed to create signing key: {}", e);
-            return Err(Box::new(e));
-        }
-    };
+            CertificateError::KeyError(e.to_string())
+        })?;
 
     // Parse the blinded public key
-    let blinded_public_key = match PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(pad_base64(blinded_public_key)).map_err(|e| {
-        log::error!("Failed to decode blinded public key: {}", e);
-        e
-    })?) {
-        Ok(key) => key,
-        Err(e) => {
+    let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(pad_base64(blinded_public_key))?)
+        .map_err(|e| {
             log::error!("Failed to parse blinded public key: {}", e);
-            return Err(Box::new(e) as Box<dyn std::error::Error>);
-        }
-    };
+            CertificateError::KeyError(e.to_string())
+        })?;
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
