@@ -25,7 +25,7 @@ pub struct SignCertificateResponse {
 pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, Box<dyn std::error::Error>> {
     let stripe_secret_key = match std::env::var("STRIPE_SECRET_KEY") {
         Ok(key) => {
-            log::info!("STRIPE_SECRET_KEY found");
+            log::info!("STRIPE_SECRET_KEY found: {}", key);
             key
         },
         Err(e) => {
