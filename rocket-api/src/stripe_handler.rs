@@ -52,7 +52,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
 
     // Check if the certificate has already been signed
     if pi.metadata.get("certificate_signed").is_some() {
-        return Err("Certificate already signed for this payment".into());
+        return Err("CERTIFICATE_ALREADY_SIGNED".into());
     }
 
     // Mark the payment intent as used for certificate signing
