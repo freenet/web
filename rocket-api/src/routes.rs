@@ -134,8 +134,8 @@ impl<'r> rocket::response::Responder<'r, 'static> for DonationError {
 pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<DonationResponse>, DonationError> {
     info!("Received create-donation request: {:?}", request);
     
-    let secret_key = std::env::var("").map_err(|e| {
-        error!("Failed to get : {:?}", e);
+    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(|e| {
+        error!("Failed to get STRIPE_SECRET_KEY: {:?}", e);
         DonationError::EnvError(Box::new(e))
     })?;
     let client = Client::new(secret_key);
