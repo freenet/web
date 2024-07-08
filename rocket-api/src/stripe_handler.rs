@@ -138,6 +138,7 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
         }
     };
     log::info!("Starting sign_with_key function with blinded_public_key: {}", blinded_public_key);
+    log::debug!("Padded blinded_public_key: {}", pad_base64(blinded_public_key));
 
     let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_secret_key))?)
         .map_err(|e| {
@@ -146,11 +147,14 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
         })?;
 
     // Parse the blinded public key
-    let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(pad_base64(blinded_public_key))?)
+    let blinded_public_key_bytes = general_purpose::STANDARD.decode(pad_base64(blinded_public_key))?;
+    let blinded_public_key = PublicKey::from_sec1_bytes(&blinded_public_key_bytes)
         .map_err(|e| {
             log::error!("Failed to parse blinded public key: {}", e);
             CertificateError::KeyError(e.to_string())
         })?;
+
+    log::info!("Blinded public key parsed successfully");
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
