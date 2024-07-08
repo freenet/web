@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
+extern crate dotenv;
 use dotenv::dotenv;
 mod routes;
 mod stripe_handler;
