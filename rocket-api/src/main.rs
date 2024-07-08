@@ -23,13 +23,11 @@ fn internal_error() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     log::info!("Starting Freenet Certified Donation API");
     match dotenv() {
         Ok(path) => log::info!(".env file loaded successfully from: {:?}", path),
         Err(e) => log::error!("Failed to load .env file: {}", e),
     }
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     rocket::build()
         .attach(routes::CORS)
         .attach(routes::RequestTimer)
