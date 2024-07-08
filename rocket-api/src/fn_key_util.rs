@@ -34,7 +34,8 @@ fn main() {
 pub fn generate_stripe_secret_key() -> String {
     let mut key = [0u8; 32];
     rand::thread_rng().fill_bytes(&mut key);
-    general_purpose::STANDARD.encode(&key)
+    let encoded_key = general_purpose::STANDARD.encode(&key);
+    encoded_key.trim_end_matches('=').to_string()
 }
 
         let key = generate_stripe_secret_key();
