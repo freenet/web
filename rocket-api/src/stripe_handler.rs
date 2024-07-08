@@ -157,12 +157,12 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
         })?;
 
     // Parse the blinded public key
-    let blinded_public_key_bytes = general_purpose::STANDARD.decode(pad_base64(blinded_public_key))
+    let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(pad_base64(blinded_public_key))?)
         .map_err(|e| {
-            log::error!("Failed to decode base64 blinded public key: {}", e);
-            CertificateError::Base64Error(e)
+            log::error!("Failed to parse blinded public key: {}", e);
+            CertificateError::KeyError(e.to_string())
         })?;
-    log::debug!("Decoded blinded public key bytes: {:?}", blinded_public_key_bytes);
+    log::debug!("Parsed blinded public key: {:?}", blinded_public_key.to_encoded_point(false));
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
@@ -170,7 +170,7 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
 
     // Combine the blinded public key and nonce, and hash them
     let mut hasher = Sha256::new();
-    hasher.update(&blinded_public_key_bytes);
+    hasher.update(blinded_public_key.to_encoded_point(false).as_bytes());
     hasher.update(&nonce_bytes);
     let message = hasher.finalize();
 
@@ -178,7 +178,7 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
     let blind_signature = signing_key.sign(&message);
 
     // Combine the signature and nonce
-    let mut combined = blind_signature.to_vec();
+    let mut combined = blind_signature.to_bytes().to_vec();
     combined.extend_from_slice(&nonce_bytes);
 
     Ok(general_purpose::STANDARD.encode(combined))
