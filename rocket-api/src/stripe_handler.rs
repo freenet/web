@@ -168,22 +168,17 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
         })?;
     log::debug!("Decoded blinded public key bytes: {:?}", blinded_public_key_bytes);
 
-    let blinded_public_key = PublicKey::from_sec1_bytes(&blinded_public_key_bytes)
-        .map_err(|e| {
-            log::error!("Failed to parse blinded public key: {}", e);
-            CertificateError::KeyError(e.to_string())
-        })?;
-
-    log::info!("Blinded public key parsed successfully");
-    log::debug!("Parsed blinded public key: {:?}", blinded_public_key);
+    // The blinded_public_key_bytes is just the x-coordinate, so we'll use it directly
+    log::info!("Using blinded public key x-coordinate directly");
+    log::debug!("Blinded public key x-coordinate: {:?}", blinded_public_key_bytes);
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
     let nonce_bytes = nonce.to_bytes();
 
-    // Combine the blinded public key and nonce, and hash them
+    // Combine the blinded public key x-coordinate and nonce, and hash them
     let mut hasher = Sha256::new();
-    hasher.update(blinded_public_key.as_affine().to_encoded_point(false).as_bytes());
+    hasher.update(&blinded_public_key_bytes);
     hasher.update(&nonce_bytes);
     let message = hasher.finalize();
 
