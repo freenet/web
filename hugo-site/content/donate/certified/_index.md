@@ -1,10 +1,7 @@
 ---
 title: "Certified Donations"
 date: 2024-06-24
-draft: true
-menu: 
-  main:
-    parent: "Donate"
+draft: false
 ---
 
 {{< stripe-donation-form error-message="The Certified Donations back-end isn't currently running, please notify webmaster@freenet.org" >}}

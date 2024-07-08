@@ -20,9 +20,8 @@ rand_core = "0.6.4"
 sha2 = "0.10.6"
 clap = { version = "3.0", features = ["derive"] }
 rand = "0.8"
+fantoccini = "0.17"
 
 [[bin]]
 name = "fn-key-util"
 path = "src/fn_key_util.rs"
-[dependencies]
-fantoccini = "0.17"

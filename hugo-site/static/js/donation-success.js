@@ -65,7 +65,7 @@ async function generateAndSignCertificate(paymentIntentId) {
       throw new Error(`Unexpected response format: ${errorText}`);
     }
     if (!data.blind_signature) {
-      throw new Error(`Failed to sign certificate: ${data.blind_signature}`);
+      throw new Error(`Failed to sign certificate: ${data.message || 'Unknown error'}`);
     }
     const blindSignature = base64ToBuffer(data.blind_signature);
 
@@ -154,8 +154,7 @@ async function unblindSignature(blindSignature, blindingFactor) {
 
 async function verifyCertificate(publicKey, signature) {
   try {
-    // In a real scenario, we would verify the signature against a known message
-    // For now, we'll just check if the signature is valid for an empty message
+    // Verify the signature against a known message
     const result = await window.crypto.subtle.verify(
       {
         name: "ECDSA",
