@@ -117,10 +117,21 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
 
     let signature = sign_with_key(&request.blinded_public_key).map_err(|e| {
         log::error!("Error in sign_with_key: {:?}", e);
-        e
+        match e {
+            CertificateError::Base64Error(be) => {
+                log::error!("Base64 decoding error: {}", be);
+                CertificateError::Base64Error(be)
+            },
+            CertificateError::KeyError(ke) => {
+                log::error!("Key error: {}", ke);
+                CertificateError::KeyError(ke)
+            },
+            _ => e,
+        }
     })?;
 
     log::info!("Certificate signed successfully");
+    log::debug!("Signature: {}", signature);
 
     Ok(SignCertificateResponse { blind_signature: signature })
 }
@@ -147,7 +158,16 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
         })?;
 
     // Parse the blinded public key
-    let blinded_public_key_bytes = general_purpose::STANDARD.decode(pad_base64(blinded_public_key))?;
+    let padded_blinded_public_key = pad_base64(blinded_public_key);
+    log::debug!("Padded blinded public key: {}", padded_blinded_public_key);
+    
+    let blinded_public_key_bytes = general_purpose::STANDARD.decode(&padded_blinded_public_key)
+        .map_err(|e| {
+            log::error!("Failed to decode base64 blinded public key: {}", e);
+            CertificateError::Base64Error(e)
+        })?;
+    log::debug!("Decoded blinded public key bytes: {:?}", blinded_public_key_bytes);
+
     let blinded_public_key = PublicKey::from_sec1_bytes(&blinded_public_key_bytes)
         .map_err(|e| {
             log::error!("Failed to parse blinded public key: {}", e);
@@ -155,6 +175,7 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
         })?;
 
     log::info!("Blinded public key parsed successfully");
+    log::debug!("Parsed blinded public key: {:?}", blinded_public_key);
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
