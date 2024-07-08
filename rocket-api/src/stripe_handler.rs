@@ -30,6 +30,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
         },
         Err(e) => {
             log::error!("Environment variable STRIPE_SECRET_KEY not found: {}", e);
+            log::error!("Current environment variables: {:?}", std::env::vars().collect::<Vec<_>>());
             panic!("STRIPE_SECRET_KEY environment variable not set");
         }
     };
