@@ -92,7 +92,13 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Re
         },
         Err(e) => {
             error!("Error signing certificate: {}", e);
-            Err(Status::InternalServerError)
+            if e.to_string() == "Certificate already signed for this payment" {
+                Ok(Json(SignCertificateResponse {
+                    blind_signature: String::new(),
+                }))
+            } else {
+                Err(Status::InternalServerError)
+            }
         },
     }
 }
