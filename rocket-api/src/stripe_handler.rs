@@ -172,7 +172,7 @@ fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError>
         })?;
 
     let mut public_key_bytes = vec![0x04]; // Uncompressed point format
-    let url_safe_engine = general_purpose::GeneralPurpose::new(&alphabet::URL_SAFE, general_purpose::STANDARD);
+    let url_safe_engine = general_purpose::URL_SAFE_NO_PAD;
     public_key_bytes.extend_from_slice(&url_safe_engine.decode(x.trim_end_matches('=')).map_err(|e| {
         log::error!("Failed to decode 'x' coordinate: {}", e);
         CertificateError::Base64Error(e)
