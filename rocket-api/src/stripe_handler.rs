@@ -3,7 +3,7 @@ use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use std::collections::HashMap;
 use p256::{
-    ecdsa::{self, SigningKey, Signature, signature::Signer},
+    ecdsa::{SigningKey, signature::Signer},
     elliptic_curve::sec1::ToEncodedPoint,
     PublicKey, SecretKey,
 };
@@ -175,10 +175,10 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
     let message = hasher.finalize();
 
     // Sign the hash
-    let blind_signature = signing_key.sign(&message);
+    let blind_signature: ecdsa::Signature = signing_key.sign(&message);
 
     // Combine the signature and nonce
-    let mut combined = blind_signature.to_bytes().to_vec();
+    let mut combined = blind_signature.to_vec();
     combined.extend_from_slice(&nonce_bytes);
 
     Ok(general_purpose::STANDARD.encode(combined))
