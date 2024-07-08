@@ -156,10 +156,23 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
             CertificateError::KeyError(e.to_string())
         })?;
 
-    // Parse the blinded public key
-    let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(pad_base64(blinded_public_key))?)
+    // Parse the blinded public key from JWK format
+    let blinded_public_key_json: serde_json::Value = serde_json::from_str(blinded_public_key)
         .map_err(|e| {
-            log::error!("Failed to parse blinded public key: {}", e);
+            log::error!("Failed to parse blinded public key JSON: {}", e);
+            CertificateError::KeyError(e.to_string())
+        })?;
+
+    let x = general_purpose::STANDARD.decode(blinded_public_key_json["x"].as_str().unwrap())?;
+    let y = general_purpose::STANDARD.decode(blinded_public_key_json["y"].as_str().unwrap())?;
+
+    let mut public_key_bytes = vec![0x04]; // Uncompressed point format
+    public_key_bytes.extend_from_slice(&x);
+    public_key_bytes.extend_from_slice(&y);
+
+    let blinded_public_key = PublicKey::from_sec1_bytes(&public_key_bytes)
+        .map_err(|e| {
+            log::error!("Failed to create public key from bytes: {}", e);
             CertificateError::KeyError(e.to_string())
         })?;
     log::debug!("Parsed blinded public key: {:?}", blinded_public_key.to_encoded_point(false));

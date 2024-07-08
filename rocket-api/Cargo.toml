@@ -24,3 +24,4 @@ thiserror = "1.0"
 [[bin]]
 name = "fn-key-util"
 path = "src/fn_key_util.rs"
+serde_json = "1.0"
