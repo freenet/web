@@ -23,7 +23,11 @@ fn internal_error() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
-    dotenv().ok();
+    if dotenv().is_err() {
+        log::error!("Failed to load .env file");
+    } else {
+        log::info!(".env file loaded successfully");
+    }
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     rocket::build()
         .attach(routes::CORS)

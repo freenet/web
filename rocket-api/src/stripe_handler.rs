@@ -23,10 +23,16 @@ pub struct SignCertificateResponse {
 }
 
 pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, Box<dyn std::error::Error>> {
-    let stripe_secret_key = std::env::var("STRIPE_SECRET_KEY").unwrap_or_else(|_| {
-        log::error!("Environment variable STRIPE_SECRET_KEY not found");
-        panic!("STRIPE_SECRET_KEY environment variable not set");
-    });
+    let stripe_secret_key = match std::env::var("STRIPE_SECRET_KEY") {
+        Ok(key) => {
+            log::info!("STRIPE_SECRET_KEY found");
+            key
+        },
+        Err(e) => {
+            log::error!("Environment variable STRIPE_SECRET_KEY not found: {}", e);
+            panic!("STRIPE_SECRET_KEY environment variable not set");
+        }
+    };
     let client = Client::new(stripe_secret_key);
 
     // Verify payment intent
@@ -56,10 +62,16 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
 }
 
 fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error::Error>> {
-    let server_secret_key = std::env::var("SERVER_SIGNING_KEY").unwrap_or_else(|_| {
-        log::error!("Environment variable SERVER_SIGNING_KEY not found");
-        panic!("SERVER_SIGNING_KEY environment variable not set");
-    });
+    let server_secret_key = match std::env::var("SERVER_SIGNING_KEY") {
+        Ok(key) => {
+            log::info!("SERVER_SIGNING_KEY found");
+            key
+        },
+        Err(e) => {
+            log::error!("Environment variable SERVER_SIGNING_KEY not found: {}", e);
+            panic!("SERVER_SIGNING_KEY environment variable not set");
+        }
+    };
     let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(server_secret_key)?)?;
 
     // Parse the blinded public key
