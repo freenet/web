@@ -23,7 +23,6 @@ pub struct SignCertificateResponse {
 }
 
 pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, Box<dyn std::error::Error>> {
-    dotenv::dotenv().ok();
     let stripe_secret_key = std::env::var("STRIPE_SECRET_KEY").unwrap_or_else(|_| {
         log::error!("Environment variable STRIPE_SECRET_KEY not found");
         panic!("STRIPE_SECRET_KEY environment variable not set");
@@ -57,8 +56,6 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
 }
 
 fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error::Error>> {
-    // Load the server's signing key
-    dotenv::dotenv().ok();
     let server_secret_key = std::env::var("SERVER_SIGNING_KEY").unwrap_or_else(|_| {
         log::error!("Environment variable SERVER_SIGNING_KEY not found");
         panic!("SERVER_SIGNING_KEY environment variable not set");
