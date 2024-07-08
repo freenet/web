@@ -57,10 +57,12 @@ impl From<stripe::ParseIdError> for CertificateError {
     }
 }
 
+use serde_json::Value;
+
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
     payment_intent_id: String,
-    blinded_public_key: String,
+    blinded_public_key: Value,
 }
 
 fn pad_base64(base64_str: &str) -> String {
@@ -136,7 +138,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     Ok(SignCertificateResponse { blind_signature: signature })
 }
 
-fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
+fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError> {
     let server_secret_key = match std::env::var("SERVER_SIGNING_KEY") {
         Ok(key) => {
             log::info!("SERVER_SIGNING_KEY found");
@@ -148,7 +150,7 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
             panic!("SERVER_SIGNING_KEY environment variable not set");
         }
     };
-    log::info!("Starting sign_with_key function with blinded_public_key: {}", blinded_public_key);
+    log::info!("Starting sign_with_key function with blinded_public_key: {:?}", blinded_public_key);
 
     let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_secret_key))?)
         .map_err(|e| {
@@ -156,21 +158,14 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
             CertificateError::KeyError(e.to_string())
         })?;
 
-    // Parse the blinded public key from JWK format
-    let blinded_public_key_json: serde_json::Value = serde_json::from_str(blinded_public_key)
-        .map_err(|e| {
-            log::error!("Failed to parse blinded public key JSON: {}. Received blinded_public_key: '{}'", e, blinded_public_key);
-            CertificateError::KeyError(format!("Invalid JSON: {}", e))
-        })?;
+    log::debug!("Parsed blinded public key JSON: {:?}", blinded_public_key);
 
-    log::debug!("Parsed blinded public key JSON: {:?}", blinded_public_key_json);
-
-    let x = blinded_public_key_json["x"].as_str()
+    let x = blinded_public_key["x"].as_str()
         .ok_or_else(|| {
             log::error!("Missing 'x' coordinate in blinded public key JSON");
             CertificateError::KeyError("Missing 'x' coordinate".to_string())
         })?;
-    let y = blinded_public_key_json["y"].as_str()
+    let y = blinded_public_key["y"].as_str()
         .ok_or_else(|| {
             log::error!("Missing 'y' coordinate in blinded public key JSON");
             CertificateError::KeyError("Missing 'y' coordinate".to_string())
