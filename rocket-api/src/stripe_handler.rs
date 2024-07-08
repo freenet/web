@@ -149,7 +149,6 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
         }
     };
     log::info!("Starting sign_with_key function with blinded_public_key: {}", blinded_public_key);
-    log::debug!("Padded blinded_public_key: {}", pad_base64(blinded_public_key));
 
     let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_secret_key))?)
         .map_err(|e| {
@@ -158,35 +157,28 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, CertificateError> {
         })?;
 
     // Parse the blinded public key
-    let padded_blinded_public_key = pad_base64(blinded_public_key);
-    log::debug!("Padded blinded public key: {}", padded_blinded_public_key);
-    
-    let blinded_public_key_bytes = general_purpose::STANDARD.decode(&padded_blinded_public_key)
+    let blinded_public_key_bytes = general_purpose::STANDARD.decode(pad_base64(blinded_public_key))
         .map_err(|e| {
             log::error!("Failed to decode base64 blinded public key: {}", e);
             CertificateError::Base64Error(e)
         })?;
     log::debug!("Decoded blinded public key bytes: {:?}", blinded_public_key_bytes);
 
-    // The blinded_public_key_bytes is just the x-coordinate, so we'll use it directly
-    log::info!("Using blinded public key x-coordinate directly");
-    log::debug!("Blinded public key x-coordinate: {:?}", blinded_public_key_bytes);
-
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
     let nonce_bytes = nonce.to_bytes();
 
-    // Combine the blinded public key x-coordinate and nonce, and hash them
+    // Combine the blinded public key and nonce, and hash them
     let mut hasher = Sha256::new();
     hasher.update(&blinded_public_key_bytes);
     hasher.update(&nonce_bytes);
     let message = hasher.finalize();
 
     // Sign the hash
-    let blind_signature: Signature = signing_key.sign(&message);
+    let blind_signature = signing_key.sign(&message);
 
     // Combine the signature and nonce
-    let mut combined = blind_signature.to_bytes().to_vec();
+    let mut combined = blind_signature.to_vec();
     combined.extend_from_slice(&nonce_bytes);
 
     Ok(general_purpose::STANDARD.encode(combined))
