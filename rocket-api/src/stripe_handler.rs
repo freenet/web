@@ -82,10 +82,16 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error:
             panic!("SERVER_SIGNING_KEY environment variable not set");
         }
     };
-    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_secret_key))?)?;
+    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_secret_key)).map_err(|e| {
+        log::error!("Failed to decode SERVER_SIGNING_KEY: {}", e);
+        e
+    })?)?;
 
     // Parse the blinded public key
-    let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(pad_base64(blinded_public_key))?)?;
+    let blinded_public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(pad_base64(blinded_public_key)).map_err(|e| {
+        log::error!("Failed to decode blinded public key: {}", e);
+        e
+    })?)?;
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
@@ -98,7 +104,10 @@ fn sign_with_key(blinded_public_key: &str) -> Result<String, Box<dyn std::error:
     let message = hasher.finalize();
 
     // Sign the hash
-    let blind_signature: Signature = signing_key.sign(&message);
+    let blind_signature: Signature = signing_key.sign(&message).map_err(|e| {
+        log::error!("Failed to sign the message: {}", e);
+        e
+    })?;
 
     // Combine the signature and nonce
     let mut combined = blind_signature.to_bytes().to_vec();
