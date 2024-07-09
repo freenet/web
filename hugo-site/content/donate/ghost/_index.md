@@ -2,6 +2,10 @@
 title: "Donate to Freenet and Receive a Ghost Credential"
 date: 2024-06-24
 draft: false
+cascade:
+    _build:
+        list: false
+        render: false
 ---
 
 {{< stripe-donation-form error-message="The Ghost Credential back-end isn't currently running, please notify webmaster@freenet.org" >}}
