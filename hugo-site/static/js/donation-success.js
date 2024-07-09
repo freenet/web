@@ -1,13 +1,11 @@
-// Import required libraries
-const nacl = require('tweetnacl');
-const naclUtil = require('tweetnacl-util');
+// Use global nacl and nacl-util objects
 
 function bufferToBase64(buffer) {
-    return naclUtil.encodeBase64(buffer);
+    return nacl.util.encodeBase64(buffer);
 }
 
 function base64ToBuffer(base64) {
-    return naclUtil.decodeBase64(base64);
+    return nacl.util.decodeBase64(base64);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
