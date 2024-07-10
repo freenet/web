@@ -160,27 +160,44 @@ fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError>
 
     log::debug!("Parsed blinded public key JSON: {:?}", blinded_public_key);
 
-    let x = blinded_public_key["x"].as_str()
-        .ok_or_else(|| {
-            log::error!("Missing 'x' coordinate in blinded public key JSON");
-            CertificateError::KeyError("Missing 'x' coordinate".to_string())
-        })?;
-    let y = blinded_public_key["y"].as_str()
-        .ok_or_else(|| {
-            log::error!("Missing 'y' coordinate in blinded public key JSON");
-            CertificateError::KeyError("Missing 'y' coordinate".to_string())
-        })?;
+    let public_key_bytes = match blinded_public_key {
+        Value::String(s) => {
+            let mut bytes = vec![0x04]; // Uncompressed point format
+            bytes.extend_from_slice(&general_purpose::STANDARD.decode(s.trim_end_matches('=')).map_err(|e| {
+                log::error!("Failed to decode blinded public key: {}", e);
+                CertificateError::Base64Error(e)
+            })?);
+            bytes
+        },
+        Value::Object(obj) => {
+            let x = obj.get("x").and_then(Value::as_str)
+                .ok_or_else(|| {
+                    log::error!("Missing 'x' coordinate in blinded public key JSON");
+                    CertificateError::KeyError("Missing 'x' coordinate".to_string())
+                })?;
+            let y = obj.get("y").and_then(Value::as_str)
+                .ok_or_else(|| {
+                    log::error!("Missing 'y' coordinate in blinded public key JSON");
+                    CertificateError::KeyError("Missing 'y' coordinate".to_string())
+                })?;
 
-    let mut public_key_bytes = vec![0x04]; // Uncompressed point format
-    let url_safe_engine = general_purpose::URL_SAFE_NO_PAD;
-    public_key_bytes.extend_from_slice(&url_safe_engine.decode(x.trim_end_matches('=')).map_err(|e| {
-        log::error!("Failed to decode 'x' coordinate: {}", e);
-        CertificateError::Base64Error(e)
-    })?);
-    public_key_bytes.extend_from_slice(&url_safe_engine.decode(y.trim_end_matches('=')).map_err(|e| {
-        log::error!("Failed to decode 'y' coordinate: {}", e);
-        CertificateError::Base64Error(e)
-    })?);
+            let mut bytes = vec![0x04]; // Uncompressed point format
+            let url_safe_engine = general_purpose::URL_SAFE_NO_PAD;
+            bytes.extend_from_slice(&url_safe_engine.decode(x.trim_end_matches('=')).map_err(|e| {
+                log::error!("Failed to decode 'x' coordinate: {}", e);
+                CertificateError::Base64Error(e)
+            })?);
+            bytes.extend_from_slice(&url_safe_engine.decode(y.trim_end_matches('=')).map_err(|e| {
+                log::error!("Failed to decode 'y' coordinate: {}", e);
+                CertificateError::Base64Error(e)
+            })?);
+            bytes
+        },
+        _ => {
+            log::error!("Invalid blinded public key format");
+            return Err(CertificateError::KeyError("Invalid blinded public key format".to_string()));
+        }
+    };
 
     let blinded_public_key = PublicKey::from_sec1_bytes(&public_key_bytes)
         .map_err(|e| {
