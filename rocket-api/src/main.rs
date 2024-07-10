@@ -4,6 +4,7 @@ use rocket::http::Header;
 use rocket::{Request, catch};
 use env_logger::Env;
 use dotenv::dotenv;
+use log::LevelFilter;
 
 mod routes;
 mod stripe_handler;
@@ -20,7 +21,21 @@ fn internal_error() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+    env_logger::Builder::from_env(Env::default().default_filter_or("info"))
+        .format(|buf, record| {
+            use std::io::Write;
+            writeln!(buf,
+                "{} [{}] {} - {}:{}",
+                chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+                record.level(),
+                record.args(),
+                record.file().unwrap_or("unknown"),
+                record.line().unwrap_or(0)
+            )
+        })
+        .filter(None, LevelFilter::Info)
+        .init();
+
     log::info!("Starting Freenet Certified Donation API");
     match dotenv() {
         Ok(path) => log::info!(".env file loaded successfully from: {:?}", path),
