@@ -160,15 +160,11 @@ fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError>
 
     log::debug!("Parsed blinded public key JSON: {:?}", blinded_public_key);
 
-    let public_key_bytes = match blinded_public_key {
-        Value::String(s) => {
-            let mut bytes = vec![0x04]; // Uncompressed point format
-            bytes.extend_from_slice(&general_purpose::STANDARD.decode(s).map_err(|e| {
-                log::error!("Failed to decode blinded public key: {}", e);
-                CertificateError::Base64Error(e)
-            })?);
-            bytes
-        },
+    let blinded_public_key_bytes = match blinded_public_key {
+        Value::String(s) => general_purpose::STANDARD.decode(s).map_err(|e| {
+            log::error!("Failed to decode blinded public key: {}", e);
+            CertificateError::Base64Error(e)
+        })?,
         Value::Object(obj) => {
             let x = obj.get("x").and_then(Value::as_str)
                 .ok_or_else(|| {
@@ -181,7 +177,7 @@ fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError>
                     CertificateError::KeyError("Missing 'y' coordinate".to_string())
                 })?;
 
-            let mut bytes = vec![0x04]; // Uncompressed point format
+            let mut bytes = Vec::new();
             bytes.extend_from_slice(&general_purpose::STANDARD.decode(x).map_err(|e| {
                 log::error!("Failed to decode 'x' coordinate: {}", e);
                 CertificateError::Base64Error(e)
@@ -198,12 +194,7 @@ fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError>
         }
     };
 
-    let blinded_public_key = PublicKey::from_sec1_bytes(&public_key_bytes)
-        .map_err(|e| {
-            log::error!("Failed to create public key from bytes: {}", e);
-            CertificateError::KeyError(e.to_string())
-        })?;
-    log::debug!("Parsed blinded public key: {:?}", blinded_public_key.to_encoded_point(false));
+    log::debug!("Decoded blinded public key bytes: {:?}", blinded_public_key_bytes);
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
@@ -211,7 +202,7 @@ fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError>
 
     // Combine the blinded public key and nonce, and hash them
     let mut hasher = Sha256::new();
-    hasher.update(blinded_public_key.to_encoded_point(false).as_bytes());
+    hasher.update(&blinded_public_key_bytes);
     hasher.update(&nonce_bytes);
     let message = hasher.finalize();
 
