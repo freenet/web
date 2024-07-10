@@ -3,7 +3,7 @@ use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
 use rocket::{Request, Response, Route};
-use rocket::{get, post, options};
+use rocket::{get, post, options, routes};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use stripe::{Client, Currency};
