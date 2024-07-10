@@ -163,7 +163,7 @@ fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError>
     let public_key_bytes = match blinded_public_key {
         Value::String(s) => {
             let mut bytes = vec![0x04]; // Uncompressed point format
-            bytes.extend_from_slice(&general_purpose::STANDARD.decode(s.trim_end_matches('=')).map_err(|e| {
+            bytes.extend_from_slice(&general_purpose::URL_SAFE_NO_PAD.decode(s).map_err(|e| {
                 log::error!("Failed to decode blinded public key: {}", e);
                 CertificateError::Base64Error(e)
             })?);
@@ -183,11 +183,11 @@ fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError>
 
             let mut bytes = vec![0x04]; // Uncompressed point format
             let url_safe_engine = general_purpose::URL_SAFE_NO_PAD;
-            bytes.extend_from_slice(&url_safe_engine.decode(x.trim_end_matches('=')).map_err(|e| {
+            bytes.extend_from_slice(&url_safe_engine.decode(x).map_err(|e| {
                 log::error!("Failed to decode 'x' coordinate: {}", e);
                 CertificateError::Base64Error(e)
             })?);
-            bytes.extend_from_slice(&url_safe_engine.decode(y.trim_end_matches('=')).map_err(|e| {
+            bytes.extend_from_slice(&url_safe_engine.decode(y).map_err(|e| {
                 log::error!("Failed to decode 'y' coordinate: {}", e);
                 CertificateError::Base64Error(e)
             })?);
