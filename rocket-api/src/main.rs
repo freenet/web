@@ -5,7 +5,6 @@ use rocket::{Request, catch};
 use env_logger::Env;
 use dotenv::dotenv;
 use log::LevelFilter;
-use chrono::Local;
 
 mod routes;
 mod stripe_handler;

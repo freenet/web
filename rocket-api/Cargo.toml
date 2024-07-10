@@ -20,7 +20,6 @@ clap = { version = "4.3", features = ["derive"] }
 rand = "0.8"
 fantoccini = "0.19"
 thiserror = "1.0"
-chrono = "0.4"
 
 [[bin]]
 name = "fn-key-util"
