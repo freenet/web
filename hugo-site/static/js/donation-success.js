@@ -80,24 +80,19 @@ ${bufferToBase64(privateKey)}
 -----END FREENET DONATION PRIVATE KEY-----`;
 
     // Display the certificate and private key
-    document.getElementById('certificate').value = wordWrap(armoredCertificate, 64);
-    document.getElementById('privateKey').value = wordWrap(armoredPrivateKey, 64);
+    document.getElementById('certificate').value = wrapBase64(armoredCertificate, 64);
+    document.getElementById('privateKey').value = wrapBase64(armoredPrivateKey, 64);
     document.getElementById('certificateSection').style.display = 'block';
     document.getElementById('certificate-info').style.display = 'none';
 
-    // Function to word wrap text
-    function wordWrap(str, maxWidth) {
+    // Function to wrap base64 encoded text
+    function wrapBase64(str, maxWidth) {
       const lines = str.split('\n');
       return lines.map(line => {
         if (line.startsWith('-----')) {
           return line;
         }
-        // Split the line into chunks of exactly maxWidth characters
-        const chunks = [];
-        for (let i = 0; i < line.length; i += maxWidth) {
-          chunks.push(line.substr(i, maxWidth));
-        }
-        return chunks.join('\n');
+        return line.match(new RegExp(`.{1,${maxWidth}}`, 'g')).join('\n');
       }).join('\n');
     }
 
