@@ -1,7 +1,6 @@
 ---
 title: "Donation Success"
-date: 2024-06-01
-draft: false
+date: 2023-07-10
 ---
 
 Thank you for your donation to Freenet! Your support helps us maintain and improve the network.
