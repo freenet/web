@@ -2,7 +2,8 @@ use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertif
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
-use rocket::{Request, Response};
+use rocket::{Request, Response, Route};
+use rocket::{get, post, options};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use stripe::{Client, Currency};
@@ -164,8 +165,7 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     }))
 }
 
-#[rocket::get("/")]
-pub fn routes() -> Vec<rocket::Route> {
+pub fn routes() -> Vec<Route> {
     routes![
         index,
         get_message,
