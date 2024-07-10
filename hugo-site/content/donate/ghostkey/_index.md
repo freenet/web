@@ -5,8 +5,7 @@ draft: false
 layout: single
 ---
 
-{{< stripe-donation-form error-message="The Ghost Key back-end isn't 
-currently running, please notify webmaster@freenet.org" >}}
+{{< stripe-donation-form error-message="The Ghost Key back-end isn't currently running, please notify webmaster@freenet.org" >}}
 
 When you make a donation to Freenet, your browser creates a cryptographic 
 secret key that is then encrypted and sent to our 
