@@ -1,15 +1,12 @@
-#[macro_use]
-extern crate rocket;
-
-extern crate dotenv;
-mod routes;
-mod stripe_handler;
-
+use rocket::{launch, routes, catchers};
 use rocket::fairing::AdHoc;
-use rocket::shield::{Shield, XssFilter, Referrer};
+use rocket::http::Header;
 use rocket::Request;
 use env_logger::Env;
 use dotenv::dotenv;
+
+mod routes;
+mod stripe_handler;
 
 #[catch(404)]
 fn not_found(req: &Request) -> String {
@@ -33,14 +30,12 @@ fn rocket() -> _ {
         .attach(routes::CORS)
         .attach(routes::RequestTimer)
         .attach(AdHoc::on_response("Powered-By Header", |_, res| Box::pin(async move {
-            res.set_raw_header("X-Powered-By", "Freenet Rocket API");
+            res.set_header(Header::new("X-Powered-By", "Freenet Rocket API"));
         })))
-        .attach(Shield::new()
-            .enable(XssFilter::EnableBlock)
-            .enable(Referrer::NoReferrer)
-            .enable(Referrer::StrictOriginWhenCrossOrigin))
-        .attach(AdHoc::on_response("Content-Type-Options Header", |_, res| Box::pin(async move {
-            res.set_raw_header("X-Content-Type-Options", "nosniff");
+        .attach(AdHoc::on_response("Security Headers", |_, res| Box::pin(async move {
+            res.set_header(Header::new("X-XSS-Protection", "1; mode=block"));
+            res.set_header(Header::new("X-Content-Type-Options", "nosniff"));
+            res.set_header(Header::new("Referrer-Policy", "strict-origin-when-cross-origin"));
         })))
         .mount("/", routes::routes())
         .register("/", catchers![not_found, internal_error])

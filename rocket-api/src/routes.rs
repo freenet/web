@@ -2,7 +2,7 @@ use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertif
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
-use rocket::{Data, Request, Response};
+use rocket::{Request, Response};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use stripe::{Client, Currency};
@@ -39,7 +39,7 @@ impl Fairing for RequestTimer {
         }
     }
 
-    async fn on_request(&self, request: &mut Request<'_>, _: &mut Data<'_>) {
+    async fn on_request(&self, request: &mut Request<'_>, _: &mut rocket::Data<'_>) {
         request.local_cache(|| Instant::now());
     }
 
@@ -66,7 +66,6 @@ pub struct DonationResponse {
     pub client_secret: String,
 }
 
-
 #[get("/")]
 fn index() -> Json<serde_json::Value> {
     Json(serde_json::json!({
@@ -80,7 +79,6 @@ fn get_message() -> Json<Message> {
         content: String::from("Welcome to the Freenet API! This message confirms that the API is functioning correctly."),
     })
 }
-
 
 #[post("/sign-certificate", data = "<request>")]
 pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Result<Json<SignCertificateResponse>, Status> {
@@ -116,8 +114,8 @@ pub fn options_create_donation() -> Status {
 #[derive(Debug)]
 pub enum DonationError {
     InvalidCurrency,
-    StripeError(Box<stripe::StripeError>),
-    EnvError(Box<std::env::VarError>),
+    StripeError(stripe::StripeError),
+    EnvError(std::env::VarError),
 }
 
 impl<'r> rocket::response::Responder<'r, 'static> for DonationError {
@@ -140,11 +138,8 @@ impl<'r> rocket::response::Responder<'r, 'static> for DonationError {
 pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<DonationResponse>, DonationError> {
     info!("Received create-donation request: {:?}", request);
     
-    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(|e| {
-        error!("Failed to get STRIPE_SECRET_KEY: {:?}", e);
-        DonationError::EnvError(Box::new(e))
-    })?;
-    let client = Client::new(secret_key);
+    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
+    let client = Client::new(&secret_key);
 
     let currency = match request.currency.as_str() {
         "usd" => Currency::USD,
@@ -161,10 +156,7 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
 
     let intent = stripe::PaymentIntent::create(&client, params)
         .await
-        .map_err(|e| {
-            error!("Stripe error: {:?}", e);
-            DonationError::StripeError(Box::new(e))
-        })?;
+        .map_err(DonationError::StripeError)?;
 
     info!("Payment intent created successfully");
     Ok(Json(DonationResponse {
@@ -172,7 +164,7 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     }))
 }
 
-
+#[rocket::get("/")]
 pub fn routes() -> Vec<rocket::Route> {
     routes![
         index,
