@@ -1,7 +1,7 @@
-use rocket::{launch, routes, catchers};
+use rocket::{launch, catchers};
 use rocket::fairing::AdHoc;
 use rocket::http::Header;
-use rocket::Request;
+use rocket::{Request, catch};
 use env_logger::Env;
 use dotenv::dotenv;
 
