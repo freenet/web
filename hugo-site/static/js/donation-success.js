@@ -80,10 +80,40 @@ ${bufferToBase64(privateKey)}
 -----END FREENET DONATION PRIVATE KEY-----`;
 
     // Display the certificate and private key
-    document.getElementById('certificate').value = armoredCertificate;
-    document.getElementById('privateKey').value = armoredPrivateKey;
+    document.getElementById('certificate').value = wordWrap(armoredCertificate, 80);
+    document.getElementById('privateKey').value = wordWrap(armoredPrivateKey, 80);
     document.getElementById('certificateSection').style.display = 'block';
     document.getElementById('certificate-info').style.display = 'none';
+
+    // Function to word wrap text
+    function wordWrap(str, maxWidth) {
+      let newLineStr = "\n";
+      let done = false;
+      let res = '';
+      while (str.length > maxWidth) {
+        let found = false;
+        // Inserts new line at first whitespace of the line
+        for (let i = maxWidth - 1; i >= 0; i--) {
+          if (testWhite(str.charAt(i))) {
+            res = res + [str.slice(0, i), newLineStr].join('');
+            str = str.slice(i + 1);
+            found = true;
+            break;
+          }
+        }
+        // Inserts new line at maxWidth position, the word is too long to wrap
+        if (!found) {
+          res += [str.slice(0, maxWidth), newLineStr].join('');
+          str = str.slice(maxWidth);
+        }
+      }
+      return res + str;
+    }
+
+    function testWhite(x) {
+      var white = new RegExp(/^\s$/);
+      return white.test(x.charAt(0));
+    }
 
     // Set up download button
     document.getElementById('downloadCertificate').addEventListener('click', function() {

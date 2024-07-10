@@ -6,17 +6,26 @@
   <h3>Your Donation Certificate</h3>
   <div>
     <h4>Donation Certificate (can be shared)</h4>
-    <textarea id="certificate" rows="4" cols="50" readonly></textarea>
+    <textarea id="certificate" rows="4" cols="80" readonly style="word-wrap: break-word; white-space: pre-wrap;"></textarea>
     <button onclick="copyCertificate()" class="button is-small">Copy Certificate</button>
   </div>
   <div>
     <h4>Private Key (keep this secret!)</h4>
-    <textarea id="privateKey" rows="4" cols="50" readonly></textarea>
+    <textarea id="privateKey" rows="4" cols="80" readonly style="word-wrap: break-word; white-space: pre-wrap;"></textarea>
     <button onclick="copyPrivateKey()" class="button is-small">Copy Private Key</button>
   </div>
   <p><strong>Warning:</strong> Keep your private key secret. Only share the certificate.</p>
-  <button id="downloadCertificate" class="button is-primary">Download Certificate and Private Key</button>
+  <button id="downloadCertificate" class="button is-primary freenet-blue">
+    <i class="fas fa-download"></i> Download Certificate and Private Key
+  </button>
 </div>
+
+<style>
+  .freenet-blue {
+    background-color: #0066cc !important;
+    color: white !important;
+  }
+</style>
 
 <div id="errorMessage" style="display: none; color: red;"></div>
 
