@@ -16,7 +16,6 @@ pub enum CertificateError {
     StripeError(stripe::StripeError),
     PaymentNotSuccessful,
     CertificateAlreadySigned,
-    SigningError(String),
     Base64Error(base64::DecodeError),
     KeyError(String),
     ParseIdError(stripe::ParseIdError),
