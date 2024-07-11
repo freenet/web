@@ -1,31 +1,35 @@
-<div id="certificate-info">
-  <p>Your donation certificate is being generated. Please wait...</p>
-</div>
-
-<div id="certificateSection" style="display: none;">
-  <h3>Your Ghost Key</h3>
-  <div class="ghost-key-container">
-    <h4>Ghost Key (contains both certificate and private key)</h4>
-    <div class="textarea-container">
-      <textarea id="combinedKey" rows="10" readonly></textarea>
-      <div class="textarea-overlay">Your Ghost Key</div>
+<div class="columns is-centered">
+  <div class="column is-two-thirds-tablet is-half-desktop">
+    <div id="certificate-info">
+      <p>Your donation certificate is being generated. Please wait...</p>
     </div>
-    <div class="button-group">
-      <button id="copyCombinedKey" class="button is-small">
-        <span class="icon">
-          <i class="fas fa-copy"></i>
-        </span>
-        <span>Copy Ghost Key</span>
-      </button>
-      <button id="downloadCertificate" class="button is-primary freenet-blue">
-        <span class="icon">
-          <i class="fas fa-download"></i>
-        </span>
-        <span>Download Ghost Key</span>
-      </button>
+
+    <div id="certificateSection" style="display: none;">
+      <h3 class="title is-4">Your Ghost Key</h3>
+      <div class="ghost-key-container">
+        <h4 class="subtitle is-5">Ghost Key (contains both certificate and private key)</h4>
+        <div class="textarea-container">
+          <textarea id="combinedKey" rows="10" readonly></textarea>
+          <div class="textarea-overlay">Your Ghost Key</div>
+        </div>
+        <div class="button-group">
+          <button id="copyCombinedKey" class="button is-small">
+            <span class="icon">
+              <i class="fas fa-copy"></i>
+            </span>
+            <span>Copy Ghost Key</span>
+          </button>
+          <button id="downloadCertificate" class="button is-primary freenet-blue">
+            <span class="icon">
+              <i class="fas fa-download"></i>
+            </span>
+            <span>Download Ghost Key</span>
+          </button>
+        </div>
+      </div>
+      <p class="warning"><strong>Warning:</strong> Keep your Ghost Key secret. It contains both your certificate and private key.</p>
     </div>
   </div>
-  <p class="warning"><strong>Warning:</strong> Keep your Ghost Key secret. It contains both your certificate and private key.</p>
 </div>
 
 <style>
