@@ -9,4 +9,17 @@ layout: single
 
 {{< spacer >}}
 
+<div id="certificateSection" style="display: none;">
+  <h2>Your Ghost Key</h2>
+  <p>Below is your Ghost Key. Please copy and save it securely.</p>
+  <textarea id="combinedKey" rows="10" cols="64" readonly></textarea>
+  <button id="copyCombinedKey">Copy Ghost Key</button>
+</div>
+
+<div id="errorMessage" style="display: none; color: red;"></div>
+
+<div id="certificate-info">
+  <p>Your Ghost Key will appear here after a successful donation.</p>
+</div>
+
 {{< include "ghost-key-explanation.md" >}}

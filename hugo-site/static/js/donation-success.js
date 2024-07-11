@@ -151,7 +151,7 @@ ${bufferToBase64(privateKey)}
     copyButton.addEventListener('click', function() {
       combinedKeyElement.select();
       document.execCommand('copy');
-      alert('Combined key copied to clipboard!');
+      alert('Ghost Key copied to clipboard!');
     });
 
     // Verify the certificate
@@ -162,7 +162,7 @@ ${bufferToBase64(privateKey)}
     console.log("Certificate verified and displayed successfully");
   } catch (error) {
     console.error("Error in displayCertificate:", error);
-    showError(`Error displaying certificate: ${error.message}. Please contact support.`);
+    showError(`Error displaying Ghost Key: ${error.message}. Please contact support.`);
   }
 }
 
