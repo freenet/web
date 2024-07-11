@@ -53,7 +53,7 @@ pub fn sign_with_key(blinded_public_key: &Value) -> Result<String, String> {
         Err(e) => return Err(format!("Environment variable SERVER_MASTER_PRIVATE_KEY not found: {}", e)),
     };
 
-    let master_private_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_master_private_key))?)
+    let master_private_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_master_private_key)).map_err(|e| e.to_string())?)
         .map_err(|e| format!("Failed to create master private key: {}", e))?;
 
     let blinded_public_key_bytes = match blinded_public_key {
