@@ -88,8 +88,6 @@ function generateTestCertificate() {
 }
 
 function displayCertificate(publicKey, privateKey, unblindedSignature) {
-
-function displayCertificate(publicKey, privateKey, unblindedSignature) {
   // Armor the certificate and private key
   const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
 ${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}
