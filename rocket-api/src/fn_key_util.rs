@@ -1,4 +1,3 @@
-use clap::{Command, Arg};
 use base64::{Engine as _, engine::general_purpose};
 use p256::{
     ecdsa::{SigningKey, Signature, signature::Verifier, VerifyingKey, signature::Signer},
@@ -154,4 +153,7 @@ fn unarmor_key(expected_type: &str, armored_key: &str) -> Result<Vec<u8>, String
     }
     let key_base64 = lines[1..lines.len() - 1].join("");
     general_purpose::STANDARD.decode(&key_base64).map_err(|e| e.to_string())
+}
+fn main() {
+    println!("This is a placeholder main function.");
 }
