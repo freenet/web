@@ -14,7 +14,7 @@ donation without revealing your identity. Please wait a moment while we process 
 
 ## What is a Ghost Key?
 
-A Ghost Key is a cryptographic proof of your donation that maintains your anonymity. It allows you to demonstrate your support for Freenet without compromising your privacy. This aligns with Freenet's core principles of protecting user identity and promoting free speech.
+{{< ghost-key-explanation >}}
 
 ## What's Next?
 
