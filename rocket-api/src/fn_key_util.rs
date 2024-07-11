@@ -77,6 +77,15 @@ enum Commands {
     },
 }
 
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_key_generation() {
+        // Add your test logic here
+        println!("Running test code...");
+    }
+}
+
 fn main() {
     let cli = Cli::parse();
 
@@ -96,14 +105,5 @@ fn main() {
         None => {
             println!("No command specified. Use --help for usage information.");
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_key_generation() {
-        // Add your test logic here
-        println!("Running test code...");
     }
 }
