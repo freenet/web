@@ -98,7 +98,8 @@ fn main() {
 
 pub fn generate_master_key() -> (SigningKey, VerifyingKey) {
     let signing_key = SigningKey::random(&mut rand::thread_rng());
-    let verifying_key = signing_key.clone().verifying_key();
+    let signing_key_clone = signing_key.clone();
+    let verifying_key = signing_key_clone.verifying_key();
     (signing_key, *verifying_key)
 }
 
