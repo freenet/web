@@ -1,7 +1,7 @@
 use clap::{Command, Arg};
 use base64::{Engine as _, engine::general_purpose};
 use p256::{
-    ecdsa::{SigningKey, Signature, signature::Verifier, VerifyingKey},
+    ecdsa::{SigningKey, Signature, signature::Verifier, VerifyingKey, signature::Signer},
     PublicKey,
 };
 use serde::{Serialize, Deserialize};
