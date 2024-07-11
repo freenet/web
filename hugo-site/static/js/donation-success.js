@@ -11,30 +11,33 @@ function base64ToBuffer(base64) {
 document.addEventListener('DOMContentLoaded', function() {
   console.log("DOM fully loaded");
   
-  // Check if required elements are present
-  const requiredElements = ['combinedKey', 'certificateSection', 'certificate-info', 'copyCombinedKey', 'errorMessage'];
-  const missingElements = requiredElements.filter(id => !document.getElementById(id));
-  
-  if (missingElements.length > 0) {
-    console.error("Missing required elements:", missingElements);
-    showError(`Error: Missing required elements: ${missingElements.join(', ')}`);
-    return;
-  }
+  // Wait a short time to ensure all elements are rendered
+  setTimeout(() => {
+    // Check if required elements are present
+    const requiredElements = ['combinedKey', 'certificateSection', 'certificate-info', 'copyCombinedKey', 'errorMessage'];
+    const missingElements = requiredElements.filter(id => !document.getElementById(id));
+    
+    if (missingElements.length > 0) {
+      console.error("Missing required elements:", missingElements);
+      showError(`Error: Missing required elements: ${missingElements.join(', ')}`);
+      return;
+    }
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const paymentIntent = urlParams.get('payment_intent');
-  const isTestMode = urlParams.get('test') !== null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentIntent = urlParams.get('payment_intent');
+    const isTestMode = urlParams.get('test') !== null;
 
-  if (isTestMode) {
-    console.log("Test mode detected");
-    generateTestCertificate();
-  } else if (paymentIntent) {
-    console.log("Payment intent detected:", paymentIntent);
-    generateAndSignCertificate(paymentIntent);
-  } else {
-    console.log("No payment intent or test mode detected");
-    showError('Payment information not found.');
-  }
+    if (isTestMode) {
+      console.log("Test mode detected");
+      generateTestCertificate();
+    } else if (paymentIntent) {
+      console.log("Payment intent detected:", paymentIntent);
+      generateAndSignCertificate(paymentIntent);
+    } else {
+      console.log("No payment intent or test mode detected");
+      showError('Payment information not found.');
+    }
+  }, 100); // Wait 100ms before checking for elements
 });
 
 function generateTestCertificate() {
