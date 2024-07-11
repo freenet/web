@@ -145,8 +145,8 @@ fn unarmor_key(expected_type: &str, armored_key: &str) -> Result<Vec<u8>, String
     let key_base64 = lines[1..lines.len() - 1].join("");
     general_purpose::STANDARD.decode(&key_base64).map_err(|e| e.to_string())
 }
+
 fn main() {
-}
     let matches = Command::new("Freenet Key Utility")
         .version("1.0")
         .author("Your Name <your.email@example.com>")
