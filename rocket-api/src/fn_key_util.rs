@@ -99,7 +99,7 @@ fn main() {
 pub fn generate_master_key() -> (SigningKey, VerifyingKey) {
     let signing_key = SigningKey::random(&mut rand::thread_rng());
     let verifying_key = signing_key.verifying_key();
-    (signing_key, verifying_key)
+    (signing_key, *verifying_key)
 }
 
 pub fn generate_delegated_key(master_key: &SigningKey, purpose: &str) -> DelegatedKey {
@@ -181,7 +181,7 @@ pub fn load_master_key(filename: &str) -> std::io::Result<SigningKey> {
     let mut buf = Vec::new();
     file.read_to_end(&mut buf)?;
     let armored_key = String::from_utf8(buf).unwrap();
-    let key_bytes = unarmor_key("MASTER PRIVATE KEY", &armored_key)?;
+    let key_bytes = unarmor_key("MASTER PRIVATE KEY", &armored_key).map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
     use p256::elliptic_curve::generic_array::GenericArray;
     use p256::elliptic_curve::consts::U32;
 
@@ -192,7 +192,7 @@ fn armor_key(key_type: &str, key_bytes: &[u8]) -> String {
     format!(
         "-----BEGIN {}-----\n{}\n-----END {}-----",
         key_type,
-        base64::encode(key_bytes),
+        general_purpose::STANDARD.encode(key_bytes),
         key_type
     )
 }
@@ -206,5 +206,5 @@ fn unarmor_key(expected_type: &str, armored_key: &str) -> Result<Vec<u8>, String
         return Err("Armored key type mismatch".to_string());
     }
     let key_base64 = lines[1..lines.len() - 1].join("");
-    base64::decode(&key_base64).map_err(|e| e.to_string())
+    general_purpose::STANDARD.decode(&key_base64).map_err(|e| e.to_string())
 }
