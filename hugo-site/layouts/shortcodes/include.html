@@ -1,0 +1,6 @@
+{{ $path := .Get 0 }}
+{{ with .Site.GetPage $path }}
+  {{ .Content | safeHTML }}
+{{ else }}
+  {{ errorf "Unable to find page %q" $path }}
+{{ end }}
