@@ -14,13 +14,25 @@ document.addEventListener('DOMContentLoaded', function() {
   const isTestMode = urlParams.get('test') !== null;
 
   if (isTestMode) {
+    console.log("Test mode detected");
     generateTestCertificate();
   } else if (paymentIntent) {
+    console.log("Payment intent detected:", paymentIntent);
     generateAndSignCertificate(paymentIntent);
   } else {
+    console.log("No payment intent or test mode detected");
     showError('Payment information not found.');
   }
 });
+
+function generateTestCertificate() {
+  console.log("Generating test certificate");
+  const publicKey = nacl.randomBytes(32);
+  const privateKey = nacl.randomBytes(64);
+  const unblindedSignature = nacl.randomBytes(64);
+
+  displayCertificate(publicKey, privateKey, unblindedSignature);
+}
 
 async function generateAndSignCertificate(paymentIntentId) {
   try {
@@ -88,6 +100,7 @@ function generateTestCertificate() {
 }
 
 function displayCertificate(publicKey, privateKey, unblindedSignature) {
+  console.log("Displaying certificate");
   // Armor the certificate and private key
   const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
 ${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}
@@ -101,17 +114,27 @@ ${bufferToBase64(privateKey)}
   const combinedKey = `${wrapBase64(armoredCertificate, 64)}\n\n${wrapBase64(armoredPrivateKey, 64)}`;
 
   // Display the combined key
-  document.getElementById('combinedKey').value = combinedKey;
-  document.getElementById('certificateSection').style.display = 'block';
-  document.getElementById('certificate-info').style.display = 'none';
+  const combinedKeyElement = document.getElementById('combinedKey');
+  if (combinedKeyElement) {
+    combinedKeyElement.value = combinedKey;
+    document.getElementById('certificateSection').style.display = 'block';
+    document.getElementById('certificate-info').style.display = 'none';
 
-  // Set up copy button
-  document.getElementById('copyCombinedKey').addEventListener('click', function() {
-    const combinedKeyElement = document.getElementById('combinedKey');
-    combinedKeyElement.select();
-    document.execCommand('copy');
-    alert('Combined key copied to clipboard!');
-  });
+    // Set up copy button
+    const copyButton = document.getElementById('copyCombinedKey');
+    if (copyButton) {
+      copyButton.addEventListener('click', function() {
+        combinedKeyElement.select();
+        document.execCommand('copy');
+        alert('Combined key copied to clipboard!');
+      });
+    } else {
+      console.error("Copy button not found");
+    }
+  } else {
+    console.error("Combined key textarea not found");
+    showError('Error displaying certificate. Please contact support.');
+  }
 
   // Verify the certificate
   if (verifyCertificate(publicKey, unblindedSignature)) {
