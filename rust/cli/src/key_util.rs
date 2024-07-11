@@ -5,7 +5,7 @@ use std::path::Path;
 use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand_core::OsRng;
 use base64::{engine::general_purpose, Engine as _};
-use std::fs::File;
+use std::fs::{File, create_dir_all};
 use std::io::Write;
 
 pub fn generate_signing_key(output_dir: &str) {
@@ -21,7 +21,11 @@ pub fn generate_signing_key(output_dir: &str) {
     let armored_signing_key = format!("-----BEGIN SERVER SIGNING KEY-----\n{}\n-----END SERVER SIGNING KEY-----", signing_key_base64);
     let armored_verifying_key = format!("-----BEGIN SERVER PUBLIC KEY-----\n{}\n-----END SERVER PUBLIC KEY-----", verifying_key_base64);
 
-    // Define file paths
+    // Create the output directory if it doesn't exist
+    if let Err(e) = create_dir_all(output_dir) {
+        eprintln!("Error: Unable to create output directory: {}", e);
+        return;
+    }
     let signing_key_path = Path::new(output_dir).join("server_signing_key.pem");
     let verifying_key_path = Path::new(output_dir).join("server_public_key.pem");
 
