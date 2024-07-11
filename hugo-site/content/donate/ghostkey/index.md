@@ -12,9 +12,12 @@ secret key that is then encrypted and sent to our
 server. We sign this encrypted key to certify your donation without ever 
 seeing your actual key. Your browser then decrypts the signature. This ensures 
 that 
-your anonymity is maintained and prevents any connection between your donation and the key. This anonymously signed 
-key or "Ghost Key," can be used to verify sender authenticity in your communications, mitigate spam, and 
-establish a credible identity within the decentralized reputation system—all while you remain anonymous.
+your anonymity is maintained and prevents any connection between your donation 
+and the key. This anonymously signed 
+key or "Ghost Key," can be used to verify sender authenticity in your communications, 
+mitigate spam, and 
+establish a credible identity within the decentralized reputation system—all while 
+you remain anonymous.
 
 ### Technical Overview
 
