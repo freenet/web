@@ -52,7 +52,7 @@ pub fn verify_certificate(cert: &Certificate, master_public_key: &VerifyingKey) 
     delegated_verifying_key.verify(&cert.certified_public_key, &Signature::from_slice(&cert.signature).unwrap()).is_ok()
 }
 
-// Keep all the existing code except for the Cli, Commands, and main function
+// Keep all the existing code
 
 #[cfg(test)]
 mod tests {
@@ -63,5 +63,4 @@ mod tests {
     }
 }
 
-// Export the necessary types and functions
-pub use self::{DelegatedKey, Certificate, sign_certificate, verify_certificate};
+// No need to re-export, as these are already public
