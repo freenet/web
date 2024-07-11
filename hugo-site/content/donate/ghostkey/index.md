@@ -7,4 +7,4 @@ layout: single
 
 {{< stripe-donation-form error-message="The Ghost Key back-end isn't currently running, please notify webmaster@freenet.org" >}}
 
-{{< include "ghost-key-explanation.md" >}}
+{{< include "/donate/ghostkey/ghost-key-explanation.md" >}}

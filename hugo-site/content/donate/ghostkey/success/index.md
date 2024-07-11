@@ -14,7 +14,7 @@ donation without revealing your identity. Please wait a moment while we process 
 
 ## What is a Ghost Key?
 
-{{< include "../ghost-key-explanation.md" >}}
+{{< include "/donate/ghostkey/ghost-key-explanation.md" >}}
 
 ## What's Next?
 
