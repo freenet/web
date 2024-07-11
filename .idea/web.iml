@@ -5,7 +5,12 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/rocket-api/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rocket-api/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/api/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/cli/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/common/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/rocket-api/target" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/api/target" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

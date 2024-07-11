@@ -46,7 +46,7 @@ fn rocket() -> _ {
         .attach(routes::CORS)
         .attach(routes::RequestTimer)
         .attach(AdHoc::on_response("Powered-By Header", |_, res| Box::pin(async move {
-            res.set_header(Header::new("X-Powered-By", "Freenet Rocket API"));
+            res.set_header(Header::new("X-Powered-By", "Freenet GhostKey API"));
         })))
         .attach(AdHoc::on_response("Security Headers", |_, res| Box::pin(async move {
             res.set_header(Header::new("X-XSS-Protection", "1; mode=block"));
