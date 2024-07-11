@@ -4,7 +4,7 @@ use std::str::FromStr;
 use std::collections::HashMap;
 use base64::{Engine as _, engine::general_purpose};
 use std::error::Error as StdError;
-use crate::fn_key_util::{DelegatedKey, Certificate, sign_certificate as util_sign_certificate};
+use crate::fn_key_util::{DelegatedKey, Certificate, sign_certificate as util_sign_certificate, PublicKey};
 
 #[derive(Debug)]
 pub enum CertificateError {
