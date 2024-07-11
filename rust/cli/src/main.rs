@@ -5,19 +5,15 @@ fn main() {
         .version("1.0")
         .author("Your Name <your.email@example.com>")
         .about("Performs various Freenet-related tasks")
-        .subcommand(Command::new("generate-key")
-            .about("Generates a new key"))
-        .subcommand(Command::new("generate-signing-key")
-            .about("Generates a new SERVER_SIGNING_KEY and public key")
+        .subcommand(Command::new("generate-master-key")
+            .about("Generates a new SERVER_MASTER_KEY and public key")
             .arg(clap::Arg::new("output_dir")
                 .help("The directory to output the keys")
                 .required(true)
                 .index(1)))
         .get_matches();
 
-    if let Some(_) = matches.subcommand_matches("generate-key") {
-        // Existing generate-key functionality
-    } else if let Some(matches) = matches.subcommand_matches("generate-signing-key") {
+    if let Some(matches) = matches.subcommand_matches("generate-master-key") {
         let output_dir = matches.get_one::<String>("output_dir").unwrap();
         key_util::generate_signing_key(output_dir);
     }
