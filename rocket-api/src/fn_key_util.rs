@@ -67,7 +67,8 @@ fn main() {
         },
         Some(("generate-delegated-key", sub_matches)) => {
             let purpose = sub_matches.get_one::<String>("purpose").unwrap();
-            let delegated_key = generate_delegated_key(purpose);
+            let master_key = generate_master_key(); // In practice, this should be loaded from a secure location
+            let delegated_key = generate_delegated_key(&master_key, purpose);
             let filename = format!("delegated_key_{}.bin", purpose);
             save_delegated_key(&delegated_key, &filename).unwrap();
             println!("Generated delegated key saved to: {}", filename);
@@ -91,7 +92,7 @@ pub fn generate_master_key() -> SigningKey {
 }
 
 pub fn generate_delegated_key(master_key: &SigningKey, purpose: &str) -> DelegatedKey {
-    let signing_key = master_key.derive_key(purpose);
+    let signing_key = SigningKey::random(&mut rand::thread_rng());
     let public_key = signing_key.verifying_key().to_sec1_bytes().to_vec();
     
     let metadata = DelegatedKeyMetadata {
