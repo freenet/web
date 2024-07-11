@@ -30,6 +30,7 @@ pub struct Certificate {
 }
 
 
+#[allow(dead_code)]
 pub fn generate_master_key() -> (SigningKey, VerifyingKey) {
     let signing_key = SigningKey::random(&mut rand::thread_rng());
     let signing_key_clone = signing_key.clone();
@@ -37,6 +38,7 @@ pub fn generate_master_key() -> (SigningKey, VerifyingKey) {
     (signing_key, *verifying_key)
 }
 
+#[allow(dead_code)]
 pub fn generate_delegated_key(master_key: &SigningKey, purpose: &str) -> DelegatedKey {
     let signing_key = SigningKey::random(&mut rand::thread_rng());
     let public_key = signing_key.verifying_key().to_sec1_bytes().to_vec();
@@ -71,12 +73,14 @@ pub fn sign_certificate(delegated_key: &DelegatedKey, public_key: &PublicKey) ->
     }
 }
 
+#[allow(dead_code)]
 pub fn save_delegated_key(key: &DelegatedKey, filename: &str) -> std::io::Result<()> {
     let mut file = File::create(filename)?;
     let buf = serde_json::to_vec(key).unwrap();
     file.write_all(&buf)
 }
 
+#[allow(dead_code)]
 pub fn load_delegated_key(filename: &str) -> std::io::Result<DelegatedKey> {
     let mut file = File::open(filename)?;
     let mut buf = Vec::new();
@@ -84,12 +88,14 @@ pub fn load_delegated_key(filename: &str) -> std::io::Result<DelegatedKey> {
     Ok(serde_json::from_slice(&buf).unwrap())
 }
 
+#[allow(dead_code)]
 pub fn save_certificate(cert: &Certificate, filename: &str) -> std::io::Result<()> {
     let mut file = File::create(filename)?;
     let buf = serde_json::to_vec(cert).unwrap();
     file.write_all(&buf)
 }
 
+#[allow(dead_code)]
 pub fn load_certificate(filename: &str) -> std::io::Result<Certificate> {
     let mut file = File::open(filename)?;
     let mut buf = Vec::new();
@@ -97,6 +103,7 @@ pub fn load_certificate(filename: &str) -> std::io::Result<Certificate> {
     Ok(serde_json::from_slice(&buf).unwrap())
 }
 
+#[allow(dead_code)]
 pub fn verify_certificate(cert: &Certificate, master_public_key: &VerifyingKey) -> bool {
     // Verify master signature on delegated key
     let mut buf = Vec::new();
@@ -111,6 +118,7 @@ pub fn verify_certificate(cert: &Certificate, master_public_key: &VerifyingKey) 
     let delegated_verifying_key = VerifyingKey::from_sec1_bytes(&cert.delegated_key.public_key).unwrap();
     delegated_verifying_key.verify(&cert.certified_public_key, &Signature::from_slice(&cert.signature).unwrap()).is_ok()
 }
+#[allow(dead_code)]
 pub fn load_master_key(filename: &str) -> std::io::Result<SigningKey> {
     let mut file = File::open(filename)?;
     let mut buf = Vec::new();
@@ -123,6 +131,7 @@ pub fn load_master_key(filename: &str) -> std::io::Result<SigningKey> {
     let key_bytes: &GenericArray<u8, U32> = GenericArray::from_slice(&key_bytes);
     Ok(SigningKey::from_bytes(key_bytes).unwrap())
 }
+#[allow(dead_code)]
 fn armor_key(key_type: &str, key_bytes: &[u8]) -> String {
     let encoded = general_purpose::STANDARD.encode(key_bytes);
     let wrapped = encoded.chars().collect::<Vec<_>>().chunks(64).map(|chunk| chunk.iter().collect::<String>()).collect::<Vec<_>>().join("\n");
@@ -134,6 +143,7 @@ fn armor_key(key_type: &str, key_bytes: &[u8]) -> String {
     )
 }
 
+#[allow(dead_code)]
 fn unarmor_key(expected_type: &str, armored_key: &str) -> Result<Vec<u8>, String> {
     let lines: Vec<&str> = armored_key.lines().collect();
     if lines.len() < 3 {
@@ -145,6 +155,7 @@ fn unarmor_key(expected_type: &str, armored_key: &str) -> Result<Vec<u8>, String
     let key_base64 = lines[1..lines.len() - 1].join("");
     general_purpose::STANDARD.decode(&key_base64).map_err(|e| e.to_string())
 }
+#[allow(dead_code)]
 fn main() {
     let matches = Command::new("Freenet Key Utility")
         .version("1.0")
