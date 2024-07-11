@@ -9,6 +9,18 @@ function base64ToBuffer(base64) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  console.log("DOM fully loaded");
+  
+  // Check if required elements are present
+  const requiredElements = ['combinedKey', 'certificateSection', 'certificate-info', 'copyCombinedKey', 'errorMessage'];
+  const missingElements = requiredElements.filter(id => !document.getElementById(id));
+  
+  if (missingElements.length > 0) {
+    console.error("Missing required elements:", missingElements);
+    showError(`Error: Missing required elements: ${missingElements.join(', ')}`);
+    return;
+  }
+
   const urlParams = new URLSearchParams(window.location.search);
   const paymentIntent = urlParams.get('payment_intent');
   const isTestMode = urlParams.get('test') !== null;
@@ -127,6 +139,7 @@ ${bufferToBase64(privateKey)}
     // Display the combined key
     const combinedKeyElement = document.getElementById('combinedKey');
     if (!combinedKeyElement) {
+      console.error("Combined key textarea not found");
       throw new Error("Combined key textarea not found");
     }
     
@@ -136,6 +149,7 @@ ${bufferToBase64(privateKey)}
     const certificateInfo = document.getElementById('certificate-info');
     
     if (!certificateSection || !certificateInfo) {
+      console.error("Certificate section or info element not found");
       throw new Error("Certificate section or info element not found");
     }
     
@@ -145,6 +159,7 @@ ${bufferToBase64(privateKey)}
     // Set up copy button
     const copyButton = document.getElementById('copyCombinedKey');
     if (!copyButton) {
+      console.error("Copy button not found");
       throw new Error("Copy button not found");
     }
     
@@ -156,6 +171,7 @@ ${bufferToBase64(privateKey)}
 
     // Verify the certificate
     if (!verifyCertificate(publicKey, unblindedSignature)) {
+      console.error("Certificate verification failed");
       throw new Error("Certificate verification failed");
     }
     
