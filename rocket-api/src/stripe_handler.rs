@@ -2,12 +2,6 @@ use rocket::serde::{Deserialize, Serialize};
 use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use std::collections::HashMap;
-use p256::{
-    ecdsa::{SigningKey, Signature, signature::Signer, VerifyingKey},
-    PublicKey,
-};
-use rand_core::OsRng;
-use sha2::{Sha256, Digest};
 use base64::{Engine as _, engine::general_purpose};
 use std::error::Error as StdError;
 use crate::fn_key_util::{DelegatedKey, Certificate, sign_certificate as util_sign_certificate};

@@ -1,8 +1,7 @@
 use clap::{Command, Arg};
-use rand::RngCore;
 use base64::{Engine as _, engine::general_purpose};
 use p256::{
-    ecdsa::{SigningKey, Signature, signature::Signer, VerifyingKey},
+    ecdsa::{SigningKey, Signature, signature::{Signer, Verifier}, VerifyingKey},
     PublicKey,
 };
 use serde::{Serialize, Deserialize};
@@ -115,7 +114,7 @@ pub fn generate_delegated_key(purpose: &str) -> DelegatedKey {
 }
 
 pub fn sign_certificate(delegated_key: &DelegatedKey, public_key: &[u8]) -> Certificate {
-    let signing_key = SigningKey::from_sec1_bytes(&delegated_key.public_key).unwrap();
+    let signing_key = SigningKey::from_slice(&delegated_key.public_key).unwrap();
     
     let signature = signing_key.sign(public_key).to_vec();
 
@@ -158,7 +157,7 @@ pub fn verify_certificate(cert: &Certificate, master_public_key: &VerifyingKey) 
     buf.extend_from_slice(&serde_json::to_vec(&cert.delegated_key.metadata).unwrap());
     buf.extend_from_slice(&cert.delegated_key.public_key);
     
-    if !master_public_key.verify(&buf, &Signature::from_slice(&cert.delegated_key.master_signature).unwrap()).is_ok() {
+    if master_public_key.verify(&buf, &Signature::from_slice(&cert.delegated_key.master_signature).unwrap()).is_err() {
         return false;
     }
 
