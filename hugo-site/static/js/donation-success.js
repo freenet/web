@@ -11,8 +11,11 @@ function base64ToBuffer(base64) {
 document.addEventListener('DOMContentLoaded', function() {
   const urlParams = new URLSearchParams(window.location.search);
   const paymentIntent = urlParams.get('payment_intent');
+  const isTestMode = urlParams.get('test') !== null;
 
-  if (paymentIntent) {
+  if (isTestMode) {
+    generateTestCertificate();
+  } else if (paymentIntent) {
     generateAndSignCertificate(paymentIntent);
   } else {
     showError('Payment information not found.');
@@ -70,52 +73,66 @@ async function generateAndSignCertificate(paymentIntentId) {
       unblindedSignature[i] = blindSignature[i];
     }
 
-    // Armor the certificate and private key
-    const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
-${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}
------END FREENET DONATION CERTIFICATE-----`;
-
-    const armoredPrivateKey = `-----BEGIN FREENET DONATION PRIVATE KEY-----
-${bufferToBase64(privateKey)}
------END FREENET DONATION PRIVATE KEY-----`;
-
-    // Combine certificate and private key
-    const combinedKey = `${wrapBase64(armoredCertificate, 64)}\n\n${wrapBase64(armoredPrivateKey, 64)}`;
-
-    // Display the combined key
-    document.getElementById('combinedKey').value = combinedKey;
-    document.getElementById('certificateSection').style.display = 'block';
-    document.getElementById('certificate-info').style.display = 'none';
-
-    // Function to wrap base64 encoded text
-    function wrapBase64(str, maxWidth) {
-      const lines = str.split('\n');
-      return lines.map(line => {
-        if (line.startsWith('-----')) {
-          return line;
-        }
-        return line.match(new RegExp(`.{1,${maxWidth}}`, 'g')).join('\n');
-      }).join('\n');
-    }
-
-    // Set up copy button
-    document.getElementById('copyCombinedKey').addEventListener('click', function() {
-      const combinedKeyElement = document.getElementById('combinedKey');
-      combinedKeyElement.select();
-      document.execCommand('copy');
-      alert('Combined key copied to clipboard!');
-    });
-
-    // Verify the certificate
-    if (verifyCertificate(publicKey, unblindedSignature)) {
-      console.log("Certificate verified successfully");
-    } else {
-      console.error("Certificate verification failed");
-      showError('Certificate verification failed. Please contact support.');
-    }
+    displayCertificate(publicKey, privateKey, unblindedSignature);
   } catch (error) {
     showError('Error generating certificate: ' + error.message);
   }
+}
+
+function generateTestCertificate() {
+  const publicKey = nacl.randomBytes(32);
+  const privateKey = nacl.randomBytes(64);
+  const unblindedSignature = nacl.randomBytes(64);
+
+  displayCertificate(publicKey, privateKey, unblindedSignature);
+}
+
+function displayCertificate(publicKey, privateKey, unblindedSignature) {
+
+function displayCertificate(publicKey, privateKey, unblindedSignature) {
+  // Armor the certificate and private key
+  const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
+${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}
+-----END FREENET DONATION CERTIFICATE-----`;
+
+  const armoredPrivateKey = `-----BEGIN FREENET DONATION PRIVATE KEY-----
+${bufferToBase64(privateKey)}
+-----END FREENET DONATION PRIVATE KEY-----`;
+
+  // Combine certificate and private key
+  const combinedKey = `${wrapBase64(armoredCertificate, 64)}\n\n${wrapBase64(armoredPrivateKey, 64)}`;
+
+  // Display the combined key
+  document.getElementById('combinedKey').value = combinedKey;
+  document.getElementById('certificateSection').style.display = 'block';
+  document.getElementById('certificate-info').style.display = 'none';
+
+  // Set up copy button
+  document.getElementById('copyCombinedKey').addEventListener('click', function() {
+    const combinedKeyElement = document.getElementById('combinedKey');
+    combinedKeyElement.select();
+    document.execCommand('copy');
+    alert('Combined key copied to clipboard!');
+  });
+
+  // Verify the certificate
+  if (verifyCertificate(publicKey, unblindedSignature)) {
+    console.log("Certificate verified successfully");
+  } else {
+    console.error("Certificate verification failed");
+    showError('Certificate verification failed. Please contact support.');
+  }
+}
+
+// Function to wrap base64 encoded text
+function wrapBase64(str, maxWidth) {
+  const lines = str.split('\n');
+  return lines.map(line => {
+    if (line.startsWith('-----')) {
+      return line;
+    }
+    return line.match(new RegExp(`.{1,${maxWidth}}`, 'g')).join('\n');
+  }).join('\n');
 }
 
 function verifyCertificate(publicKey, signature) {
