@@ -1,7 +1,7 @@
 ---
 title: "Donate to Freenet and Receive a Ghost Key"
-date: 2024-06-24
-draft: true
+date: 2024-07-10
+draft: false
 layout: single
 ---
 
