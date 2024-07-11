@@ -1,7 +1,7 @@
 use clap::{Command, Arg};
 use base64::{Engine as _, engine::general_purpose};
 use p256::{
-    ecdsa::{SigningKey, Signature, signature::{Signer, Verifier}, VerifyingKey},
+    ecdsa::{SigningKey, Signature, signature::Verifier, VerifyingKey},
     PublicKey,
 };
 use serde::{Serialize, Deserialize};
@@ -104,7 +104,7 @@ pub fn generate_delegated_key(purpose: &str) -> DelegatedKey {
     buf.extend_from_slice(&public_key);
 
     let master_key = generate_master_key(); // In practice, this should be loaded from a secure location
-    let master_signature = p256::ecdsa::signature::Signer::sign(&master_key, &buf).to_vec();
+    let master_signature = master_key.sign(&buf).to_vec();
 
     DelegatedKey {
         public_key,
@@ -116,7 +116,7 @@ pub fn generate_delegated_key(purpose: &str) -> DelegatedKey {
 pub fn sign_certificate(delegated_key: &DelegatedKey, public_key: &PublicKey) -> Certificate {
     let signing_key = SigningKey::from_slice(&delegated_key.public_key).unwrap();
     
-    let signature = p256::ecdsa::signature::Signer::sign(&signing_key, public_key.to_sec1_bytes().as_ref()).to_vec();
+    let signature = signing_key.sign(public_key.to_sec1_bytes().as_ref()).to_vec();
 
     Certificate {
         delegated_key: delegated_key.clone(),
