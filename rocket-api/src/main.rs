@@ -1,3 +1,5 @@
+#[macro_use] extern crate rocket;
+
 use rocket::{launch, catchers};
 use rocket::fairing::AdHoc;
 use rocket::http::Header;
@@ -6,9 +8,12 @@ use env_logger::Env;
 use dotenv::dotenv;
 use log::LevelFilter;
 use chrono;
+use rocket::serde::json::Json;
+use serde::{Serialize, Deserialize};
 
 mod routes;
 mod stripe_handler;
+mod fn_key_util;
 
 #[catch(404)]
 fn not_found(req: &Request) -> String {
@@ -18,6 +23,21 @@ fn not_found(req: &Request) -> String {
 #[catch(500)]
 fn internal_error() -> &'static str {
     "Internal server error. Please try again later."
+}
+
+#[derive(Serialize, Deserialize)]
+struct Message {
+    contents: String
+}
+
+#[get("/")]
+fn index() -> &'static str {
+    "Hello, world!"
+}
+
+#[post("/echo", format = "json", data = "<message>")]
+fn echo(message: Json<Message>) -> Json<Message> {
+    message
 }
 
 #[launch]
@@ -54,31 +74,6 @@ fn rocket() -> _ {
             res.set_header(Header::new("Referrer-Policy", "strict-origin-when-cross-origin"));
         })))
         .mount("/", routes::routes())
-        .register("/", catchers![not_found, internal_error])
-}
-mod fn_key_util;
-#[macro_use] extern crate rocket;
-
-use rocket::serde::json::Json;
-use serde::{Serialize, Deserialize};
-
-#[derive(Serialize, Deserialize)]
-struct Message {
-    contents: String
-}
-
-#[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
-}
-
-#[post("/echo", format = "json", data = "<message>")]
-fn echo(message: Json<Message>) -> Json<Message> {
-    message
-}
-
-#[launch]
-fn rocket() -> _ {
-    rocket::build()
         .mount("/", routes![index, echo])
+        .register("/", catchers![not_found, internal_error])
 }
