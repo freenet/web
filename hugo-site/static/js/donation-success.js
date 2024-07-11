@@ -189,7 +189,10 @@ ${bufferToBase64(privateKey)}
     copyButton.addEventListener('click', function() {
       combinedKeyElement.select();
       document.execCommand('copy');
-      alert('Ghost Key copied to clipboard!');
+      this.textContent = 'Copied!';
+      setTimeout(() => {
+        this.textContent = 'Copy Ghost Key';
+      }, 2000);
     });
 
     // Verify the certificate
