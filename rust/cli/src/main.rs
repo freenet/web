@@ -18,9 +18,6 @@ fn main() {
         generate_signing_key();
     }
 
-    if let Some(_) = matches.subcommand_matches("generate-key") {
-        /
-    }
 }
 use p256::{
     ecdsa::{SigningKey, VerifyingKey},
