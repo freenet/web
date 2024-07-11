@@ -1,4 +1,4 @@
-use p256::ecdsa::{SigningKey, VerifyingKey};
+use p256::ecdsa::{SigningKey as PrivateKey, VerifyingKey as PublicKey};
 use rand_core::OsRng;
 use base64::{engine::general_purpose, Engine as _};
 use std::fs::{File, create_dir_all};
@@ -12,8 +12,8 @@ use std::env;
 
 pub fn generate_master_key(output_dir: &str) {
     // Generate the master private key
-    let master_private_key = SigningKey::random(&mut OsRng);
-    let master_public_key = VerifyingKey::from(&master_private_key);
+    let master_private_key = PrivateKey::random(&mut OsRng);
+    let master_public_key = PublicKey::from(&master_private_key);
 
     // Encode the keys in base64
     let master_private_key_base64 = general_purpose::STANDARD.encode(master_private_key.to_bytes());
@@ -53,7 +53,7 @@ pub fn sign_with_key(blinded_public_key: &Value) -> Result<String, String> {
         Err(e) => return Err(format!("Environment variable SERVER_MASTER_PRIVATE_KEY not found: {}", e)),
     };
 
-    let master_private_key = SigningKey::from_bytes(&general_purpose::STANDARD.decode(pad_base64(&server_master_private_key)).map_err(|e| e.to_string())?)
+    let master_private_key = PrivateKey::from_bytes(&general_purpose::STANDARD.decode(pad_base64(&server_master_private_key)).map_err(|e| e.to_string())?)
         .map_err(|e| format!("Failed to create master private key: {}", e))?;
 
     let blinded_public_key_bytes = match blinded_public_key {
