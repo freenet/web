@@ -57,3 +57,28 @@ fn rocket() -> _ {
         .register("/", catchers![not_found, internal_error])
 }
 mod fn_key_util;
+#[macro_use] extern crate rocket;
+
+use rocket::serde::json::Json;
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize)]
+struct Message {
+    contents: String
+}
+
+#[get("/")]
+fn index() -> &'static str {
+    "Hello, world!"
+}
+
+#[post("/echo", format = "json", data = "<message>")]
+fn echo(message: Json<Message>) -> Json<Message> {
+    message
+}
+
+#[launch]
+fn rocket() -> _ {
+    rocket::build()
+        .mount("/", routes![index, echo])
+}
