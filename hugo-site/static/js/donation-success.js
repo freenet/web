@@ -79,9 +79,11 @@ ${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}
 ${bufferToBase64(privateKey)}
 -----END FREENET DONATION PRIVATE KEY-----`;
 
-    // Display the certificate and private key
-    document.getElementById('certificate').value = wrapBase64(armoredCertificate, 64);
-    document.getElementById('privateKey').value = wrapBase64(armoredPrivateKey, 64);
+    // Combine certificate and private key
+    const combinedKey = `${wrapBase64(armoredCertificate, 64)}\n\n${wrapBase64(armoredPrivateKey, 64)}`;
+
+    // Display the combined key
+    document.getElementById('combinedKey').value = combinedKey;
     document.getElementById('certificateSection').style.display = 'block';
     document.getElementById('certificate-info').style.display = 'none';
 
@@ -96,21 +98,12 @@ ${bufferToBase64(privateKey)}
       }).join('\n');
     }
 
-    // Set up download button
-    document.getElementById('downloadCertificate').addEventListener('click', function() {
-      const certificateData = {
-        certificate: armoredCertificate,
-        privateKey: armoredPrivateKey
-      };
-      const blob = new Blob([JSON.stringify(certificateData, null, 2)], {type: 'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'freenet_donation_certificate.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+    // Set up copy button
+    document.getElementById('copyCombinedKey').addEventListener('click', function() {
+      const combinedKeyElement = document.getElementById('combinedKey');
+      combinedKeyElement.select();
+      document.execCommand('copy');
+      alert('Combined key copied to clipboard!');
     });
 
     // Verify the certificate
