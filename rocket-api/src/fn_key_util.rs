@@ -51,3 +51,10 @@ pub fn verify_certificate(cert: &Certificate, master_public_key: &VerifyingKey) 
     let delegated_verifying_key = VerifyingKey::from_sec1_bytes(&cert.delegated_key.public_key).unwrap();
     delegated_verifying_key.verify(&cert.certified_public_key, &Signature::from_slice(&cert.signature).unwrap()).is_ok()
 }
+
+#[cfg(test)]
+fn main() {
+    // Test code here
+    println!("Running test code...");
+    // Add your test logic here
+}
