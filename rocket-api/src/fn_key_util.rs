@@ -190,10 +190,12 @@ pub fn load_master_key(filename: &str) -> std::io::Result<SigningKey> {
     Ok(SigningKey::from_bytes(key_bytes).unwrap())
 }
 fn armor_key(key_type: &str, key_bytes: &[u8]) -> String {
+    let encoded = general_purpose::STANDARD.encode(key_bytes);
+    let wrapped = encoded.chars().collect::<Vec<_>>().chunks(64).map(|chunk| chunk.iter().collect::<String>()).collect::<Vec<_>>().join("\n");
     format!(
         "-----BEGIN {}-----\n{}\n-----END {}-----",
         key_type,
-        general_purpose::STANDARD.encode(key_bytes),
+        wrapped,
         key_type
     )
 }
