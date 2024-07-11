@@ -90,8 +90,8 @@ pub fn generate_master_key() -> SigningKey {
     SigningKey::random(&mut rand::thread_rng())
 }
 
-pub fn generate_delegated_key(purpose: &str) -> DelegatedKey {
-    let signing_key = SigningKey::random(&mut rand::thread_rng());
+pub fn generate_delegated_key(master_key: &SigningKey, purpose: &str) -> DelegatedKey {
+    let signing_key = master_key.derive_key(purpose);
     let public_key = signing_key.verifying_key().to_sec1_bytes().to_vec();
     
     let metadata = DelegatedKeyMetadata {
