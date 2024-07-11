@@ -104,7 +104,7 @@ pub fn generate_delegated_key(purpose: &str) -> DelegatedKey {
     buf.extend_from_slice(&public_key);
 
     let master_key = generate_master_key(); // In practice, this should be loaded from a secure location
-    let master_signature = master_key.sign(&buf).to_vec();
+    let master_signature = master_key.sign(&buf, &p256::ecdsa::signature::Signer::sign).to_vec();
 
     DelegatedKey {
         public_key,
