@@ -66,7 +66,14 @@ function generateTestCertificate() {
   const privateKey = nacl.randomBytes(64);
   const unblindedSignature = nacl.randomBytes(64);
 
-  displayCertificate(publicKey, privateKey, unblindedSignature);
+  // Additional metadata
+  const metadata = {
+    donationAmount: "100 USD",
+    donorName: "Test Donor",
+    donationDate: new Date().toISOString()
+  };
+
+  displayCertificate(publicKey, privateKey, unblindedSignature, metadata);
 }
 
 async function generateAndSignCertificate(paymentIntentId) {
@@ -144,12 +151,12 @@ function generateTestCertificate() {
   displayCertificate(publicKey, privateKey, unblindedSignature);
 }
 
-function displayCertificate(publicKey, privateKey, unblindedSignature) {
+function displayCertificate(publicKey, privateKey, unblindedSignature, metadata = {}) {
   console.log("Displaying certificate");
   try {
     // Armor the certificate and private key
     const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
-${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}
+${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}|${JSON.stringify(metadata)}
 -----END FREENET DONATION CERTIFICATE-----`;
 
     const armoredPrivateKey = `-----BEGIN FREENET DONATION PRIVATE KEY-----
