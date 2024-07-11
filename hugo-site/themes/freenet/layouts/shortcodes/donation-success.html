@@ -3,23 +3,18 @@
 </div>
 
 <div id="certificateSection" style="display: none;">
-  <h3>Your Donation Certificate</h3>
+  <h3>Your Ghost Key</h3>
   <div>
-    <h4>Donation Certificate (can be shared)</h4>
-    <textarea id="certificate" rows="4" cols="80" readonly style="word-wrap: break-word; white-space: pre-wrap;"></textarea>
-    <button onclick="copyCertificate()" class="button is-small">Copy Certificate</button>
+    <h4>Ghost Key (contains both certificate and private key)</h4>
+    <textarea id="combinedKey" rows="10" cols="80" readonly style="word-wrap: break-word; white-space: pre-wrap;"></textarea>
+    <button id="copyCombinedKey" class="button is-small">Copy Ghost Key</button>
   </div>
-  <div>
-    <h4>Private Key (keep this secret!)</h4>
-    <textarea id="privateKey" rows="4" cols="80" readonly style="word-wrap: break-word; white-space: pre-wrap;"></textarea>
-    <button onclick="copyPrivateKey()" class="button is-small">Copy Private Key</button>
-  </div>
-  <p><strong>Warning:</strong> Keep your private key secret. Only share the certificate.</p>
+  <p><strong>Warning:</strong> Keep your Ghost Key secret. It contains both your certificate and private key.</p>
   <button id="downloadCertificate" class="button is-primary freenet-blue">
     <span class="icon">
       <i class="fas fa-download"></i>
     </span>
-    <span>Download Certificate and Private Key</span>
+    <span>Download Ghost Key</span>
   </button>
 </div>
 
@@ -34,26 +29,3 @@
 
 <script src="/js/elliptic.min.js"></script>
 <script src="/js/donation-success.js"></script>
-<script>
-async function copyCertificate() {
-  const certificateElement = document.getElementById('certificate');
-  try {
-    await navigator.clipboard.writeText(certificateElement.value);
-    alert('Certificate copied to clipboard!');
-  } catch (err) {
-    console.error('Failed to copy certificate: ', err);
-    alert('Failed to copy certificate. Please try again.');
-  }
-}
-
-async function copyPrivateKey() {
-  const privateKeyElement = document.getElementById('privateKey');
-  try {
-    await navigator.clipboard.writeText(privateKeyElement.value);
-    alert('Private key copied to clipboard. Remember to keep it secret!');
-  } catch (err) {
-    console.error('Failed to copy private key: ', err);
-    alert('Failed to copy private key. Please try again.');
-  }
-}
-</script>
