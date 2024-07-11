@@ -2,33 +2,32 @@ use clap::{Command, Arg};
 use rand::RngCore;
 use base64::{Engine as _, engine::general_purpose};
 use p256::{
-    ecdsa::{SigningKey, Signature, signature::Signer},
+    ecdsa::{SigningKey, Signature, signature::Signer, VerifyingKey},
     PublicKey,
 };
-use rmp_serde::{Serializer, Deserializer};
 use serde::{Serialize, Deserialize};
 use chrono::{DateTime, Utc};
 use std::fs::File;
 use std::io::{Read, Write};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DelegatedKeyMetadata {
     pub creation_date: DateTime<Utc>,
     pub purpose: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DelegatedKey {
-    pub public_key: PublicKey,
+    pub public_key: Vec<u8>,
     pub metadata: DelegatedKeyMetadata,
-    pub master_signature: Signature,
+    pub master_signature: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Certificate {
     pub delegated_key: DelegatedKey,
-    pub certified_public_key: PublicKey,
-    pub signature: Signature,
+    pub certified_public_key: Vec<u8>,
+    pub signature: Vec<u8>,
 }
 
 fn main() {
@@ -94,7 +93,7 @@ pub fn generate_master_key() -> SigningKey {
 
 pub fn generate_delegated_key(purpose: &str) -> DelegatedKey {
     let signing_key = SigningKey::random(&mut rand::thread_rng());
-    let public_key = signing_key.verifying_key().to_owned();
+    let public_key = signing_key.verifying_key().to_sec1_bytes().to_vec();
     
     let metadata = DelegatedKeyMetadata {
         creation_date: Utc::now(),
@@ -102,11 +101,11 @@ pub fn generate_delegated_key(purpose: &str) -> DelegatedKey {
     };
 
     let mut buf = Vec::new();
-    metadata.serialize(&mut Serializer::new(&mut buf)).unwrap();
-    public_key.serialize(&mut Serializer::new(&mut buf)).unwrap();
+    buf.extend_from_slice(&serde_json::to_vec(&metadata).unwrap());
+    buf.extend_from_slice(&public_key);
 
     let master_key = generate_master_key(); // In practice, this should be loaded from a secure location
-    let master_signature = master_key.sign(&buf);
+    let master_signature = master_key.sign(&buf).to_vec();
 
     DelegatedKey {
         public_key,
@@ -115,25 +114,21 @@ pub fn generate_delegated_key(purpose: &str) -> DelegatedKey {
     }
 }
 
-pub fn sign_certificate(delegated_key: &DelegatedKey, public_key: &PublicKey) -> Certificate {
-    let signing_key = SigningKey::from_bytes(&delegated_key.public_key.to_bytes()).unwrap();
+pub fn sign_certificate(delegated_key: &DelegatedKey, public_key: &[u8]) -> Certificate {
+    let signing_key = SigningKey::from_sec1_bytes(&delegated_key.public_key).unwrap();
     
-    let mut buf = Vec::new();
-    public_key.serialize(&mut Serializer::new(&mut buf)).unwrap();
-    
-    let signature = signing_key.sign(&buf);
+    let signature = signing_key.sign(public_key).to_vec();
 
     Certificate {
         delegated_key: delegated_key.clone(),
-        certified_public_key: *public_key,
+        certified_public_key: public_key.to_vec(),
         signature,
     }
 }
 
 pub fn save_delegated_key(key: &DelegatedKey, filename: &str) -> std::io::Result<()> {
     let mut file = File::create(filename)?;
-    let mut buf = Vec::new();
-    key.serialize(&mut Serializer::new(&mut buf)).unwrap();
+    let buf = serde_json::to_vec(key).unwrap();
     file.write_all(&buf)
 }
 
@@ -141,14 +136,12 @@ pub fn load_delegated_key(filename: &str) -> std::io::Result<DelegatedKey> {
     let mut file = File::open(filename)?;
     let mut buf = Vec::new();
     file.read_to_end(&mut buf)?;
-    let mut de = Deserializer::new(&buf[..]);
-    Ok(DelegatedKey::deserialize(&mut de).unwrap())
+    Ok(serde_json::from_slice(&buf).unwrap())
 }
 
 pub fn save_certificate(cert: &Certificate, filename: &str) -> std::io::Result<()> {
     let mut file = File::create(filename)?;
-    let mut buf = Vec::new();
-    cert.serialize(&mut Serializer::new(&mut buf)).unwrap();
+    let buf = serde_json::to_vec(cert).unwrap();
     file.write_all(&buf)
 }
 
@@ -156,23 +149,20 @@ pub fn load_certificate(filename: &str) -> std::io::Result<Certificate> {
     let mut file = File::open(filename)?;
     let mut buf = Vec::new();
     file.read_to_end(&mut buf)?;
-    let mut de = Deserializer::new(&buf[..]);
-    Ok(Certificate::deserialize(&mut de).unwrap())
+    Ok(serde_json::from_slice(&buf).unwrap())
 }
 
-pub fn verify_certificate(cert: &Certificate, master_public_key: &PublicKey) -> bool {
+pub fn verify_certificate(cert: &Certificate, master_public_key: &VerifyingKey) -> bool {
     // Verify master signature on delegated key
     let mut buf = Vec::new();
-    cert.delegated_key.metadata.serialize(&mut Serializer::new(&mut buf)).unwrap();
-    cert.delegated_key.public_key.serialize(&mut Serializer::new(&mut buf)).unwrap();
+    buf.extend_from_slice(&serde_json::to_vec(&cert.delegated_key.metadata).unwrap());
+    buf.extend_from_slice(&cert.delegated_key.public_key);
     
-    if !master_public_key.verify(&buf, &cert.delegated_key.master_signature).is_ok() {
+    if !master_public_key.verify(&buf, &Signature::from_slice(&cert.delegated_key.master_signature).unwrap()).is_ok() {
         return false;
     }
 
     // Verify delegated key signature on certified public key
-    let mut buf = Vec::new();
-    cert.certified_public_key.serialize(&mut Serializer::new(&mut buf)).unwrap();
-    
-    cert.delegated_key.public_key.verify(&buf, &cert.signature).is_ok()
+    let delegated_verifying_key = VerifyingKey::from_sec1_bytes(&cert.delegated_key.public_key).unwrap();
+    delegated_verifying_key.verify(&cert.certified_public_key, &Signature::from_slice(&cert.signature).unwrap()).is_ok()
 }

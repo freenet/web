@@ -3,7 +3,7 @@ use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use std::collections::HashMap;
 use p256::{
-    ecdsa::{SigningKey, Signature, signature::Signer},
+    ecdsa::{SigningKey, Signature, signature::Signer, VerifyingKey},
     PublicKey,
 };
 use rand_core::OsRng;
@@ -104,12 +104,11 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     log::info!("Payment intent verified successfully");
 
     let delegated_key = load_delegated_key()?;
-    let public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(&request.public_key)?)
-        .map_err(|e| CertificateError::KeyError(e.to_string()))?;
+    let public_key = general_purpose::STANDARD.decode(&request.public_key)?;
 
     let certificate = util_sign_certificate(&delegated_key, &public_key);
 
-    let certificate_bytes = rmp_serde::to_vec(&certificate)
+    let certificate_bytes = serde_json::to_vec(&certificate)
         .map_err(|e| CertificateError::SigningError(e.to_string()))?;
 
     log::info!("Certificate signed successfully");
@@ -127,6 +126,6 @@ fn load_delegated_key() -> Result<DelegatedKey, CertificateError> {
 
     let delegated_key_bytes = general_purpose::STANDARD.decode(delegated_key_base64)?;
 
-    rmp_serde::from_slice(&delegated_key_bytes)
+    serde_json::from_slice(&delegated_key_bytes)
         .map_err(|e| CertificateError::KeyError(e.to_string()))
 }
