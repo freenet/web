@@ -27,7 +27,6 @@ impl std::fmt::Display for CertificateError {
             CertificateError::StripeError(e) => write!(f, "Stripe error: {}", e),
             CertificateError::PaymentNotSuccessful => write!(f, "Payment not successful"),
             CertificateError::CertificateAlreadySigned => write!(f, "Certificate already signed"),
-            CertificateError::SigningError(e) => write!(f, "Signing error: {}", e),
             CertificateError::Base64Error(e) => write!(f, "Base64 decoding error: {}", e),
             CertificateError::KeyError(e) => write!(f, "Key error: {}", e),
             CertificateError::ParseIdError(e) => write!(f, "Parse ID error: {}", e),
