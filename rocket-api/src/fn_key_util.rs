@@ -38,6 +38,12 @@ fn main() {
             .about("Generates a new master key"))
         .subcommand(Command::new("generate-delegated-key")
             .about("Generates a new delegated key")
+            .arg(Arg::new("master-key")
+                .short('m')
+                .long("master-key")
+                .value_name("MASTER_KEY")
+                .help("Path to the master key file")
+                .required(true))
             .arg(Arg::new("purpose")
                 .short('p')
                 .long("purpose")
@@ -67,7 +73,8 @@ fn main() {
         },
         Some(("generate-delegated-key", sub_matches)) => {
             let purpose = sub_matches.get_one::<String>("purpose").unwrap();
-            let master_key = generate_master_key(); // In practice, this should be loaded from a secure location
+            let master_key_file = sub_matches.get_one::<String>("master-key").unwrap();
+            let master_key = load_master_key(master_key_file).unwrap();
             let delegated_key = generate_delegated_key(&master_key, purpose);
             let filename = format!("delegated_key_{}.bin", purpose);
             save_delegated_key(&delegated_key, &filename).unwrap();
@@ -104,7 +111,6 @@ pub fn generate_delegated_key(master_key: &SigningKey, purpose: &str) -> Delegat
     buf.extend_from_slice(&serde_json::to_vec(&metadata).unwrap());
     buf.extend_from_slice(&public_key);
 
-    let master_key = generate_master_key(); // In practice, this should be loaded from a secure location
     let master_signature = <SigningKey as Signer<Signature>>::sign(&master_key, &buf).to_vec();
 
     DelegatedKey {
@@ -165,4 +171,10 @@ pub fn verify_certificate(cert: &Certificate, master_public_key: &VerifyingKey) 
     // Verify delegated key signature on certified public key
     let delegated_verifying_key = VerifyingKey::from_sec1_bytes(&cert.delegated_key.public_key).unwrap();
     delegated_verifying_key.verify(&cert.certified_public_key, &Signature::from_slice(&cert.signature).unwrap()).is_ok()
+}
+pub fn load_master_key(filename: &str) -> std::io::Result<SigningKey> {
+    let mut file = File::open(filename)?;
+    let mut buf = Vec::new();
+    file.read_to_end(&mut buf)?;
+    Ok(SigningKey::from_bytes(&buf).unwrap())
 }
