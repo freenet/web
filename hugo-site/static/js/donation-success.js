@@ -11,15 +11,29 @@ function base64ToBuffer(base64) {
 document.addEventListener('DOMContentLoaded', function() {
   console.log("DOM fully loaded");
   
-  // Wait a short time to ensure all elements are rendered
-  setTimeout(() => {
-    // Check if required elements are present
-    const requiredElements = ['combinedKey', 'certificateSection', 'certificate-info', 'copyCombinedKey', 'errorMessage'];
-    const missingElements = requiredElements.filter(id => !document.getElementById(id));
+  // Function to check for required elements
+  function checkRequiredElements() {
+    const requiredElements = [
+      { id: 'combinedKey', selector: '#combinedKey' },
+      { id: 'certificateSection', selector: '#certificateSection' },
+      { id: 'certificate-info', selector: '#certificate-info' },
+      { id: 'copyCombinedKey', selector: '#copyCombinedKey' },
+      { id: 'errorMessage', selector: '#errorMessage' }
+    ];
+    
+    const missingElements = requiredElements.filter(el => !document.querySelector(el.selector));
     
     if (missingElements.length > 0) {
-      console.error("Missing required elements:", missingElements);
-      showError(`Error: Missing required elements: ${missingElements.join(', ')}`);
+      console.error("Missing required elements:", missingElements.map(el => el.id));
+      showError(`Error: Missing required elements: ${missingElements.map(el => el.id).join(', ')}`);
+      return false;
+    }
+    return true;
+  }
+
+  // Function to initialize the page
+  function initPage() {
+    if (!checkRequiredElements()) {
       return;
     }
 
@@ -37,7 +51,13 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log("No payment intent or test mode detected");
       showError('Payment information not found.');
     }
-  }, 100); // Wait 100ms before checking for elements
+  }
+
+  // Try to initialize immediately
+  initPage();
+
+  // If it fails, try again after a short delay
+  setTimeout(initPage, 500);
 });
 
 function generateTestCertificate() {
