@@ -3,14 +3,14 @@ use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use std::collections::HashMap;
 use p256::{
-    ecdsa::{self, SigningKey, signature::Signer},
-    elliptic_curve::sec1::ToEncodedPoint,
-    PublicKey, SecretKey,
+    ecdsa::{SigningKey, Signature, signature::Signer},
+    PublicKey,
 };
 use rand_core::OsRng;
 use sha2::{Sha256, Digest};
 use base64::{Engine as _, engine::general_purpose};
 use std::error::Error as StdError;
+use crate::fn_key_util::{DelegatedKey, Certificate, sign_certificate as util_sign_certificate};
 
 #[derive(Debug)]
 pub enum CertificateError {
@@ -21,6 +21,7 @@ pub enum CertificateError {
     Base64Error(base64::DecodeError),
     KeyError(String),
     ParseIdError(stripe::ParseIdError),
+    DelegatedKeyNotFound,
 }
 
 impl std::fmt::Display for CertificateError {
@@ -33,6 +34,7 @@ impl std::fmt::Display for CertificateError {
             CertificateError::Base64Error(e) => write!(f, "Base64 decoding error: {}", e),
             CertificateError::KeyError(e) => write!(f, "Key error: {}", e),
             CertificateError::ParseIdError(e) => write!(f, "Parse ID error: {}", e),
+            CertificateError::DelegatedKeyNotFound => write!(f, "Delegated key not found"),
         }
     }
 }
@@ -57,41 +59,25 @@ impl From<stripe::ParseIdError> for CertificateError {
     }
 }
 
-use serde_json::Value;
-
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
     payment_intent_id: String,
-    blinded_public_key: Value,
-}
-
-fn pad_base64(base64_str: &str) -> String {
-    let mut padded = base64_str.to_string();
-    while padded.len() % 4 != 0 {
-        padded.push('=');
-    }
-    padded
+    public_key: String,
 }
 
 #[derive(Debug, Serialize)]
 pub struct SignCertificateResponse {
-    pub blind_signature: String,
+    pub certificate: String,
 }
 
 pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, CertificateError> {
     log::info!("Starting sign_certificate function with request: {:?}", request);
 
-    let stripe_secret_key = match std::env::var("STRIPE_SECRET_KEY") {
-        Ok(key) => {
-            log::info!("STRIPE_SECRET_KEY found: {}", key);
-            key
-        },
-        Err(e) => {
+    let stripe_secret_key = std::env::var("STRIPE_SECRET_KEY")
+        .map_err(|e| {
             log::error!("Environment variable STRIPE_SECRET_KEY not found: {}", e);
-            log::error!("Current environment variables: {:?}", std::env::vars().collect::<Vec<_>>());
-            panic!("STRIPE_SECRET_KEY environment variable not set");
-        }
-    };
+            CertificateError::KeyError("STRIPE_SECRET_KEY not found".to_string())
+        })?;
     let client = Client::new(stripe_secret_key);
 
     // Verify payment intent
@@ -117,103 +103,30 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     // Sign the certificate
     log::info!("Payment intent verified successfully");
 
-    let signature = sign_with_key(&request.blinded_public_key).map_err(|e| {
-        log::error!("Error in sign_with_key: {:?}", e);
-        match e {
-            CertificateError::Base64Error(be) => {
-                log::error!("Base64 decoding error: {}", be);
-                CertificateError::Base64Error(be)
-            },
-            CertificateError::KeyError(ke) => {
-                log::error!("Key error: {}", ke);
-                CertificateError::KeyError(ke)
-            },
-            _ => e,
-        }
-    })?;
+    let delegated_key = load_delegated_key()?;
+    let public_key = PublicKey::from_sec1_bytes(&general_purpose::STANDARD.decode(&request.public_key)?)
+        .map_err(|e| CertificateError::KeyError(e.to_string()))?;
+
+    let certificate = util_sign_certificate(&delegated_key, &public_key);
+
+    let certificate_bytes = rmp_serde::to_vec(&certificate)
+        .map_err(|e| CertificateError::SigningError(e.to_string()))?;
 
     log::info!("Certificate signed successfully");
-    log::debug!("Signature: {}", signature);
 
-    Ok(SignCertificateResponse { blind_signature: signature })
+    Ok(SignCertificateResponse {
+        certificate: general_purpose::STANDARD.encode(certificate_bytes),
+    })
 }
 
-fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError> {
-    let server_secret_key = match std::env::var("SERVER_SIGNING_KEY") {
-        Ok(key) => {
-            log::info!("SERVER_SIGNING_KEY found");
-            key
-        },
-        Err(e) => {
-            log::error!("Environment variable SERVER_SIGNING_KEY not found: {}", e);
-            log::error!("Current environment variables: {:?}", std::env::vars().collect::<Vec<_>>());
-            panic!("SERVER_SIGNING_KEY environment variable not set");
-        }
-    };
-    log::info!("Starting sign_with_key function with blinded_public_key: {:?}", blinded_public_key);
+fn load_delegated_key() -> Result<DelegatedKey, CertificateError> {
+    // In a production environment, you would load this from a secure storage
+    // For this example, we'll load it from an environment variable
+    let delegated_key_base64 = std::env::var("DELEGATED_KEY")
+        .map_err(|_| CertificateError::DelegatedKeyNotFound)?;
 
-    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_secret_key))?)
-        .map_err(|e| {
-            log::error!("Failed to create signing key: {}", e);
-            CertificateError::KeyError(e.to_string())
-        })?;
+    let delegated_key_bytes = general_purpose::STANDARD.decode(delegated_key_base64)?;
 
-    log::debug!("Parsed blinded public key JSON: {:?}", blinded_public_key);
-
-    let blinded_public_key_bytes = match blinded_public_key {
-        Value::String(s) => general_purpose::STANDARD.decode(s).map_err(|e| {
-            log::error!("Failed to decode blinded public key: {}", e);
-            CertificateError::Base64Error(e)
-        })?,
-        Value::Object(obj) => {
-            let x = obj.get("x").and_then(Value::as_str)
-                .ok_or_else(|| {
-                    log::error!("Missing 'x' coordinate in blinded public key JSON");
-                    CertificateError::KeyError("Missing 'x' coordinate".to_string())
-                })?;
-            let y = obj.get("y").and_then(Value::as_str)
-                .ok_or_else(|| {
-                    log::error!("Missing 'y' coordinate in blinded public key JSON");
-                    CertificateError::KeyError("Missing 'y' coordinate".to_string())
-                })?;
-
-            let mut bytes = Vec::new();
-            bytes.extend_from_slice(&general_purpose::STANDARD.decode(x).map_err(|e| {
-                log::error!("Failed to decode 'x' coordinate: {}", e);
-                CertificateError::Base64Error(e)
-            })?);
-            bytes.extend_from_slice(&general_purpose::STANDARD.decode(y).map_err(|e| {
-                log::error!("Failed to decode 'y' coordinate: {}", e);
-                CertificateError::Base64Error(e)
-            })?);
-            bytes
-        },
-        _ => {
-            log::error!("Invalid blinded public key format");
-            return Err(CertificateError::KeyError("Invalid blinded public key format".to_string()));
-        }
-    };
-
-    log::debug!("Decoded blinded public key bytes: {:?}", blinded_public_key_bytes);
-
-    // Generate a random nonce
-    let nonce = SecretKey::random(&mut OsRng);
-    let nonce_bytes = nonce.to_bytes();
-
-    // Combine the blinded public key and nonce, and hash them
-    let mut hasher = Sha256::new();
-    hasher.update(&blinded_public_key_bytes);
-    hasher.update(&nonce_bytes);
-    let message = hasher.finalize();
-
-    // Sign the hash
-    let blind_signature: ecdsa::Signature = signing_key.sign(&message);
-
-    // Combine the signature and nonce
-    let mut combined = blind_signature.to_vec();
-    combined.extend_from_slice(&nonce_bytes);
-
-    Ok(general_purpose::STANDARD.encode(combined))
+    rmp_serde::from_slice(&delegated_key_bytes)
+        .map_err(|e| CertificateError::KeyError(e.to_string()))
 }
-
-// The create_payment_intent function and associated structs have been removed
