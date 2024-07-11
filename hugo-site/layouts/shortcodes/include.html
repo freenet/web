@@ -1,6 +1,2 @@
-{{ $path := .Get 0 }}
-{{ with .Site.GetPage $path }}
-  {{ .Content | safeHTML }}
-{{ else }}
-  {{ errorf "Unable to find page %q" $path }}
-{{ end }}
+{{ $file := .Get 0 }}
+{{ (printf "%s%s" .Page.File.Dir $file) | readFile | replaceRE "^---[\\s\\S]+?---" "" | safeHTML }}
