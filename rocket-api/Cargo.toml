@@ -26,6 +26,6 @@ chrono = { version = "0.4", features = ["serde"] }
 name = "fn-key-util"
 path = "src/fn_key_util.rs"
 
-[lib]
-name = "rocket_api"
-path = "src/lib.rs"
+[[bin]]
+name = "rocket-api"
+path = "src/main.rs"
