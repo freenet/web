@@ -4,8 +4,7 @@ use std::str::FromStr;
 use std::collections::HashMap;
 use p256::{
     ecdsa::{self, SigningKey, signature::Signer},
-    elliptic_curve::sec1::ToEncodedPoint,
-    PublicKey, SecretKey,
+    SecretKey,
 };
 use rand_core::OsRng;
 use sha2::{Sha256, Digest};

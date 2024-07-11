@@ -2,10 +2,7 @@ pub fn example_function() {
     println!("This is an example function in key_util module.");
 }
 use std::path::Path;
-use p256::{
-    ecdsa::{SigningKey, VerifyingKey},
-    elliptic_curve::sec1::ToEncodedPoint,
-};
+use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand_core::OsRng;
 use base64::{engine::general_purpose, Engine as _};
 use std::fs::File;

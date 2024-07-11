@@ -10,7 +10,7 @@ fn main() {
         .subcommand(Command::new("generate-signing-key")
             .about("Generates a new SERVER_SIGNING_KEY and public key")
             .arg(clap::Arg::new("output_dir")
-                .about("The directory to output the keys")
+                .help("The directory to output the keys")
                 .required(true)
                 .index(1)))
         .get_matches();
@@ -18,7 +18,7 @@ fn main() {
     if let Some(_) = matches.subcommand_matches("generate-key") {
         // Existing generate-key functionality
     } else if let Some(matches) = matches.subcommand_matches("generate-signing-key") {
-        let output_dir = matches.value_of("output_dir").unwrap();
+        let output_dir = matches.get_one::<String>("output_dir").unwrap();
         key_util::generate_signing_key(output_dir);
     }
 
