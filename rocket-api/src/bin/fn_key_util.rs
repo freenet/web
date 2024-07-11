@@ -1,6 +1,5 @@
 use clap::{Parser, Subcommand};
-use rocket_api::fn_key_util::{DelegatedKey, Certificate, sign_certificate, verify_certificate};
-use p256::PublicKey;
+use rocket_api::fn_key_util::{DelegatedKey, Certificate, sign_certificate};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]

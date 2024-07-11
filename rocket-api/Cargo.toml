@@ -29,3 +29,7 @@ path = "src/bin/fn_key_util.rs"
 [[bin]]
 name = "rocket-api"
 path = "src/main.rs"
+
+[lib]
+name = "rocket_api"
+path = "src/lib.rs"

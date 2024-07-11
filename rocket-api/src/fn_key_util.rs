@@ -37,6 +37,7 @@ pub fn sign_certificate(delegated_key: &DelegatedKey, public_key: &PublicKey) ->
     }
 }
 
+#[allow(dead_code)]
 pub fn verify_certificate(cert: &Certificate, master_public_key: &VerifyingKey) -> bool {
     // Verify master signature on delegated key
     let mut buf = Vec::new();
