@@ -68,12 +68,6 @@ theme = "freenet"
     url = "/donate/"
     weight = 10
 
-  [[menu.main]]
-    name = "Ghost Key"
-    url = "/donate/ghostkey/"
-    weight = 11
-    parent = "Donate"
-
 [params]
   stripePublishableKey = "pk_test_51PUf6RCCPv9UL23G0yLdnS51VCStEcnqzd2AftFWiXAOjFOgonYRRBL6F5eKOCrr2yuEHCBDqqYa8H0w7ouRyW6d00awdNMKsf"
 
