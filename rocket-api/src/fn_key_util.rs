@@ -176,5 +176,9 @@ pub fn load_master_key(filename: &str) -> std::io::Result<SigningKey> {
     let mut file = File::open(filename)?;
     let mut buf = Vec::new();
     file.read_to_end(&mut buf)?;
-    Ok(SigningKey::from_bytes(&buf).unwrap())
+    use p256::elliptic_curve::generic_array::GenericArray;
+    use p256::elliptic_curve::consts::U32;
+
+    let key_bytes: &GenericArray<u8, U32> = GenericArray::from_slice(&buf);
+    Ok(SigningKey::from_bytes(key_bytes).unwrap())
 }
