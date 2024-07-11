@@ -35,22 +35,27 @@ function generateTestCertificate() {
 }
 
 async function generateAndSignCertificate(paymentIntentId) {
+  console.log("Starting generateAndSignCertificate");
   try {
     // Generate Ed25519 key pair
     const keyPair = nacl.sign.keyPair();
     const publicKey = keyPair.publicKey;
     const privateKey = keyPair.secretKey;
+    console.log("Key pair generated");
 
     // Generate random blinding factor
     const blindingFactor = nacl.randomBytes(32);
+    console.log("Blinding factor generated");
 
     // Blind the public key
     const blindedPublicKey = new Uint8Array(32);
     for (let i = 0; i < 32; i++) {
       blindedPublicKey[i] = publicKey[i] ^ blindingFactor[i];
     }
+    console.log("Public key blinded");
 
     // Send blinded public key to server for signing
+    console.log("Sending request to server");
     const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -65,6 +70,7 @@ async function generateAndSignCertificate(paymentIntentId) {
       throw new Error(`Error signing certificate: ${errorText}`);
     }
 
+    console.log("Received response from server");
     const data = await response.json();
     if (!data.blind_signature) {
       if (data.message === "CERTIFICATE_ALREADY_SIGNED") {
@@ -74,6 +80,7 @@ async function generateAndSignCertificate(paymentIntentId) {
       throw new Error('No blind signature received from server');
     }
 
+    console.log("Blind signature received");
     const blindSignature = base64ToBuffer(data.blind_signature);
 
     // Unblind the signature
@@ -84,9 +91,12 @@ async function generateAndSignCertificate(paymentIntentId) {
     for (let i = 32; i < 64; i++) {
       unblindedSignature[i] = blindSignature[i];
     }
+    console.log("Signature unblinded");
 
+    console.log("Calling displayCertificate");
     displayCertificate(publicKey, privateKey, unblindedSignature);
   } catch (error) {
+    console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
   }
 }
@@ -101,47 +111,58 @@ function generateTestCertificate() {
 
 function displayCertificate(publicKey, privateKey, unblindedSignature) {
   console.log("Displaying certificate");
-  // Armor the certificate and private key
-  const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
+  try {
+    // Armor the certificate and private key
+    const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
 ${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}
 -----END FREENET DONATION CERTIFICATE-----`;
 
-  const armoredPrivateKey = `-----BEGIN FREENET DONATION PRIVATE KEY-----
+    const armoredPrivateKey = `-----BEGIN FREENET DONATION PRIVATE KEY-----
 ${bufferToBase64(privateKey)}
 -----END FREENET DONATION PRIVATE KEY-----`;
 
-  // Combine certificate and private key
-  const combinedKey = `${wrapBase64(armoredCertificate, 64)}\n\n${wrapBase64(armoredPrivateKey, 64)}`;
+    // Combine certificate and private key
+    const combinedKey = `${wrapBase64(armoredCertificate, 64)}\n\n${wrapBase64(armoredPrivateKey, 64)}`;
 
-  // Display the combined key
-  const combinedKeyElement = document.getElementById('combinedKey');
-  if (combinedKeyElement) {
+    // Display the combined key
+    const combinedKeyElement = document.getElementById('combinedKey');
+    if (!combinedKeyElement) {
+      throw new Error("Combined key textarea not found");
+    }
+    
     combinedKeyElement.value = combinedKey;
-    document.getElementById('certificateSection').style.display = 'block';
-    document.getElementById('certificate-info').style.display = 'none';
+    
+    const certificateSection = document.getElementById('certificateSection');
+    const certificateInfo = document.getElementById('certificate-info');
+    
+    if (!certificateSection || !certificateInfo) {
+      throw new Error("Certificate section or info element not found");
+    }
+    
+    certificateSection.style.display = 'block';
+    certificateInfo.style.display = 'none';
 
     // Set up copy button
     const copyButton = document.getElementById('copyCombinedKey');
-    if (copyButton) {
-      copyButton.addEventListener('click', function() {
-        combinedKeyElement.select();
-        document.execCommand('copy');
-        alert('Combined key copied to clipboard!');
-      });
-    } else {
-      console.error("Copy button not found");
+    if (!copyButton) {
+      throw new Error("Copy button not found");
     }
-  } else {
-    console.error("Combined key textarea not found");
-    showError('Error displaying certificate. Please contact support.');
-  }
+    
+    copyButton.addEventListener('click', function() {
+      combinedKeyElement.select();
+      document.execCommand('copy');
+      alert('Combined key copied to clipboard!');
+    });
 
-  // Verify the certificate
-  if (verifyCertificate(publicKey, unblindedSignature)) {
-    console.log("Certificate verified successfully");
-  } else {
-    console.error("Certificate verification failed");
-    showError('Certificate verification failed. Please contact support.');
+    // Verify the certificate
+    if (!verifyCertificate(publicKey, unblindedSignature)) {
+      throw new Error("Certificate verification failed");
+    }
+    
+    console.log("Certificate verified and displayed successfully");
+  } catch (error) {
+    console.error("Error in displayCertificate:", error);
+    showError(`Error displaying certificate: ${error.message}. Please contact support.`);
   }
 }
 
