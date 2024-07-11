@@ -1,5 +1,4 @@
 use clap::Command;
-mod key_util;
 
 fn main() {
     let matches = Command::new("Freenet Key Utility")
@@ -24,7 +23,7 @@ use p256::{
     elliptic_curve::sec1::ToEncodedPoint,
 };
 use rand_core::OsRng;
-use base64::{Engine as _, engine::general_purpose};
+use base64::{engine::general_purpose, Engine as _};
 use std::fs::File;
 use std::io::Write;
 
