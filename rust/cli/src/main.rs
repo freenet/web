@@ -2,7 +2,7 @@ use clap::{Command, Arg};
 use std::fs::{File, create_dir_all};
 use std::io::Write;
 use std::path::Path;
-use common::crypto::{generate_master_key, generate_delegate_key, validate_delegate_key, sign_message, generate_ghostkey};
+use common::crypto::{generate_master_key, generate_delegate_key, validate_delegate_key, sign_message};
 use colored::Colorize;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -308,21 +308,7 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
 fn generate_ghostkey_command(delegate_signing_key_file: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
     let delegate_signing_key = std::fs::read_to_string(delegate_signing_key_file)?;
     
-    let (ghostkey_signing_key, ghostkey_certificate) = generate_ghostkey(&delegate_signing_key)
-        .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
-    
-    save_key_to_file(output_dir, "ghostkey_signing_key.pem", &ghostkey_signing_key)?;
-    save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate)?;
-    
-    println!("Ghostkey generated successfully.");
-    println!("Ghostkey signing key saved to: {}/ghostkey_signing_key.pem", output_dir);
-    println!("Ghostkey certificate saved to: {}/ghostkey_certificate.pem", output_dir);
-    Ok(())
-}
-fn generate_ghostkey_command(delegate_signing_key_file: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let delegate_signing_key = std::fs::read_to_string(delegate_signing_key_file)?;
-    
-    let (ghostkey_signing_key, ghostkey_certificate) = generate_ghostkey(&delegate_signing_key)
+    let (ghostkey_signing_key, ghostkey_certificate) = common::crypto::generate_ghostkey(&delegate_signing_key)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     
     save_key_to_file(output_dir, "ghostkey_signing_key.pem", &ghostkey_signing_key)?;
