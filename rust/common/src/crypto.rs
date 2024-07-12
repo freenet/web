@@ -12,7 +12,6 @@ use std::env;
 use crate::armor;
 use serde::{Serialize, Deserialize};
 use serde_json::to_vec as to_vec_named;
-use generic_array::GenericArray;
 
 pub fn generate_master_key(output_dir: &str) {
     // Generate the master private key
@@ -58,7 +57,7 @@ pub fn sign_with_key(blinded_public_key: &Value) -> Result<String, String> {
     };
 
     let decoded_key = general_purpose::STANDARD.decode(&server_master_private_key).map_err(|e| e.to_string())?;
-    let field_bytes: FieldBytes = GenericArray::clone_from_slice(&decoded_key);
+    let field_bytes: FieldBytes = decoded_key.try_into().map_err(|_| "Invalid key length".to_string())?;
     let master_private_key = PrivateKey::from_bytes(&field_bytes)
         .map_err(|e| format!("Failed to create master private key: {}", e))?;
 
@@ -146,7 +145,7 @@ pub fn generate_delegate_key(master_key_dir: &str, attributes: &str, delegate_ke
     let master_private_key_path = Path::new(master_key_dir).join("server_master_private_key.pem");
     let master_private_key_pem = read_to_string(&master_private_key_path).expect("Unable to read master private key file");
     let master_private_key_bytes = general_purpose::STANDARD.decode(&master_private_key_pem).expect("Failed to decode master private key");
-    let field_bytes: FieldBytes = GenericArray::clone_from_slice(&master_private_key_bytes);
+    let field_bytes: FieldBytes = master_private_key_bytes.try_into().expect("Invalid key length");
     let master_private_key = SigningKey::from_bytes(&field_bytes).expect("Failed to create master private key");
 
     // Generate the delegate signing key
