@@ -58,7 +58,7 @@ pub fn generate_master_key() -> Result<(String, String), CryptoError> {
 }
 
 pub fn sign_with_key(blinded_verifying_key: &Value, server_master_signing_key: &str) -> Result<String, CryptoError> {
-    let decoded_key = extract_base64_from_armor(server_master_signing_key)
+    let decoded_key = extract_base64_from_armor(server_master_signing_key, "SERVER MASTER SIGNING KEY")
         .and_then(|base64_str| general_purpose::STANDARD.decode(&base64_str).map_err(|e| CryptoError::Base64DecodeError(e.to_string())))?;
     let field_bytes = FieldBytes::from_slice(&decoded_key);
     let master_signing_key = PrivateKey::from_bytes(field_bytes)
@@ -120,7 +120,7 @@ pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
 }
 
 pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> Result<(String, String), CryptoError> {
-    let master_signing_key_bytes = extract_base64_from_armor(master_signing_key_pem)
+    let master_signing_key_bytes = extract_base64_from_armor(master_signing_key_pem, "SERVER MASTER SIGNING KEY")
         .and_then(|base64_str| general_purpose::STANDARD.decode(&base64_str).map_err(|e| CryptoError::Base64DecodeError(e.to_string())))?;
     let field_bytes = FieldBytes::from_slice(&master_signing_key_bytes);
     let master_signing_key = SigningKey::from_bytes(field_bytes)
@@ -157,10 +157,17 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     Ok((armored_delegate_signing_key, signed_certificate_base64))
 }
 
-fn extract_base64_from_armor(armored_key: &str) -> Result<String, CryptoError> {
+fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<String, CryptoError> {
     let lines: Vec<&str> = armored_key.lines().collect();
     if lines.len() < 3 {
         return Err(CryptoError::InvalidInput("Invalid armored key format".to_string()));
+    }
+
+    let start_line = format!("-----BEGIN {}-----", expected_armor_type);
+    let end_line = format!("-----END {}-----", expected_armor_type);
+
+    if !lines[0].trim().eq(&start_line) || !lines[lines.len() - 1].trim().eq(&end_line) {
+        return Err(CryptoError::InvalidInput(format!("Armor type mismatch. Expected: {}", expected_armor_type)));
     }
     
     let content_lines = &lines[1..lines.len() - 1];
@@ -208,7 +215,11 @@ mod tests {
     #[test]
     fn test_extract_base64_from_armor() {
         let armored_key = "-----BEGIN TEST KEY-----\nYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXo=\n-----END TEST KEY-----";
-        let result = extract_base64_from_armor(armored_key).unwrap();
+        let result = extract_base64_from_armor(armored_key, "TEST KEY").unwrap();
         assert_eq!(result, "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXo=");
+
+        // Test for armor type mismatch
+        let result = extract_base64_from_armor(armored_key, "WRONG KEY");
+        assert!(result.is_err());
     }
 }
