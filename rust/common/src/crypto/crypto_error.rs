@@ -6,7 +6,11 @@ pub enum CryptoError {
     Base64DecodeError(String),
     KeyCreationError(String),
     SerializationError(String),
+    DeserializationError(String),
     InvalidInput(String),
+    SignatureError(String),
+    SignatureVerificationError(String),
+    NotImplemented(String),
 }
 
 impl std::error::Error for CryptoError {}
