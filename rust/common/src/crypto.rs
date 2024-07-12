@@ -12,6 +12,22 @@ use colored::Colorize;
 
 use std::fmt;
 use std::io::Cursor;
+use std::str::FromStr;
+
+pub fn sign_message(signing_key_pem: &str, message: &str) -> Result<String, CryptoError> {
+    let signing_key_base64 = extract_base64_from_armor(signing_key_pem, "SERVER SIGNING KEY")?;
+    let signing_key_bytes = general_purpose::STANDARD.decode(&signing_key_base64)
+        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+    let field_bytes = FieldBytes::from_slice(&signing_key_bytes);
+    let signing_key = SigningKey::from_bytes(field_bytes)
+        .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
+
+    let signature: ecdsa::Signature = signing_key.sign(message.as_bytes());
+    let signature_bytes = signature.to_vec();
+    let armored_signature = armor(&signature_bytes, "SIGNATURE", "SIGNATURE");
+
+    Ok(armored_signature)
+}
 
 #[derive(Debug, PartialEq)]
 pub enum CryptoError {

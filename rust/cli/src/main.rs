@@ -2,7 +2,7 @@ use clap::{Command, Arg};
 use std::fs::{File, create_dir_all};
 use std::io::Write;
 use std::path::Path;
-use common::crypto::{generate_master_key, generate_delegate_key, generate_signing_key, validate_delegate_key};
+use common::crypto::{generate_master_key, generate_delegate_key, generate_signing_key, validate_delegate_key, sign_message};
 use colored::Colorize;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -10,6 +10,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .version("1.0")
         .author("Your Name <your.email@example.com>")
         .about("Performs various Freenet-related tasks")
+        .subcommand(Command::new("sign-message")
+            .about("Signs a message using a signing key and outputs the signature")
+            .arg(Arg::new("signing-key-file")
+                .long("signing-key-file")
+                .help("The file containing the signing key (master or delegate)")
+                .required(true)
+                .value_name("FILE"))
+            .arg(Arg::new("message")
+                .long("message")
+                .help("The message to sign")
+                .required(true)
+                .value_name("STRING"))
+            .arg(Arg::new("output-file")
+                .long("output-file")
+                .help("The file to output the signature")
+                .required(true)
+                .value_name("FILE")))
         .subcommand(Command::new("generate-master-key")
             .about("Generates a new SERVER_MASTER_KEY and public key")
             .arg(Arg::new("output-dir")
@@ -75,11 +92,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let delegate_certificate_file = sub_matches.get_one::<String>("delegate-certificate-file").unwrap();
             validate_delegate_key_command(master_verifying_key_file, delegate_certificate_file)?;
         }
+        Some(("sign-message", sub_matches)) => {
+            let signing_key_file = sub_matches.get_one::<String>("signing-key-file").unwrap();
+            let message = sub_matches.get_one::<String>("message").unwrap();
+            let output_file = sub_matches.get_one::<String>("output-file").unwrap();
+            sign_message_command(signing_key_file, message, output_file)?;
+        }
         _ => {
             println!("No valid subcommand provided. Use --help for usage information.");
         }
     }
 
+    Ok(())
+}
+
+fn sign_message_command(signing_key_file: &str, message: &str, output_file: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let signing_key = std::fs::read_to_string(signing_key_file)?;
+    let signature = sign_message(&signing_key, message)
+        .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
+    
+    save_key_to_file("", output_file, &signature)?;
+    println!("Message signed successfully. Signature saved to: {}", output_file);
     Ok(())
 }
 
