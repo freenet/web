@@ -1,6 +1,3 @@
-pub fn example_function() {
-    println!("This is an example function in key_util module.");
-}
 use std::path::Path;
 use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand_core::OsRng;
@@ -19,7 +16,7 @@ pub fn generate_signing_key(output_dir: &str) {
 
     // Armor the keys
     let armored_signing_key = format!("-----BEGIN SERVER SIGNING KEY-----\n{}\n-----END SERVER SIGNING KEY-----", signing_key_base64);
-    let armored_verifying_key = format!("-----BEGIN SERVER PUBLIC KEY-----\n{}\n-----END SERVER PUBLIC KEY-----", verifying_key_base64);
+    let armored_verifying_key = format!("-----BEGIN SERVER VERIFYING KEY-----\n{}\n-----END SERVER VERIFYING KEY-----", verifying_key_base64);
 
     // Create the output directory if it doesn't exist
     if let Err(e) = create_dir_all(output_dir) {

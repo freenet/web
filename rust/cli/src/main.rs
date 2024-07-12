@@ -41,3 +41,5 @@ fn main() {
 
 }
 mod key_util;
+
+use key_util::generate_delegate_key;

@@ -21,7 +21,7 @@ pub fn generate_master_key(output_dir: &str) {
 
     // Armor the keys
     let armored_master_private_key = format!("-----BEGIN SERVER MASTER PRIVATE KEY-----\n{}\n-----END SERVER MASTER PRIVATE KEY-----", master_private_key_base64);
-    let armored_master_public_key = format!("-----BEGIN SERVER MASTER PUBLIC KEY-----\n{}\n-----END SERVER MASTER PUBLIC KEY-----", master_public_key_base64);
+    let armored_master_public_key = format!("-----BEGIN SERVER MASTER VERIFYING KEY-----\n{}\n-----END SERVER MASTER VERIFYING KEY-----", master_public_key_base64);
 
     // Create the output directory if it doesn't exist
     if let Err(e) = create_dir_all(output_dir) {
@@ -44,7 +44,7 @@ pub fn generate_master_key(output_dir: &str) {
     let mut master_public_key_file = File::create(&master_public_key_path).expect("Unable to create master public key file");
     master_public_key_file.write_all(armored_master_public_key.as_bytes()).expect("Unable to write master public key");
 
-    println!("SERVER_MASTER_PRIVATE_KEY and SERVER_MASTER_PUBLIC_KEY generated successfully.");
+    println!("SERVER_MASTER_PRIVATE_KEY and SERVER_MASTER_VERIFYING_KEY generated successfully.");
 }
 
 pub fn sign_with_key(blinded_public_key: &Value) -> Result<String, String> {
