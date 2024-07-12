@@ -12,7 +12,6 @@ use colored::Colorize;
 
 use std::fmt;
 use std::io::Cursor;
-use std::str::FromStr;
 
 pub fn generate_verifying_key(signing_key_pem: &str) -> Result<String, CryptoError> {
     let signing_key_base64 = extract_base64_from_armor(signing_key_pem, "SERVER SIGNING KEY")?;
@@ -23,7 +22,8 @@ pub fn generate_verifying_key(signing_key_pem: &str) -> Result<String, CryptoErr
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
     let verifying_key = VerifyingKey::from(&signing_key);
-    let verifying_key_bytes = verifying_key.to_encoded_point(false).as_bytes();
+    let encoded_point = verifying_key.to_encoded_point(false);
+    let verifying_key_bytes = encoded_point.as_bytes();
     let verifying_key_base64 = general_purpose::STANDARD.encode(verifying_key_bytes);
 
     Ok(armor(&verifying_key_base64.as_bytes(), "SERVER VERIFYING KEY", "SERVER VERIFYING KEY"))
