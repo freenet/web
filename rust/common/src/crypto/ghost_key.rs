@@ -7,7 +7,6 @@ use crate::armor;
 use serde::{Serialize, Deserialize};
 use rmp_serde::{Serializer};
 use crate::crypto::{CryptoError, extract_base64_from_armor};
-use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize)]
 struct DelegateCertificate {

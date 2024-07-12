@@ -1,7 +1,6 @@
 use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand_core::OsRng;
 use base64::{engine::general_purpose, Engine as _};
-use sha2::{Digest};
 use p256::{FieldBytes};
 use p256::ecdsa::{self, signature::{Signer}};
 use crate::armor;
