@@ -1,7 +1,6 @@
 mod crypto;
 
 use base64::{engine::general_purpose, Engine as _};
-use common::crypto::pad_base64;
 
 pub fn armor(data: &[u8], header: &str, footer: &str) -> String {
     let base64_data = general_purpose::STANDARD.encode(data);
