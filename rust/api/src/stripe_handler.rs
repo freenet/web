@@ -141,7 +141,7 @@ fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError>
     };
     log::info!("Starting sign_with_key function with blinded_public_key: {:?}", blinded_public_key);
 
-    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(pad_base64(&server_secret_key))?)
+    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(&server_secret_key)?)
         .map_err(|e| {
             log::error!("Failed to create signing key: {}", e);
             CertificateError::KeyError(e.to_string())
