@@ -1,5 +1,5 @@
 use std::path::Path;
-use p256::ecdsa::{SigningKey, VerifyingKey};
+use p256::ecdsa::{SigningKey, VerifyingKey, signature::Signer};
 use rand_core::OsRng;
 use base64::{engine::general_purpose, Engine as _};
 use std::fs::{File, create_dir_all};
