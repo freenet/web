@@ -123,18 +123,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("The directory to output the ghostkey files")
                 .required(true)
                 .value_name("DIR")))
-        .subcommand(Command::new("generate-ghostkey")
-            .about("Generates a ghostkey from a delegate signing key")
-            .arg(Arg::new("delegate-signing-key-file")
-                .long("delegate-signing-key-file")
-                .help("The file containing the delegate signing key")
-                .required(true)
-                .value_name("FILE"))
-            .arg(Arg::new("output-dir")
-                .long("output-dir")
-                .help("The directory to output the ghostkey files")
-                .required(true)
-                .value_name("DIR")))
         .get_matches();
 
     match matches.subcommand() {
@@ -157,11 +145,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let master_signing_key_file = sub_matches.get_one::<String>("master-signing-key-file").unwrap();
             let output_file = sub_matches.get_one::<String>("output-file").unwrap();
             generate_master_verifying_key_command(master_signing_key_file, output_file)?;
-        }
-        Some(("generate-ghostkey", sub_matches)) => {
-            let delegate_signing_key_file = sub_matches.get_one::<String>("delegate-signing-key-file").unwrap();
-            let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
-            generate_ghostkey_command(delegate_signing_key_file, output_dir)?;
         }
         Some(("generate-ghostkey", sub_matches)) => {
             let delegate_signing_key_file = sub_matches.get_one::<String>("delegate-signing-key-file").unwrap();
