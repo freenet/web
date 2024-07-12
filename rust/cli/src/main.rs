@@ -51,13 +51,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("The directory to output the delegate keys and certificate")
                 .required(true)
                 .value_name("DIR")))
-        .subcommand(Command::new("generate-signing-key")
-            .about("Generates a new SERVER_SIGNING_KEY and public key")
-            .arg(Arg::new("output-dir")
-                .long("output-dir")
-                .help("The directory to output the keys")
-                .required(true)
-                .value_name("DIR")))
         .subcommand(Command::new("validate-delegate-key")
             .about("Validates a delegate key certificate using the master verifying key")
             .arg(Arg::new("master-verifying-key-file")
@@ -82,10 +75,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let attributes = sub_matches.get_one::<String>("attributes").unwrap();
             let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
             generate_and_save_delegate_key(master_key_file, attributes, output_dir)?;
-        }
-        Some(("generate-signing-key", sub_matches)) => {
-            let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
-            generate_and_save_signing_key(output_dir)?;
         }
         Some(("validate-delegate-key", sub_matches)) => {
             let master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key-file").unwrap();
@@ -151,13 +140,6 @@ fn generate_and_save_delegate_key(master_key_file: &str, attributes: &str, outpu
     Ok(())
 }
 
-fn generate_and_save_signing_key(output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let (signing_key, verifying_key) = generate_signing_key().map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
-    save_key_to_file(output_dir, "server_signing_key.pem", &signing_key)?;
-    save_key_to_file(output_dir, "server_public_key.pem", &verifying_key)?;
-    println!("SERVER_SIGNING_KEY and public key generated successfully.");
-    Ok(())
-}
 
 fn save_key_to_file(output_dir: &str, filename: &str, content: &str) -> Result<(), Box<dyn std::error::Error>> {
     create_dir_all(output_dir)?;
