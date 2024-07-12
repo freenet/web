@@ -160,10 +160,12 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     Ok((armored_delegate_signing_key, signed_certificate_base64))
 }
 
-fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<String, CryptoError> {
+use colored::Colorize;
+
+fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<String, String> {
     let lines: Vec<&str> = armored_key.lines().collect();
     if lines.len() < 3 {
-        return Err(CryptoError::InvalidInput(format!("Invalid armored key format. Expected at least 3 lines, found {}.", lines.len())));
+        return Err(format!("{}", format!("Invalid armored key format. Expected at least 3 lines, found {}.", lines.len()).red()));
     }
 
     let start_line = format!("-----BEGIN {}-----", expected_armor_type);
@@ -172,10 +174,10 @@ fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Re
     if !lines[0].trim().eq(&start_line) || !lines[lines.len() - 1].trim().eq(&end_line) {
         let actual_start = lines[0].trim();
         let actual_end = lines[lines.len() - 1].trim();
-        return Err(CryptoError::InvalidInput(format!(
+        return Err(format!("{}", format!(
             "Armor type mismatch. Expected: '{}' and '{}', but found '{}' and '{}'.",
-            start_line, end_line, actual_start, actual_end
-        )));
+            start_line.green(), end_line.green(), actual_start.red(), actual_end.red()
+        ).red()));
     }
     
     let content_lines = &lines[1..lines.len() - 1];
