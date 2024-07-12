@@ -1,14 +1,12 @@
 use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand_core::OsRng;
 use base64::{engine::general_purpose, Engine as _};
-use serde_json::Value;
-use sha2::{Sha256, Digest};
-use p256::{SecretKey, FieldBytes};
-use p256::ecdsa::{self, signature::{Signer, Verifier}};
+use sha2::{Digest};
+use p256::{FieldBytes};
+use p256::ecdsa::{self, signature::{Signer}};
 use crate::armor;
 use serde::{Serialize, Deserialize};
-use rmp_serde::{Serializer, Deserializer};
-use colored::Colorize;
+use rmp_serde::{Serializer};
 use crate::crypto::{CryptoError, extract_base64_from_armor};
 
 #[derive(Serialize, Deserialize)]
