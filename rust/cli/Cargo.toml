@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+common = { path = "../common" }
 p256 = "0.10"
 base64 = "0.21"
 rand_core = "0.6"
