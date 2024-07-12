@@ -204,4 +204,3 @@ pub fn generate_delegate_key(master_key_dir: &str, attributes: &str, delegate_ke
         padded.push('=');
     }
     padded
-}
