@@ -59,8 +59,7 @@ pub fn generate_master_key() -> Result<(String, String), CryptoError> {
 
 pub fn sign_with_key(blinded_public_key: &Value, server_master_private_key: &str) -> Result<String, CryptoError> {
     let decoded_key = extract_base64_from_armor(server_master_private_key)
-        .and_then(|base64_str| general_purpose::STANDARD.decode(base64_str))
-        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+        .and_then(|base64_str| general_purpose::STANDARD.decode(&base64_str).map_err(|e| CryptoError::Base64DecodeError(e.to_string())))?;
     let field_bytes = FieldBytes::from_slice(&decoded_key);
     let master_private_key = PrivateKey::from_bytes(field_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
@@ -122,8 +121,7 @@ pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
 
 pub fn generate_delegate_key(master_private_key_pem: &str, attributes: &str) -> Result<(String, String), CryptoError> {
     let master_private_key_bytes = extract_base64_from_armor(master_private_key_pem)
-        .and_then(|base64_str| general_purpose::STANDARD.decode(base64_str))
-        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+        .and_then(|base64_str| general_purpose::STANDARD.decode(&base64_str).map_err(|e| CryptoError::Base64DecodeError(e.to_string())))?;
     let field_bytes = FieldBytes::from_slice(&master_private_key_bytes);
     let master_private_key = SigningKey::from_bytes(field_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
