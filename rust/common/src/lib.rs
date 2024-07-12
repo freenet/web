@@ -1,4 +1,4 @@
-mod crypto;
+pub mod crypto;
 
 use base64::{engine::general_purpose, Engine as _};
 
