@@ -6,7 +6,7 @@ use std::io::Write;
 use std::path::Path;
 use serde_json::Value;
 use sha2::{Sha256, Digest};
-use p256::SecretKey;
+use p256::{SecretKey, FieldBytes};
 use p256::ecdsa::{self, signature::Signer};
 use std::env;
 use crate::armor;
@@ -56,7 +56,9 @@ pub fn sign_with_key(blinded_public_key: &Value) -> Result<String, String> {
         Err(e) => return Err(format!("Environment variable SERVER_MASTER_PRIVATE_KEY not found: {}", e)),
     };
 
-    let master_private_key = PrivateKey::from_bytes(&general_purpose::STANDARD.decode(&server_master_private_key).map_err(|e| e.to_string())?)
+    let decoded_key = general_purpose::STANDARD.decode(&server_master_private_key).map_err(|e| e.to_string())?;
+    let field_bytes: FieldBytes = decoded_key.as_slice().try_into().map_err(|_| "Invalid key length".to_string())?;
+    let master_private_key = PrivateKey::from_bytes(&field_bytes)
         .map_err(|e| format!("Failed to create master private key: {}", e))?;
 
     let blinded_public_key_bytes = match blinded_public_key {
@@ -143,7 +145,8 @@ pub fn generate_delegate_key(master_key_dir: &str, attributes: &str, delegate_ke
     let master_private_key_path = Path::new(master_key_dir).join("server_master_private_key.pem");
     let master_private_key_pem = read_to_string(&master_private_key_path).expect("Unable to read master private key file");
     let master_private_key_bytes = general_purpose::STANDARD.decode(&master_private_key_pem).expect("Failed to decode master private key");
-    let master_private_key = SigningKey::from_bytes(&master_private_key_bytes).expect("Failed to create master private key");
+    let field_bytes: FieldBytes = master_private_key_bytes.as_slice().try_into().expect("Invalid key length");
+    let master_private_key = SigningKey::from_bytes(&field_bytes).expect("Failed to create master private key");
 
     // Generate the delegate signing key
     let delegate_signing_key = SigningKey::random(&mut OsRng);
