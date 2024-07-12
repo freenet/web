@@ -7,8 +7,7 @@ use p256::{SecretKey, FieldBytes};
 use p256::ecdsa::{self, signature::Signer};
 use crate::armor;
 use serde::{Serialize, Deserialize};
-use rmp_serde::{Serializer, Deserializer};
-use serde_json::to_vec as to_vec_named;
+use rmp_serde::{Serializer};
 
 use std::fmt;
 
