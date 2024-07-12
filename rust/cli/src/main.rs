@@ -62,15 +62,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 fn generate_and_save_master_key(output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
     let (private_key, public_key) = generate_master_key().map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
-    save_key_to_file(output_dir, "server_master_private_key.pem", &private_key)?;
-    save_key_to_file(output_dir, "server_master_public_key.pem", &public_key)?;
+    save_key_to_file(output_dir, "server_master_signing_key.pem", &private_key)?;
+    save_key_to_file(output_dir, "server_master_verifying_key.pem", &public_key)?;
     println!("SERVER_MASTER_PRIVATE_KEY and SERVER_MASTER_VERIFYING_KEY generated successfully.");
     Ok(())
 }
 
 fn generate_and_save_delegate_key(master_key_file: &str, attributes: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let master_private_key = std::fs::read_to_string(master_key_file)?;
-    let (delegate_signing_key, delegate_certificate) = generate_delegate_key(&master_private_key, attributes)
+    let master_signing_key = std::fs::read_to_string(master_key_file)?;
+    let (delegate_signing_key, delegate_certificate) = generate_delegate_key(&master_signing_key, attributes)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     save_key_to_file(output_dir, "delegate_signing_key.pem", &delegate_signing_key)?;
     save_key_to_file(output_dir, "delegate_certificate.pem", &delegate_certificate)?;

@@ -5,10 +5,9 @@ edition = "2021"
 
 [dependencies]
 common = { path = "../common" }
-p256 = "0.10"
-base64 = "0.21"
+p256 = "0.13.2"
+base64 = "0.22.1"
 rand_core = "0.6"
 clap = "4.5.8"
-rmp-serde = "1.0.0"
 rmp-serde = "1.0.0"
 serde = { version = "1.0", features = ["derive"] }
