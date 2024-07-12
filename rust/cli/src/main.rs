@@ -11,45 +11,50 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .about("Performs various Freenet-related tasks")
         .subcommand(Command::new("generate-master-key")
             .about("Generates a new SERVER_MASTER_KEY and public key")
-            .arg(Arg::new("output_dir")
+            .arg(Arg::new("output-dir")
+                .long("output-dir")
                 .help("The directory to output the keys")
                 .required(true)
-                .index(1)))
+                .value_name("DIR")))
         .subcommand(Command::new("generate-delegate-key")
             .about("Generates a new delegate key and certificate")
-            .arg(Arg::new("master_key_file")
+            .arg(Arg::new("master-key-file")
+                .long("master-key-file")
                 .help("The file containing the master private key")
                 .required(true)
-                .index(1))
+                .value_name("FILE"))
             .arg(Arg::new("attributes")
+                .long("attributes")
                 .help("The attributes string to be included in the delegate key certificate")
                 .required(true)
-                .index(2))
-            .arg(Arg::new("output_dir")
+                .value_name("STRING"))
+            .arg(Arg::new("output-dir")
+                .long("output-dir")
                 .help("The directory to output the delegate keys and certificate")
                 .required(true)
-                .index(3)))
+                .value_name("DIR")))
         .subcommand(Command::new("generate-signing-key")
             .about("Generates a new SERVER_SIGNING_KEY and public key")
-            .arg(Arg::new("output_dir")
+            .arg(Arg::new("output-dir")
+                .long("output-dir")
                 .help("The directory to output the keys")
                 .required(true)
-                .index(1)))
+                .value_name("DIR")))
         .get_matches();
 
     match matches.subcommand() {
         Some(("generate-master-key", sub_matches)) => {
-            let output_dir = sub_matches.get_one::<String>("output_dir").unwrap();
+            let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
             generate_and_save_master_key(output_dir)?;
         }
         Some(("generate-delegate-key", sub_matches)) => {
-            let master_key_file = sub_matches.get_one::<String>("master_key_file").unwrap();
+            let master_key_file = sub_matches.get_one::<String>("master-key-file").unwrap();
             let attributes = sub_matches.get_one::<String>("attributes").unwrap();
-            let output_dir = sub_matches.get_one::<String>("output_dir").unwrap();
+            let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
             generate_and_save_delegate_key(master_key_file, attributes, output_dir)?;
         }
         Some(("generate-signing-key", sub_matches)) => {
-            let output_dir = sub_matches.get_one::<String>("output_dir").unwrap();
+            let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
             generate_and_save_signing_key(output_dir)?;
         }
         _ => {
