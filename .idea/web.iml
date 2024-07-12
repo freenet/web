@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/rocket-api/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rocket-api/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/rocket-api/target" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
