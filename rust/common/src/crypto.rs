@@ -199,10 +199,3 @@ pub fn generate_delegate_key(master_key_dir: &str, attributes: &str, delegate_ke
 
     println!("Delegate signing key and certificate generated successfully.");
 }
-    let mut padded = base64_str.to_string();
-    while padded.len() % 4 != 0 {
-        padded.push('=');
-    }
-    padded
-}
-}
