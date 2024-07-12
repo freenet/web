@@ -100,15 +100,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .required(true)
                 .value_name("FILE")))
         .subcommand(Command::new("generate-verifying-key")
-            .about("Generates a verifying key from a signing key")
-            .arg(Arg::new("signing-key-file")
-                .long("signing-key-file")
-                .help("The file containing the signing key")
+            .about("Generates a verifying key from a master signing key")
+            .arg(Arg::new("master-signing-key-file")
+                .long("master-signing-key-file")
+                .help("The file containing the master signing key")
                 .required(true)
                 .value_name("FILE"))
             .arg(Arg::new("output-file")
                 .long("output-file")
-                .help("The file to output the verifying key")
+                .help("The file to output the master verifying key")
                 .required(true)
                 .value_name("FILE")))
         .get_matches();
@@ -130,9 +130,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             validate_delegate_key_command(master_verifying_key_file, delegate_certificate_file)?;
         }
         Some(("generate-verifying-key", sub_matches)) => {
-            let signing_key_file = sub_matches.get_one::<String>("signing-key-file").unwrap();
+            let master_signing_key_file = sub_matches.get_one::<String>("master-signing-key-file").unwrap();
             let output_file = sub_matches.get_one::<String>("output-file").unwrap();
-            generate_verifying_key_command(signing_key_file, output_file)?;
+            generate_master_verifying_key_command(master_signing_key_file, output_file)?;
         }
         Some(("sign-message", sub_matches)) => {
             let signing_key_file = sub_matches.get_one::<String>("signing-key-file").unwrap();
@@ -260,19 +260,13 @@ fn verify_signature_command(verifying_key_file: &str, message: Option<&str>, mes
     }
 }
 
-fn generate_verifying_key_command(signing_key_file: &str, output_file: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let signing_key = std::fs::read_to_string(signing_key_file)?;
-    let verifying_key = common::crypto::generate_verifying_key(&signing_key)
+fn generate_master_verifying_key_command(master_signing_key_file: &str, output_file: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let master_signing_key = std::fs::read_to_string(master_signing_key_file)?;
+    let master_verifying_key = common::crypto::generate_master_verifying_key(&master_signing_key)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     
-    save_key_to_file("", output_file, &verifying_key)?;
+    save_key_to_file("", output_file, &master_verifying_key)?;
     
-    let key_type = if verifying_key.contains("SERVER MASTER VERIFYING KEY") {
-        "Server Master Verifying Key"
-    } else {
-        "Delegate Verifying Key"
-    };
-    
-    println!("{} generated successfully and saved to: {}", key_type, output_file);
+    println!("Server Master Verifying Key generated successfully and saved to: {}", output_file);
     Ok(())
 }
