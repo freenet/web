@@ -1,8 +1,12 @@
-use rmp_serde::{Serializer, Deserializer};
+use rmp_serde::Serializer;
 use serde::{Serialize, Deserialize};
+use k256::ecdsa::{SigningKey, VerifyingKey};
+use k256::FieldBytes;
+use rand_core::OsRng;
+use base64::{Engine as _, engine::general_purpose};
 
 #[derive(Serialize, Deserialize)]
-struct GhostkeyCertificate {
+pub struct GhostkeyCertificate {
     delegate_certificate: String,
     ghostkey_verifying_key: String,
     signature: String,
@@ -23,7 +27,7 @@ pub fn generate_ghostkey(delegate_signing_key_pem: &str) -> Result<(String, Stri
     // Create the certificate
     let ghostkey_certificate = GhostkeyCertificate {
         delegate_certificate: delegate_signing_key_pem.to_string(),
-        ghostkey_verifying_key: general_purpose::STANDARD.encode(ghostkey_verifying_key.to_bytes()),
+        ghostkey_verifying_key: general_purpose::STANDARD.encode(ghostkey_verifying_key.to_sec1_bytes()),
         signature: String::new(), // We'll fill this in shortly
     };
 
