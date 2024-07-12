@@ -10,8 +10,6 @@ use p256::SecretKey;
 use p256::ecdsa::{self, signature::Signer};
 use std::env;
 use crate::armor;
-use crate::pad_base64;
-use rmp_serde::encode::to_vec_named;
 use serde::{Serialize, Deserialize};
 
 pub fn generate_master_key(output_dir: &str) {
