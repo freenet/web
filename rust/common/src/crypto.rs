@@ -7,10 +7,11 @@ use p256::{SecretKey, FieldBytes};
 use p256::ecdsa::{self, signature::Signer};
 use crate::armor;
 use serde::{Serialize, Deserialize};
-use rmp_serde::{Serializer};
+use rmp_serde::{Serializer, Deserializer};
 use colored::Colorize;
 
 use std::fmt;
+use std::io::Cursor;
 
 #[derive(Debug, PartialEq)]
 pub enum CryptoError {
@@ -187,6 +188,39 @@ fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Re
     
     let content_lines = &lines[1..lines.len() - 1];
     Ok(content_lines.join(""))
+}
+
+pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
+    let master_verifying_key_base64 = extract_base64_from_armor(master_verifying_key_pem, "SERVER MASTER VERIFYING KEY")?;
+    let master_verifying_key_bytes = general_purpose::STANDARD.decode(&master_verifying_key_base64)
+        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+    let master_verifying_key = VerifyingKey::from_sec1_bytes(&master_verifying_key_bytes)
+        .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
+
+    let certificate_bytes = general_purpose::STANDARD.decode(delegate_certificate)
+        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+    
+    let mut deserializer = Deserializer::new(Cursor::new(certificate_bytes));
+    let certificate: DelegateKeyCertificate = Deserialize::deserialize(&mut deserializer)
+        .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
+
+    // Recreate the certificate data for verification
+    let certificate_data = DelegateKeyCertificate {
+        verifying_key: certificate.verifying_key.clone(),
+        attributes: certificate.attributes.clone(),
+        signature: vec![],
+    };
+    let mut buf = Vec::new();
+    certificate_data.serialize(&mut Serializer::new(&mut buf))
+        .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
+
+    let signature = ecdsa::Signature::from_slice(&certificate.signature)
+        .map_err(|e| CryptoError::InvalidInput(e.to_string()))?;
+
+    master_verifying_key.verify(&buf, &signature)
+        .map_err(|e| CryptoError::InvalidInput(format!("Invalid signature: {}", e)))?;
+
+    Ok(certificate.attributes)
 }
 
 #[cfg(test)]
