@@ -2,7 +2,7 @@ use clap::{Command, Arg};
 use std::fs::{File, create_dir_all};
 use std::io::Write;
 use std::path::Path;
-use common::crypto::{generate_master_key, generate_delegate_key, generate_signing_key};
+use common::crypto::{generate_master_key, generate_delegate_key, generate_signing_key, validate_delegate_key};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = Command::new("Freenet Key Utility")
@@ -40,6 +40,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("The directory to output the keys")
                 .required(true)
                 .value_name("DIR")))
+        .subcommand(Command::new("validate-delegate-key")
+            .about("Validates a delegate key certificate using the master verifying key")
+            .arg(Arg::new("master-verifying-key-file")
+                .long("master-verifying-key-file")
+                .help("The file containing the master verifying key")
+                .required(true)
+                .value_name("FILE"))
+            .arg(Arg::new("delegate-certificate-file")
+                .long("delegate-certificate-file")
+                .help("The file containing the delegate certificate")
+                .required(true)
+                .value_name("FILE")))
         .get_matches();
 
     match matches.subcommand() {
@@ -57,12 +69,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
             generate_and_save_signing_key(output_dir)?;
         }
+        Some(("validate-delegate-key", sub_matches)) => {
+            let master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key-file").unwrap();
+            let delegate_certificate_file = sub_matches.get_one::<String>("delegate-certificate-file").unwrap();
+            validate_delegate_key_command(master_verifying_key_file, delegate_certificate_file)?;
+        }
         _ => {
             println!("No valid subcommand provided. Use --help for usage information.");
         }
     }
 
     Ok(())
+}
+
+fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certificate_file: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let master_verifying_key = std::fs::read_to_string(master_verifying_key_file)?;
+    let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)?;
+    
+    match validate_delegate_key(&master_verifying_key, &delegate_certificate) {
+        Ok(attributes) => {
+            println!("Delegate key certificate is valid.");
+            println!("Attributes: {}", attributes);
+            Ok(())
+        },
+        Err(e) => {
+            println!("Failed to validate delegate key certificate: {}", e);
+            Err(Box::new(e))
+        }
+    }
 }
 
 fn generate_and_save_master_key(output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
