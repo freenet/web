@@ -266,6 +266,13 @@ fn generate_verifying_key_command(signing_key_file: &str, output_file: &str) -> 
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     
     save_key_to_file("", output_file, &verifying_key)?;
-    println!("Verifying key generated successfully and saved to: {}", output_file);
+    
+    let key_type = if verifying_key.contains("SERVER MASTER VERIFYING KEY") {
+        "Server Master Verifying Key"
+    } else {
+        "Delegate Verifying Key"
+    };
+    
+    println!("{} generated successfully and saved to: {}", key_type, output_file);
     Ok(())
 }

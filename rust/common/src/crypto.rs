@@ -14,7 +14,14 @@ use std::fmt;
 use std::io::Cursor;
 
 pub fn generate_verifying_key(signing_key_pem: &str) -> Result<String, CryptoError> {
-    let signing_key_base64 = extract_base64_from_armor(signing_key_pem, "SERVER SIGNING KEY")?;
+    let (key_type, signing_key_base64) = if signing_key_pem.contains("SERVER MASTER SIGNING KEY") {
+        ("SERVER MASTER SIGNING KEY", extract_base64_from_armor(signing_key_pem, "SERVER MASTER SIGNING KEY")?)
+    } else if signing_key_pem.contains("DELEGATE SIGNING KEY") {
+        ("DELEGATE SIGNING KEY", extract_base64_from_armor(signing_key_pem, "DELEGATE SIGNING KEY")?)
+    } else {
+        return Err(CryptoError::InvalidInput("Invalid signing key type".to_string()));
+    };
+
     let signing_key_bytes = general_purpose::STANDARD.decode(&signing_key_base64)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let field_bytes = FieldBytes::from_slice(&signing_key_bytes);
@@ -26,7 +33,13 @@ pub fn generate_verifying_key(signing_key_pem: &str) -> Result<String, CryptoErr
     let verifying_key_bytes = encoded_point.as_bytes();
     let verifying_key_base64 = general_purpose::STANDARD.encode(verifying_key_bytes);
 
-    Ok(armor(&verifying_key_base64.as_bytes(), "SERVER VERIFYING KEY", "SERVER VERIFYING KEY"))
+    let armor_type = if key_type == "SERVER MASTER SIGNING KEY" {
+        "SERVER MASTER VERIFYING KEY"
+    } else {
+        "DELEGATE VERIFYING KEY"
+    };
+
+    Ok(armor(&verifying_key_base64.as_bytes(), armor_type, armor_type))
 }
 
 pub fn verify_signature(verifying_key_pem: &str, message: &str, signature: &str) -> Result<bool, CryptoError> {
