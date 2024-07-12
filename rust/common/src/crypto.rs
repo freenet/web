@@ -58,7 +58,8 @@ pub fn generate_master_key() -> Result<(String, String), CryptoError> {
 }
 
 pub fn sign_with_key(blinded_public_key: &Value, server_master_private_key: &str) -> Result<String, CryptoError> {
-    let decoded_key = general_purpose::STANDARD.decode(server_master_private_key)
+    let decoded_key = extract_base64_from_armor(server_master_private_key)
+        .and_then(|base64_str| general_purpose::STANDARD.decode(base64_str))
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let field_bytes = FieldBytes::from_slice(&decoded_key);
     let master_private_key = PrivateKey::from_bytes(field_bytes)
@@ -120,7 +121,8 @@ pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
 }
 
 pub fn generate_delegate_key(master_private_key_pem: &str, attributes: &str) -> Result<(String, String), CryptoError> {
-    let master_private_key_bytes = general_purpose::STANDARD.decode(master_private_key_pem)
+    let master_private_key_bytes = extract_base64_from_armor(master_private_key_pem)
+        .and_then(|base64_str| general_purpose::STANDARD.decode(base64_str))
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let field_bytes = FieldBytes::from_slice(&master_private_key_bytes);
     let master_private_key = SigningKey::from_bytes(field_bytes)
@@ -155,6 +157,16 @@ pub fn generate_delegate_key(master_private_key_pem: &str, attributes: &str) -> 
     let armored_delegate_signing_key = armor(&delegate_signing_key_base64.as_bytes(), "DELEGATE SIGNING KEY", "DELEGATE SIGNING KEY");
 
     Ok((armored_delegate_signing_key, signed_certificate_base64))
+}
+
+fn extract_base64_from_armor(armored_key: &str) -> Result<String, CryptoError> {
+    let lines: Vec<&str> = armored_key.lines().collect();
+    if lines.len() < 3 {
+        return Err(CryptoError::InvalidInput("Invalid armored key format".to_string()));
+    }
+    
+    let content_lines = &lines[1..lines.len() - 1];
+    Ok(content_lines.join(""))
 }
 
 #[cfg(test)]
