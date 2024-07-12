@@ -2,7 +2,7 @@ use clap::{Command, Arg};
 use std::fs::{File, create_dir_all};
 use std::io::Write;
 use std::path::Path;
-use common::crypto::{generate_master_key, generate_delegate_key, generate_signing_key, validate_delegate_key, sign_message, generate_ghostkey};
+use common::crypto::{generate_master_key, generate_delegate_key, validate_delegate_key, sign_message, generate_ghostkey};
 use colored::Colorize;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
