@@ -167,8 +167,6 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     Ok((armored_delegate_signing_key, signed_certificate_base64))
 }
 
-use colored::Colorize;
-
 fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<String, CryptoError> {
     let lines: Vec<&str> = armored_key.lines().collect();
     if lines.len() < 3 {
