@@ -9,6 +9,10 @@ use sha2::{Sha256, Digest};
 use p256::SecretKey;
 use p256::ecdsa::{self, signature::Signer};
 use std::env;
+use crate::armor;
+use crate::pad_base64;
+use rmp_serde::encode::to_vec_named;
+use serde::{Serialize, Deserialize};
 
 pub fn generate_master_key(output_dir: &str) {
     // Generate the master private key
@@ -90,15 +94,6 @@ pub fn sign_with_key(blinded_public_key: &Value) -> Result<String, String> {
     Ok(general_purpose::STANDARD.encode(combined))
 }
 
-use std::path::Path;
-use std::fs::{File, create_dir_all};
-use std::io::Write;
-use std::fs::read_to_string;
-use p256::ecdsa::{SigningKey, VerifyingKey, signature::Signer};
-use rand_core::OsRng;
-use base64::{engine::general_purpose, Engine as _};
-use rmp_serde::encode::to_vec_named;
-use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize)]
 struct DelegateKeyCertificate {
