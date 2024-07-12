@@ -31,15 +31,15 @@ fn main() {
         let master_key_dir = matches.get_one::<String>("master_key_dir").unwrap();
         let attributes = matches.get_one::<String>("attributes").unwrap();
         let delegate_key_dir = matches.get_one::<String>("delegate_key_dir").unwrap();
-        key_util::generate_delegate_key(master_key_dir, attributes, delegate_key_dir);
+        generate_delegate_key(master_key_dir, attributes, delegate_key_dir);
     }
 
     if let Some(matches) = matches.subcommand_matches("generate-master-key") {
         let output_dir = matches.get_one::<String>("output_dir").unwrap();
-        key_util::generate_signing_key(output_dir);
+        generate_signing_key(output_dir);
     }
 
 }
 mod key_util;
 
-use key_util::generate_delegate_key;
+use common::crypto::{generate_delegate_key, generate_signing_key};

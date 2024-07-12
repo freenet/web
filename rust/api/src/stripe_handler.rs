@@ -1,3 +1,4 @@
+use common::crypto::pad_base64;
 use rocket::serde::{Deserialize, Serialize};
 use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
