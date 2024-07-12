@@ -83,7 +83,7 @@ pub fn validate_ghostkey(master_verifying_key_pem: &str, ghostkey_certificate_ba
     Ok(delegate_attributes)
 }
 
-fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
+fn validate_delegate_certificate(_master_verifying_key_pem: &str, _delegate_certificate: &str) -> Result<String, CryptoError> {
     // TODO: Implement the validation of the delegate certificate using the master verifying key
     // This function should return the attributes of the delegate key if validation is successful
     Err(CryptoError::NotImplemented("Delegate certificate validation not implemented".to_string()))
@@ -94,7 +94,7 @@ fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegat
     let delegate_verifying_key = extract_delegate_verifying_key(delegate_certificate)?;
 
     // Recreate the certificate data that was originally signed
-    let mut certificate_data = GhostkeyCertificate {
+    let certificate_data = GhostkeyCertificate {
         delegate_certificate: ghostkey_certificate.delegate_certificate.clone(),
         ghostkey_verifying_key: ghostkey_certificate.ghostkey_verifying_key.clone(),
         signature: String::new(),
@@ -118,7 +118,7 @@ fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegat
     Ok(())
 }
 
-fn extract_delegate_verifying_key(delegate_certificate: &str) -> Result<VerifyingKey, CryptoError> {
+fn extract_delegate_verifying_key(_delegate_certificate: &str) -> Result<VerifyingKey, CryptoError> {
     // TODO: Implement the extraction of the delegate verifying key from the delegate certificate
     Err(CryptoError::NotImplemented("Delegate verifying key extraction not implemented".to_string()))
 }
