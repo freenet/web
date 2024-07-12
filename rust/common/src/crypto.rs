@@ -1,7 +1,7 @@
-use p256::ecdsa::{SigningKey as PrivateKey, VerifyingKey as PublicKey};
+use p256::ecdsa::{SigningKey, VerifyingKey, SigningKey as PrivateKey, VerifyingKey as PublicKey};
 use rand_core::OsRng;
 use base64::{engine::general_purpose, Engine as _};
-use std::fs::{File, create_dir_all};
+use std::fs::{File, create_dir_all, read_to_string};
 use std::io::Write;
 use std::path::Path;
 use serde_json::Value;
@@ -11,6 +11,7 @@ use p256::ecdsa::{self, signature::Signer};
 use std::env;
 use crate::armor;
 use serde::{Serialize, Deserialize};
+use serde_json::to_vec as to_vec_named;
 
 pub fn generate_master_key(output_dir: &str) {
     // Generate the master private key
@@ -55,7 +56,7 @@ pub fn sign_with_key(blinded_public_key: &Value) -> Result<String, String> {
         Err(e) => return Err(format!("Environment variable SERVER_MASTER_PRIVATE_KEY not found: {}", e)),
     };
 
-    let master_private_key = PrivateKey::from_bytes(&general_purpose::STANDARD.decode(pad_base64(&server_master_private_key)).map_err(|e| e.to_string())?)
+    let master_private_key = PrivateKey::from_bytes(&general_purpose::STANDARD.decode(&server_master_private_key).map_err(|e| e.to_string())?)
         .map_err(|e| format!("Failed to create master private key: {}", e))?;
 
     let blinded_public_key_bytes = match blinded_public_key {
@@ -74,7 +75,7 @@ pub fn sign_with_key(blinded_public_key: &Value) -> Result<String, String> {
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
-    let nonce_bytes = nonce.to_be_bytes();
+    let nonce_bytes = nonce.to_bytes();
 
     // Combine the blinded public key and nonce, and hash them
     let mut hasher = Sha256::new();
@@ -141,7 +142,7 @@ pub fn generate_delegate_key(master_key_dir: &str, attributes: &str, delegate_ke
     // Read the master private key
     let master_private_key_path = Path::new(master_key_dir).join("server_master_private_key.pem");
     let master_private_key_pem = read_to_string(&master_private_key_path).expect("Unable to read master private key file");
-    let master_private_key_bytes = general_purpose::STANDARD.decode(pad_base64(&master_private_key_pem)).expect("Failed to decode master private key");
+    let master_private_key_bytes = general_purpose::STANDARD.decode(&master_private_key_pem).expect("Failed to decode master private key");
     let master_private_key = SigningKey::from_bytes(&master_private_key_bytes).expect("Failed to create master private key");
 
     // Generate the delegate signing key
