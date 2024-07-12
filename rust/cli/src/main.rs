@@ -31,8 +31,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .value_name("FILE"))
             .arg(Arg::new("output-file")
                 .long("output-file")
-                .help("The file to output the signature")
-                .required(true)
+                .help("The file to output the signature (if omitted, signature is sent to stdout)")
+                .required(false)
                 .value_name("FILE")))
         .subcommand(Command::new("generate-master-key")
             .about("Generates a new SERVER_MASTER_KEY and public key")
@@ -92,8 +92,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let signing_key_file = sub_matches.get_one::<String>("signing-key-file").unwrap();
             let message = sub_matches.get_one::<String>("message");
             let message_file = sub_matches.get_one::<String>("message-file");
-            let output_file = sub_matches.get_one::<String>("output-file").unwrap();
-            sign_message_command(signing_key_file, message.map(|s| s.as_str()), message_file.map(|s| s.as_str()), output_file)?;
+            let output_file = sub_matches.get_one::<String>("output-file");
+            sign_message_command(signing_key_file, message.map(|s| s.as_str()), message_file.map(|s| s.as_str()), output_file.map(|s| s.as_str()))?;
         }
         _ => {
             println!("No valid subcommand provided. Use --help for usage information.");
@@ -103,7 +103,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn sign_message_command(signing_key_file: &str, message: Option<&str>, message_file: Option<&str>, output_file: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn sign_message_command(signing_key_file: &str, message: Option<&str>, message_file: Option<&str>, output_file: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
     let signing_key = std::fs::read_to_string(signing_key_file)?;
     
     let message_content = if let Some(msg) = message {
@@ -117,8 +117,15 @@ fn sign_message_command(signing_key_file: &str, message: Option<&str>, message_f
     let signature = sign_message(&signing_key, &message_content)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     
-    save_key_to_file("", output_file, &signature)?;
-    println!("Message signed successfully. Signature saved to: {}", output_file);
+    match output_file {
+        Some(file) => {
+            save_key_to_file("", file, &signature)?;
+            println!("Message signed successfully. Signature saved to: {}", file);
+        },
+        None => {
+            println!("{}", signature);
+        }
+    }
     Ok(())
 }
 
