@@ -136,7 +136,7 @@ pub fn generate_ghostkey(delegate_signing_key_pem: &str) -> Result<(String, Stri
     // Create the final certificate with the signature                                                                                                                                                                                                                                                                                                                                                                          
     let final_certificate = GhostkeyCertificate {
         delegate_certificate: ghostkey_certificate.delegate_certificate,
-        ghostkey_verifying_key: ghostkey_certificate.ghostkey_verifying_key,
+        ghostkey_verifying_key: general_purpose::STANDARD.encode(ghostkey_verifying_key.to_sec1_bytes()),
         signature: general_purpose::STANDARD.encode(signature.to_bytes()),
     };
 
