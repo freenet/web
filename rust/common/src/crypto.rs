@@ -1,9 +1,6 @@
 use p256::ecdsa::{SigningKey, VerifyingKey, SigningKey as PrivateKey, VerifyingKey as PublicKey};
 use rand_core::OsRng;
 use base64::{engine::general_purpose, Engine as _};
-use std::fs::{File, create_dir_all, read_to_string};
-use std::io::Write;
-use std::path::Path;
 use serde_json::Value;
 use sha2::{Sha256, Digest};
 use p256::{SecretKey, FieldBytes};
@@ -12,6 +9,8 @@ use crate::armor;
 use serde::{Serialize, Deserialize};
 use serde_json::to_vec as to_vec_named;
 
+use std::fmt;
+
 #[derive(Debug, PartialEq)]
 pub enum CryptoError {
     IoError(String),
@@ -19,6 +18,20 @@ pub enum CryptoError {
     KeyCreationError(String),
     SerializationError(String),
     InvalidInput(String),
+}
+
+impl std::error::Error for CryptoError {}
+
+impl fmt::Display for CryptoError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            CryptoError::IoError(e) => write!(f, "IO error: {}", e),
+            CryptoError::Base64DecodeError(e) => write!(f, "Base64 decode error: {}", e),
+            CryptoError::KeyCreationError(e) => write!(f, "Key creation error: {}", e),
+            CryptoError::SerializationError(e) => write!(f, "Serialization error: {}", e),
+            CryptoError::InvalidInput(e) => write!(f, "Invalid input: {}", e),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
