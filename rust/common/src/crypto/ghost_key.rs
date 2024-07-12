@@ -89,13 +89,13 @@ pub fn validate_ghostkey(master_verifying_key_pem: &str, ghostkey_certificate_ba
     Ok(delegate_attributes)
 }
 
-fn validate_delegate_certificate(_master_verifying_key_pem: &str, _delegate_certificate: &str) -> Result<String, CryptoError> {
+pub fn validate_delegate_certificate(_master_verifying_key_pem: &str, _delegate_certificate: &str) -> Result<String, CryptoError> {
     // TODO: Implement the validation of the delegate certificate using the master verifying key
     // This function should return the attributes of the delegate key if validation is successful
     Err(CryptoError::NotImplemented("Delegate certificate validation not implemented".to_string()))
 }
 
-fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegate_certificate: &str) -> Result<(), CryptoError> {
+pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegate_certificate: &str) -> Result<(), CryptoError> {
     // Extract the delegate verifying key from the delegate certificate
     let delegate_verifying_key = extract_delegate_verifying_key(delegate_certificate)?;
 
@@ -124,7 +124,7 @@ fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegat
     Ok(())
 }
 
-fn extract_delegate_verifying_key(delegate_certificate: &str) -> Result<VerifyingKey, CryptoError> {
+pub fn extract_delegate_verifying_key(delegate_certificate: &str) -> Result<VerifyingKey, CryptoError> {
     let delegate_certificate_base64 = extract_base64_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
     let delegate_certificate_bytes = general_purpose::STANDARD.decode(&delegate_certificate_base64)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
@@ -137,4 +137,7 @@ fn extract_delegate_verifying_key(delegate_certificate: &str) -> Result<Verifyin
 
     VerifyingKey::from_sec1_bytes(&verifying_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))
+}
+pub fn validate_ghost_key_command(master_verifying_key_pem: &str, ghostkey_certificate_base64: &str) -> Result<String, CryptoError> {
+    validate_ghostkey(master_verifying_key_pem, ghostkey_certificate_base64)
 }
