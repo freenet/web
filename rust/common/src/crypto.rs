@@ -4,7 +4,7 @@ use base64::{engine::general_purpose, Engine as _};
 use serde_json::Value;
 use sha2::{Sha256, Digest};
 use p256::{SecretKey, FieldBytes};
-use p256::ecdsa::{self, signature::Signer};
+use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use crate::armor;
 use serde::{Serialize, Deserialize};
 use rmp_serde::{Serializer, Deserializer};
