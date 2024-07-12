@@ -1,4 +1,3 @@
-use std::process::Command;
 use super::*;
 
 pub fn verify_signature(verifying_key_pem: &str, message: &str, signature: &str) -> Result<bool, CryptoError> {
