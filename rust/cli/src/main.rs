@@ -259,3 +259,13 @@ fn verify_signature_command(verifying_key_file: &str, message: Option<&str>, mes
         }
     }
 }
+
+fn generate_verifying_key_command(signing_key_file: &str, output_file: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let signing_key = std::fs::read_to_string(signing_key_file)?;
+    let verifying_key = common::crypto::generate_verifying_key(&signing_key)
+        .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
+    
+    save_key_to_file("", output_file, &verifying_key)?;
+    println!("Verifying key generated successfully and saved to: {}", output_file);
+    Ok(())
+}
