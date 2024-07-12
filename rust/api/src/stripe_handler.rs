@@ -62,14 +62,6 @@ pub struct SignCertificateRequest {
     blinded_public_key: Value,
 }
 
-fn pad_base64(base64_str: &str) -> String {
-    let mut padded = base64_str.to_string();
-    while padded.len() % 4 != 0 {
-        padded.push('=');
-    }
-    padded
-}
-
 #[derive(Debug, Serialize)]
 pub struct SignCertificateResponse {
     pub blind_signature: String,
