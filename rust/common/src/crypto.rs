@@ -162,7 +162,7 @@ pub fn generate_delegate_key(master_key_dir: &str, attributes: &str, delegate_ke
     let certificate_data_bytes = to_vec_named(&certificate_data).expect("Failed to serialize certificate data");
 
     // Sign the certificate data
-    let signature = master_private_key.sign(&certificate_data_bytes);
+    let signature: ecdsa::Signature = master_private_key.sign(&certificate_data_bytes);
     let mut signed_certificate_data = certificate_data;
     signed_certificate_data.signature = signature.to_vec();
 

@@ -40,6 +40,4 @@ fn main() {
     }
 
 }
-mod key_util;
-
 use common::crypto::{generate_delegate_key, generate_signing_key};
