@@ -3,6 +3,7 @@ use std::fs::{File, create_dir_all};
 use std::io::Write;
 use std::path::Path;
 use common::crypto::{generate_master_key, generate_delegate_key, generate_signing_key, validate_delegate_key};
+use colored::Colorize;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = Command::new("Freenet Key Utility")
@@ -88,7 +89,7 @@ fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certi
     
     match validate_delegate_key(&master_verifying_key, &delegate_certificate) {
         Ok(attributes) => {
-            println!("Delegate key certificate is valid.");
+            println!("Delegate key certificate is {}.", "valid".green());
             println!("Attributes: {}", attributes);
             Ok(())
         },
