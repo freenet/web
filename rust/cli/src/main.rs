@@ -2,8 +2,12 @@ use clap::{Command, Arg};
 use std::fs::{File, create_dir_all};
 use std::io::Write;
 use std::path::Path;
-use common::crypto::{generate_master_key, generate_delegate_key, validate_delegate_key, sign_message, generate_ghostkey};
+use common::crypto::generate_delegate::generate_delegate_key;
+use common::crypto::master_key::{generate_master_key, generate_master_verifying_key};
 use colored::Colorize;
+use common::crypto::ghost_key::generate_ghostkey;
+use common::crypto::signature::{sign_message, verify_signature};
+use common::crypto::validate_delegate_key;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = Command::new("Freenet Ghost Key Utility")
@@ -261,7 +265,7 @@ fn verify_signature_command(verifying_key_file: &str, message: Option<&str>, mes
         println!("Delegate key validated successfully.");
     }
 
-    match common::crypto::verify_signature(&verifying_key, &message_content, &signature) {
+    match verify_signature(&verifying_key, &message_content, &signature) {
         Ok(true) => {
             println!("Signature is {}.", "valid".green());
             Ok(())
@@ -279,7 +283,7 @@ fn verify_signature_command(verifying_key_file: &str, message: Option<&str>, mes
 
 fn generate_master_verifying_key_command(master_signing_key_file: &str, output_file: &str) -> Result<(), Box<dyn std::error::Error>> {
     let master_signing_key = std::fs::read_to_string(master_signing_key_file)?;
-    let master_verifying_key = common::crypto::generate_master_verifying_key(&master_signing_key)
+    let master_verifying_key = generate_master_verifying_key(&master_signing_key)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     
     save_key_to_file("", output_file, &master_verifying_key)?;
@@ -291,7 +295,7 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
 fn generate_ghostkey_command(delegate_signing_key_file: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
     let delegate_signing_key = std::fs::read_to_string(delegate_signing_key_file)?;
     
-    let (ghostkey_signing_key, ghostkey_certificate) = common::crypto::generate_ghostkey(&delegate_signing_key)
+    let (ghostkey_signing_key, ghostkey_certificate) = generate_ghostkey(&delegate_signing_key)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     
     save_key_to_file(output_dir, "ghostkey_signing_key.pem", &ghostkey_signing_key)?;

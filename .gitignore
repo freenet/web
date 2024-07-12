@@ -5,3 +5,4 @@ hugo-site/resources
 target
 .env
 .idea
+*.tmp
