@@ -26,11 +26,11 @@ impl std::error::Error for CryptoError {}
 impl fmt::Display for CryptoError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            CryptoError::IoError(e) => write!(f, "{}", format!("IO error: {}", e).red()),
-            CryptoError::Base64DecodeError(e) => write!(f, "{}", format!("Base64 decode error: {}", e).red()),
-            CryptoError::KeyCreationError(e) => write!(f, "{}", format!("Key creation error: {}", e).red()),
-            CryptoError::SerializationError(e) => write!(f, "{}", format!("Serialization error: {}", e).red()),
-            CryptoError::InvalidInput(e) => write!(f, "{}", format!("Invalid input: {}", e).red()),
+            CryptoError::IoError(e) => write!(f, "{}", e.red()),
+            CryptoError::Base64DecodeError(e) => write!(f, "{}", e.red()),
+            CryptoError::KeyCreationError(e) => write!(f, "{}", e.red()),
+            CryptoError::SerializationError(e) => write!(f, "{}", e.red()),
+            CryptoError::InvalidInput(e) => write!(f, "{}", e.red()),
         }
     }
 }
