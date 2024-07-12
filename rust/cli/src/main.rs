@@ -6,10 +6,10 @@ use common::crypto::{generate_master_key, generate_delegate_key, generate_signin
 use colored::Colorize;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let matches = Command::new("Freenet Key Utility")
+    let matches = Command::new("Freenet Ghost Key Utility")
         .version("1.0")
         .author("Your Name <your.email@example.com>")
-        .about("Performs various Freenet-related tasks")
+        .about("Performs various ghost key-related tasks")
         .subcommand(Command::new("sign-message")
             .about("Signs a message using a signing key and outputs the signature")
             .arg(Arg::new("signing-key-file")
