@@ -123,6 +123,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("The directory to output the ghostkey files")
                 .required(true)
                 .value_name("DIR")))
+        .subcommand(Command::new("generate-ghostkey")
+            .about("Generates a ghostkey from a delegate signing key")
+            .arg(Arg::new("delegate-signing-key-file")
+                .long("delegate-signing-key-file")
+                .help("The file containing the delegate signing key")
+                .required(true)
+                .value_name("FILE"))
+            .arg(Arg::new("output-dir")
+                .long("output-dir")
+                .help("The directory to output the ghostkey files")
+                .required(true)
+                .value_name("DIR")))
         .get_matches();
 
     match matches.subcommand() {
@@ -145,6 +157,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let master_signing_key_file = sub_matches.get_one::<String>("master-signing-key-file").unwrap();
             let output_file = sub_matches.get_one::<String>("output-file").unwrap();
             generate_master_verifying_key_command(master_signing_key_file, output_file)?;
+        }
+        Some(("generate-ghostkey", sub_matches)) => {
+            let delegate_signing_key_file = sub_matches.get_one::<String>("delegate-signing-key-file").unwrap();
+            let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
+            generate_ghostkey_command(delegate_signing_key_file, output_dir)?;
         }
         Some(("generate-ghostkey", sub_matches)) => {
             let delegate_signing_key_file = sub_matches.get_one::<String>("delegate-signing-key-file").unwrap();
@@ -288,6 +305,20 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
     Ok(())
 }
 
+fn generate_ghostkey_command(delegate_signing_key_file: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let delegate_signing_key = std::fs::read_to_string(delegate_signing_key_file)?;
+    
+    let (ghostkey_signing_key, ghostkey_certificate) = generate_ghostkey(&delegate_signing_key)
+        .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
+    
+    save_key_to_file(output_dir, "ghostkey_signing_key.pem", &ghostkey_signing_key)?;
+    save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate)?;
+    
+    println!("Ghostkey generated successfully.");
+    println!("Ghostkey signing key saved to: {}/ghostkey_signing_key.pem", output_dir);
+    println!("Ghostkey certificate saved to: {}/ghostkey_certificate.pem", output_dir);
+    Ok(())
+}
 fn generate_ghostkey_command(delegate_signing_key_file: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
     let delegate_signing_key = std::fs::read_to_string(delegate_signing_key_file)?;
     
