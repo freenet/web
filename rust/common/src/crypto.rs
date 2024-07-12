@@ -137,8 +137,10 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
         attributes: attributes.to_string(),
         signature: vec![],
     };
-    let certificate_data_bytes = to_vec_named(&certificate_data)
+    let mut buf = Vec::new();
+    certificate_data.serialize(&mut Serializer::new(&mut buf))
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
+    let certificate_data_bytes = buf;
 
     // Sign the certificate data
     let signature: ecdsa::Signature = master_signing_key.sign(&certificate_data_bytes);
@@ -146,9 +148,10 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     signed_certificate_data.signature = signature.to_vec();
 
     // Encode the signed certificate data in base64
-    let signed_certificate_data_bytes = to_vec_named(&signed_certificate_data)
+    let mut buf = Vec::new();
+    signed_certificate_data.serialize(&mut Serializer::new(&mut buf))
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
-    let signed_certificate_base64 = general_purpose::STANDARD.encode(signed_certificate_data_bytes);
+    let signed_certificate_base64 = general_purpose::STANDARD.encode(buf);
 
     // Encode the delegate signing key
     let delegate_signing_key_base64 = general_purpose::STANDARD.encode(delegate_signing_key.to_bytes());
