@@ -8,6 +8,7 @@ use p256::ecdsa::{self, signature::Signer};
 use crate::armor;
 use serde::{Serialize, Deserialize};
 use rmp_serde::{Serializer};
+use colored::Colorize;
 
 use std::fmt;
 
@@ -25,12 +26,18 @@ impl std::error::Error for CryptoError {}
 impl fmt::Display for CryptoError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            CryptoError::IoError(e) => write!(f, "IO error: {}", e),
-            CryptoError::Base64DecodeError(e) => write!(f, "Base64 decode error: {}", e),
-            CryptoError::KeyCreationError(e) => write!(f, "Key creation error: {}", e),
-            CryptoError::SerializationError(e) => write!(f, "Serialization error: {}", e),
-            CryptoError::InvalidInput(e) => write!(f, "Invalid input: {}", e),
+            CryptoError::IoError(e) => write!(f, "{}", format!("IO error: {}", e).red()),
+            CryptoError::Base64DecodeError(e) => write!(f, "{}", format!("Base64 decode error: {}", e).red()),
+            CryptoError::KeyCreationError(e) => write!(f, "{}", format!("Key creation error: {}", e).red()),
+            CryptoError::SerializationError(e) => write!(f, "{}", format!("Serialization error: {}", e).red()),
+            CryptoError::InvalidInput(e) => write!(f, "{}", format!("Invalid input: {}", e).red()),
         }
+    }
+}
+
+impl From<String> for CryptoError {
+    fn from(error: String) -> Self {
+        CryptoError::InvalidInput(error)
     }
 }
 
@@ -58,8 +65,8 @@ pub fn generate_master_key() -> Result<(String, String), CryptoError> {
 }
 
 pub fn sign_with_key(blinded_verifying_key: &Value, server_master_signing_key: &str) -> Result<String, CryptoError> {
-    let decoded_key = extract_base64_from_armor(server_master_signing_key, "SERVER MASTER SIGNING KEY")
-        .and_then(|base64_str| general_purpose::STANDARD.decode(&base64_str).map_err(|e| CryptoError::Base64DecodeError(e.to_string())))?;
+    let decoded_key = extract_base64_from_armor(server_master_signing_key, "SERVER MASTER SIGNING KEY")?;
+    let decoded_key = general_purpose::STANDARD.decode(&decoded_key).map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let field_bytes = FieldBytes::from_slice(&decoded_key);
     let master_signing_key = PrivateKey::from_bytes(field_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
@@ -120,8 +127,8 @@ pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
 }
 
 pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> Result<(String, String), CryptoError> {
-    let master_signing_key_bytes = extract_base64_from_armor(master_signing_key_pem, "SERVER MASTER SIGNING KEY")
-        .and_then(|base64_str| general_purpose::STANDARD.decode(&base64_str).map_err(|e| CryptoError::Base64DecodeError(e.to_string())))?;
+    let master_signing_key_base64 = extract_base64_from_armor(master_signing_key_pem, "SERVER MASTER SIGNING KEY")?;
+    let master_signing_key_bytes = general_purpose::STANDARD.decode(&master_signing_key_base64).map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let field_bytes = FieldBytes::from_slice(&master_signing_key_bytes);
     let master_signing_key = SigningKey::from_bytes(field_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
@@ -162,10 +169,10 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
 
 use colored::Colorize;
 
-fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<String, String> {
+fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<String, CryptoError> {
     let lines: Vec<&str> = armored_key.lines().collect();
     if lines.len() < 3 {
-        return Err(format!("{}", format!("Invalid armored key format. Expected at least 3 lines, found {}.", lines.len()).red()));
+        return Err(CryptoError::InvalidInput(format!("Invalid armored key format. Expected at least 3 lines, found {}.", lines.len())));
     }
 
     let start_line = format!("-----BEGIN {}-----", expected_armor_type);
@@ -174,10 +181,10 @@ fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Re
     if !lines[0].trim().eq(&start_line) || !lines[lines.len() - 1].trim().eq(&end_line) {
         let actual_start = lines[0].trim();
         let actual_end = lines[lines.len() - 1].trim();
-        return Err(format!("{}", format!(
+        return Err(CryptoError::InvalidInput(format!(
             "Armor type mismatch. Expected: '{}' and '{}', but found '{}' and '{}'.",
-            start_line.green(), end_line.green(), actual_start.red(), actual_end.red()
-        ).red()));
+            start_line, end_line, actual_start, actual_end
+        )));
     }
     
     let content_lines = &lines[1..lines.len() - 1];
