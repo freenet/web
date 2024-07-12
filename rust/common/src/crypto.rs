@@ -90,7 +90,7 @@ pub fn sign_with_key(blinded_public_key: &Value) -> Result<String, String> {
     Ok(general_purpose::STANDARD.encode(combined))
 }
 
-fn pad_base64(base64_str: &str) -> String {
+pub fn pad_base64(base64_str: &str) -> String {
     let mut padded = base64_str.to_string();
     while padded.len() % 4 != 0 {
         padded.push('=');

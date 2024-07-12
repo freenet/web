@@ -55,7 +55,7 @@ pub fn generate_delegate_key(master_key_dir: &str, attributes: &str, delegate_ke
     // Read the master private key
     let master_private_key_path = Path::new(master_key_dir).join("server_master_private_key.pem");
     let master_private_key_pem = read_to_string(&master_private_key_path).expect("Unable to read master private key file");
-    let master_private_key_bytes = general_purpose::STANDARD.decode(master_private_key_pem).expect("Failed to decode master private key");
+    let master_private_key_bytes = general_purpose::STANDARD.decode(pad_base64(&master_private_key_pem)).expect("Failed to decode master private key");
     let master_private_key = SigningKey::from_bytes(&master_private_key_bytes).expect("Failed to create master private key");
 
     // Generate the delegate signing key
@@ -105,4 +105,11 @@ pub fn generate_delegate_key(master_key_dir: &str, attributes: &str, delegate_ke
     delegate_certificate_file.write_all(signed_certificate_base64.as_bytes()).expect("Unable to write delegate certificate");
 
     println!("Delegate signing key and certificate generated successfully.");
+}
+pub fn pad_base64(base64_str: &str) -> String {
+    let mut padded = base64_str.to_string();
+    while padded.len() % 4 != 0 {
+        padded.push('=');
+    }
+    padded
 }
