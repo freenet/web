@@ -163,14 +163,19 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
 fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<String, CryptoError> {
     let lines: Vec<&str> = armored_key.lines().collect();
     if lines.len() < 3 {
-        return Err(CryptoError::InvalidInput("Invalid armored key format".to_string()));
+        return Err(CryptoError::InvalidInput(format!("Invalid armored key format. Expected at least 3 lines, found {}.", lines.len())));
     }
 
     let start_line = format!("-----BEGIN {}-----", expected_armor_type);
     let end_line = format!("-----END {}-----", expected_armor_type);
 
     if !lines[0].trim().eq(&start_line) || !lines[lines.len() - 1].trim().eq(&end_line) {
-        return Err(CryptoError::InvalidInput(format!("Armor type mismatch. Expected: {}", expected_armor_type)));
+        let actual_start = lines[0].trim();
+        let actual_end = lines[lines.len() - 1].trim();
+        return Err(CryptoError::InvalidInput(format!(
+            "Armor type mismatch. Expected: '{}' and '{}', but found '{}' and '{}'.",
+            start_line, end_line, actual_start, actual_end
+        )));
     }
     
     let content_lines = &lines[1..lines.len() - 1];
