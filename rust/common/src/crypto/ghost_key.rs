@@ -68,7 +68,7 @@ pub fn generate_ghostkey(delegate_signing_key_pem: &str) -> Result<(String, Stri
     Ok((ghostkey_signing_key_pem, ghostkey_certificate_base64))
 }
 
-pub fn validate_ghostkey(master_verifying_key_pem: &str, ghostkey_certificate_base64: &str) -> Result<String, CryptoError> {
+pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_base64: &str) -> Result<String, CryptoError> {
     // Decode the base64 ghostkey certificate
     let ghostkey_certificate_bytes = general_purpose::STANDARD.decode(ghostkey_certificate_base64)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
@@ -139,5 +139,5 @@ pub fn extract_delegate_verifying_key(delegate_certificate: &str) -> Result<Veri
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))
 }
 pub fn validate_ghost_key_command(master_verifying_key_pem: &str, ghostkey_certificate_base64: &str) -> Result<String, CryptoError> {
-    validate_ghostkey(master_verifying_key_pem, ghostkey_certificate_base64)
+    validate_ghost_key(master_verifying_key_pem, ghostkey_certificate_base64)
 }
