@@ -99,6 +99,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("The file containing the delegate certificate")
                 .required(true)
                 .value_name("FILE")))
+        .subcommand(Command::new("generate-verifying-key")
+            .about("Generates a verifying key from a signing key")
+            .arg(Arg::new("signing-key-file")
+                .long("signing-key-file")
+                .help("The file containing the signing key")
+                .required(true)
+                .value_name("FILE"))
+            .arg(Arg::new("output-file")
+                .long("output-file")
+                .help("The file to output the verifying key")
+                .required(true)
+                .value_name("FILE")))
         .get_matches();
 
     match matches.subcommand() {
@@ -116,6 +128,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key-file").unwrap();
             let delegate_certificate_file = sub_matches.get_one::<String>("delegate-certificate-file").unwrap();
             validate_delegate_key_command(master_verifying_key_file, delegate_certificate_file)?;
+        }
+        Some(("generate-verifying-key", sub_matches)) => {
+            let signing_key_file = sub_matches.get_one::<String>("signing-key-file").unwrap();
+            let output_file = sub_matches.get_one::<String>("output-file").unwrap();
+            generate_verifying_key_command(signing_key_file, output_file)?;
         }
         Some(("sign-message", sub_matches)) => {
             let signing_key_file = sub_matches.get_one::<String>("signing-key-file").unwrap();
