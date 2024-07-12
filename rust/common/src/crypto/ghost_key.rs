@@ -7,6 +7,13 @@ use crate::armor;
 use serde::{Serialize, Deserialize};
 use rmp_serde::{Serializer};
 use crate::crypto::{CryptoError, extract_base64_from_armor};
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize)]
+struct DelegateCertificate {
+    delegate_verifying_key: String,
+    // Add other fields as needed
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct GhostkeyCertificate {
@@ -118,7 +125,17 @@ fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegat
     Ok(())
 }
 
-fn extract_delegate_verifying_key(_delegate_certificate: &str) -> Result<VerifyingKey, CryptoError> {
-    // TODO: Implement the extraction of the delegate verifying key from the delegate certificate
-    Err(CryptoError::NotImplemented("Delegate verifying key extraction not implemented".to_string()))
+fn extract_delegate_verifying_key(delegate_certificate: &str) -> Result<VerifyingKey, CryptoError> {
+    let delegate_certificate_base64 = extract_base64_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
+    let delegate_certificate_bytes = general_purpose::STANDARD.decode(&delegate_certificate_base64)
+        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+
+    let delegate_certificate: DelegateCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
+        .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
+
+    let verifying_key_bytes = general_purpose::STANDARD.decode(&delegate_certificate.delegate_verifying_key)
+        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+
+    VerifyingKey::from_sec1_bytes(&verifying_key_bytes)
+        .map_err(|e| CryptoError::KeyCreationError(e.to_string()))
 }
