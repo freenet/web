@@ -131,13 +131,13 @@ pub fn generate_ghostkey(delegate_signing_key_pem: &str) -> Result<(String, Stri
 
     // Sign the serialized certificate                                                                                                                                                                                                                                                                                                                                                                                          
 
-    let signature = delegate_signing_key.sign(&buf);
+    let signature: ecdsa::Signature = delegate_signing_key.sign(&buf);
 
     // Create the final certificate with the signature                                                                                                                                                                                                                                                                                                                                                                          
     let final_certificate = GhostkeyCertificate {
         delegate_certificate: ghostkey_certificate.delegate_certificate,
         ghostkey_verifying_key: general_purpose::STANDARD.encode(ghostkey_verifying_key.to_sec1_bytes()),
-        signature: general_purpose::STANDARD.encode(signature.to_bytes()),
+        signature: general_purpose::STANDARD.encode(signature.to_der()),
     };
 
     // Serialize the final certificate to MessagePack                                                                                                                                                                                                                                                                                                                                                                           
