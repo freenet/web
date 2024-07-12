@@ -42,29 +42,29 @@ struct DelegateKeyCertificate {
 }
 
 pub fn generate_master_key() -> Result<(String, String), CryptoError> {
-    // Generate the master private key
-    let master_private_key = PrivateKey::random(&mut OsRng);
-    let master_public_key = PublicKey::from(&master_private_key);
+    // Generate the master signing key
+    let master_signing_key = PrivateKey::random(&mut OsRng);
+    let master_verifying_key = PublicKey::from(&master_signing_key);
 
     // Encode the keys in base64
-    let master_private_key_base64 = general_purpose::STANDARD.encode(master_private_key.to_bytes());
-    let master_public_key_base64 = general_purpose::STANDARD.encode(master_public_key.to_encoded_point(false).as_bytes());
+    let master_signing_key_base64 = general_purpose::STANDARD.encode(master_signing_key.to_bytes());
+    let master_verifying_key_base64 = general_purpose::STANDARD.encode(master_verifying_key.to_encoded_point(false).as_bytes());
 
     // Armor the keys
-    let armored_master_private_key = format!("-----BEGIN SERVER MASTER PRIVATE KEY-----\n{}\n-----END SERVER MASTER PRIVATE KEY-----", master_private_key_base64);
-    let armored_master_public_key = format!("-----BEGIN SERVER MASTER VERIFYING KEY-----\n{}\n-----END SERVER MASTER VERIFYING KEY-----", master_public_key_base64);
+    let armored_master_signing_key = format!("-----BEGIN SERVER MASTER SIGNING KEY-----\n{}\n-----END SERVER MASTER SIGNING KEY-----", master_signing_key_base64);
+    let armored_master_verifying_key = format!("-----BEGIN SERVER MASTER VERIFYING KEY-----\n{}\n-----END SERVER MASTER VERIFYING KEY-----", master_verifying_key_base64);
 
-    Ok((armored_master_private_key, armored_master_public_key))
+    Ok((armored_master_signing_key, armored_master_verifying_key))
 }
 
-pub fn sign_with_key(blinded_public_key: &Value, server_master_private_key: &str) -> Result<String, CryptoError> {
-    let decoded_key = extract_base64_from_armor(server_master_private_key)
+pub fn sign_with_key(blinded_verifying_key: &Value, server_master_signing_key: &str) -> Result<String, CryptoError> {
+    let decoded_key = extract_base64_from_armor(server_master_signing_key)
         .and_then(|base64_str| general_purpose::STANDARD.decode(&base64_str).map_err(|e| CryptoError::Base64DecodeError(e.to_string())))?;
     let field_bytes = FieldBytes::from_slice(&decoded_key);
-    let master_private_key = PrivateKey::from_bytes(field_bytes)
+    let master_signing_key = PrivateKey::from_bytes(field_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
-    let blinded_public_key_bytes = match blinded_public_key {
+    let blinded_verifying_key_bytes = match blinded_verifying_key {
         Value::String(s) => general_purpose::STANDARD.decode(s)
             .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?,
         Value::Object(obj) => {
@@ -80,21 +80,21 @@ pub fn sign_with_key(blinded_public_key: &Value, server_master_private_key: &str
                 .map_err(|e| CryptoError::Base64DecodeError(format!("Failed to decode 'y' coordinate: {}", e)))?);
             bytes
         },
-        _ => return Err(CryptoError::InvalidInput("Invalid blinded public key format".to_string())),
+        _ => return Err(CryptoError::InvalidInput("Invalid blinded verifying key format".to_string())),
     };
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
     let nonce_bytes = nonce.to_bytes();
 
-    // Combine the blinded public key and nonce, and hash them
+    // Combine the blinded verifying key and nonce, and hash them
     let mut hasher = Sha256::new();
-    hasher.update(&blinded_public_key_bytes);
+    hasher.update(&blinded_verifying_key_bytes);
     hasher.update(&nonce_bytes);
     let message = hasher.finalize();
 
     // Sign the hash
-    let blind_signature: ecdsa::Signature = master_private_key.sign(&message);
+    let blind_signature: ecdsa::Signature = master_signing_key.sign(&message);
 
     // Combine the signature and nonce
     let mut combined = blind_signature.to_vec();
@@ -119,11 +119,11 @@ pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
     Ok((armored_signing_key, armored_verifying_key))
 }
 
-pub fn generate_delegate_key(master_private_key_pem: &str, attributes: &str) -> Result<(String, String), CryptoError> {
-    let master_private_key_bytes = extract_base64_from_armor(master_private_key_pem)
+pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> Result<(String, String), CryptoError> {
+    let master_signing_key_bytes = extract_base64_from_armor(master_signing_key_pem)
         .and_then(|base64_str| general_purpose::STANDARD.decode(&base64_str).map_err(|e| CryptoError::Base64DecodeError(e.to_string())))?;
-    let field_bytes = FieldBytes::from_slice(&master_private_key_bytes);
-    let master_private_key = SigningKey::from_bytes(field_bytes)
+    let field_bytes = FieldBytes::from_slice(&master_signing_key_bytes);
+    let master_signing_key = SigningKey::from_bytes(field_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
     // Generate the delegate signing key
@@ -141,7 +141,7 @@ pub fn generate_delegate_key(master_private_key_pem: &str, attributes: &str) -> 
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
     // Sign the certificate data
-    let signature: ecdsa::Signature = master_private_key.sign(&certificate_data_bytes);
+    let signature: ecdsa::Signature = master_signing_key.sign(&certificate_data_bytes);
     let mut signed_certificate_data = certificate_data;
     signed_certificate_data.signature = signature.to_vec();
 
@@ -174,19 +174,19 @@ mod tests {
 
     #[test]
     fn test_generate_master_key() {
-        let (private_key, public_key) = generate_master_key().unwrap();
-        assert!(private_key.contains("-----BEGIN SERVER MASTER PRIVATE KEY-----"));
-        assert!(public_key.contains("-----BEGIN SERVER MASTER VERIFYING KEY-----"));
+        let (signing_key, verifying_key) = generate_master_key().unwrap();
+        assert!(signing_key.contains("-----BEGIN SERVER MASTER SIGNING KEY-----"));
+        assert!(verifying_key.contains("-----BEGIN SERVER MASTER VERIFYING KEY-----"));
     }
 
     #[test]
     fn test_sign_with_key() {
-        let (private_key, _) = generate_master_key().unwrap();
-        let blinded_public_key = json!({
+        let (signing_key, _) = generate_master_key().unwrap();
+        let blinded_verifying_key = json!({
             "x": general_purpose::STANDARD.encode([1u8; 32]),
             "y": general_purpose::STANDARD.encode([2u8; 32])
         });
-        let signature = sign_with_key(&blinded_public_key, &private_key).unwrap();
+        let signature = sign_with_key(&blinded_verifying_key, &signing_key).unwrap();
         assert!(!signature.is_empty());
     }
 
@@ -199,8 +199,8 @@ mod tests {
 
     #[test]
     fn test_generate_delegate_key() {
-        let (master_private_key, _) = generate_master_key().unwrap();
-        let (delegate_signing_key, delegate_certificate) = generate_delegate_key(&master_private_key, "test_attributes").unwrap();
+        let (master_signing_key, _) = generate_master_key().unwrap();
+        let (delegate_signing_key, delegate_certificate) = generate_delegate_key(&master_signing_key, "test_attributes").unwrap();
         assert!(delegate_signing_key.contains("-----BEGIN DELEGATE SIGNING KEY-----"));
         assert!(!delegate_certificate.is_empty());
     }

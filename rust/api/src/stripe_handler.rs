@@ -59,7 +59,7 @@ use serde_json::Value;
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
     payment_intent_id: String,
-    blinded_public_key: Value,
+    blinded_verifying_key: Value,
 }
 
 #[derive(Debug, Serialize)]
@@ -106,7 +106,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     // Sign the certificate
     log::info!("Payment intent verified successfully");
 
-    let signature = sign_with_key(&request.blinded_public_key).map_err(|e| {
+    let signature = sign_with_key(&request.blinded_verifying_key).map_err(|e| {
         log::error!("Error in sign_with_key: {:?}", e);
         match e {
             CertificateError::Base64Error(be) => {
@@ -127,8 +127,8 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     Ok(SignCertificateResponse { blind_signature: signature })
 }
 
-fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError> {
-    let server_secret_key = match std::env::var("SERVER_SIGNING_KEY") {
+fn sign_with_key(blinded_verifying_key: &Value) -> Result<String, CertificateError> {
+    let server_signing_key = match std::env::var("SERVER_SIGNING_KEY") {
         Ok(key) => {
             log::info!("SERVER_SIGNING_KEY found");
             key
@@ -139,30 +139,30 @@ fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError>
             panic!("SERVER_SIGNING_KEY environment variable not set");
         }
     };
-    log::info!("Starting sign_with_key function with blinded_public_key: {:?}", blinded_public_key);
+    log::info!("Starting sign_with_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
 
-    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(&server_secret_key)?)
+    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(&server_signing_key)?)
         .map_err(|e| {
             log::error!("Failed to create signing key: {}", e);
             CertificateError::KeyError(e.to_string())
         })?;
 
-    log::debug!("Parsed blinded public key JSON: {:?}", blinded_public_key);
+    log::debug!("Parsed blinded verifying key JSON: {:?}", blinded_verifying_key);
 
-    let blinded_public_key_bytes = match blinded_public_key {
+    let blinded_verifying_key_bytes = match blinded_verifying_key {
         Value::String(s) => general_purpose::STANDARD.decode(s).map_err(|e| {
-            log::error!("Failed to decode blinded public key: {}", e);
+            log::error!("Failed to decode blinded verifying key: {}", e);
             CertificateError::Base64Error(e)
         })?,
         Value::Object(obj) => {
             let x = obj.get("x").and_then(Value::as_str)
                 .ok_or_else(|| {
-                    log::error!("Missing 'x' coordinate in blinded public key JSON");
+                    log::error!("Missing 'x' coordinate in blinded verifying key JSON");
                     CertificateError::KeyError("Missing 'x' coordinate".to_string())
                 })?;
             let y = obj.get("y").and_then(Value::as_str)
                 .ok_or_else(|| {
-                    log::error!("Missing 'y' coordinate in blinded public key JSON");
+                    log::error!("Missing 'y' coordinate in blinded verifying key JSON");
                     CertificateError::KeyError("Missing 'y' coordinate".to_string())
                 })?;
 
@@ -178,20 +178,20 @@ fn sign_with_key(blinded_public_key: &Value) -> Result<String, CertificateError>
             bytes
         },
         _ => {
-            log::error!("Invalid blinded public key format");
-            return Err(CertificateError::KeyError("Invalid blinded public key format".to_string()));
+            log::error!("Invalid blinded verifying key format");
+            return Err(CertificateError::KeyError("Invalid blinded verifying key format".to_string()));
         }
     };
 
-    log::debug!("Decoded blinded public key bytes: {:?}", blinded_public_key_bytes);
+    log::debug!("Decoded blinded verifying key bytes: {:?}", blinded_verifying_key_bytes);
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
     let nonce_bytes = nonce.to_bytes();
 
-    // Combine the blinded public key and nonce, and hash them
+    // Combine the blinded verifying key and nonce, and hash them
     let mut hasher = Sha256::new();
-    hasher.update(&blinded_public_key_bytes);
+    hasher.update(&blinded_verifying_key_bytes);
     hasher.update(&nonce_bytes);
     let message = hasher.finalize();
 
