@@ -78,11 +78,26 @@ fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey
     let delegate_certificate_bytes = general_purpose::STANDARD.decode(&delegate_certificate_base64)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
 
-    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
-        .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
+    // Try to deserialize as DelegateKeyCertificate
+    let delegate_cert: Result<DelegateKeyCertificate, _> = rmp_serde::from_slice(&delegate_certificate_bytes);
 
-    SigningKey::from_slice(&delegate_cert.verifying_key)
-        .map_err(|e| CryptoError::KeyCreationError(e.to_string()))
+    match delegate_cert {
+        Ok(cert) => {
+            SigningKey::from_slice(&cert.verifying_key)
+                .map_err(|e| CryptoError::KeyCreationError(e.to_string()))
+        },
+        Err(_) => {
+            // If deserialization as DelegateKeyCertificate fails, try as a simple string
+            let delegate_key_str = String::from_utf8(delegate_certificate_bytes)
+                .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
+            
+            let key_bytes = general_purpose::STANDARD.decode(delegate_key_str)
+                .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+
+            SigningKey::from_slice(&key_bytes)
+                .map_err(|e| CryptoError::KeyCreationError(e.to_string()))
+        }
+    }
 }
 
 pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<String, CryptoError> {
