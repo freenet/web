@@ -1,5 +1,5 @@
 use clap::{Command, Arg, ArgAction};
-use std::fs::{File, create_dir_all, Permissions};
+use std::fs::{File, create_dir_all};
 use std::io::Write;
 use std::path::Path;
 use std::os::unix::fs::PermissionsExt;
@@ -232,7 +232,7 @@ fn sign_message_command(signing_key_file: &str, message: Option<&str>, message_f
     
     match output_file {
         Some(file) => {
-            save_key_to_file("", file, &signature)?;
+            save_key_to_file("", file, &signature, true)?;
             info!("Message signed successfully. Signature saved to: {}", file);
         },
         None => {
@@ -330,7 +330,7 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
     let master_verifying_key = generate_master_verifying_key(&master_signing_key)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     
-    save_key_to_file("", output_file, &master_verifying_key)?;
+    save_key_to_file("", output_file, &master_verifying_key, false)?;
     
     info!("Server Master Verifying Key generated successfully and saved to: {}", output_file);
     Ok(())
@@ -343,7 +343,7 @@ fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) 
     let ghostkey_certificate = generate_ghostkey(&delegate_certificate)
         .map_err(|e| format!("Failed to generate ghostkey: {}", e))?;
     
-    save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate)
+    save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate, true)
         .map_err(|e| format!("Failed to save ghostkey certificate: {}", e))?;
     
     info!("Ghostkey generated successfully.");
