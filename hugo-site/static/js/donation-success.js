@@ -14,10 +14,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // Function to check for required elements
   function checkRequiredElements() {
     const requiredElements = [
-      { id: 'combinedKey', selector: '#combinedKey' },
       { id: 'certificateSection', selector: '#certificateSection' },
       { id: 'certificate-info', selector: '#certificate-info' },
-      { id: 'copyCombinedKey', selector: '#copyCombinedKey' },
       { id: 'errorMessage', selector: '#errorMessage' }
     ];
     
@@ -28,6 +26,19 @@ document.addEventListener('DOMContentLoaded', function() {
       showError(`Error: Missing required elements: ${missingElements.map(el => el.id).join(', ')}`);
       return false;
     }
+
+    // Check for optional elements
+    const optionalElements = [
+      { id: 'combinedKey', selector: '#combinedKey' },
+      { id: 'copyCombinedKey', selector: '#copyCombinedKey' }
+    ];
+
+    optionalElements.forEach(el => {
+      if (!document.querySelector(el.selector)) {
+        console.warn(`Optional element missing: ${el.id}`);
+      }
+    });
+
     return true;
   }
 
@@ -173,14 +184,13 @@ ${wrapBase64(bufferToBase64(privateKey), 64)}
     // Combine certificate and private key
     const combinedKey = `${armoredCertificate}\n\n${armoredPrivateKey}`;
 
-    // Display the combined key
+    // Display the combined key if the element exists
     const combinedKeyElement = document.getElementById('combinedKey');
-    if (!combinedKeyElement) {
-      console.error("Combined key textarea not found");
-      throw new Error("Combined key textarea not found");
+    if (combinedKeyElement) {
+      combinedKeyElement.value = combinedKey;
+    } else {
+      console.warn("Combined key textarea not found. Skipping display.");
     }
-    
-    combinedKeyElement.value = combinedKey;
     
     const certificateSection = document.getElementById('certificateSection');
     const certificateInfo = document.getElementById('certificate-info');
@@ -193,21 +203,20 @@ ${wrapBase64(bufferToBase64(privateKey), 64)}
     certificateSection.style.display = 'block';
     certificateInfo.style.display = 'none';
 
-    // Set up copy button
+    // Set up copy button if it exists
     const copyButton = document.getElementById('copyCombinedKey');
-    if (!copyButton) {
-      console.error("Copy button not found");
-      throw new Error("Copy button not found");
+    if (copyButton && combinedKeyElement) {
+      copyButton.addEventListener('click', function() {
+        combinedKeyElement.select();
+        document.execCommand('copy');
+        this.textContent = 'Copied!';
+        setTimeout(() => {
+          this.textContent = 'Copy Ghost Key';
+        }, 2000);
+      });
+    } else {
+      console.warn("Copy button or combined key textarea not found. Skipping copy functionality.");
     }
-    
-    copyButton.addEventListener('click', function() {
-      combinedKeyElement.select();
-      document.execCommand('copy');
-      this.textContent = 'Copied!';
-      setTimeout(() => {
-        this.textContent = 'Copy Ghost Key';
-      }, 2000);
-    });
 
     // Verify the certificate
     if (!verifyCertificate(ghostkeyCertificate)) {
