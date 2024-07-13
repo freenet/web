@@ -1,7 +1,7 @@
 use super::*;
 
 pub fn sign_with_key(blinded_verifying_key: &Value, server_master_signing_key: &str) -> Result<String, CryptoError> {
-    let decoded_key = extract_base64_from_armor(server_master_signing_key, "SERVER MASTER SIGNING KEY")?;
+    let decoded_key = extract_base64_from_armor(server_master_signing_key, "MASTER SIGNING KEY")?;
     let decoded_key = general_purpose::STANDARD.decode(&decoded_key).map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let field_bytes = FieldBytes::from_slice(&decoded_key);
     let master_signing_key = SigningKey::from_bytes(field_bytes)
