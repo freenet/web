@@ -58,15 +58,26 @@ fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Re
 }
 
 pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
+    println!("Master verifying key PEM: {}", master_verifying_key_pem);
+    println!("Delegate certificate: {}", delegate_certificate);
+
     let master_verifying_key_base64 = extract_base64_from_armor(master_verifying_key_pem, "MASTER VERIFYING KEY")?;
+    println!("Extracted master verifying key base64: {}", master_verifying_key_base64);
+
     let master_verifying_key_bytes = general_purpose::STANDARD.decode(&master_verifying_key_base64)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let master_verifying_key = VerifyingKey::from_sec1_bytes(&master_verifying_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
+    println!("Attempting to decode delegate certificate");
     let certificate_bytes = general_purpose::STANDARD.decode(delegate_certificate)
-        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+        .map_err(|e| {
+            println!("Failed to decode delegate certificate: {}", e);
+            CryptoError::Base64DecodeError(e.to_string())
+        })?;
     
+    println!("Decoded certificate bytes: {:?}", certificate_bytes);
+
     let mut deserializer = Deserializer::new(Cursor::new(certificate_bytes));
     let certificate: DelegateKeyCertificate = Deserialize::deserialize(&mut deserializer)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
