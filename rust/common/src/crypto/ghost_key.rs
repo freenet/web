@@ -88,7 +88,8 @@ fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey
             VerifyingKey::from_sec1_bytes(&cert.verifying_key)
                 .map_err(|e| CryptoError::KeyCreationError(format!("Failed to create VerifyingKey from DelegateKeyCertificate: {}", e)))
                 .and_then(|vk| {
-                    let field_bytes = FieldBytes::from_slice(vk.to_sec1_bytes().as_ref());
+                    let sec1_bytes = vk.to_sec1_bytes();
+                    let field_bytes = FieldBytes::from_slice(&sec1_bytes);
                     SigningKey::from_bytes(field_bytes)
                         .map_err(|e| CryptoError::KeyCreationError(format!("Failed to create SigningKey from VerifyingKey: {}", e)))
                 })
