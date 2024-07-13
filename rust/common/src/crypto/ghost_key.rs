@@ -7,14 +7,15 @@ use crate::armor;
 use serde::{Serialize, Deserialize};
 use rmp_serde::{Serializer};
 use crate::crypto::{CryptoError, extract_base64_from_armor};
+use bincode;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct DelegateCertificate {
     delegate_verifying_key: String,
     // Add other fields as needed
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct DelegateKeyCertificate {
     pub verifying_key: Vec<u8>,
     pub attributes: String,
