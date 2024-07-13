@@ -30,23 +30,35 @@ expect_failure() {
     fi
 }
 
-# Generate master key
+# Generate master keys
 run_command "cargo run -- generate-master-key --output-dir $TEST_DIR"
+run_command "cargo run -- generate-master-key --output-dir $TEST_DIR/wrong_master"
 
-# Generate delegate key
+# Generate delegate keys
 run_command "cargo run -- generate-delegate-key --master-signing-key-file $TEST_DIR/master_signing_key.pem --info 'test-delegate' --output-dir $TEST_DIR"
+run_command "cargo run -- generate-delegate-key --master-signing-key-file $TEST_DIR/wrong_master/master_signing_key.pem --info 'wrong-delegate' --output-dir $TEST_DIR/wrong_delegate"
 
-# Validate delegate key
+# Generate ghost keys
+run_command "cargo run -- generate-ghost-key --delegate-certificate-file $TEST_DIR/delegate_certificate.pem --output-dir $TEST_DIR"
+run_command "cargo run -- generate-ghost-key --delegate-certificate-file $TEST_DIR/wrong_delegate/delegate_certificate.pem --output-dir $TEST_DIR/wrong_ghost"
+
+# Validate delegate key (correct)
 run_command "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
+
+# Validate delegate key (wrong master key)
+expect_failure "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/wrong_master/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
+
+# Validate ghost key (correct)
+run_command "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/ghostkey_certificate.pem"
+
+# Validate ghost key (wrong master key)
+expect_failure "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/wrong_master/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/ghostkey_certificate.pem"
+
+# Validate ghost key (wrong delegate key)
+expect_failure "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/wrong_ghost/ghostkey_certificate.pem"
 
 # Test invalid delegate key validation
 expect_failure "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/master_signing_key.pem"
-
-# Generate ghost key
-run_command "cargo run -- generate-ghost-key --delegate-certificate-file $TEST_DIR/delegate_certificate.pem --output-dir $TEST_DIR"
-
-# Validate ghost key
-run_command "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/ghostkey_certificate.pem"
 
 # Test invalid ghost key validation
 expect_failure "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_signing_key.pem --ghost-certificate-file $TEST_DIR/ghostkey_certificate.pem"
