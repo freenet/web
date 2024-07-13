@@ -15,6 +15,13 @@ struct DelegateCertificate {
 }
 
 #[derive(Serialize, Deserialize)]
+struct DelegateKeyCertificate {
+    pub verifying_key: Vec<u8>,
+    pub attributes: String,
+    pub signature: Vec<u8>,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct GhostkeyCertificate {
     delegate_certificate: String,
     ghostkey_verifying_key: String,
@@ -88,10 +95,41 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_b
     Ok(delegate_attributes)
 }
 
-pub fn validate_delegate_certificate(_master_verifying_key_pem: &str, _delegate_certificate: &str) -> Result<String, CryptoError> {
-    // TODO: Implement the validation of the delegate certificate using the master verifying key
-    // This function should return the attributes of the delegate key if validation is successful
-    Err(CryptoError::NotImplemented("Delegate certificate validation not implemented".to_string()))
+pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
+    // Extract the base64 encoded master verifying key
+    let master_verifying_key_base64 = extract_base64_from_armor(master_verifying_key_pem, "SERVER MASTER VERIFYING KEY")?;
+    let master_verifying_key_bytes = general_purpose::STANDARD.decode(&master_verifying_key_base64)
+        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+    let master_verifying_key = VerifyingKey::from_sec1_bytes(&master_verifying_key_bytes)
+        .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
+
+    // Decode and deserialize the delegate certificate
+    let delegate_certificate_base64 = extract_base64_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
+    let delegate_certificate_bytes = general_purpose::STANDARD.decode(&delegate_certificate_base64)
+        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
+        .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
+
+    // Recreate the certificate data that was originally signed
+    let certificate_data = DelegateKeyCertificate {
+        verifying_key: delegate_cert.verifying_key.clone(),
+        attributes: delegate_cert.attributes.clone(),
+        signature: vec![],
+    };
+
+    // Serialize the certificate data
+    let mut buf = Vec::new();
+    certificate_data.serialize(&mut Serializer::new(&mut buf))
+        .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
+
+    // Verify the signature
+    let signature = ecdsa::Signature::from_der(&delegate_cert.signature)
+        .map_err(|e| CryptoError::SignatureError(e.to_string()))?;
+    master_verifying_key.verify(&buf, &signature)
+        .map_err(|e| CryptoError::SignatureVerificationError(e.to_string()))?;
+
+    // If verification is successful, return the attributes
+    Ok(delegate_cert.attributes)
 }
 
 pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegate_certificate: &str) -> Result<(), CryptoError> {
