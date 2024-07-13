@@ -2,6 +2,12 @@
 
 set -e
 
+# Check if verbose output is requested
+VERBOSE=0
+if [ "$1" = "--verbose" ]; then
+    VERBOSE=1
+fi
+
 # Create a temporary directory
 TEST_DIR=$(mktemp -d)
 echo "Created temporary directory: $TEST_DIR"
@@ -13,12 +19,17 @@ run_command() {
     echo -n "Testing $test_name... "
     if output=$(eval "$command" 2>&1); then
         echo "OK"
+        if [ $VERBOSE -eq 1 ]; then
+            echo "Command: $command"
+            echo "Output:"
+            echo "$output" | grep -v "Compiling" | grep -v "Finished" | grep -v "Running"
+        fi
         return 0
     else
         echo "FAILED"
         echo "Command: $command"
         echo "Output:"
-        echo "$output"
+        echo "$output" | grep -v "Compiling" | grep -v "Finished" | grep -v "Running"
         return 1
     fi
 }
@@ -32,30 +43,17 @@ expect_failure() {
         echo "FAILED (unexpected success)"
         echo "Command: $command"
         echo "Output:"
-        echo "$output"
+        echo "$output" | grep -v "Compiling" | grep -v "Finished" | grep -v "Running"
         return 1
     else
         echo "OK"
+        if [ $VERBOSE -eq 1 ]; then
+            echo "Command: $command"
+            echo "Output:"
+            echo "$output" | grep -v "Compiling" | grep -v "Finished" | grep -v "Running"
+        fi
         return 0
     fi
-}
-
-# Function to run tests and exit on first failure
-run_tests() {
-    set -e
-    
-    # Your test commands go here
-    # For example:
-    run_command "cargo run -- generate-master-key --output-dir $TEST_DIR"
-    run_command "cargo run -- generate-master-key --output-dir $TEST_DIR/wrong_master"
-    # ... other test commands ...
-
-}
-
-# Run the tests
-run_tests || {
-    echo "Tests failed"
-    exit 1
 }
 
 # Generate master keys
