@@ -361,20 +361,20 @@ fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str, 
     info!("Reading delegate certificate from file: {}", delegate_certificate_file);
     let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)
         .map_err(|e| {
-            error!("Failed to read delegate certificate file: {}", e);
+            error!("{}", format!("Failed to read delegate certificate file: {}", e).red());
             format!("Failed to read delegate certificate file: {}", e)
         })?;
     
     info!("Generating ghost key from delegate certificate");
     let ghostkey_certificate = generate_ghostkey(&delegate_certificate)
         .map_err(|e| {
-            error!("Failed to generate ghostkey: {}", e);
+            error!("{}", format!("Failed to generate ghostkey: {}", e).red());
             format!("Failed to generate ghostkey: {}", e)
         })?;
     
     let file_path = Path::new(output_dir).join("ghostkey_certificate.pem");
     if file_path.exists() && !overwrite {
-        error!("File '{}' already exists", file_path.display());
+        error!("{}", format!("File '{}' already exists", file_path.display()).red());
         return Err(format!("File '{}' already exists. Use --overwrite to replace the existing file or choose a different output directory.", file_path.display()).into());
     }
     
@@ -383,13 +383,13 @@ fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str, 
         Ok(_) => {
             println!("{}", "Ghost key generated and saved successfully.".green());
             println!("File created: {}", file_path.display());
+            Ok(())
         },
         Err(e) => {
-            error!("Failed to save ghostkey certificate: {}", e);
-            return Err(format!("Failed to save ghostkey certificate: {}", e).into());
+            error!("{}", format!("Failed to save ghostkey certificate: {}", e).red());
+            Err(format!("Failed to save ghostkey certificate: {}", e).into())
         }
     }
-    Ok(())
 }
 
 fn validate_ghost_key_command(master_verifying_key_file: &str, ghost_certificate_file: &str) -> Result<(), Box<dyn std::error::Error>> {
