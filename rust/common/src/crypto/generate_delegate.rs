@@ -32,22 +32,23 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
         attributes: attributes.to_string(),
         signature: vec![],
     };
-    let mut buf = Vec::new();
-    certificate_data.serialize(&mut Serializer::new(&mut buf))
+    let certificate_data_bytes = bincode::serialize(&certificate_data)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
-    let certificate_data_bytes = buf;
 
     // Sign the certificate data
     let signature: ecdsa::Signature = master_signing_key.sign(&certificate_data_bytes);
-    let mut signed_certificate_data = certificate_data;
-    signed_certificate_data.signature = signature.to_vec();
+    let signed_certificate_data = DelegateKeyCertificate {
+        verifying_key: verifying_key_bytes,
+        attributes: attributes.to_string(),
+        signature: signature.to_vec(),
+    };
 
-    // Serialize the signed certificate data to MessagePack
-    let signed_certificate_msgpack = rmp_serde::to_vec(&signed_certificate_data)
+    // Serialize the signed certificate data using bincode
+    let signed_certificate_bytes = bincode::serialize(&signed_certificate_data)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
-    // Encode the MessagePack data in base64
-    let signed_certificate_base64 = general_purpose::STANDARD.encode(signed_certificate_msgpack);
+    // Encode the bincode data in base64
+    let signed_certificate_base64 = general_purpose::STANDARD.encode(signed_certificate_bytes);
 
     // Armor the signed certificate
     let armored_delegate_certificate = armor(signed_certificate_base64.as_bytes(), "DELEGATE CERTIFICATE", "DELEGATE CERTIFICATE");

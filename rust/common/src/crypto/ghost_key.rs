@@ -140,8 +140,14 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
     // Deserialize the delegate certificate
-    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(delegate_certificate)
-        .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
+    let delegate_cert: DelegateKeyCertificate = bincode::deserialize(delegate_certificate)
+        .map_err(|e| {
+            println!("Deserialization error: {:?}", e);
+            println!("Delegate certificate bytes: {:?}", delegate_certificate);
+            CryptoError::DeserializationError(e.to_string())
+        })?;
+
+    println!("Deserialized delegate certificate: {:?}", delegate_cert);
 
     // Recreate the certificate data that was originally signed
     let certificate_data = DelegateKeyCertificate {
@@ -151,8 +157,7 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
     };
 
     // Serialize the certificate data
-    let mut buf = Vec::new();
-    certificate_data.serialize(&mut Serializer::new(&mut buf))
+    let buf = bincode::serialize(&certificate_data)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
     // Verify the signature
