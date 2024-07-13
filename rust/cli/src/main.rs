@@ -1,6 +1,6 @@
 use std::error::Error;
 use clap::{Command, Arg, ArgAction};
-use std::fs::{File, create_dir_all};
+use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::os::unix::fs::PermissionsExt;
