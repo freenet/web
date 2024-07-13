@@ -292,10 +292,9 @@ fn generate_and_save_master_key(output_dir: &str) -> Result<(), Box<dyn std::err
 }
 
 fn generate_and_save_delegate_key(master_key_file: &str, info: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
-    // Create the directory for the master key file if it doesn't exist
-    if let Some(parent) = std::path::Path::new(master_key_file).parent() {
-        std::fs::create_dir_all(parent)?;
-    }
+    // Create the output directory if it doesn't exist
+    std::fs::create_dir_all(output_dir)
+        .map_err(|e| format!("Failed to create output directory '{}': {}", output_dir, e))?;
 
     check_file_permissions(master_key_file, false)?;
     let master_signing_key = std::fs::read_to_string(master_key_file)
