@@ -3,13 +3,15 @@ use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use std::collections::HashMap;
 use p256::{
-    ecdsa::{self, SigningKey, signature::Signer},
+    ecdsa::{self, SigningKey, VerifyingKey, signature::Signer},
     SecretKey,
 };
 use rand_core::OsRng;
 use sha2::{Sha256, Digest};
 use base64::{Engine as _, engine::general_purpose};
 use std::error::Error as StdError;
+use std::fs;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub enum CertificateError {
@@ -63,8 +65,24 @@ pub struct SignCertificateRequest {
 }
 
 #[derive(Debug, Serialize)]
+pub struct DelegateInfo {
+    pub certificate: String,
+    pub amount: u64,
+}
+
+impl Default for DelegateInfo {
+    fn default() -> Self {
+        DelegateInfo {
+            certificate: String::new(),
+            amount: 0,
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
 pub struct SignCertificateResponse {
     pub blind_signature: String,
+    pub delegate_info: DelegateInfo,
 }
 
 pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, CertificateError> {
@@ -106,8 +124,9 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     // Sign the certificate
     log::info!("Payment intent verified successfully");
 
-    let signature = sign_with_key(&request.blinded_verifying_key).map_err(|e| {
-        log::error!("Error in sign_with_key: {:?}", e);
+    let amount = pi.amount;
+    let (signature, delegate_info) = sign_with_delegate_key(&request.blinded_verifying_key, amount).map_err(|e| {
+        log::error!("Error in sign_with_delegate_key: {:?}", e);
         match e {
             CertificateError::Base64Error(be) => {
                 log::error!("Base64 decoding error: {}", be);
@@ -124,24 +143,30 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     log::info!("Certificate signed successfully");
     log::debug!("Signature: {}", signature);
 
-    Ok(SignCertificateResponse { blind_signature: signature })
+    Ok(SignCertificateResponse { 
+        blind_signature: signature,
+        delegate_info,
+    })
 }
 
-fn sign_with_key(blinded_verifying_key: &Value) -> Result<String, CertificateError> {
-    let server_signing_key = match std::env::var("SERVER_SIGNING_KEY") {
-        Ok(key) => {
-            log::info!("SERVER_SIGNING_KEY found");
-            key
-        },
-        Err(e) => {
-            log::error!("Environment variable SERVER_SIGNING_KEY not found: {}", e);
-            log::error!("Current environment variables: {:?}", std::env::vars().collect::<Vec<_>>());
-            panic!("SERVER_SIGNING_KEY environment variable not set");
-        }
-    };
-    log::info!("Starting sign_with_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
+fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<(String, DelegateInfo), CertificateError> {
+    let delegate_dir = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/root".to_string()))
+        .join(".config")
+        .join("ghostkey")
+        .join("delegates");
 
-    let signing_key = SigningKey::from_slice(&general_purpose::STANDARD.decode(&server_signing_key)?)
+    let delegate_amount = (amount / 100) as u64; // Convert cents to dollars
+    let delegate_cert_path = delegate_dir.join(format!("delegate_certificate_{}.pem", delegate_amount));
+    let delegate_key_path = delegate_dir.join(format!("delegate_key_{}.pem", delegate_amount));
+
+    let delegate_cert = fs::read_to_string(&delegate_cert_path)
+        .map_err(|e| CertificateError::KeyError(format!("Failed to read delegate certificate: {}", e)))?;
+    let delegate_key = fs::read_to_string(&delegate_key_path)
+        .map_err(|e| CertificateError::KeyError(format!("Failed to read delegate key: {}", e)))?;
+
+    log::info!("Starting sign_with_delegate_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
+
+    let signing_key = SigningKey::from_pkcs8_pem(&delegate_key)
         .map_err(|e| {
             log::error!("Failed to create signing key: {}", e);
             CertificateError::KeyError(e.to_string())
@@ -202,7 +227,12 @@ fn sign_with_key(blinded_verifying_key: &Value) -> Result<String, CertificateErr
     let mut combined = blind_signature.to_vec();
     combined.extend_from_slice(&nonce_bytes);
 
-    Ok(general_purpose::STANDARD.encode(combined))
+    let delegate_info = DelegateInfo {
+        certificate: delegate_cert,
+        amount: delegate_amount,
+    };
+
+    Ok((general_purpose::STANDARD.encode(combined), delegate_info))
 }
 
 // The create_payment_intent function and associated structs have been removed
