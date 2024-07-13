@@ -7,7 +7,7 @@ use rmp_serde::Serializer;
 use crate::crypto::{CryptoError, extract_bytes_from_armor};
 use rmp_serde;
 use log::{debug, info, warn, error};
-use colored::*;
+use colored::Colorize;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct DelegateCertificate {
@@ -90,7 +90,7 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
     let ghostkey_certificate_armored = armor(&final_buf, "GHOSTKEY CERTIFICATE", "GHOSTKEY CERTIFICATE");
     debug!("Armored ghostkey certificate: {}", ghostkey_certificate_armored);
 
-    println!("{}", "Ghost key generated successfully.".green());
+    println!("{}", "Ghost key generated successfully.".green().bold());
 
     Ok(ghostkey_certificate_armored)
 }
@@ -122,7 +122,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     // Verify the ghostkey signature
     verify_ghostkey_signature(&ghostkey_certificate, delegate_certificate)?;
 
-    println!("{}", "Ghost key certificate is valid.".green());
+    println!("{}", "Ghost key certificate is valid.".green().bold());
 
     Ok(delegate_info)
 }
@@ -290,8 +290,8 @@ pub fn extract_delegate_verifying_key(delegate_certificate: &[u8]) -> Result<Ver
 pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<(), CryptoError> {
     match validate_ghost_key(master_verifying_key_pem, ghostkey_certificate_armored) {
         Ok(delegate_info) => {
-            println!("{}", "Ghost key certificate validation successful.".green());
-            println!("Delegate info: {}", delegate_info);
+            println!("{}", "Ghost key certificate validation successful.".green().bold());
+            println!("{} {}", "Delegate info:".cyan(), delegate_info);
             Ok(())
         },
         Err(e) => {
@@ -302,7 +302,7 @@ pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostk
                 CryptoError::SignatureVerificationError(_) => "The ghost key certificate signature is invalid. This may indicate tampering or use of an incorrect master key.",
                 _ => "An unexpected error occurred during ghost key validation. If this persists, please contact support.",
             };
-            eprintln!("{}", format!("Error: {}", error_message).red());
+            eprintln!("{} {}", "Error:".red().bold(), error_message.red());
             Err(CryptoError::ValidationError(error_message.to_string()))
         }
     }
