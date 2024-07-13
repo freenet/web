@@ -134,7 +134,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     // Verify the ghostkey signature
     verify_ghostkey_signature(&ghostkey_certificate, delegate_certificate)?;
 
-    println!("{}", "Ghost key verified successfully".green());
+    println!("{}", "Ghost key certificate is valid".green());
 
     Ok(delegate_attributes)
 }
