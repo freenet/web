@@ -3,7 +3,7 @@ use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use std::collections::HashMap;
 use p256::{
-    ecdsa::{self, SigningKey},
+    ecdsa::{self, SigningKey, signature::Signer},
     SecretKey,
     pkcs8::DecodePrivateKey,
 };
@@ -222,7 +222,8 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
     let message = hasher.finalize();
 
     // Sign the hash
-    let blind_signature: ecdsa::Signature = signing_key.sign(&message);
+    let blind_signature: ecdsa::Signature = signing_key.try_sign(&message)
+        .map_err(|e| CertificateError::KeyError(format!("Failed to sign message: {}", e)))?;
 
     // Combine the signature and nonce
     let mut combined = blind_signature.to_vec();
