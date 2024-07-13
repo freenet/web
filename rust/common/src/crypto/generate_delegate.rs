@@ -17,10 +17,9 @@ pub struct DelegateKeyCertificate {
 
 pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> Result<(String, String), CryptoError> {
     let master_signing_key_base64 = extract_base64_from_armor(master_signing_key_pem, "SERVER MASTER SIGNING KEY")?;
-    let master_signing_key_bytes = general_purpose::STANDARD.decode(&master_signing_key_base64).map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
-    println!("Master signing key bytes length: {}", master_signing_key_bytes.len());
-    let field_bytes = FieldBytes::from_slice(&master_signing_key_bytes);
-    let master_signing_key = SigningKey::from_bytes(field_bytes)
+    let master_signing_key_bytes = general_purpose::STANDARD.decode(&master_signing_key_base64)
+        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+    let master_signing_key = SigningKey::from_slice(&master_signing_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
     // Generate the delegate signing key
