@@ -111,7 +111,6 @@ fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey
 pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<String, CryptoError> {
     // Extract the base64 encoded ghostkey certificate
     let ghostkey_certificate_bytes = extract_bytes_from_armor(ghostkey_certificate_armored, "GHOSTKEY CERTIFICATE")?;
-        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
 
     // Deserialize the ghostkey certificate
     let ghostkey_certificate: GhostkeyCertificate = rmp_serde::from_slice(&ghostkey_certificate_bytes)
@@ -132,7 +131,6 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
 pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &[u8]) -> Result<String, CryptoError> {
     // Extract the base64 encoded master verifying key
     let master_verifying_key_bytes = extract_bytes_from_armor(master_verifying_key_pem, "MASTER VERIFYING KEY")?;
-        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let master_verifying_key = VerifyingKey::from_sec1_bytes(&master_verifying_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
