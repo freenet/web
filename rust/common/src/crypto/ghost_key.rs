@@ -95,18 +95,6 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
     Ok(ghostkey_certificate_armored)
 }
 
-fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey, CryptoError> {
-    let delegate_certificate_bytes = extract_bytes_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")
-        .map_err(|e| CryptoError::ArmorError(format!("Failed to extract bytes from armor: {}", e)))?;
-
-    // Deserialize as DelegateKeyCertificate
-    let _delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
-        .map_err(|e| CryptoError::DeserializationError(format!("Failed to deserialize DelegateKeyCertificate: {}", e)))?;
-
-    // The verifying_key in the certificate is actually the public key
-    // We cannot derive the signing key from it, so we need to return an error
-    Err(CryptoError::KeyCreationError("Cannot extract signing key from delegate certificate. Only the public key is available.".to_string()))
-}
 
 pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<String, CryptoError> {
     // Extract the base64 encoded ghostkey certificate

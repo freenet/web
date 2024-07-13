@@ -117,7 +117,7 @@ expect_failure "cargo run -- validate-ghost-key --master-verifying-key-file $TES
 
 # Test with insufficient permissions
 chmod 000 $TEST_DIR/master_verifying_key.pem
-run_command "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
+expect_failure "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
 chmod 644 $TEST_DIR/master_verifying_key.pem
 
 # Test with different encodings
