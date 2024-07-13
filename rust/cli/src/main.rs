@@ -4,7 +4,6 @@ use std::io::Write;
 use std::path::Path;
 use common::crypto::generate_delegate::generate_delegate_key;
 use common::crypto::master_key::{generate_master_key, generate_master_verifying_key};
-use colored::Colorize;
 use log::{debug, error, info};
 use common::crypto::ghost_key::{generate_ghostkey, validate_ghost_key};
 use common::crypto::signature::{sign_message, verify_signature};
