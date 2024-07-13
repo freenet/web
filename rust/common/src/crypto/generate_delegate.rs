@@ -19,12 +19,16 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     println!("Master signing key PEM: {}", master_signing_key_pem);
 
     let master_signing_key_base64 = extract_base64_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
-    println!("Extracted base64: {:?}", master_signing_key_base64);
+    println!("Extracted base64: {}", master_signing_key_base64);
 
-    let master_signing_key_bytes = general_purpose::STANDARD.decode(&master_signing_key_base64)
+    // Trim any whitespace from the base64 string
+    let trimmed_base64 = master_signing_key_base64.trim();
+    println!("Trimmed base64: {}", trimmed_base64);
+
+    let master_signing_key_bytes = general_purpose::STANDARD.decode(trimmed_base64)
         .map_err(|e| {
-            println!("Base64 decode error: {}", e);
-            CryptoError::Base64DecodeError(e.to_string())
+            println!("Base64 decode error: {}. Attempted to decode: {}", e, trimmed_base64);
+            CryptoError::Base64DecodeError(format!("{}: {}", e, trimmed_base64))
         })?;
     println!("Decoded key bytes: {:?}", master_signing_key_bytes);
 
