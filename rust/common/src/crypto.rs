@@ -34,7 +34,7 @@ pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
     Ok((armored_signing_key, armored_verifying_key))
 }
 
-fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<Vec<u8>, CryptoError> {
+fn extract_bytes_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<Vec<u8>, CryptoError> {
     let lines: Vec<&str> = armored_key.lines().collect();
     if lines.len() < 3 {
         return Err(CryptoError::InvalidInput(format!("Invalid armored key format. Expected at least 3 lines, found {}.", lines.len())));
@@ -62,31 +62,15 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
     println!("Master verifying key PEM: {}", master_verifying_key_pem);
     println!("Delegate certificate: {}", delegate_certificate);
 
-    let master_verifying_key_base64 = extract_base64_from_armor(master_verifying_key_pem, "MASTER VERIFYING KEY")?;
-    println!("Extracted master verifying key base64: {:?}", master_verifying_key_base64);
-
-    let master_verifying_key_bytes = general_purpose::STANDARD.decode(&master_verifying_key_base64)
-        .map_err(|e| {
-            println!("Failed to decode master verifying key: {}", e);
-            CryptoError::Base64DecodeError(e.to_string())
-        })?;
-    println!("Decoded master verifying key bytes: {:?}", master_verifying_key_bytes);
+    let master_verifying_key_bytes = extract_bytes_from_armor(master_verifying_key_pem, "MASTER VERIFYING KEY")?;
+    println!("Extracted master verifying key bytes: {:?}", master_verifying_key_bytes);
 
     let master_verifying_key = VerifyingKey::from_sec1_bytes(&master_verifying_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
-    println!("Extracting delegate certificate base64");
-    let delegate_certificate_base64 = extract_base64_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
-    println!("Extracted delegate certificate base64: {:?}", delegate_certificate_base64);
-
-    println!("Attempting to decode delegate certificate");
-    let certificate_bytes = general_purpose::STANDARD.decode(&delegate_certificate_base64)
-        .map_err(|e| {
-            println!("Failed to decode delegate certificate: {}", e);
-            CryptoError::Base64DecodeError(e.to_string())
-        })?;
-    
-    println!("Decoded certificate bytes: {:?}", certificate_bytes);
+    println!("Extracting delegate certificate bytes");
+    let certificate_bytes = extract_bytes_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
+    println!("Extracted delegate certificate bytes: {:?}", certificate_bytes);
 
     let certificate: DelegateKeyCertificate = match rmp_serde::from_slice(&certificate_bytes) {
         Ok(cert) => {
@@ -108,7 +92,7 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
     // Recreate the certificate data for verification
     let certificate_data = DelegateKeyCertificate {
         verifying_key: certificate.verifying_key.clone(),
-        attributes: certificate.attributes.clone(),
+        info: certificate.info.clone(),
         signature: vec![],
     };
     let mut buf = Vec::new();
@@ -121,7 +105,7 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
     master_verifying_key.verify(&buf, &signature)
         .map_err(|e| CryptoError::InvalidInput(format!("Invalid signature: {}", e)))?;
 
-    Ok(certificate.attributes)
+    Ok(certificate.info)
 }
 
 #[cfg(test)]
@@ -160,7 +144,7 @@ mod tests {
     #[test]
     fn test_generate_delegate_key() {
         let (master_signing_key, _) = generate_master_key().unwrap();
-        let delegate_certificate = generate_delegate_key(&master_signing_key, "test_attributes").unwrap();
+        let delegate_certificate = generate_delegate_key(&master_signing_key, "test_info").unwrap();
         assert!(!delegate_certificate.is_empty());
     }
 
