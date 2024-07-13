@@ -90,5 +90,39 @@ echo "Invalid content" > $TEST_DIR/invalid_file.pem
 expect_failure "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/invalid_file.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
 expect_failure "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/invalid_file.pem"
 
+# Test with tampered certificates
+sed 's/./X/1' $TEST_DIR/delegate_certificate.pem > $TEST_DIR/tampered_delegate_certificate.pem
+expect_failure "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/tampered_delegate_certificate.pem"
+
+sed 's/./X/1' $TEST_DIR/ghostkey_certificate.pem > $TEST_DIR/tampered_ghostkey_certificate.pem
+expect_failure "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/tampered_ghostkey_certificate.pem"
+
+# Test with mismatched keys
+expect_failure "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/wrong_master/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
+expect_failure "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/wrong_master/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/ghostkey_certificate.pem"
+
+# Test with empty files
+touch $TEST_DIR/empty_file.pem
+expect_failure "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/empty_file.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
+expect_failure "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/empty_file.pem"
+
+# Test with very large input files
+dd if=/dev/urandom of=$TEST_DIR/large_file.pem bs=1M count=10
+expect_failure "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/large_file.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
+expect_failure "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/large_file.pem"
+
+# Test with non-existent files
+expect_failure "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/nonexistent.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
+expect_failure "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/nonexistent.pem"
+
+# Test with insufficient permissions
+chmod 000 $TEST_DIR/master_verifying_key.pem
+expect_failure "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
+chmod 644 $TEST_DIR/master_verifying_key.pem
+
+# Test with different encodings
+echo "Invalid UTF-8 content" | iconv -f UTF-8 -t UTF-16 > $TEST_DIR/utf16_file.pem
+expect_failure "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/utf16_file.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
+
 echo "All tests completed"
 echo "Temporary directory: $TEST_DIR"
