@@ -118,7 +118,7 @@ expect_failure "validate delegate key with empty file" "cargo run -- validate-de
 expect_failure "validate ghost key with empty file" "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/empty_file.pem"
 
 # Test with very large input files
-dd if=/dev/urandom of=$TEST_DIR/large_file.pem bs=1M count=10
+dd if=/dev/urandom of=$TEST_DIR/large_file.pem bs=1M count=10 2>/dev/null
 expect_failure "validate delegate key with large file" "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/large_file.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
 expect_failure "validate ghost key with large file" "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/large_file.pem"
 
