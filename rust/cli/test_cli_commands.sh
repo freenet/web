@@ -2,23 +2,51 @@
 
 set -e
 
+# Initialize counters
+TOTAL_TESTS=0
+PASSED_TESTS=0
+FAILED_TESTS=0
+
 # Check if verbose output is requested
 VERBOSE=0
-if [ "$1" = "--verbose" ]; then
-    VERBOSE=1
-fi
+KEEP_TEMP=0
+for arg in "$@"; do
+    case $arg in
+        --verbose)
+            VERBOSE=1
+            ;;
+        --keep-temp)
+            KEEP_TEMP=1
+            ;;
+    esac
+done
 
 # Create a temporary directory
 TEST_DIR=$(mktemp -d)
 echo "Created temporary directory: $TEST_DIR"
 
+# Cleanup function
+cleanup() {
+    if [ $KEEP_TEMP -eq 0 ]; then
+        echo "Cleaning up temporary directory: $TEST_DIR"
+        rm -rf "$TEST_DIR"
+    else
+        echo "Keeping temporary directory: $TEST_DIR"
+    fi
+}
+
+# Set trap to call cleanup function on exit
+trap cleanup EXIT
+
 # Function to run a command and check its exit status
 run_command() {
     local test_name="$1"
     local command="$2"
+    ((TOTAL_TESTS++))
     echo -n "Testing $test_name... "
     if output=$(eval "$command" 2>&1); then
         echo "OK"
+        ((PASSED_TESTS++))
         if [ $VERBOSE -eq 1 ]; then
             echo "Command: $command"
             echo "Output:"
@@ -28,6 +56,7 @@ run_command() {
         return 0
     else
         echo "FAILED"
+        ((FAILED_TESTS++))
         echo "Command: $command"
         echo "Output:"
         echo "$output" | grep -v "Compiling" | grep -v "Finished" | grep -v "Running"
@@ -39,15 +68,18 @@ run_command() {
 expect_failure() {
     local test_name="$1"
     local command="$2"
+    ((TOTAL_TESTS++))
     echo -n "Testing $test_name (expecting failure)... "
     if output=$(eval "$command" 2>&1); then
         echo "FAILED (unexpected success)"
+        ((FAILED_TESTS++))
         echo "Command: $command"
         echo "Output:"
         echo "$output" | grep -v "Compiling" | grep -v "Finished" | grep -v "Running"
         return 1
     else
         echo "OK"
+        ((PASSED_TESTS++))
         if [ $VERBOSE -eq 1 ]; then
             echo "Command: $command"
             echo "Output:"
@@ -180,3 +212,16 @@ expect_failure "validate ghost key with swapped certificate" "cargo run -- valid
 
 echo "All tests completed"
 echo "Temporary directory: $TEST_DIR"
+
+# Print summary
+echo "Test Summary:"
+echo "Total tests: $TOTAL_TESTS"
+echo "Passed tests: $PASSED_TESTS"
+echo "Failed tests: $FAILED_TESTS"
+
+# Set exit status based on test results
+if [ $FAILED_TESTS -eq 0 ]; then
+    exit 0
+else
+    exit 1
+fi
