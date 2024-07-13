@@ -109,7 +109,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
 
 pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &[u8]) -> Result<String, CryptoError> {
     // Extract the base64 encoded master verifying key
-    let master_verifying_key_base64 = extract_base64_from_armor(master_verifying_key_pem, "SERVER MASTER VERIFYING KEY")?;
+    let master_verifying_key_base64 = extract_base64_from_armor(master_verifying_key_pem, "MASTER VERIFYING KEY")?;
     let master_verifying_key_bytes = general_purpose::STANDARD.decode(&master_verifying_key_base64)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let master_verifying_key = VerifyingKey::from_sec1_bytes(&master_verifying_key_bytes)
