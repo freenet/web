@@ -69,14 +69,15 @@ pub fn generate_ghostkey(delegate_signing_key_pem: &str) -> Result<(String, Stri
 
     // Encode the keys and certificate
     let ghostkey_signing_key_pem = armor(&ghostkey_signing_key.to_bytes(), "GHOSTKEY SIGNING KEY", "GHOSTKEY SIGNING KEY");
-    let ghostkey_certificate_base64 = general_purpose::STANDARD.encode(final_buf);
+    let ghostkey_certificate_armored = armor(&final_buf, "GHOSTKEY CERTIFICATE", "GHOSTKEY CERTIFICATE");
 
-    Ok((ghostkey_signing_key_pem, ghostkey_certificate_base64))
+    Ok((ghostkey_signing_key_pem, ghostkey_certificate_armored))
 }
 
-pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_base64: &str) -> Result<String, CryptoError> {
-    // Decode the base64 ghostkey certificate
-    let ghostkey_certificate_bytes = general_purpose::STANDARD.decode(ghostkey_certificate_base64)
+pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<String, CryptoError> {
+    // Extract the base64 encoded ghostkey certificate
+    let ghostkey_certificate_base64 = extract_base64_from_armor(ghostkey_certificate_armored, "GHOSTKEY CERTIFICATE")?;
+    let ghostkey_certificate_bytes = general_purpose::STANDARD.decode(&ghostkey_certificate_base64)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
 
     // Deserialize the ghostkey certificate
@@ -175,6 +176,6 @@ pub fn extract_delegate_verifying_key(delegate_certificate: &str) -> Result<Veri
     VerifyingKey::from_sec1_bytes(&verifying_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))
 }
-pub fn validate_ghost_key_command(master_verifying_key_pem: &str, ghostkey_certificate_base64: &str) -> Result<String, CryptoError> {
-    validate_ghost_key(master_verifying_key_pem, ghostkey_certificate_base64)
+pub fn validate_ghost_key_command(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<String, CryptoError> {
+    validate_ghost_key(master_verifying_key_pem, ghostkey_certificate_armored)
 }
