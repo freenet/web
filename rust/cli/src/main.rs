@@ -260,6 +260,15 @@ fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certi
     let master_verifying_key = std::fs::read_to_string(master_verifying_key_file)?;
     let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)?;
     
+    // Check if the delegate signing key file exists
+    let delegate_signing_key_file = delegate_certificate_file.replace("certificate", "signing_key");
+    if !std::path::Path::new(&delegate_signing_key_file).exists() {
+        return Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            format!("Delegate signing key file not found: {}", delegate_signing_key_file)
+        )));
+    }
+    
     match validate_delegate_key(&master_verifying_key, &delegate_certificate) {
         Ok(info) => {
             info!("Delegate key certificate is {}.", "valid".green());
