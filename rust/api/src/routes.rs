@@ -58,7 +58,6 @@ struct Message {
 
 #[derive(Deserialize, Debug)]
 pub struct DonationRequest {
-    pub amount: i64,
     pub currency: String,
 }
 
@@ -151,8 +150,9 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         }
     };
 
-    let mut params = stripe::CreatePaymentIntent::new(request.amount, currency);
+    let mut params = stripe::CreatePaymentIntent::new(100, currency); // Use a placeholder amount of $1.00
     params.payment_method_types = Some(vec!["card".to_string()]);
+    params.capture_method = Some(stripe::CaptureMethod::Manual);
 
     let intent = stripe::PaymentIntent::create(&client, params)
         .await
