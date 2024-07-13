@@ -87,7 +87,7 @@ fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey
             SigningKey::from_slice(&cert.verifying_key)
                 .map_err(|e| CryptoError::KeyCreationError(format!("Failed to create SigningKey from DelegateKeyCertificate: {}", e)))
         },
-        Err(e) => {
+        Err(_e) => {
             // If deserialization as DelegateKeyCertificate fails, try as a simple string
             let delegate_key_str = String::from_utf8(delegate_certificate_bytes.clone())
                 .map_err(|e| CryptoError::DeserializationError(format!("Failed to convert delegate certificate bytes to UTF-8 string: {}", e)))?;

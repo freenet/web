@@ -126,8 +126,7 @@ mod tests {
     #[test]
     fn test_generate_delegate_key() {
         let (master_signing_key, _) = generate_master_key().unwrap();
-        let (delegate_signing_key, delegate_certificate) = generate_delegate_key(&master_signing_key, "test_attributes").unwrap();
-        assert!(delegate_signing_key.contains("-----BEGIN DELEGATE SIGNING KEY-----"));
+        let delegate_certificate = generate_delegate_key(&master_signing_key, "test_attributes").unwrap();
         assert!(!delegate_certificate.is_empty());
     }
 
