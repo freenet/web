@@ -11,7 +11,15 @@ use common::crypto::ghost_key::{generate_ghostkey, validate_ghost_key};
 use common::crypto::signature::{sign_message, verify_signature};
 use common::crypto::validate_delegate_key;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
+    let result = run();
+    if let Err(err) = result {
+        eprintln!("{} {}", "Error:".red(), err);
+        std::process::exit(1);
+    }
+}
+
+fn run() -> Result<(), Box<dyn std::error::Error>> {
     let matches = Command::new("Freenet Ghost Key Utility")
         .version("1.0")
         .author("Your Name <your.email@example.com>")
