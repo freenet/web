@@ -264,13 +264,13 @@ fn generate_and_save_master_key(output_dir: &str) -> Result<(), Box<dyn std::err
     let verifying_key_path = Path::new(output_dir).join("master_verifying_key.pem");
 
     if signing_key_path.exists() || verifying_key_path.exists() {
-        return Err(format!("Error: One or both of the files '{}' or '{}' already exist. Please choose a different output directory or remove the existing files.", signing_key_path.display(), verifying_key_path.display()).into());
+        return Err(format!("One or both of the files '{}' or '{}' already exist. Please choose a different output directory or remove the existing files.", signing_key_path.display(), verifying_key_path.display()).into());
     }
 
     let (private_key, public_key) = generate_master_key().map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     save_key_to_file(output_dir, "master_signing_key.pem", &private_key, true)?;
     save_key_to_file(output_dir, "master_verifying_key.pem", &public_key, false)?;
-    println!("MASTER_SIGNING_KEY and MASTER_VERIFYING_KEY generated successfully.");
+    println!("{}", "MASTER_SIGNING_KEY and MASTER_VERIFYING_KEY generated successfully.".green());
     println!("Files created:");
     println!("  Master signing key: {}", signing_key_path.display());
     println!("  Master verifying key: {}", verifying_key_path.display());
@@ -284,10 +284,10 @@ fn generate_and_save_delegate_key(master_key_file: &str, info: &str, output_dir:
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     let file_path = Path::new(output_dir).join("delegate_certificate.pem");
     if file_path.exists() {
-        return Err(format!("Error: File '{}' already exists. Please choose a different output directory or remove the existing file.", file_path.display()).into());
+        return Err(format!("File '{}' already exists. Please choose a different output directory or remove the existing file.", file_path.display()).into());
     }
     save_key_to_file(output_dir, "delegate_certificate.pem", &delegate_certificate, true)?;
-    println!("Delegate certificate generated successfully.");
+    println!("{}", "Delegate certificate generated successfully.".green());
     println!("File created: {}", file_path.display());
     Ok(())
 }
@@ -361,14 +361,18 @@ fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) 
     
     let file_path = Path::new(output_dir).join("ghostkey_certificate.pem");
     if file_path.exists() {
-        return Err(format!("Error: File '{}' already exists. Please choose a different output directory or remove the existing file.", file_path.display()).into());
+        return Err(format!("File '{}' already exists. Please choose a different output directory or remove the existing file.", file_path.display()).into());
     }
     
-    save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate, true)
-        .map_err(|e| format!("Failed to save ghostkey certificate: {}", e))?;
-    
-    println!("Ghost key generated and saved successfully.");
-    println!("File created: {}", file_path.display());
+    match save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate, true) {
+        Ok(_) => {
+            println!("Ghost key generated and saved successfully.");
+            println!("File created: {}", file_path.display());
+        },
+        Err(e) => {
+            return Err(format!("Failed to save ghostkey certificate: {}", e).into());
+        }
+    }
     Ok(())
 }
 
