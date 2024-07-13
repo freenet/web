@@ -95,7 +95,7 @@ for amount in "${AMOUNTS[@]}"; do
     fi
     
     echo "Generating delegate key for amount: $amount"
-    cargo run --quiet -- generate-delegate-key "$MASTER_KEY_FILE" "$info" "$SIGNING_KEYS_DIR" > /dev/null
+    cargo run --quiet -- generate-delegate-key --master-signing-key-file "$MASTER_KEY_FILE" --info "$info" --output-dir "$SIGNING_KEYS_DIR" > /dev/null
     
     # Rename the generated files
     mv "$SIGNING_KEYS_DIR/delegate_signing_key.pem" "$signing_key_file"
