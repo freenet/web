@@ -1,4 +1,3 @@
-use super::*;
 
 #[derive(Debug, PartialEq)]
 pub enum CryptoError {

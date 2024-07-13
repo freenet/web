@@ -96,7 +96,7 @@ fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey
                 .map_err(|e| CryptoError::Base64DecodeError(format!("Failed to decode delegate key string as base64: {}", e)))?;
 
             SigningKey::from_slice(&key_bytes)
-                .map_err(|e| CryptoError::KeyCreationError(format!("Failed to create SigningKey from decoded bytes: {}. Original deserialization error: {}", e, serde_json::to_string(&e).unwrap_or_else(|_| "Unable to serialize error".to_string()))))
+                .map_err(|e| CryptoError::KeyCreationError(format!("Failed to create SigningKey from decoded bytes: {}. Original deserialization error: {}", e, e.to_string())))
         }
     }
 }

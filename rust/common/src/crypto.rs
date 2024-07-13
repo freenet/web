@@ -15,9 +15,6 @@ use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use crate::armor;
 use serde::{Serialize, Deserialize};
 use rmp_serde::{Serializer, Deserializer};
-use colored::Colorize;
-
-use std::fmt;
 use std::io::Cursor;
 use crate::crypto::crypto_error::CryptoError;
 use crate::crypto::generate_delegate::DelegateKeyCertificate;
