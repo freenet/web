@@ -15,11 +15,22 @@ pub struct DelegateKeyCertificate {
 }
 
 pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> Result<String, CryptoError> {
+    println!("Generating delegate key with attributes: {}", attributes);
+    println!("Master signing key PEM: {}", master_signing_key_pem);
+
     let master_signing_key_base64 = extract_base64_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
+    println!("Extracted base64: {}", master_signing_key_base64);
+
     let master_signing_key_bytes = general_purpose::STANDARD.decode(&master_signing_key_base64)
-        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+        .map_err(|e| {
+            println!("Base64 decode error: {}", e);
+            CryptoError::Base64DecodeError(e.to_string())
+        })?;
+    println!("Decoded key bytes: {:?}", master_signing_key_bytes);
+
     let master_signing_key = SigningKey::from_slice(&master_signing_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
+    println!("Created SigningKey successfully");
 
     // Generate the delegate key pair
     let delegate_signing_key = SigningKey::random(&mut OsRng);
