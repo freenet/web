@@ -270,9 +270,10 @@ fn generate_and_save_master_key(output_dir: &str) -> Result<(), Box<dyn std::err
     let (private_key, public_key) = generate_master_key().map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     save_key_to_file(output_dir, "master_signing_key.pem", &private_key, true)?;
     save_key_to_file(output_dir, "master_verifying_key.pem", &public_key, false)?;
-    info!("MASTER_SIGNING_KEY and MASTER_VERIFYING_KEY generated successfully.");
-    println!("Master signing key file created: {}", signing_key_path.display());
-    println!("Master verifying key file created: {}", verifying_key_path.display());
+    println!("MASTER_SIGNING_KEY and MASTER_VERIFYING_KEY generated successfully.");
+    println!("Files created:");
+    println!("  Master signing key: {}", signing_key_path.display());
+    println!("  Master verifying key: {}", verifying_key_path.display());
     Ok(())
 }
 
@@ -286,8 +287,8 @@ fn generate_and_save_delegate_key(master_key_file: &str, info: &str, output_dir:
         return Err(format!("Error: File '{}' already exists. Please choose a different output directory or remove the existing file.", file_path.display()).into());
     }
     save_key_to_file(output_dir, "delegate_certificate.pem", &delegate_certificate, true)?;
-    info!("Delegate certificate generated successfully.");
-    println!("Delegate certificate file created: {}", file_path.display());
+    println!("Delegate certificate generated successfully.");
+    println!("File created: {}", file_path.display());
     Ok(())
 }
 
@@ -346,7 +347,8 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
     
     save_key_to_file("", output_file, &master_verifying_key, false)?;
     
-    info!("Server Master Verifying Key generated successfully and saved to: {}", output_file);
+    println!("Server Master Verifying Key generated successfully.");
+    println!("File created: {}", output_file);
     Ok(())
 }
 
@@ -365,8 +367,8 @@ fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) 
     save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate, true)
         .map_err(|e| format!("Failed to save ghostkey certificate: {}", e))?;
     
-    info!("Ghostkey generated successfully.");
-    println!("Ghostkey certificate saved to: {}", file_path.display());
+    println!("Ghostkey generated successfully.");
+    println!("File created: {}", file_path.display());
     Ok(())
 }
 
