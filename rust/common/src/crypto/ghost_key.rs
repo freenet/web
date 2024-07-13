@@ -42,7 +42,7 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
         .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
 
     // Extract the delegate verifying key
-    let delegate_verifying_key = VerifyingKey::from_sec1_bytes(&delegate_cert.verifying_key)
+    let _delegate_verifying_key = VerifyingKey::from_sec1_bytes(&delegate_cert.verifying_key)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
     // Generate the ghostkey key pair
@@ -51,7 +51,7 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
 
     // Create the signing data
     let ghostkey_signing_data = GhostkeySigningData {
-        delegate_certificate: delegate_certificate_bytes,
+        delegate_certificate: delegate_certificate_bytes.clone(),
         ghostkey_verifying_key: ghostkey_verifying_key.to_sec1_bytes().to_vec(),
     };
 
@@ -86,7 +86,7 @@ fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey
         .map_err(|e| CryptoError::ArmorError(format!("Failed to extract bytes from armor: {}", e)))?;
 
     // Deserialize as DelegateKeyCertificate
-    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
+    let _delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
         .map_err(|e| CryptoError::DeserializationError(format!("Failed to deserialize DelegateKeyCertificate: {}", e)))?;
 
     // The verifying_key in the certificate is actually the public key
