@@ -21,8 +21,10 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     let master_signing_key_base64 = extract_base64_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
     println!("Extracted base64: {:?}", master_signing_key_base64);
 
-    // Trim any whitespace from the base64 string
-    let trimmed_base64 = master_signing_key_base64.trim();
+    // Convert Vec<u8> to String and trim any whitespace
+    let base64_string = String::from_utf8(master_signing_key_base64)
+        .map_err(|e| CryptoError::Base64DecodeError(format!("Invalid UTF-8 sequence: {}", e)))?;
+    let trimmed_base64 = base64_string.trim();
     println!("Trimmed base64: {}", trimmed_base64);
 
     let master_signing_key_bytes = general_purpose::STANDARD.decode(trimmed_base64)
