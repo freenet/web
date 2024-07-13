@@ -5,7 +5,7 @@ use std::path::Path;
 use common::crypto::generate_delegate::generate_delegate_key;
 use common::crypto::master_key::{generate_master_key, generate_master_verifying_key};
 use colored::Colorize;
-use common::crypto::ghost_key::generate_ghostkey;
+use common::crypto::ghost_key::{generate_ghostkey, validate_ghost_key};
 use common::crypto::signature::{sign_message, verify_signature};
 use common::crypto::validate_delegate_key;
 
@@ -127,6 +127,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("The directory to output the ghost key files")
                 .required(true)
                 .value_name("DIR")))
+        .subcommand(Command::new("validate-ghost-key")
+            .about("Validates a ghost key certificate using the master verifying key")
+            .arg(Arg::new("master-verifying-key-file")
+                .long("master-verifying-key-file")
+                .help("The file containing the master verifying key")
+                .required(true)
+                .value_name("FILE"))
+            .arg(Arg::new("ghost-certificate-file")
+                .long("ghost-certificate-file")
+                .help("The file containing the ghost key certificate")
+                .required(true)
+                .value_name("FILE")))
         .get_matches();
 
     match matches.subcommand() {
@@ -150,10 +162,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let output_file = sub_matches.get_one::<String>("output-file").unwrap();
             generate_master_verifying_key_command(master_signing_key_file, output_file)?;
         }
-        Some(("generate-ghostkey", sub_matches)) => {
+        Some(("generate-ghost-key", sub_matches)) => {
             let delegate_signing_key_file = sub_matches.get_one::<String>("delegate-signing-key-file").unwrap();
             let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
             generate_ghostkey_command(delegate_signing_key_file, output_dir)?;
+        }
+        Some(("validate-ghost-key", sub_matches)) => {
+            let master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key-file").unwrap();
+            let ghost_certificate_file = sub_matches.get_one::<String>("ghost-certificate-file").unwrap();
+            validate_ghost_key_command(master_verifying_key_file, ghost_certificate_file)?;
         }
         Some(("sign-message", sub_matches)) => {
             let signing_key_file = sub_matches.get_one::<String>("signing-key-file").unwrap();
@@ -305,4 +322,22 @@ fn generate_ghostkey_command(delegate_signing_key_file: &str, output_dir: &str) 
     println!("Ghostkey signing key saved to: {}/ghostkey_signing_key.pem", output_dir);
     println!("Ghostkey certificate saved to: {}/ghostkey_certificate.pem", output_dir);
     Ok(())
+}
+
+fn validate_ghost_key_command(master_verifying_key_file: &str, ghost_certificate_file: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let master_verifying_key = std::fs::read_to_string(master_verifying_key_file)?;
+    let ghost_certificate = std::fs::read_to_string(ghost_certificate_file)?;
+
+    match validate_ghost_key(&master_verifying_key, &ghost_certificate) {
+        Ok(attributes) => {
+            println!("Ghost key certificate is {}.", "valid".green());
+            println!("Attributes: {}", attributes);
+            Ok(())
+        },
+        Err(e) => {
+            println!("Ghost key certificate is {}.", "invalid".red());
+            println!("Error: {}", e);
+            Err(Box::new(e))
+        }
+    }
 }
