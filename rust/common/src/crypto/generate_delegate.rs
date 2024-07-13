@@ -53,8 +53,7 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     // Encode the delegate signing key
     let delegate_signing_key_bytes = delegate_signing_key.to_bytes();
     println!("Delegate signing key bytes length: {}", delegate_signing_key_bytes.len());
-    let delegate_signing_key_base64 = general_purpose::STANDARD.encode(delegate_signing_key_bytes);
-    let armored_delegate_signing_key = armor(&delegate_signing_key_base64.as_bytes(), "DELEGATE SIGNING KEY", "DELEGATE SIGNING KEY");
+    let armored_delegate_signing_key = armor(&delegate_signing_key_bytes, "DELEGATE SIGNING KEY", "DELEGATE SIGNING KEY");
 
     Ok((armored_delegate_signing_key, signed_certificate_base64))
 }

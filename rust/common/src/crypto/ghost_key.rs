@@ -22,13 +22,11 @@ pub struct GhostkeyCertificate {
 }
 
 pub fn generate_ghostkey(delegate_signing_key_pem: &str) -> Result<(String, String), CryptoError> {
-    let delegate_signing_key_base64 = extract_base64_from_armor(delegate_signing_key_pem, "DELEGATE SIGNING KEY")?;
-    let delegate_signing_key_bytes = general_purpose::STANDARD.decode(&delegate_signing_key_base64)
-        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+    let delegate_signing_key_bytes = extract_base64_from_armor(delegate_signing_key_pem, "DELEGATE SIGNING KEY")?;
     if delegate_signing_key_bytes.len() != 32 {
         return Err(CryptoError::InvalidInput("Delegate signing key must be 32 bytes long".to_string()));
     }
-    let field_bytes = FieldBytes::from_slice(&delegate_signing_key_bytes);
+    let field_bytes = FieldBytes::from_slice(delegate_signing_key_bytes.as_bytes());
     let delegate_signing_key = SigningKey::from_bytes(field_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
