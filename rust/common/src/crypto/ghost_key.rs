@@ -119,9 +119,9 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     let delegate_info = validate_delegate_certificate(master_verifying_key_pem, delegate_certificate)?;
 
     // Verify the ghostkey signature
-    verify_ghostkey_signature(&ghostkey_certificate, delegate_certificate)?;
+    verify_ghostkey_signature(&ghostkey_certificate)?;
 
-    println!("{}", "Ghost key certificate is valid.".green().bold());
+    info!("{}", "Ghost key certificate is valid.".green().bold());
 
     Ok(delegate_info)
 }
@@ -204,11 +204,11 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
     }
 }
 
-pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegate_certificate: &[u8]) -> Result<(), CryptoError> {
+pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> Result<(), CryptoError> {
     info!("Verifying ghostkey signature");
     
     // Extract the delegate verifying key from the delegate certificate
-    let delegate_verifying_key = extract_delegate_verifying_key(delegate_certificate)?;
+    let delegate_verifying_key = extract_delegate_verifying_key(&ghostkey_certificate.delegate_certificate)?;
     debug!("Extracted delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
 
     // Recreate the certificate data that was originally signed
@@ -248,20 +248,15 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, del
         })?;
     debug!("Created signature: {:?}", signature);
 
-    // Create the VerifyingKey from the ghostkey_verifying_key
-    let ghostkey_verifying_key = VerifyingKey::from_sec1_bytes(&ghostkey_certificate.ghostkey_verifying_key)
-        .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
-    debug!("Created ghostkey verifying key: {:?}", ghostkey_verifying_key.to_encoded_point(false));
-
-    // Verify the signature using the ghostkey verifying key
-    match ghostkey_verifying_key.verify(&buf, &signature) {
+    // Verify the signature using the delegate verifying key
+    match delegate_verifying_key.verify(&buf, &signature) {
         Ok(_) => {
             info!("Signature verified successfully");
             Ok(())
         },
         Err(e) => {
             error!("Signature verification failed: {:?}", e);
-            debug!("Ghostkey verifying key: {:?}", ghostkey_verifying_key.to_encoded_point(false));
+            debug!("Delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
             debug!("Data being verified: {:?}", buf);
             debug!("Signature being verified: {:?}", signature);
             Err(CryptoError::SignatureVerificationError(e.to_string()))
