@@ -2,6 +2,7 @@ use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand_core::OsRng;
 use base64::{engine::general_purpose, Engine as _};
 use p256::ecdsa::{self, signature::{Signer, Verifier}};
+use p256::FieldBytes;
 use crate::armor;
 use serde::{Serialize, Deserialize};
 use rmp_serde::{Serializer};
@@ -86,8 +87,11 @@ fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey
         Ok(cert) => {
             VerifyingKey::from_sec1_bytes(&cert.verifying_key)
                 .map_err(|e| CryptoError::KeyCreationError(format!("Failed to create VerifyingKey from DelegateKeyCertificate: {}", e)))
-                .and_then(|vk| SigningKey::from_bytes(vk.to_sec1_bytes().as_ref())
-                    .map_err(|e| CryptoError::KeyCreationError(format!("Failed to create SigningKey from VerifyingKey: {}", e))))
+                .and_then(|vk| {
+                    let field_bytes = FieldBytes::from_slice(vk.to_sec1_bytes().as_ref());
+                    SigningKey::from_bytes(field_bytes)
+                        .map_err(|e| CryptoError::KeyCreationError(format!("Failed to create SigningKey from VerifyingKey: {}", e)))
+                })
         },
         Err(deser_err) => {
             // If deserialization as DelegateKeyCertificate fails, try as a simple string
