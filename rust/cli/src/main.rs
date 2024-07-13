@@ -366,16 +366,21 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
     Ok(())
 }
 
-fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str, overwrite: bool) -> Result<(), Box<dyn std::error::Error>> {
-    info!("Reading delegate certificate from file: {}", delegate_certificate_file);
-    let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)
+fn generate_ghostkey_command(delegate_dir: &str, output_dir: &str, overwrite: bool) -> Result<(), Box<dyn std::error::Error>> {
+    info!("Reading delegate certificate and signing key from directory: {}", delegate_dir);
+    let delegate_certificate = std::fs::read_to_string(Path::new(delegate_dir).join("delegate_certificate.pem"))
         .map_err(|e| {
             error!("{}", format!("Failed to read delegate certificate file: {}", e).red());
             format!("Failed to read delegate certificate file: {}", e)
         })?;
+    let delegate_signing_key = std::fs::read_to_string(Path::new(delegate_dir).join("delegate_signing_key.pem"))
+        .map_err(|e| {
+            error!("{}", format!("Failed to read delegate signing key file: {}", e).red());
+            format!("Failed to read delegate signing key file: {}", e)
+        })?;
     
-    info!("Generating ghost key from delegate certificate");
-    let ghostkey_certificate = generate_ghostkey(&delegate_certificate)
+    info!("Generating ghost key from delegate certificate and signing key");
+    let ghostkey_certificate = generate_ghostkey(&delegate_certificate, &delegate_signing_key)
         .map_err(|e| {
             error!("{}", format!("Failed to generate ghostkey: {}", e).red());
             format!("Failed to generate ghostkey: {}", e)

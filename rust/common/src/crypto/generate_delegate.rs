@@ -15,24 +15,12 @@ pub struct DelegateKeyCertificate {
     pub signature: Vec<u8>,
 }
 
-pub fn generate_delegate_key(master_signing_key_pem: &str, info: &str) -> Result<String, CryptoError> {
+pub fn generate_delegate_key(master_signing_key_pem: &str, info: &str) -> Result<(String, String), CryptoError> {
     debug!("Generating delegate key with info: {}", info);
     debug!("Master signing key PEM: {}", master_signing_key_pem);
 
     let master_signing_key_bytes = extract_bytes_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
     debug!("Extracted bytes: {:?}", master_signing_key_bytes);
-
-    // Convert Vec<u8> to base64 string
-    let base64_string = general_purpose::STANDARD.encode(&master_signing_key_bytes);
-    let trimmed_base64 = base64_string.trim();
-    debug!("Trimmed base64: {}", trimmed_base64);
-
-    let master_signing_key_bytes = general_purpose::STANDARD.decode(trimmed_base64)
-        .map_err(|e| {
-            error!("Base64 decode error: {}. Attempted to decode: {}", e, trimmed_base64);
-            CryptoError::Base64DecodeError(format!("{}: {}", e, trimmed_base64))
-        })?;
-    debug!("Decoded key bytes: {:?}", master_signing_key_bytes);
 
     let master_signing_key = SigningKey::from_slice(&master_signing_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
@@ -66,8 +54,9 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, info: &str) -> Result
 
     debug!("Serialized certificate: {:?}", signed_certificate_bytes);
 
-    // Armor the signed certificate directly (without base64 encoding)
+    // Armor the signed certificate and delegate signing key
     let armored_delegate_certificate = armor(&signed_certificate_bytes, "DELEGATE CERTIFICATE", "DELEGATE CERTIFICATE");
+    let armored_delegate_signing_key = armor(&delegate_signing_key.to_bytes(), "DELEGATE SIGNING KEY", "DELEGATE SIGNING KEY");
 
-    Ok(armored_delegate_certificate)
+    Ok((armored_delegate_certificate, armored_delegate_signing_key))
 }
