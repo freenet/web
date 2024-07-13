@@ -353,7 +353,6 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
 }
 
 fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
-
     let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)
         .map_err(|e| format!("Failed to read delegate certificate file: {}", e))?;
     
@@ -368,7 +367,8 @@ fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) 
     save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate, true)
         .map_err(|e| format!("Failed to save ghostkey certificate: {}", e))?;
     
-    println!("Created: {}", file_path.display());
+    println!("Ghost key generated and saved successfully.");
+    println!("File created: {}", file_path.display());
     Ok(())
 }
 
