@@ -76,7 +76,7 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
 }
 
 fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey, CryptoError> {
-    let delegate_certificate_base64 = extract_base64_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")
+    let delegate_certificate_bytes = extract_bytes_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")
         .map_err(|e| CryptoError::ArmorError(format!("Failed to extract base64 from armor: {}", e)))?;
     let delegate_certificate_bytes = general_purpose::STANDARD.decode(&delegate_certificate_base64)
         .map_err(|e| CryptoError::Base64DecodeError(format!("Failed to decode delegate certificate base64: {}", e)))?;
@@ -111,7 +111,7 @@ fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey
 
 pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<String, CryptoError> {
     // Extract the base64 encoded ghostkey certificate
-    let ghostkey_certificate_base64 = extract_base64_from_armor(ghostkey_certificate_armored, "GHOSTKEY CERTIFICATE")?;
+    let ghostkey_certificate_bytes = extract_bytes_from_armor(ghostkey_certificate_armored, "GHOSTKEY CERTIFICATE")?;
     let ghostkey_certificate_bytes = general_purpose::STANDARD.decode(&ghostkey_certificate_base64)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
 
@@ -133,7 +133,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
 
 pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &[u8]) -> Result<String, CryptoError> {
     // Extract the base64 encoded master verifying key
-    let master_verifying_key_base64 = extract_base64_from_armor(master_verifying_key_pem, "MASTER VERIFYING KEY")?;
+    let master_verifying_key_bytes = extract_bytes_from_armor(master_verifying_key_pem, "MASTER VERIFYING KEY")?;
     let master_verifying_key_bytes = general_purpose::STANDARD.decode(&master_verifying_key_base64)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let master_verifying_key = VerifyingKey::from_sec1_bytes(&master_verifying_key_bytes)

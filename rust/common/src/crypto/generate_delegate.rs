@@ -18,7 +18,7 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     println!("Generating delegate key with attributes: {}", attributes);
     println!("Master signing key PEM: {}", master_signing_key_pem);
 
-    let master_signing_key_base64 = extract_base64_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
+    let master_signing_key_bytes = extract_bytes_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
     println!("Extracted base64: {:?}", master_signing_key_base64);
 
     // Convert Vec<u8> to base64 string
