@@ -23,11 +23,29 @@ expect_failure() {
     echo "Running (expecting failure): $1"
     if eval "$1"; then
         echo "Command unexpectedly succeeded with exit code $?"
-        return 1
+        exit 1
     else
         echo "Command failed as expected with exit code $?"
-        return 0
     fi
+}
+
+# Function to run tests and exit on first failure
+run_tests() {
+    set -e
+    
+    # Your test commands go here
+    # For example:
+    run_command "cargo run -- generate-master-key --output-dir $TEST_DIR"
+    run_command "cargo run -- generate-master-key --output-dir $TEST_DIR/wrong_master"
+    # ... other test commands ...
+
+    echo "All tests completed successfully"
+}
+
+# Run the tests
+run_tests || {
+    echo "Tests failed"
+    exit 1
 }
 
 # Generate master keys
