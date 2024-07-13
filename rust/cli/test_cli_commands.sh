@@ -50,7 +50,6 @@ run_tests() {
     run_command "cargo run -- generate-master-key --output-dir $TEST_DIR/wrong_master"
     # ... other test commands ...
 
-    echo "All tests completed successfully"
 }
 
 # Run the tests
