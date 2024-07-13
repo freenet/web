@@ -178,24 +178,32 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
     println!("Serialized certificate data: {:?}", buf);
 
     // Verify the signature
-    let signature = ecdsa::Signature::from_der(&delegate_cert.signature)
-        .map_err(|e| {
+    let signature = match ecdsa::Signature::from_der(&delegate_cert.signature) {
+        Ok(sig) => {
+            println!("Successfully created Signature from DER");
+            sig
+        },
+        Err(e) => {
             println!("Failed to create Signature from DER: {:?}", e);
-            CryptoError::SignatureError(e.to_string())
-        })?;
+            println!("DER-encoded signature: {:?}", delegate_cert.signature);
+            return Err(CryptoError::SignatureError(format!("Failed to create Signature from DER: {:?}", e)));
+        }
+    };
 
     println!("Signature: {:?}", signature);
 
-    master_verifying_key.verify(&buf, &signature)
-        .map_err(|e| {
+    match master_verifying_key.verify(&buf, &signature) {
+        Ok(_) => {
+            println!("Signature verified successfully");
+            Ok(delegate_cert.attributes)
+        },
+        Err(e) => {
             println!("Signature verification failed: {:?}", e);
-            CryptoError::SignatureVerificationError(e.to_string())
-        })?;
-
-    println!("Signature verified successfully");
-
-    // If verification is successful, return the attributes
-    Ok(delegate_cert.attributes)
+            println!("Data being verified: {:?}", buf);
+            println!("Signature being verified: {:?}", signature);
+            Err(CryptoError::SignatureVerificationError(format!("Signature verification failed: {:?}", e)))
+        }
+    }
 }
 
 pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegate_certificate: &[u8]) -> Result<(), CryptoError> {
