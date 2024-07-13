@@ -26,6 +26,7 @@ impl std::fmt::Display for CryptoError {
             CryptoError::DeserializationError(msg) => write!(f, "Deserialization Error: {}", msg),
             CryptoError::InvalidInput(msg) => write!(f, "Invalid Input: {}", msg),
             CryptoError::ArmorError(msg) => write!(f, "Armor Error: {}", msg),
+            CryptoError::ValidationError(msg) => write!(f, "Validation Error: {}", msg),
         }
     }
 }
