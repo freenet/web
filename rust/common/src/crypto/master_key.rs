@@ -3,7 +3,7 @@ use super::*;
 pub fn generate_master_verifying_key(master_signing_key_pem: &str) -> Result<String, CryptoError> {
     let signing_key_bytes = extract_bytes_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
 
-    let signing_key_bytes = general_purpose::STANDARD.decode(&signing_key_base64)
+    let signing_key_bytes = general_purpose::STANDARD.decode(&signing_key_bytes)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let field_bytes = FieldBytes::from_slice(&signing_key_bytes);
     let signing_key = SigningKey::from_bytes(field_bytes)

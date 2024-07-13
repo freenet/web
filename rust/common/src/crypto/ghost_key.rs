@@ -1,4 +1,5 @@
 use p256::ecdsa::{SigningKey, VerifyingKey};
+use p256::FieldBytes;
 use rand_core::OsRng;
 use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use crate::armor;
@@ -6,6 +7,7 @@ use serde::{Serialize, Deserialize};
 use rmp_serde::Serializer;
 use crate::crypto::{CryptoError, extract_bytes_from_armor};
 use rmp_serde;
+use base64::{Engine as _, engine::general_purpose};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct DelegateCertificate {
