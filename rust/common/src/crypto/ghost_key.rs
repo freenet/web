@@ -238,7 +238,7 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, del
         delegate_certificate: ghostkey_certificate.delegate_certificate.clone(),
         ghostkey_verifying_key: ghostkey_certificate.ghostkey_verifying_key.clone(),
     };
-    println!("Recreated certificate data");
+    println!("Recreated certificate data: {:?}", certificate_data);
 
     // Serialize the certificate data
     let buf = rmp_serde::to_vec(&certificate_data)
@@ -250,14 +250,19 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, del
 
     // Create the signature from the stored bytes
     let signature = ecdsa::Signature::from_der(&ghostkey_certificate.signature)
-        .or_else(|_| {
+        .or_else(|e| {
+            println!("Failed to create signature from DER: {:?}", e);
             if ghostkey_certificate.signature.len() != 64 {
+                println!("Invalid signature length: {}", ghostkey_certificate.signature.len());
                 return Err(CryptoError::SignatureError("Invalid signature length".to_string()));
             }
             let bytes: [u8; 64] = ghostkey_certificate.signature[..64].try_into()
                 .map_err(|_| CryptoError::SignatureError("Failed to convert signature to array".to_string()))?;
             ecdsa::Signature::from_slice(&bytes)
-                .map_err(|e| CryptoError::SignatureError(format!("Failed to create signature from bytes: {}", e)))
+                .map_err(|e| {
+                    println!("Failed to create signature from bytes: {:?}", e);
+                    CryptoError::SignatureError(format!("Failed to create signature from bytes: {}", e))
+                })
         })
         .map_err(|e| {
             println!("Failed to create signature: {:?}", e);
@@ -266,14 +271,19 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, del
     println!("Created signature: {:?}", signature);
 
     // Verify the signature
-    delegate_verifying_key.verify(&buf, &signature)
-        .map_err(|e| {
+    match delegate_verifying_key.verify(&buf, &signature) {
+        Ok(_) => {
+            println!("Signature verified successfully");
+            Ok(())
+        },
+        Err(e) => {
             println!("Signature verification failed: {:?}", e);
-            CryptoError::SignatureVerificationError(e.to_string())
-        })?;
-    println!("Signature verified successfully");
-
-    Ok(())
+            println!("Delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
+            println!("Data being verified: {:?}", buf);
+            println!("Signature being verified: {:?}", signature);
+            Err(CryptoError::SignatureVerificationError(e.to_string()))
+        }
+    }
 }
 
 pub fn extract_delegate_verifying_key(delegate_certificate: &[u8]) -> Result<VerifyingKey, CryptoError> {
