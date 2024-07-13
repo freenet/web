@@ -186,7 +186,17 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
         Err(e) => {
             println!("Failed to create Signature from DER: {:?}", e);
             println!("DER-encoded signature: {:?}", delegate_cert.signature);
-            return Err(CryptoError::SignatureError(format!("Failed to create Signature from DER: {:?}", e)));
+            // Try to create signature from raw bytes as a fallback
+            match ecdsa::Signature::from_bytes(&delegate_cert.signature) {
+                Ok(sig) => {
+                    println!("Successfully created Signature from raw bytes");
+                    sig
+                },
+                Err(e) => {
+                    println!("Failed to create Signature from raw bytes: {:?}", e);
+                    return Err(CryptoError::SignatureError(format!("Failed to create Signature from DER and raw bytes: {:?}", e)));
+                }
+            }
         }
     };
 
