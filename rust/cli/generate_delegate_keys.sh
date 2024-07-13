@@ -4,15 +4,14 @@ set -e
 
 # Default values
 DEFAULT_AMOUNTS=(5 20 50 100)
-CERT_DIR="../../hugo-site/static/certs"
+DEFAULT_DELEGATE_DIR="$HOME/.config/ghostkey/delegates"
 OVERWRITE=false
 
 # Function to display usage information
 usage() {
-    echo "Usage: $0 --master-key <master_signing_key_file> --signing-keys-dir <signing_keys_dir> [--cert-dir <cert_dir>] [--amounts <amount1> <amount2> ...] [--overwrite]"
+    echo "Usage: $0 --master-key <master_signing_key_file> [--delegate-dir <delegate_dir>] [--amounts <amount1> <amount2> ...] [--overwrite]"
     echo "  --master-key <master_signing_key_file>: Path to the master signing key file"
-    echo "  --signing-keys-dir <signing_keys_dir>: Directory to store delegate signing keys (must be outside the git repository)"
-    echo "  --cert-dir <cert_dir>: Directory to store delegate certificates (default: $CERT_DIR)"
+    echo "  --delegate-dir <delegate_dir>: Directory to store delegate keys and certificates (default: $DEFAULT_DELEGATE_DIR)"
     echo "  --amounts: List of monetary values (default: ${DEFAULT_AMOUNTS[*]})"
     echo "  --overwrite: Allow overwriting existing files"
     exit 1
@@ -20,7 +19,7 @@ usage() {
 
 # Parse command-line arguments
 MASTER_KEY_FILE=""
-SIGNING_KEYS_DIR=""
+DELEGATE_DIR="$DEFAULT_DELEGATE_DIR"
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -28,12 +27,8 @@ while [ $# -gt 0 ]; do
             MASTER_KEY_FILE="$2"
             shift 2
             ;;
-        --signing-keys-dir)
-            SIGNING_KEYS_DIR="$2"
-            shift 2
-            ;;
-        --cert-dir)
-            CERT_DIR="$2"
+        --delegate-dir)
+            DELEGATE_DIR="$2"
             shift 2
             ;;
         --amounts)
@@ -56,8 +51,8 @@ while [ $# -gt 0 ]; do
 done
 
 # Check if required arguments are provided
-if [ -z "$MASTER_KEY_FILE" ] || [ -z "$SIGNING_KEYS_DIR" ]; then
-    echo "Error: Master key file and signing keys directory are required."
+if [ -z "$MASTER_KEY_FILE" ]; then
+    echo "Error: Master key file is required."
     usage
 fi
 
@@ -72,20 +67,19 @@ if [ ! -f "$MASTER_KEY_FILE" ]; then
     exit 1
 fi
 
-# Create output directories
-mkdir -p "$SIGNING_KEYS_DIR"
-mkdir -p "$CERT_DIR"
+# Create output directory
+mkdir -p "$DELEGATE_DIR"
 
-# Set appropriate permissions for signing keys directory
-chmod 700 "$SIGNING_KEYS_DIR"
+# Set appropriate permissions for delegate directory
+chmod 700 "$DELEGATE_DIR"
 
 # Generate delegate keys for each amount
 for amount in "${AMOUNTS[@]}"; do
     current_date=$(date -u +"%Y-%m-%d %H:%M:%S")
     info="{\"action\":\"freenet-donation\",\"amount\":$amount,\"delegate-key-created\":\"$current_date\"}"
     
-    signing_key_file="$SIGNING_KEYS_DIR/delegate_signing_key_$amount.pem"
-    cert_file="$CERT_DIR/delegate_certificate_$amount.pem"
+    signing_key_file="$DELEGATE_DIR/delegate_signing_key_$amount.pem"
+    cert_file="$DELEGATE_DIR/delegate_certificate_$amount.pem"
     
     if [ -f "$signing_key_file" ] || [ -f "$cert_file" ]; then
         if [ "$OVERWRITE" = false ]; then
@@ -98,14 +92,15 @@ for amount in "${AMOUNTS[@]}"; do
     cargo run --quiet -- generate-delegate-key \
         --master-signing-key-file "$MASTER_KEY_FILE" \
         --info "$info" \
-        --output-dir "$SIGNING_KEYS_DIR" > /dev/null
+        --output-dir "$DELEGATE_DIR" > /dev/null
     
     # Rename the generated files
-    mv "$SIGNING_KEYS_DIR/delegate_signing_key.pem" "$signing_key_file"
-    mv "$SIGNING_KEYS_DIR/delegate_certificate.pem" "$cert_file"
+    mv "$DELEGATE_DIR/delegate_signing_key.pem" "$signing_key_file"
+    mv "$DELEGATE_DIR/delegate_certificate.pem" "$cert_file"
     
-    # Set appropriate permissions for the signing key
+    # Set appropriate permissions for the signing key and certificate
     chmod 600 "$signing_key_file"
+    chmod 600 "$cert_file"
 done
 
-echo "Delegate keys generated successfully."
+echo "Delegate keys generated successfully in $DELEGATE_DIR"
