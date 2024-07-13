@@ -21,6 +21,7 @@ run_command() {
         echo "OK"
         if [ $VERBOSE -eq 1 ]; then
             echo "Command: $command"
+            echo "Output:"
             echo "$output" | grep -v "Compiling" | grep -v "Finished" | grep -v "Running"
             echo ""
         fi
@@ -51,6 +52,7 @@ expect_failure() {
             echo "Command: $command"
             echo "Output:"
             echo "$output" | grep -v "Compiling" | grep -v "Finished" | grep -v "Running"
+            echo ""
         fi
         return 0
     fi
