@@ -272,12 +272,13 @@ fn generate_and_save_delegate_key(master_key_file: &str, info: &str, output_dir:
     let master_signing_key = std::fs::read_to_string(master_key_file)?;
     let delegate_certificate = generate_delegate_key(&master_signing_key, info)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
-    save_key_to_file(output_dir, "delegate_certificate.pem", &delegate_certificate, true)?;
+    let file_path = save_key_to_file(output_dir, "delegate_certificate.pem", &delegate_certificate, true)?;
     info!("Delegate certificate generated successfully.");
+    println!("Delegate certificate file created: {}", file_path.display());
     Ok(())
 }
 
-fn save_key_to_file(output_dir: &str, filename: &str, content: &str, is_private: bool) -> Result<(), Box<dyn std::error::Error>> {
+fn save_key_to_file(output_dir: &str, filename: &str, content: &str, is_private: bool) -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
     create_dir_all(output_dir)?;
     let file_path = Path::new(output_dir).join(filename);
     let mut file = File::create(&file_path)?;
@@ -289,7 +290,7 @@ fn save_key_to_file(output_dir: &str, filename: &str, content: &str, is_private:
         file.set_permissions(perms)?;
     }
     
-    Ok(())
+    Ok(file_path)
 }
 fn verify_signature_command(verifying_key_file: &str, message: Option<&str>, message_file: Option<&str>, signature_file: &str, master_verifying_key_file: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
     let verifying_key = std::fs::read_to_string(verifying_key_file)?;
