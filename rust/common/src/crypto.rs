@@ -34,7 +34,7 @@ pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
     Ok((armored_signing_key, armored_verifying_key))
 }
 
-fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<String, CryptoError> {
+fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<Vec<u8>, CryptoError> {
     let lines: Vec<&str> = armored_key.lines().collect();
     if lines.len() < 3 {
         return Err(CryptoError::InvalidInput(format!("Invalid armored key format. Expected at least 3 lines, found {}.", lines.len())));
@@ -53,7 +53,9 @@ fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Re
     }
     
     let content_lines = &lines[1..lines.len() - 1];
-    Ok(content_lines.join(""))
+    let content = content_lines.join("");
+    general_purpose::STANDARD.decode(content)
+        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))
 }
 
 pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
@@ -81,13 +83,22 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
     
     println!("Decoded certificate bytes: {:?}", certificate_bytes);
 
-    let certificate: DelegateKeyCertificate = rmp_serde::from_slice(&certificate_bytes)
-        .map_err(|e| {
+    let certificate: DelegateKeyCertificate = match rmp_serde::from_slice(&certificate_bytes) {
+        Ok(cert) => {
+            println!("Successfully deserialized certificate: {:?}", cert);
+            cert
+        },
+        Err(e) => {
             println!("Failed to deserialize certificate: {}", e);
-            CryptoError::DeserializationError(e.to_string())
-        })?;
-
-    println!("Deserialized certificate: {:?}", certificate);
+            println!("Certificate bytes: {:?}", certificate_bytes);
+            // Try to deserialize as a string
+            match String::from_utf8(certificate_bytes.clone()) {
+                Ok(s) => println!("Certificate as string: {}", s),
+                Err(_) => println!("Certificate is not valid UTF-8"),
+            }
+            return Err(CryptoError::DeserializationError(e.to_string()));
+        }
+    };
 
     // Recreate the certificate data for verification
     let certificate_data = DelegateKeyCertificate {
