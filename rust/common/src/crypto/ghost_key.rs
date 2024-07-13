@@ -1,7 +1,6 @@
 use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand_core::OsRng;
 use base64::{engine::general_purpose, Engine as _};
-use p256::{FieldBytes};
 use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use crate::armor;
 use serde::{Serialize, Deserialize};
@@ -108,7 +107,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     Ok(delegate_attributes)
 }
 
-pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
+pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &[u8]) -> Result<String, CryptoError> {
     // Extract the base64 encoded master verifying key
     let master_verifying_key_base64 = extract_base64_from_armor(master_verifying_key_pem, "SERVER MASTER VERIFYING KEY")?;
     let master_verifying_key_bytes = general_purpose::STANDARD.decode(&master_verifying_key_base64)
@@ -116,11 +115,8 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
     let master_verifying_key = VerifyingKey::from_sec1_bytes(&master_verifying_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
-    // Decode and deserialize the delegate certificate
-    let delegate_certificate_base64 = extract_base64_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
-    let delegate_certificate_bytes = general_purpose::STANDARD.decode(&delegate_certificate_base64)
-        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
-    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
+    // Deserialize the delegate certificate
+    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(delegate_certificate)
         .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
 
     // Recreate the certificate data that was originally signed
@@ -145,7 +141,7 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
     Ok(delegate_cert.attributes)
 }
 
-pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegate_certificate: &str) -> Result<(), CryptoError> {
+pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegate_certificate: &[u8]) -> Result<(), CryptoError> {
     // Extract the delegate verifying key from the delegate certificate
     let delegate_verifying_key = extract_delegate_verifying_key(delegate_certificate)?;
 
@@ -172,18 +168,11 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, del
     Ok(())
 }
 
-pub fn extract_delegate_verifying_key(delegate_certificate: &str) -> Result<VerifyingKey, CryptoError> {
-    let delegate_certificate_base64 = extract_base64_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
-    let delegate_certificate_bytes = general_purpose::STANDARD.decode(&delegate_certificate_base64)
-        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
-
-    let delegate_certificate: DelegateCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
+pub fn extract_delegate_verifying_key(delegate_certificate: &[u8]) -> Result<VerifyingKey, CryptoError> {
+    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(delegate_certificate)
         .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
 
-    let verifying_key_bytes = general_purpose::STANDARD.decode(&delegate_certificate.delegate_verifying_key)
-        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
-
-    VerifyingKey::from_sec1_bytes(&verifying_key_bytes)
+    VerifyingKey::from_sec1_bytes(&delegate_cert.verifying_key)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))
 }
 /// Validates an armored ghost key certificate using the provided master verifying key.
