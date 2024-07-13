@@ -61,11 +61,14 @@ handle_error() {
     echo "Error occurred in test: $1"
     echo "Command: $2"
     echo "Error message: $3"
+    echo "Exit code: $4"
+    echo "Line number: $5"
+    echo "Function name: $6"
     exit 1
 }
 
 # Trap for error handling
-trap 'handle_error "${BASH_COMMAND}" "$_" "$?"' ERR
+trap 'handle_error "${BASH_COMMAND}" "$_" "$?" "$?" "${LINENO}" "${FUNCNAME[0]}"' ERR
 
 # Generate master keys
 run_command "generate master key" "cargo run -- generate-master-key --output-dir $TEST_DIR" || handle_error "generate master key" "cargo run -- generate-master-key --output-dir $TEST_DIR" "$?"
