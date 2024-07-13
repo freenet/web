@@ -98,18 +98,39 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     // Extract the base64 encoded ghostkey certificate
     let ghostkey_certificate_bytes = extract_bytes_from_armor(ghostkey_certificate_armored, "GHOSTKEY CERTIFICATE")?;
 
+    println!("Extracted ghostkey certificate bytes: {:?}", ghostkey_certificate_bytes);
+
     // Deserialize the ghostkey certificate
     let ghostkey_certificate: GhostkeyCertificate = rmp_serde::from_slice(&ghostkey_certificate_bytes)
-        .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
+        .map_err(|e| {
+            println!("Failed to deserialize ghostkey certificate: {:?}", e);
+            CryptoError::DeserializationError(e.to_string())
+        })?;
+
+    println!("Deserialized ghostkey certificate: {:?}", ghostkey_certificate);
 
     // Extract the delegate certificate
     let delegate_certificate = &ghostkey_certificate.delegate_certificate;
 
+    println!("Extracted delegate certificate: {:?}", delegate_certificate);
+
     // Validate the delegate certificate using the master verifying key
-    let delegate_attributes = validate_delegate_certificate(master_verifying_key_pem, delegate_certificate)?;
+    let delegate_attributes = validate_delegate_certificate(master_verifying_key_pem, delegate_certificate)
+        .map_err(|e| {
+            println!("Failed to validate delegate certificate: {:?}", e);
+            e
+        })?;
+
+    println!("Delegate certificate validated successfully");
 
     // Verify the ghostkey signature
-    verify_ghostkey_signature(&ghostkey_certificate, delegate_certificate)?;
+    verify_ghostkey_signature(&ghostkey_certificate, delegate_certificate)
+        .map_err(|e| {
+            println!("Failed to verify ghostkey signature: {:?}", e);
+            e
+        })?;
+
+    println!("Ghostkey signature verified successfully");
 
     Ok(delegate_attributes)
 }
@@ -152,8 +173,11 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
 }
 
 pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegate_certificate: &[u8]) -> Result<(), CryptoError> {
+    println!("Verifying ghostkey signature");
+    
     // Extract the delegate verifying key from the delegate certificate
     let delegate_verifying_key = extract_delegate_verifying_key(delegate_certificate)?;
+    println!("Extracted delegate verifying key");
 
     // Recreate the certificate data that was originally signed
     let certificate_data = GhostkeyCertificate {
@@ -161,19 +185,32 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, del
         ghostkey_verifying_key: ghostkey_certificate.ghostkey_verifying_key.clone(),
         signature: Vec::new(),
     };
+    println!("Recreated certificate data");
 
     // Serialize the certificate data
     let mut buf = Vec::new();
     certificate_data.serialize(&mut Serializer::new(&mut buf))
-        .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
+        .map_err(|e| {
+            println!("Failed to serialize certificate data: {:?}", e);
+            CryptoError::SerializationError(e.to_string())
+        })?;
+    println!("Serialized certificate data: {:?}", buf);
 
     // Create the signature from the stored bytes
     let signature = ecdsa::Signature::from_der(&ghostkey_certificate.signature)
-        .map_err(|e| CryptoError::SignatureError(e.to_string()))?;
+        .map_err(|e| {
+            println!("Failed to create signature from DER: {:?}", e);
+            CryptoError::SignatureError(e.to_string())
+        })?;
+    println!("Created signature from stored bytes");
 
     // Verify the signature
     delegate_verifying_key.verify(&buf, &signature)
-        .map_err(|e| CryptoError::SignatureVerificationError(e.to_string()))?;
+        .map_err(|e| {
+            println!("Signature verification failed: {:?}", e);
+            CryptoError::SignatureVerificationError(e.to_string())
+        })?;
+    println!("Signature verified successfully");
 
     Ok(())
 }
