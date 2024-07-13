@@ -34,11 +34,11 @@ pub struct GhostkeySigningData {
     ghostkey_verifying_key: String,
 }
 
-pub fn generate_ghostkey(delegate_certificate: &str) -> Result<(String, String), CryptoError> {
+pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoError> {
     // Extract the delegate signing key from the delegate certificate
     let delegate_signing_key = extract_delegate_signing_key(delegate_certificate)?;
 
-    // Generate the ghostkey signing key
+    // Generate the ghostkey key pair
     let ghostkey_signing_key = SigningKey::random(&mut OsRng);
     let ghostkey_verifying_key = VerifyingKey::from(&ghostkey_signing_key);
 
@@ -68,11 +68,10 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<(String, String),
     final_certificate.serialize(&mut Serializer::new(&mut final_buf))
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
-    // Encode the keys and certificate
-    let ghostkey_signing_key_pem = armor(&ghostkey_signing_key.to_bytes(), "GHOSTKEY SIGNING KEY", "GHOSTKEY SIGNING KEY");
+    // Encode the certificate
     let ghostkey_certificate_armored = armor(&final_buf, "GHOSTKEY CERTIFICATE", "GHOSTKEY CERTIFICATE");
 
-    Ok((ghostkey_signing_key_pem, ghostkey_certificate_armored))
+    Ok(ghostkey_certificate_armored)
 }
 
 fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey, CryptoError> {
