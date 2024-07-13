@@ -1,8 +1,6 @@
 use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand_core::OsRng;
-use base64::{engine::general_purpose, Engine as _};
 use p256::ecdsa::{self, signature::{Signer, Verifier}};
-use p256::FieldBytes;
 use crate::armor;
 use serde::{Serialize, Deserialize};
 use rmp_serde::Serializer;
@@ -78,7 +76,6 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
 fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey, CryptoError> {
     let delegate_certificate_bytes = extract_bytes_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")
         .map_err(|e| CryptoError::ArmorError(format!("Failed to extract bytes from armor: {}", e)))?;
-        .map_err(|e| CryptoError::Base64DecodeError(format!("Failed to decode delegate certificate base64: {}", e)))?;
 
     // Try to deserialize as DelegateKeyCertificate
     let delegate_cert: Result<DelegateKeyCertificate, _> = rmp_serde::from_slice(&delegate_certificate_bytes);
