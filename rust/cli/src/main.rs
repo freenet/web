@@ -296,6 +296,11 @@ fn generate_and_save_delegate_key(master_key_file: &str, info: &str, output_dir:
     std::fs::create_dir_all(output_dir)
         .map_err(|e| format!("Failed to create output directory '{}': {}", output_dir, e))?;
 
+    // Check if the master key file exists
+    if !std::path::Path::new(master_key_file).exists() {
+        return Err(format!("Master signing key file '{}' not found", master_key_file).into());
+    }
+
     check_file_permissions(master_key_file, false)?;
     let master_signing_key = std::fs::read_to_string(master_key_file)
         .map_err(|e| format!("Failed to read master signing key file '{}': {}", master_key_file, e))?;
