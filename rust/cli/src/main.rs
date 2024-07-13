@@ -132,11 +132,11 @@ fn run() -> Result<(), Box<dyn Error>> {
                 .value_name("FILE")))
         .subcommand(Command::new("generate-ghost-key")
             .about("Generates a ghost key from a delegate signing key")
-            .arg(Arg::new("delegate-certificate-file")
-                .long("delegate-certificate-file")
-                .help("The file containing the delegate certificate")
+            .arg(Arg::new("delegate-certificate-dir")
+                .long("delegate-certificate-dir")
+                .help("The directory containing the delegate certificate and signing key")
                 .required(true)
-                .value_name("FILE"))
+                .value_name("DIR"))
             .arg(Arg::new("output-dir")
                 .long("output-dir")
                 .help("The directory to output the ghost key files")
@@ -182,10 +182,10 @@ fn run() -> Result<(), Box<dyn Error>> {
             generate_master_verifying_key_command(master_signing_key_file, output_file)?;
         }
         Some(("generate-ghost-key", sub_matches)) => {
-            let delegate_certificate_file = sub_matches.get_one::<String>("delegate-certificate-file").unwrap();
+            let delegate_certificate_dir = sub_matches.get_one::<String>("delegate-certificate-dir").unwrap();
             let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
             let overwrite = sub_matches.get_flag("overwrite");
-            generate_ghostkey_command(delegate_certificate_file, output_dir, overwrite)?;
+            generate_ghostkey_command(delegate_certificate_dir, output_dir, overwrite)?;
         }
         Some(("validate-ghost-key", sub_matches)) => {
             let master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key-file").unwrap();
