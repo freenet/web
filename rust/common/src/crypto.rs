@@ -82,9 +82,8 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
     
     println!("Decoded certificate bytes: {:?}", certificate_bytes);
 
-    let mut deserializer = Deserializer::new(Cursor::new(certificate_bytes));
-    let certificate: DelegateKeyCertificate = Deserialize::deserialize(&mut deserializer)
-        .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
+    let certificate: DelegateKeyCertificate = rmp_serde::from_slice(&certificate_bytes)
+        .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
 
     // Recreate the certificate data for verification
     let certificate_data = DelegateKeyCertificate {

@@ -42,11 +42,12 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     let mut signed_certificate_data = certificate_data;
     signed_certificate_data.signature = signature.to_vec();
 
-    // Encode the signed certificate data in base64
-    let mut buf = Vec::new();
-    signed_certificate_data.serialize(&mut Serializer::new(&mut buf))
+    // Serialize the signed certificate data to MessagePack
+    let signed_certificate_msgpack = rmp_serde::to_vec(&signed_certificate_data)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
-    let signed_certificate_base64 = general_purpose::STANDARD.encode(buf);
+
+    // Encode the MessagePack data in base64
+    let signed_certificate_base64 = general_purpose::STANDARD.encode(signed_certificate_msgpack);
 
     // Armor the signed certificate
     let armored_delegate_certificate = armor(signed_certificate_base64.as_bytes(), "DELEGATE CERTIFICATE", "DELEGATE CERTIFICATE");
