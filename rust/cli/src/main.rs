@@ -294,15 +294,23 @@ fn generate_and_save_master_key(output_dir: &str) -> Result<(), Box<dyn std::err
 fn generate_and_save_delegate_key(master_key_file: &str, info: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
     check_file_permissions(master_key_file, false)?;
     let master_signing_key = std::fs::read_to_string(master_key_file)?;
-    let delegate_certificate = generate_delegate_key(&master_signing_key, info)
+    let (delegate_certificate, delegate_signing_key) = generate_delegate_key(&master_signing_key, info)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
-    let file_path = Path::new(output_dir).join("delegate_certificate.pem");
-    if file_path.exists() {
-        return Err(format!("File '{}' already exists. Please choose a different output directory or remove the existing file.", file_path.display()).into());
+    
+    let cert_path = Path::new(output_dir).join("delegate_certificate.pem");
+    let key_path = Path::new(output_dir).join("delegate_signing_key.pem");
+    
+    if cert_path.exists() || key_path.exists() {
+        return Err(format!("One or both of the files '{}' or '{}' already exist. Please choose a different output directory or remove the existing files.", cert_path.display(), key_path.display()).into());
     }
-    save_key_to_file(output_dir, "delegate_certificate.pem", &delegate_certificate, true)?;
-    println!("{}", "Delegate certificate generated successfully.".green());
-    println!("File created: {}", file_path.display());
+    
+    save_key_to_file(output_dir, "delegate_certificate.pem", &delegate_certificate, false)?;
+    save_key_to_file(output_dir, "delegate_signing_key.pem", &delegate_signing_key, true)?;
+    
+    println!("{}", "Delegate certificate and signing key generated successfully.".green());
+    println!("Files created:");
+    println!("  Delegate certificate: {}", cert_path.display());
+    println!("  Delegate signing key: {}", key_path.display());
     Ok(())
 }
 
