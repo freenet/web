@@ -9,7 +9,7 @@ echo "Created temporary directory: $TEST_DIR"
 # Function to run a command and check its exit status
 run_command() {
     echo "Running: $1"
-    if eval "$1"; then
+    if eval "RUST_BACKTRACE=1 $1"; then
         echo "Command succeeded"
     else
         echo "Command failed"
@@ -21,7 +21,7 @@ run_command() {
 run_command "cargo run -- generate-master-key --output-dir $TEST_DIR"
 
 # Generate delegate key
-run_command "cargo run -- generate-delegate-key --master-signing-key-file $TEST_DIR/master_signing_key.pem --attributes 'test-delegate' --output-dir $TEST_DIR"
+run_command "cargo run -- generate-delegate-key --master-signing-key-file $TEST_DIR/master_signing_key.pem --info 'test-delegate' --output-dir $TEST_DIR"
 
 # Validate delegate key
 run_command "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
