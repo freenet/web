@@ -90,7 +90,7 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
     let ghostkey_certificate_armored = armor(&final_buf, "GHOSTKEY CERTIFICATE", "GHOSTKEY CERTIFICATE");
     debug!("Armored ghostkey certificate: {}", ghostkey_certificate_armored);
 
-    println!("{}", "Ghostkey generated successfully".green());
+    println!("{}", "Ghost key generated successfully.".green());
 
     Ok(ghostkey_certificate_armored)
 }
@@ -122,7 +122,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     // Verify the ghostkey signature
     verify_ghostkey_signature(&ghostkey_certificate, delegate_certificate)?;
 
-    println!("{}", "Ghost key certificate is valid".green());
+    println!("{}", "Ghost key certificate is valid.".green());
 
     Ok(delegate_info)
 }
@@ -290,18 +290,19 @@ pub fn extract_delegate_verifying_key(delegate_certificate: &[u8]) -> Result<Ver
 pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<(), CryptoError> {
     match validate_ghost_key(master_verifying_key_pem, ghostkey_certificate_armored) {
         Ok(delegate_info) => {
-            println!("Ghost key certificate is valid. Delegate info: {}", delegate_info);
+            println!("{}", "Ghost key certificate validation successful.".green());
+            println!("Delegate info: {}", delegate_info);
             Ok(())
         },
         Err(e) => {
             let error_message = match e {
-                CryptoError::ArmorError(_) => "Failed to decode the provided ghost key certificate. Please ensure it's properly formatted.",
-                CryptoError::DeserializationError(_) => "The ghost key certificate is not in the expected format. It may be corrupted or invalid.",
-                CryptoError::KeyCreationError(_) => "There was an issue with the master verifying key. Please ensure it's correct and try again.",
-                CryptoError::SignatureVerificationError(_) => "The ghost key certificate signature is invalid. This could indicate tampering or an incorrect master key.",
-                _ => "An unexpected error occurred during ghost key validation. Please try again or contact support if the issue persists.",
+                CryptoError::ArmorError(_) => "The ghost key certificate could not be decoded. Please check if it's properly formatted.",
+                CryptoError::DeserializationError(_) => "The ghost key certificate format is invalid. It may be corrupted or incompatible.",
+                CryptoError::KeyCreationError(_) => "There's an issue with the master verifying key. Please verify its correctness and try again.",
+                CryptoError::SignatureVerificationError(_) => "The ghost key certificate signature is invalid. This may indicate tampering or use of an incorrect master key.",
+                _ => "An unexpected error occurred during ghost key validation. If this persists, please contact support.",
             };
-            eprintln!("Error: {}", error_message);
+            eprintln!("{}", format!("Error: {}", error_message).red());
             Err(CryptoError::ValidationError(error_message.to_string()))
         }
     }
