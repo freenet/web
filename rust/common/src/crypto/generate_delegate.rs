@@ -47,11 +47,10 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     let signed_certificate_bytes = rmp_serde::to_vec(&signed_certificate_data)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
-    // Encode the bincode data in base64
-    let signed_certificate_base64 = general_purpose::STANDARD.encode(signed_certificate_bytes);
+    println!("Serialized certificate: {:?}", signed_certificate_bytes);
 
-    // Armor the signed certificate
-    let armored_delegate_certificate = armor(signed_certificate_base64.as_bytes(), "DELEGATE CERTIFICATE", "DELEGATE CERTIFICATE");
+    // Armor the signed certificate directly (without base64 encoding)
+    let armored_delegate_certificate = armor(&signed_certificate_bytes, "DELEGATE CERTIFICATE", "DELEGATE CERTIFICATE");
 
     Ok(armored_delegate_certificate)
 }
