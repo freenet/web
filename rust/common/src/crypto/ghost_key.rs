@@ -28,37 +28,38 @@ pub struct GhostkeyCertificate {
     signature: String,
 }
 
-pub fn generate_ghostkey(delegate_signing_key_pem: &str) -> Result<(String, String), CryptoError> {
-    let delegate_signing_key_base64 = extract_base64_from_armor(delegate_signing_key_pem, "DELEGATE SIGNING KEY")?;
-    let delegate_signing_key_bytes = general_purpose::STANDARD.decode(&delegate_signing_key_base64)
-        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
-    let delegate_signing_key = SigningKey::from_slice(&delegate_signing_key_bytes)
-        .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
+#[derive(Serialize, Deserialize)]
+pub struct GhostkeySigningData {
+    delegate_certificate: String,
+    ghostkey_verifying_key: String,
+}
+
+pub fn generate_ghostkey(delegate_certificate: &str) -> Result<(String, String), CryptoError> {
+    // Extract the delegate signing key from the delegate certificate
+    let delegate_signing_key = extract_delegate_signing_key(delegate_certificate)?;
 
     // Generate the ghostkey signing key
     let ghostkey_signing_key = SigningKey::random(&mut OsRng);
     let ghostkey_verifying_key = VerifyingKey::from(&ghostkey_signing_key);
 
-    // Create the certificate
-    let ghostkey_certificate = GhostkeyCertificate {
-        delegate_certificate: delegate_signing_key_pem.to_string(),
+    // Create the signing data
+    let ghostkey_signing_data = GhostkeySigningData {
+        delegate_certificate: delegate_certificate.to_string(),
         ghostkey_verifying_key: general_purpose::STANDARD.encode(ghostkey_verifying_key.to_sec1_bytes()),
-        signature: String::new(), // We'll fill this in shortly
     };
 
-    // Serialize the certificate (without the signature) to MessagePack
+    // Serialize the signing data to MessagePack
     let mut buf = Vec::new();
-    ghostkey_certificate.serialize(&mut Serializer::new(&mut buf))
+    ghostkey_signing_data.serialize(&mut Serializer::new(&mut buf))
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
-    // Sign the serialized certificate
-
+    // Sign the serialized data
     let signature: ecdsa::Signature = delegate_signing_key.sign(&buf);
 
     // Create the final certificate with the signature
     let final_certificate = GhostkeyCertificate {
-        delegate_certificate: ghostkey_certificate.delegate_certificate,
-        ghostkey_verifying_key: general_purpose::STANDARD.encode(ghostkey_verifying_key.to_sec1_bytes()),
+        delegate_certificate: delegate_certificate.to_string(),
+        ghostkey_verifying_key: ghostkey_signing_data.ghostkey_verifying_key,
         signature: general_purpose::STANDARD.encode(signature.to_der()),
     };
 
@@ -72,6 +73,18 @@ pub fn generate_ghostkey(delegate_signing_key_pem: &str) -> Result<(String, Stri
     let ghostkey_certificate_armored = armor(&final_buf, "GHOSTKEY CERTIFICATE", "GHOSTKEY CERTIFICATE");
 
     Ok((ghostkey_signing_key_pem, ghostkey_certificate_armored))
+}
+
+fn extract_delegate_signing_key(delegate_certificate: &str) -> Result<SigningKey, CryptoError> {
+    let delegate_certificate_base64 = extract_base64_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
+    let delegate_certificate_bytes = general_purpose::STANDARD.decode(&delegate_certificate_base64)
+        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
+
+    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
+        .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
+
+    SigningKey::from_slice(&delegate_cert.verifying_key)
+        .map_err(|e| CryptoError::KeyCreationError(e.to_string()))
 }
 
 pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<String, CryptoError> {
