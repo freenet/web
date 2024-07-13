@@ -113,8 +113,8 @@ run_command "generate delegate key" "cargo run --quiet -- generate-delegate-key 
 run_command "generate wrong delegate key" "cargo run --quiet -- generate-delegate-key --master-signing-key-file $TEST_DIR/wrong_master/master_signing_key.pem --info 'wrong-delegate' --output-dir $TEST_DIR/wrong_delegate" || handle_error "generate wrong delegate key" "cargo run --quiet -- generate-delegate-key --master-signing-key-file $TEST_DIR/wrong_master/master_signing_key.pem --info 'wrong-delegate' --output-dir $TEST_DIR/wrong_delegate" "$?"
 
 # Generate ghost keys
-run_command "generate ghost key" "cargo run --quiet -- generate-ghost-key --delegate-certificate-dir $TEST_DIR --output-dir $TEST_DIR" || handle_error "generate ghost key" "cargo run --quiet -- generate-ghost-key --delegate-certificate-dir $TEST_DIR --output-dir $TEST_DIR" "$?"
-run_command "generate wrong ghost key" "cargo run --quiet -- generate-ghost-key --delegate-certificate-dir $TEST_DIR/wrong_delegate --output-dir $TEST_DIR/wrong_ghost" || handle_error "generate wrong ghost key" "cargo run --quiet -- generate-ghost-key --delegate-certificate-dir $TEST_DIR/wrong_delegate --output-dir $TEST_DIR/wrong_ghost" "$?"
+run_command "generate ghost key" "cargo run --quiet -- generate-ghost-key --delegate-dir $TEST_DIR --output-dir $TEST_DIR" || handle_error "generate ghost key" "cargo run --quiet -- generate-ghost-key --delegate-dir $TEST_DIR --output-dir $TEST_DIR" "$?"
+run_command "generate wrong ghost key" "cargo run --quiet -- generate-ghost-key --delegate-dir $TEST_DIR/wrong_delegate --output-dir $TEST_DIR/wrong_ghost" || handle_error "generate wrong ghost key" "cargo run --quiet -- generate-ghost-key --delegate-dir $TEST_DIR/wrong_delegate --output-dir $TEST_DIR/wrong_ghost" "$?"
 
 # Validate delegate key (correct)
 run_command "validate correct delegate key" "cargo run --quiet -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
@@ -137,13 +137,13 @@ expect_failure "validate ghost key with wrong master key" "cargo run --quiet -- 
 expect_failure "validate ghost key with wrong delegate key" "cargo run --quiet -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/wrong_ghost/ghostkey_certificate.pem"
 
 # Test generating ghost key with missing delegate files
-expect_failure "generate ghost key with missing delegate files" "cargo run --quiet -- generate-ghost-key --delegate-certificate-dir $TEST_DIR/nonexistent_dir --output-dir $TEST_DIR/output"
+expect_failure "generate ghost key with missing delegate files" "cargo run --quiet -- generate-ghost-key --delegate-dir $TEST_DIR/nonexistent_dir --output-dir $TEST_DIR/output"
 
 # Test generating ghost key with invalid delegate files
 mkdir -p $TEST_DIR/invalid_delegate
 echo "Invalid content" > $TEST_DIR/invalid_delegate/delegate_certificate.pem
 echo "Invalid content" > $TEST_DIR/invalid_delegate/delegate_signing_key.pem
-expect_failure "generate ghost key with invalid delegate files" "cargo run --quiet -- generate-ghost-key --delegate-certificate-dir $TEST_DIR/invalid_delegate --output-dir $TEST_DIR/output"
+expect_failure "generate ghost key with invalid delegate files" "cargo run --quiet -- generate-ghost-key --delegate-dir $TEST_DIR/invalid_delegate --output-dir $TEST_DIR/output"
 
 # Test invalid delegate key validation
 expect_failure "validate invalid delegate key" "cargo run --quiet -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/master_signing_key.pem"
