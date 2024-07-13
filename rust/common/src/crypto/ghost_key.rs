@@ -270,15 +270,20 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, del
         })?;
     println!("Created signature: {:?}", signature);
 
-    // Verify the signature
-    match delegate_verifying_key.verify(&buf, &signature) {
+    // Create the VerifyingKey from the ghostkey_verifying_key
+    let ghostkey_verifying_key = VerifyingKey::from_sec1_bytes(&ghostkey_certificate.ghostkey_verifying_key)
+        .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
+    println!("Created ghostkey verifying key: {:?}", ghostkey_verifying_key.to_encoded_point(false));
+
+    // Verify the signature using the ghostkey verifying key
+    match ghostkey_verifying_key.verify(&buf, &signature) {
         Ok(_) => {
             println!("Signature verified successfully");
             Ok(())
         },
         Err(e) => {
             println!("Signature verification failed: {:?}", e);
-            println!("Delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
+            println!("Ghostkey verifying key: {:?}", ghostkey_verifying_key.to_encoded_point(false));
             println!("Data being verified: {:?}", buf);
             println!("Signature being verified: {:?}", signature);
             Err(CryptoError::SignatureVerificationError(e.to_string()))
