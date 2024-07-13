@@ -221,19 +221,17 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, del
     
     // Extract the delegate verifying key from the delegate certificate
     let delegate_verifying_key = extract_delegate_verifying_key(delegate_certificate)?;
-    println!("Extracted delegate verifying key");
+    println!("Extracted delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
 
     // Recreate the certificate data that was originally signed
-    let certificate_data = GhostkeyCertificate {
+    let certificate_data = GhostkeySigningData {
         delegate_certificate: ghostkey_certificate.delegate_certificate.clone(),
         ghostkey_verifying_key: ghostkey_certificate.ghostkey_verifying_key.clone(),
-        signature: Vec::new(),
     };
     println!("Recreated certificate data");
 
     // Serialize the certificate data
-    let mut buf = Vec::new();
-    certificate_data.serialize(&mut Serializer::new(&mut buf))
+    let buf = rmp_serde::to_vec(&certificate_data)
         .map_err(|e| {
             println!("Failed to serialize certificate data: {:?}", e);
             CryptoError::SerializationError(e.to_string())
@@ -242,11 +240,12 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, del
 
     // Create the signature from the stored bytes
     let signature = ecdsa::Signature::from_der(&ghostkey_certificate.signature)
+        .or_else(|_| ecdsa::Signature::from_bytes(&ghostkey_certificate.signature))
         .map_err(|e| {
-            println!("Failed to create signature from DER: {:?}", e);
+            println!("Failed to create signature: {:?}", e);
             CryptoError::SignatureError(e.to_string())
         })?;
-    println!("Created signature from stored bytes");
+    println!("Created signature: {:?}", signature);
 
     // Verify the signature
     delegate_verifying_key.verify(&buf, &signature)
