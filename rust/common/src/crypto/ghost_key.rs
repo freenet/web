@@ -1,5 +1,4 @@
 use p256::ecdsa::{SigningKey, VerifyingKey};
-use p256::FieldBytes;
 use rand_core::OsRng;
 use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use crate::armor;
@@ -7,7 +6,6 @@ use serde::{Serialize, Deserialize};
 use rmp_serde::Serializer;
 use crate::crypto::{CryptoError, extract_bytes_from_armor};
 use rmp_serde;
-use base64::{Engine as _, engine::general_purpose};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct DelegateCertificate {
@@ -36,8 +34,16 @@ pub struct GhostkeySigningData {
 }
 
 pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoError> {
-    // Extract the delegate verifying key from the delegate certificate
-    let delegate_verifying_key = extract_delegate_verifying_key(delegate_certificate.as_bytes())?;
+    // Extract the delegate certificate bytes
+    let delegate_certificate_bytes = extract_bytes_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
+
+    // Deserialize the delegate certificate
+    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
+        .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
+
+    // Extract the delegate verifying key
+    let delegate_verifying_key = VerifyingKey::from_sec1_bytes(&delegate_cert.verifying_key)
+        .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
     // Generate the ghostkey key pair
     let ghostkey_signing_key = SigningKey::random(&mut OsRng);
@@ -45,7 +51,7 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
 
     // Create the signing data
     let ghostkey_signing_data = GhostkeySigningData {
-        delegate_certificate: delegate_certificate.as_bytes().to_vec(),
+        delegate_certificate: delegate_certificate_bytes,
         ghostkey_verifying_key: ghostkey_verifying_key.to_sec1_bytes().to_vec(),
     };
 
@@ -59,7 +65,7 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
 
     // Create the final certificate with the signature
     let final_certificate = GhostkeyCertificate {
-        delegate_certificate: delegate_certificate.as_bytes().to_vec(),
+        delegate_certificate: delegate_certificate_bytes,
         ghostkey_verifying_key: ghostkey_signing_data.ghostkey_verifying_key,
         signature: signature.to_der().as_bytes().to_vec(),
     };
