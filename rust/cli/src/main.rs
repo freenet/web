@@ -5,6 +5,7 @@ use std::path::Path;
 use common::crypto::generate_delegate::generate_delegate_key;
 use common::crypto::master_key::{generate_master_key, generate_master_verifying_key};
 use colored::Colorize;
+use log::{debug, error, info};
 use common::crypto::ghost_key::{generate_ghostkey, validate_ghost_key};
 use common::crypto::signature::{sign_message, verify_signature};
 use common::crypto::validate_delegate_key;
@@ -188,7 +189,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             verify_signature_command(verifying_key_file, message.map(|s| s.as_str()), message_file.map(|s| s.as_str()), signature_file, master_verifying_key_file.map(|s| s.as_str()))?;
         }
         _ => {
-            println!("No valid subcommand provided. Use --help for usage information.");
+            info!("No valid subcommand provided. Use --help for usage information.");
         }
     }
 
@@ -212,10 +213,10 @@ fn sign_message_command(signing_key_file: &str, message: Option<&str>, message_f
     match output_file {
         Some(file) => {
             save_key_to_file("", file, &signature)?;
-            println!("Message signed successfully. Signature saved to: {}", file);
+            info!("Message signed successfully. Signature saved to: {}", file);
         },
         None => {
-            println!("{}", signature);
+            info!("{}", signature);
         }
     }
     Ok(())
@@ -227,12 +228,12 @@ fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certi
     
     match validate_delegate_key(&master_verifying_key, &delegate_certificate) {
         Ok(info) => {
-            println!("Delegate key certificate is {}.", "valid".green());
-            println!("Info: {}", info);
+            info!("Delegate key certificate is {}.", "valid".green());
+            info!("Info: {}", info);
             Ok(())
         }
         Err(e) => {
-            println!("Failed to validate delegate key certificate: {}", e);
+            error!("Failed to validate delegate key certificate: {}", e);
             Err(Box::new(e))
         }
     }
@@ -242,7 +243,7 @@ fn generate_and_save_master_key(output_dir: &str) -> Result<(), Box<dyn std::err
     let (private_key, public_key) = generate_master_key().map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     save_key_to_file(output_dir, "master_signing_key.pem", &private_key)?;
     save_key_to_file(output_dir, "master_verifying_key.pem", &public_key)?;
-    println!("MASTER_SIGNING_KEY and MASTER_VERIFYING_KEY generated successfully.");
+    info!("MASTER_SIGNING_KEY and MASTER_VERIFYING_KEY generated successfully.");
     Ok(())
 }
 
@@ -251,7 +252,7 @@ fn generate_and_save_delegate_key(master_key_file: &str, info: &str, output_dir:
     let delegate_certificate = generate_delegate_key(&master_signing_key, info)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     save_key_to_file(output_dir, "delegate_certificate.pem", &delegate_certificate)?;
-    println!("Delegate certificate generated successfully.");
+    info!("Delegate certificate generated successfully.");
     Ok(())
 }
 
@@ -283,15 +284,15 @@ fn verify_signature_command(verifying_key_file: &str, message: Option<&str>, mes
 
     match verify_signature(&verifying_key, &message_content, &signature) {
         Ok(true) => {
-            println!("Signature is {}.", "valid".green());
+            info!("Signature is {}.", "valid".green());
             Ok(())
         },
         Ok(false) => {
-            println!("Signature is {}.", "invalid".red());
+            info!("Signature is {}.", "invalid".red());
             Ok(())
         },
         Err(e) => {
-            println!("Failed to verify signature: {}", e);
+            error!("Failed to verify signature: {}", e);
             Err(Box::new(e))
         }
     }
@@ -304,7 +305,7 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
     
     save_key_to_file("", output_file, &master_verifying_key)?;
     
-    println!("Server Master Verifying Key generated successfully and saved to: {}", output_file);
+    info!("Server Master Verifying Key generated successfully and saved to: {}", output_file);
     Ok(())
 }
 
@@ -318,8 +319,8 @@ fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) 
     save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate)
         .map_err(|e| format!("Failed to save ghostkey certificate: {}", e))?;
     
-    println!("Ghostkey generated successfully.");
-    println!("Ghostkey certificate saved to: {}/ghostkey_certificate.pem", output_dir);
+    info!("Ghostkey generated successfully.");
+    info!("Ghostkey certificate saved to: {}/ghostkey_certificate.pem", output_dir);
     Ok(())
 }
 
@@ -329,13 +330,13 @@ fn validate_ghost_key_command(master_verifying_key_file: &str, ghost_certificate
 
     match validate_ghost_key(&master_verifying_key, &ghost_certificate) {
         Ok(info) => {
-            println!("Ghost key certificate is {}.", "valid".green());
-            println!("Info: {}", info);
+            info!("Ghost key certificate is {}.", "valid".green());
+            info!("Info: {}", info);
             Ok(())
         }
         Err(e) => {
-            println!("Ghost key certificate is {}.", "invalid".red());
-            println!("Reason: {}", e);
+            error!("Ghost key certificate is {}.", "invalid".red());
+            error!("Reason: {}", e);
             Err(Box::new(e))
         }
     }
