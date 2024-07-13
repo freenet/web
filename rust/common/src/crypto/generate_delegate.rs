@@ -19,7 +19,7 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     println!("Master signing key PEM: {}", master_signing_key_pem);
 
     let master_signing_key_base64 = extract_base64_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
-    println!("Extracted base64: {}", master_signing_key_base64);
+    println!("Extracted base64: {:?}", master_signing_key_base64);
 
     // Trim any whitespace from the base64 string
     let trimmed_base64 = master_signing_key_base64.trim();
