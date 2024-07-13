@@ -1,3 +1,4 @@
+use std::error::Error;
 use clap::{Command, Arg, ArgAction};
 use std::fs::{File, create_dir_all};
 use std::io::Write;
@@ -19,7 +20,7 @@ fn main() {
     }
 }
 
-fn run() -> Result<(), Box<dyn std::error::Error>> {
+fn run() -> Result<(), Box<dyn Error>> {
     let matches = Command::new("Freenet Ghost Key Utility")
         .version("1.0")
         .author("Your Name <your.email@example.com>")

@@ -90,8 +90,6 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
     let ghostkey_certificate_armored = armor(&final_buf, "GHOSTKEY CERTIFICATE", "GHOSTKEY CERTIFICATE");
     debug!("Armored ghostkey certificate: {}", ghostkey_certificate_armored);
 
-    println!("{}", "Ghost key generated successfully.".green().bold());
-
     Ok(ghostkey_certificate_armored)
 }
 
