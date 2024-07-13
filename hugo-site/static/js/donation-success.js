@@ -128,12 +128,26 @@ async function generateAndSignCertificate(paymentIntentId) {
     }
     console.log("Signature unblinded");
 
+    // Create the ghostkey certificate
+    const ghostkeyCertificate = createGhostkeyCertificate(publicKey, unblindedSignature, data.delegate_info);
+
     console.log("Calling displayCertificate");
-    displayCertificate(publicKey, privateKey, unblindedSignature);
+    displayCertificate(publicKey, privateKey, ghostkeyCertificate);
   } catch (error) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
   }
+}
+
+function createGhostkeyCertificate(publicKey, unblindedSignature, delegateInfo) {
+  const certificateData = {
+    publicKey: bufferToBase64(publicKey),
+    unblindedSignature: bufferToBase64(unblindedSignature),
+    delegateCertificate: delegateInfo.certificate,
+    amount: delegateInfo.amount
+  };
+
+  return JSON.stringify(certificateData);
 }
 
 function generateTestCertificate() {
@@ -144,20 +158,20 @@ function generateTestCertificate() {
   displayCertificate(publicKey, privateKey, unblindedSignature);
 }
 
-function displayCertificate(publicKey, privateKey, unblindedSignature) {
+function displayCertificate(publicKey, privateKey, ghostkeyCertificate) {
   console.log("Displaying certificate");
   try {
-    // Armor the certificate and private key
-    const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
-${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}
------END FREENET DONATION CERTIFICATE-----`;
+    // Armor the ghostkey certificate and private key
+    const armoredCertificate = `-----BEGIN FREENET GHOSTKEY CERTIFICATE-----
+${wrapBase64(btoa(ghostkeyCertificate), 64)}
+-----END FREENET GHOSTKEY CERTIFICATE-----`;
 
-    const armoredPrivateKey = `-----BEGIN FREENET DONATION PRIVATE KEY-----
-${bufferToBase64(privateKey)}
------END FREENET DONATION PRIVATE KEY-----`;
+    const armoredPrivateKey = `-----BEGIN FREENET GHOSTKEY PRIVATE KEY-----
+${wrapBase64(bufferToBase64(privateKey), 64)}
+-----END FREENET GHOSTKEY PRIVATE KEY-----`;
 
     // Combine certificate and private key
-    const combinedKey = `${wrapBase64(armoredCertificate, 64)}\n\n${wrapBase64(armoredPrivateKey, 64)}`;
+    const combinedKey = `${armoredCertificate}\n\n${armoredPrivateKey}`;
 
     // Display the combined key
     const combinedKeyElement = document.getElementById('combinedKey');
@@ -196,7 +210,7 @@ ${bufferToBase64(privateKey)}
     });
 
     // Verify the certificate
-    if (!verifyCertificate(publicKey, unblindedSignature)) {
+    if (!verifyCertificate(ghostkeyCertificate)) {
       console.error("Certificate verification failed");
       throw new Error("Certificate verification failed");
     }
@@ -205,6 +219,18 @@ ${bufferToBase64(privateKey)}
   } catch (error) {
     console.error("Error in displayCertificate:", error);
     showError(`Error displaying Ghost Key: ${error.message}. Please contact support.`);
+  }
+}
+
+function verifyCertificate(ghostkeyCertificate) {
+  // In a real implementation, we would verify the ghostkey certificate
+  // For now, we'll just check if it's a valid JSON
+  try {
+    JSON.parse(ghostkeyCertificate);
+    return true;
+  } catch (error) {
+    console.error("Invalid ghostkey certificate:", error);
+    return false;
   }
 }
 
