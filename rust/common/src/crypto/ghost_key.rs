@@ -6,6 +6,8 @@ use serde::{Serialize, Deserialize};
 use rmp_serde::Serializer;
 use crate::crypto::{CryptoError, extract_bytes_from_armor};
 use rmp_serde;
+use log::{debug, info, warn, error};
+use colored::*;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct DelegateCertificate {
@@ -34,26 +36,26 @@ pub struct GhostkeySigningData {
 }
 
 pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoError> {
-    println!("Generating ghostkey");
+    info!("Generating ghostkey");
     
     // Extract the delegate certificate bytes
     let delegate_certificate_bytes = extract_bytes_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
-    println!("Delegate certificate bytes: {:?}", delegate_certificate_bytes);
+    debug!("Delegate certificate bytes: {:?}", delegate_certificate_bytes);
 
     // Deserialize the delegate certificate
     let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
         .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
-    println!("Deserialized delegate certificate: {:?}", delegate_cert);
+    debug!("Deserialized delegate certificate: {:?}", delegate_cert);
 
     // Extract the delegate verifying key
     let delegate_verifying_key = VerifyingKey::from_sec1_bytes(&delegate_cert.verifying_key)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
-    println!("Extracted delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
+    debug!("Extracted delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
 
     // Generate the ghostkey key pair
     let ghostkey_signing_key = SigningKey::random(&mut OsRng);
     let ghostkey_verifying_key = VerifyingKey::from(&ghostkey_signing_key);
-    println!("Generated ghostkey verifying key: {:?}", ghostkey_verifying_key.to_encoded_point(false));
+    debug!("Generated ghostkey verifying key: {:?}", ghostkey_verifying_key.to_encoded_point(false));
 
     // Create the signing data
     let ghostkey_signing_data = GhostkeySigningData {
@@ -65,11 +67,11 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
     let mut buf = Vec::new();
     ghostkey_signing_data.serialize(&mut Serializer::new(&mut buf))
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
-    println!("Serialized signing data: {:?}", buf);
+    debug!("Serialized signing data: {:?}", buf);
 
     // Sign the serialized data with the ghostkey signing key
     let signature: ecdsa::Signature = ghostkey_signing_key.sign(&buf);
-    println!("Generated signature: {:?}", signature);
+    debug!("Generated signature: {:?}", signature);
 
     // Create the final certificate with the signature
     let final_certificate = GhostkeyCertificate {
@@ -82,11 +84,13 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
     let mut final_buf = Vec::new();
     final_certificate.serialize(&mut Serializer::new(&mut final_buf))
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
-    println!("Serialized final certificate: {:?}", final_buf);
+    debug!("Serialized final certificate: {:?}", final_buf);
 
     // Encode the certificate
     let ghostkey_certificate_armored = armor(&final_buf, "GHOSTKEY CERTIFICATE", "GHOSTKEY CERTIFICATE");
-    println!("Armored ghostkey certificate: {}", ghostkey_certificate_armored);
+    debug!("Armored ghostkey certificate: {}", ghostkey_certificate_armored);
+
+    println!("{}", "Ghostkey generated successfully".green());
 
     Ok(ghostkey_certificate_armored)
 }
@@ -108,39 +112,41 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     // Extract the base64 encoded ghostkey certificate
     let ghostkey_certificate_bytes = extract_bytes_from_armor(ghostkey_certificate_armored, "GHOSTKEY CERTIFICATE")?;
 
-    println!("Extracted ghostkey certificate bytes: {:?}", ghostkey_certificate_bytes);
+    debug!("Extracted ghostkey certificate bytes: {:?}", ghostkey_certificate_bytes);
 
     // Deserialize the ghostkey certificate
     let ghostkey_certificate: GhostkeyCertificate = rmp_serde::from_slice(&ghostkey_certificate_bytes)
         .map_err(|e| {
-            println!("Failed to deserialize ghostkey certificate: {:?}", e);
+            error!("Failed to deserialize ghostkey certificate: {:?}", e);
             CryptoError::DeserializationError(e.to_string())
         })?;
 
-    println!("Deserialized ghostkey certificate: {:?}", ghostkey_certificate);
+    debug!("Deserialized ghostkey certificate: {:?}", ghostkey_certificate);
 
     // Extract the delegate certificate
     let delegate_certificate = &ghostkey_certificate.delegate_certificate;
 
-    println!("Extracted delegate certificate: {:?}", delegate_certificate);
+    debug!("Extracted delegate certificate: {:?}", delegate_certificate);
 
     // Validate the delegate certificate using the master verifying key
     let delegate_attributes = match validate_delegate_certificate(master_verifying_key_pem, delegate_certificate) {
         Ok(attributes) => {
-            println!("Delegate certificate validated successfully");
+            println!("{}", "Delegate certificate validated successfully".green());
             attributes
         },
         Err(e) => {
-            println!("Failed to validate delegate certificate: {:?}", e);
+            println!("{}", "Failed to validate delegate certificate".red());
+            error!("Failed to validate delegate certificate: {:?}", e);
             return Err(e);
         }
     };
 
     // Verify the ghostkey signature
     match verify_ghostkey_signature(&ghostkey_certificate, delegate_certificate) {
-        Ok(_) => println!("Ghostkey signature verified successfully"),
+        Ok(_) => println!("{}", "Ghostkey signature verified successfully".green()),
         Err(e) => {
-            println!("Failed to verify ghostkey signature: {:?}", e);
+            println!("{}", "Failed to verify ghostkey signature".red());
+            error!("Failed to verify ghostkey signature: {:?}", e);
             return Err(e);
         }
     }
@@ -149,27 +155,27 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
 }
 
 pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &[u8]) -> Result<String, CryptoError> {
-    println!("Validating delegate certificate");
+    info!("Validating delegate certificate");
     
     // Extract the base64 encoded master verifying key
     let master_verifying_key_bytes = extract_bytes_from_armor(master_verifying_key_pem, "MASTER VERIFYING KEY")?;
-    println!("Master verifying key bytes: {:?}", master_verifying_key_bytes);
+    debug!("Master verifying key bytes: {:?}", master_verifying_key_bytes);
     
     let master_verifying_key = VerifyingKey::from_sec1_bytes(&master_verifying_key_bytes)
         .map_err(|e| {
-            println!("Failed to create VerifyingKey: {:?}", e);
+            error!("Failed to create VerifyingKey: {:?}", e);
             CryptoError::KeyCreationError(e.to_string())
         })?;
 
     // Deserialize the delegate certificate
     let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(delegate_certificate)
         .map_err(|e| {
-            println!("Deserialization error: {:?}", e);
-            println!("Delegate certificate bytes: {:?}", delegate_certificate);
+            error!("Deserialization error: {:?}", e);
+            debug!("Delegate certificate bytes: {:?}", delegate_certificate);
             CryptoError::DeserializationError(e.to_string())
         })?;
 
-    println!("Deserialized delegate certificate: {:?}", delegate_cert);
+    debug!("Deserialized delegate certificate: {:?}", delegate_cert);
 
     // Recreate the certificate data that was originally signed
     let certificate_data = DelegateKeyCertificate {
@@ -181,111 +187,111 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
     // Serialize the certificate data
     let buf = rmp_serde::to_vec(&certificate_data)
         .map_err(|e| {
-            println!("Failed to serialize certificate data: {:?}", e);
+            error!("Failed to serialize certificate data: {:?}", e);
             CryptoError::SerializationError(e.to_string())
         })?;
 
-    println!("Serialized certificate data: {:?}", buf);
+    debug!("Serialized certificate data: {:?}", buf);
 
     // Verify the signature
     let signature = match ecdsa::Signature::from_der(&delegate_cert.signature) {
         Ok(sig) => {
-            println!("Successfully created Signature from DER");
+            debug!("Successfully created Signature from DER");
             sig
         },
         Err(e) => {
-            println!("Failed to create Signature from DER: {:?}", e);
-            println!("DER-encoded signature: {:?}", delegate_cert.signature);
+            warn!("Failed to create Signature from DER: {:?}", e);
+            debug!("DER-encoded signature: {:?}", delegate_cert.signature);
             // Try to create signature from raw bytes as a fallback
             match ecdsa::Signature::try_from(delegate_cert.signature.as_slice()) {
                 Ok(sig) => {
-                    println!("Successfully created Signature from raw bytes");
+                    debug!("Successfully created Signature from raw bytes");
                     sig
                 },
                 Err(e) => {
-                    println!("Failed to create Signature from raw bytes: {:?}", e);
+                    error!("Failed to create Signature from raw bytes: {:?}", e);
                     return Err(CryptoError::SignatureError(format!("Failed to create Signature from DER and raw bytes: {:?}", e)));
                 }
             }
         }
     };
 
-    println!("Signature: {:?}", signature);
+    debug!("Signature: {:?}", signature);
 
     match master_verifying_key.verify(&buf, &signature) {
         Ok(_) => {
-            println!("Signature verified successfully");
+            info!("Signature verified successfully");
             Ok(delegate_cert.attributes)
         },
         Err(e) => {
-            println!("Signature verification failed: {:?}", e);
-            println!("Data being verified: {:?}", buf);
-            println!("Signature being verified: {:?}", signature);
+            error!("Signature verification failed: {:?}", e);
+            debug!("Data being verified: {:?}", buf);
+            debug!("Signature being verified: {:?}", signature);
             Err(CryptoError::SignatureVerificationError(format!("Signature verification failed: {:?}", e)))
         }
     }
 }
 
 pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, delegate_certificate: &[u8]) -> Result<(), CryptoError> {
-    println!("Verifying ghostkey signature");
+    info!("Verifying ghostkey signature");
     
     // Extract the delegate verifying key from the delegate certificate
     let delegate_verifying_key = extract_delegate_verifying_key(delegate_certificate)?;
-    println!("Extracted delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
+    debug!("Extracted delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
 
     // Recreate the certificate data that was originally signed
     let certificate_data = GhostkeySigningData {
         delegate_certificate: ghostkey_certificate.delegate_certificate.clone(),
         ghostkey_verifying_key: ghostkey_certificate.ghostkey_verifying_key.clone(),
     };
-    println!("Recreated certificate data: {:?}", certificate_data);
+    debug!("Recreated certificate data: {:?}", certificate_data);
 
     // Serialize the certificate data
     let buf = rmp_serde::to_vec(&certificate_data)
         .map_err(|e| {
-            println!("Failed to serialize certificate data: {:?}", e);
+            error!("Failed to serialize certificate data: {:?}", e);
             CryptoError::SerializationError(e.to_string())
         })?;
-    println!("Serialized certificate data: {:?}", buf);
+    debug!("Serialized certificate data: {:?}", buf);
 
     // Create the signature from the stored bytes
     let signature = ecdsa::Signature::from_der(&ghostkey_certificate.signature)
         .or_else(|e| {
-            println!("Failed to create signature from DER: {:?}", e);
+            warn!("Failed to create signature from DER: {:?}", e);
             if ghostkey_certificate.signature.len() != 64 {
-                println!("Invalid signature length: {}", ghostkey_certificate.signature.len());
+                error!("Invalid signature length: {}", ghostkey_certificate.signature.len());
                 return Err(CryptoError::SignatureError("Invalid signature length".to_string()));
             }
             let bytes: [u8; 64] = ghostkey_certificate.signature[..64].try_into()
                 .map_err(|_| CryptoError::SignatureError("Failed to convert signature to array".to_string()))?;
             ecdsa::Signature::from_slice(&bytes)
                 .map_err(|e| {
-                    println!("Failed to create signature from bytes: {:?}", e);
+                    error!("Failed to create signature from bytes: {:?}", e);
                     CryptoError::SignatureError(format!("Failed to create signature from bytes: {}", e))
                 })
         })
         .map_err(|e| {
-            println!("Failed to create signature: {:?}", e);
+            error!("Failed to create signature: {:?}", e);
             e
         })?;
-    println!("Created signature: {:?}", signature);
+    debug!("Created signature: {:?}", signature);
 
     // Create the VerifyingKey from the ghostkey_verifying_key
     let ghostkey_verifying_key = VerifyingKey::from_sec1_bytes(&ghostkey_certificate.ghostkey_verifying_key)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
-    println!("Created ghostkey verifying key: {:?}", ghostkey_verifying_key.to_encoded_point(false));
+    debug!("Created ghostkey verifying key: {:?}", ghostkey_verifying_key.to_encoded_point(false));
 
     // Verify the signature using the ghostkey verifying key
     match ghostkey_verifying_key.verify(&buf, &signature) {
         Ok(_) => {
-            println!("Signature verified successfully");
+            info!("Signature verified successfully");
             Ok(())
         },
         Err(e) => {
-            println!("Signature verification failed: {:?}", e);
-            println!("Ghostkey verifying key: {:?}", ghostkey_verifying_key.to_encoded_point(false));
-            println!("Data being verified: {:?}", buf);
-            println!("Signature being verified: {:?}", signature);
+            error!("Signature verification failed: {:?}", e);
+            debug!("Ghostkey verifying key: {:?}", ghostkey_verifying_key.to_encoded_point(false));
+            debug!("Data being verified: {:?}", buf);
+            debug!("Signature being verified: {:?}", signature);
             Err(CryptoError::SignatureVerificationError(e.to_string()))
         }
     }
