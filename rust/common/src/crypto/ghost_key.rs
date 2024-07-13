@@ -6,7 +6,7 @@ use p256::FieldBytes;
 use crate::armor;
 use serde::{Serialize, Deserialize};
 use rmp_serde::Serializer;
-use crate::crypto::{CryptoError, extract_base64_from_armor};
+use crate::crypto::{CryptoError, extract_bytes_from_armor};
 use rmp_serde;
 
 #[derive(Serialize, Deserialize, Debug)]

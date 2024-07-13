@@ -1,7 +1,7 @@
 use super::*;
 
 pub fn generate_master_verifying_key(master_signing_key_pem: &str) -> Result<String, CryptoError> {
-    let signing_key_base64 = extract_base64_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
+    let signing_key_bytes = extract_bytes_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
 
     let signing_key_bytes = general_purpose::STANDARD.decode(&signing_key_base64)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;

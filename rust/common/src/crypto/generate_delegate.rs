@@ -5,7 +5,7 @@ use p256::ecdsa::{self, signature::Signer};
 use crate::armor;
 use serde::{Serialize, Deserialize};
 use rmp_serde;
-use crate::crypto::{CryptoError, extract_base64_from_armor};
+use crate::crypto::{CryptoError, extract_bytes_from_armor};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DelegateKeyCertificate {
