@@ -292,8 +292,14 @@ fn generate_and_save_master_key(output_dir: &str) -> Result<(), Box<dyn std::err
 }
 
 fn generate_and_save_delegate_key(master_key_file: &str, info: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+    // Create the directory for the master key file if it doesn't exist
+    if let Some(parent) = std::path::Path::new(master_key_file).parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+
     check_file_permissions(master_key_file, false)?;
-    let master_signing_key = std::fs::read_to_string(master_key_file)?;
+    let master_signing_key = std::fs::read_to_string(master_key_file)
+        .map_err(|e| format!("Failed to read master signing key file '{}': {}", master_key_file, e))?;
     let (delegate_certificate, delegate_signing_key) = generate_delegate_key(&master_signing_key, info)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     
@@ -315,9 +321,12 @@ fn generate_and_save_delegate_key(master_key_file: &str, info: &str, output_dir:
 }
 
 fn save_key_to_file(output_dir: &str, filename: &str, content: &str, is_private: bool) -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
-    create_dir_all(output_dir)?;
     let file_path = Path::new(output_dir).join(filename);
-    let mut file = File::create(&file_path)?;
+    if let Some(parent) = file_path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let mut file = File::create(&file_path)
+        .map_err(|e| format!("Failed to create file '{}': {}", file_path.display(), e))?;
     file.write_all(content.as_bytes())?;
     
     if is_private {
