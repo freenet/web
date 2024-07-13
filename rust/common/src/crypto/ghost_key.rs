@@ -35,7 +35,7 @@ pub struct GhostkeySigningData {
     ghostkey_verifying_key: Vec<u8>,
 }
 
-pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoError> {
+pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str) -> Result<String, CryptoError> {
     info!("Generating ghostkey");
     
     // Extract the delegate certificate bytes
@@ -47,10 +47,11 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
         .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
     debug!("Deserialized delegate certificate: {:?}", delegate_cert);
 
-    // Extract the delegate verifying key
-    let delegate_verifying_key = VerifyingKey::from_sec1_bytes(&delegate_cert.verifying_key)
+    // Extract the delegate signing key
+    let delegate_signing_key_bytes = extract_bytes_from_armor(delegate_signing_key, "DELEGATE SIGNING KEY")?;
+    let delegate_signing_key = SigningKey::from_slice(&delegate_signing_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
-    debug!("Extracted delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
+    debug!("Extracted delegate signing key");
 
     // Generate the ghostkey key pair
     let ghostkey_signing_key = SigningKey::random(&mut OsRng);
@@ -69,8 +70,8 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
     debug!("Serialized signing data: {:?}", buf);
 
-    // Sign the serialized data with the ghostkey signing key
-    let signature: ecdsa::Signature = ghostkey_signing_key.sign(&buf);
+    // Sign the serialized data with the delegate signing key
+    let signature: ecdsa::Signature = delegate_signing_key.sign(&buf);
     debug!("Generated signature: {:?}", signature);
 
     // Create the final certificate with the signature
