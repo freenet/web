@@ -56,17 +56,33 @@ expect_failure() {
     fi
 }
 
+# Function to handle errors
+handle_error() {
+    echo "Error occurred in test: $1"
+    echo "Command: $2"
+    echo "Error message: $3"
+    exit 1
+}
+
+# Trap for error handling
+trap 'handle_error "${BASH_COMMAND}" "$_" "$?"' ERR
+
 # Generate master keys
-run_command "generate master key" "cargo run -- generate-master-key --output-dir $TEST_DIR"
-run_command "generate wrong master key" "cargo run -- generate-master-key --output-dir $TEST_DIR/wrong_master"
+run_command "generate master key" "cargo run -- generate-master-key --output-dir $TEST_DIR" || handle_error "generate master key" "cargo run -- generate-master-key --output-dir $TEST_DIR" "$?"
+run_command "generate wrong master key" "cargo run -- generate-master-key --output-dir $TEST_DIR/wrong_master" || handle_error "generate wrong master key" "cargo run -- generate-master-key --output-dir $TEST_DIR/wrong_master" "$?"
 
 # Generate delegate keys
-run_command "generate delegate key" "cargo run -- generate-delegate-key --master-signing-key-file $TEST_DIR/master_signing_key.pem --info 'test-delegate' --output-dir $TEST_DIR"
-run_command "generate wrong delegate key" "cargo run -- generate-delegate-key --master-signing-key-file $TEST_DIR/wrong_master/master_signing_key.pem --info 'wrong-delegate' --output-dir $TEST_DIR/wrong_delegate"
+run_command "generate delegate key" "cargo run -- generate-delegate-key --master-signing-key-file $TEST_DIR/master_signing_key.pem --info 'test-delegate' --output-dir $TEST_DIR" || handle_error "generate delegate key" "cargo run -- generate-delegate-key --master-signing-key-file $TEST_DIR/master_signing_key.pem --info 'test-delegate' --output-dir $TEST_DIR" "$?"
+run_command "generate wrong delegate key" "cargo run -- generate-delegate-key --master-signing-key-file $TEST_DIR/wrong_master/master_signing_key.pem --info 'wrong-delegate' --output-dir $TEST_DIR/wrong_delegate" || handle_error "generate wrong delegate key" "cargo run -- generate-delegate-key --master-signing-key-file $TEST_DIR/wrong_master/master_signing_key.pem --info 'wrong-delegate' --output-dir $TEST_DIR/wrong_delegate" "$?"
 
 # Generate ghost keys
-run_command "generate ghost key" "cargo run -- generate-ghost-key --delegate-certificate-file $TEST_DIR/delegate_certificate.pem --output-dir $TEST_DIR"
-run_command "generate wrong ghost key" "cargo run -- generate-ghost-key --delegate-certificate-file $TEST_DIR/wrong_delegate/delegate_certificate.pem --output-dir $TEST_DIR/wrong_ghost"
+run_command "generate ghost key" "cargo run -- generate-ghost-key --delegate-certificate-file $TEST_DIR/delegate_certificate.pem --output-dir $TEST_DIR" || handle_error "generate ghost key" "cargo run -- generate-ghost-key --delegate-certificate-file $TEST_DIR/delegate_certificate.pem --output-dir $TEST_DIR" "$?"
+run_command "generate wrong ghost key" "cargo run -- generate-ghost-key --delegate-certificate-file $TEST_DIR/wrong_delegate/delegate_certificate.pem --output-dir $TEST_DIR/wrong_ghost" || handle_error "generate wrong ghost key" "cargo run -- generate-ghost-key --delegate-certificate-file $TEST_DIR/wrong_delegate/delegate_certificate.pem --output-dir $TEST_DIR/wrong_ghost" "$?"
+
+# Add debugging information
+echo "Current directory: $(pwd)"
+echo "Contents of TEST_DIR:"
+ls -R "$TEST_DIR"
 
 # Validate delegate key (correct)
 run_command "validate correct delegate key" "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
