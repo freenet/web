@@ -9,26 +9,33 @@ OVERWRITE=false
 
 # Function to display usage information
 usage() {
-    echo "Usage: $0 <master_signing_key_file> <signing_keys_dir> [<cert_dir>] [--amounts <amount1> <amount2> ...] [--overwrite]"
-    echo "  <master_signing_key_file>: Path to the master signing key file"
-    echo "  <signing_keys_dir>: Directory to store delegate signing keys (must be outside the git repository)"
-    echo "  <cert_dir>: Directory to store delegate certificates (default: $CERT_DIR)"
+    echo "Usage: $0 --master-key <master_signing_key_file> --signing-keys-dir <signing_keys_dir> [--cert-dir <cert_dir>] [--amounts <amount1> <amount2> ...] [--overwrite]"
+    echo "  --master-key <master_signing_key_file>: Path to the master signing key file"
+    echo "  --signing-keys-dir <signing_keys_dir>: Directory to store delegate signing keys (must be outside the git repository)"
+    echo "  --cert-dir <cert_dir>: Directory to store delegate certificates (default: $CERT_DIR)"
     echo "  --amounts: List of monetary values (default: ${DEFAULT_AMOUNTS[*]})"
     echo "  --overwrite: Allow overwriting existing files"
     exit 1
 }
 
 # Parse command-line arguments
-if [ $# -lt 2 ]; then
-    usage
-fi
-
-MASTER_KEY_FILE="$1"
-SIGNING_KEYS_DIR="$2"
-shift 2
+MASTER_KEY_FILE=""
+SIGNING_KEYS_DIR=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
+        --master-key)
+            MASTER_KEY_FILE="$2"
+            shift 2
+            ;;
+        --signing-keys-dir)
+            SIGNING_KEYS_DIR="$2"
+            shift 2
+            ;;
+        --cert-dir)
+            CERT_DIR="$2"
+            shift 2
+            ;;
         --amounts)
             shift
             AMOUNTS=()
@@ -42,11 +49,17 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         *)
-            CERT_DIR="$1"
-            shift
+            echo "Unknown option: $1"
+            usage
             ;;
     esac
 done
+
+# Check if required arguments are provided
+if [ -z "$MASTER_KEY_FILE" ] || [ -z "$SIGNING_KEYS_DIR" ]; then
+    echo "Error: Master key file and signing keys directory are required."
+    usage
+fi
 
 # Use default amounts if not provided
 if [ ${#AMOUNTS[@]} -eq 0 ]; then
