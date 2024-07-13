@@ -17,6 +17,7 @@ use serde::Serialize;
 use rmp_serde::Serializer;
 use crate::crypto::crypto_error::CryptoError;
 use crate::crypto::generate_delegate::DelegateKeyCertificate;
+use log::{info, warn, debug, error};
 
 pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
     // Generate the signing key
@@ -59,31 +60,31 @@ fn extract_bytes_from_armor(armored_key: &str, expected_armor_type: &str) -> Res
 }
 
 pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
-    println!("Master verifying key PEM: {}", master_verifying_key_pem);
-    println!("Delegate certificate: {}", delegate_certificate);
+    debug!("Master verifying key PEM: {}", master_verifying_key_pem);
+    debug!("Delegate certificate: {}", delegate_certificate);
 
     let master_verifying_key_bytes = extract_bytes_from_armor(master_verifying_key_pem, "MASTER VERIFYING KEY")?;
-    println!("Extracted master verifying key bytes: {:?}", master_verifying_key_bytes);
+    debug!("Extracted master verifying key bytes: {:?}", master_verifying_key_bytes);
 
     let master_verifying_key = VerifyingKey::from_sec1_bytes(&master_verifying_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
-    println!("Extracting delegate certificate bytes");
+    debug!("Extracting delegate certificate bytes");
     let certificate_bytes = extract_bytes_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
-    println!("Extracted delegate certificate bytes: {:?}", certificate_bytes);
+    debug!("Extracted delegate certificate bytes: {:?}", certificate_bytes);
 
     let certificate: DelegateKeyCertificate = match rmp_serde::from_slice(&certificate_bytes) {
         Ok(cert) => {
-            println!("Successfully deserialized certificate: {:?}", cert);
+            debug!("Successfully deserialized certificate: {:?}", cert);
             cert
         },
         Err(e) => {
-            println!("Failed to deserialize certificate: {}", e);
-            println!("Certificate bytes: {:?}", certificate_bytes);
+            warn!("Failed to deserialize certificate: {}", e);
+            debug!("Certificate bytes: {:?}", certificate_bytes);
             // Try to deserialize as a string
             match String::from_utf8(certificate_bytes.clone()) {
-                Ok(s) => println!("Certificate as string: {}", s),
-                Err(_) => println!("Certificate is not valid UTF-8"),
+                Ok(s) => debug!("Certificate as string: {}", s),
+                Err(_) => warn!("Certificate is not valid UTF-8"),
             }
             return Err(CryptoError::DeserializationError(e.to_string()));
         }
