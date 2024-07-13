@@ -7,7 +7,7 @@ use serde::{Serialize, Deserialize};
 use rmp_serde::{Serializer};
 use crate::crypto::{CryptoError, extract_base64_from_armor};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct DelegateKeyCertificate {
     pub verifying_key: Vec<u8>,
     pub attributes: String,
