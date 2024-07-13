@@ -353,23 +353,34 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
 }
 
 fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+    info!("Reading delegate certificate from file: {}", delegate_certificate_file);
     let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)
-        .map_err(|e| format!("Failed to read delegate certificate file: {}", e))?;
+        .map_err(|e| {
+            error!("Failed to read delegate certificate file: {}", e);
+            format!("Failed to read delegate certificate file: {}", e)
+        })?;
     
+    info!("Generating ghost key from delegate certificate");
     let ghostkey_certificate = generate_ghostkey(&delegate_certificate)
-        .map_err(|e| format!("Failed to generate ghostkey: {}", e))?;
+        .map_err(|e| {
+            error!("Failed to generate ghostkey: {}", e);
+            format!("Failed to generate ghostkey: {}", e)
+        })?;
     
     let file_path = Path::new(output_dir).join("ghostkey_certificate.pem");
     if file_path.exists() {
+        error!("File '{}' already exists", file_path.display());
         return Err(format!("File '{}' already exists. Please choose a different output directory or remove the existing file.", file_path.display()).into());
     }
     
+    info!("Saving ghost key certificate to file: {}", file_path.display());
     match save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate, true) {
         Ok(_) => {
-            println!("Ghost key generated and saved successfully.");
+            println!("{}", "Ghost key generated and saved successfully.".green());
             println!("File created: {}", file_path.display());
         },
         Err(e) => {
+            error!("Failed to save ghostkey certificate: {}", e);
             return Err(format!("Failed to save ghostkey certificate: {}", e).into());
         }
     }
