@@ -94,6 +94,7 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
 mod tests {
     use super::*;
     use serde_json::json;
+    use crate::crypto::generate_delegate::generate_delegate_key;
     use crate::crypto::master_key::generate_master_key;
     use crate::crypto::sign_with_key::sign_with_key;
 
