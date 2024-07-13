@@ -18,7 +18,7 @@ struct DelegateCertificate {
 #[derive(Serialize, Deserialize, Debug)]
 struct DelegateKeyCertificate {
     pub verifying_key: Vec<u8>,
-    pub attributes: String,
+    pub info: String,
     pub signature: Vec<u8>,
 }
 
@@ -165,7 +165,7 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
     // Recreate the certificate data that was originally signed
     let certificate_data = DelegateKeyCertificate {
         verifying_key: delegate_cert.verifying_key.clone(),
-        attributes: delegate_cert.attributes.clone(),
+        info: delegate_cert.info.clone(),
         signature: vec![],
     };
 
@@ -206,7 +206,7 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
     match master_verifying_key.verify(&buf, &signature) {
         Ok(_) => {
             info!("Signature verified successfully");
-            Ok(delegate_cert.attributes)
+            Ok(delegate_cert.info)
         },
         Err(e) => {
             error!("Signature verification failed: {:?}", e);
@@ -298,7 +298,7 @@ pub fn extract_delegate_verifying_key(delegate_certificate: &[u8]) -> Result<Ver
 ///
 /// # Returns
 ///
-/// The delegate attributes as a string if validation is successful, or a CryptoError if validation fails.
+/// The delegate info as a string if validation is successful, or a CryptoError if validation fails.
 pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<String, CryptoError> {
     validate_ghost_key(master_verifying_key_pem, ghostkey_certificate_armored)
 }
