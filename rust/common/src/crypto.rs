@@ -63,9 +63,9 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
     println!("Delegate certificate: {}", delegate_certificate);
 
     let master_verifying_key_base64 = extract_base64_from_armor(master_verifying_key_pem, "MASTER VERIFYING KEY")?;
-    println!("Extracted master verifying key base64: {}", master_verifying_key_base64);
+    println!("Extracted master verifying key base64: {:?}", master_verifying_key_base64);
 
-    let master_verifying_key_bytes = general_purpose::STANDARD.decode(master_verifying_key_base64.trim())
+    let master_verifying_key_bytes = general_purpose::STANDARD.decode(&master_verifying_key_base64)
         .map_err(|e| {
             println!("Failed to decode master verifying key: {}", e);
             CryptoError::Base64DecodeError(e.to_string())
@@ -77,10 +77,10 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
 
     println!("Extracting delegate certificate base64");
     let delegate_certificate_base64 = extract_base64_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
-    println!("Extracted delegate certificate base64: {}", delegate_certificate_base64);
+    println!("Extracted delegate certificate base64: {:?}", delegate_certificate_base64);
 
     println!("Attempting to decode delegate certificate");
-    let certificate_bytes = general_purpose::STANDARD.decode(delegate_certificate_base64.trim())
+    let certificate_bytes = general_purpose::STANDARD.decode(&delegate_certificate_base64)
         .map_err(|e| {
             println!("Failed to decode delegate certificate: {}", e);
             CryptoError::Base64DecodeError(e.to_string())
