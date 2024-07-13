@@ -3,8 +3,9 @@ use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use std::collections::HashMap;
 use p256::{
-    ecdsa::{self, SigningKey, VerifyingKey, signature::Signer},
+    ecdsa::{self, SigningKey},
     SecretKey,
+    pkcs8::DecodePrivateKey,
 };
 use rand_core::OsRng;
 use sha2::{Sha256, Digest};
