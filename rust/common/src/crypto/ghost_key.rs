@@ -176,6 +176,16 @@ pub fn extract_delegate_verifying_key(delegate_certificate: &str) -> Result<Veri
     VerifyingKey::from_sec1_bytes(&verifying_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))
 }
-pub fn validate_ghost_key_command(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<String, CryptoError> {
+/// Validates an armored ghost key certificate using the provided master verifying key.
+///
+/// # Arguments
+///
+/// * `master_verifying_key_pem` - The master verifying key in PEM format
+/// * `ghostkey_certificate_armored` - The ghost key certificate in armored format
+///
+/// # Returns
+///
+/// The delegate attributes as a string if validation is successful, or a CryptoError if validation fails.
+pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<String, CryptoError> {
     validate_ghost_key(master_verifying_key_pem, ghostkey_certificate_armored)
 }
