@@ -1,7 +1,8 @@
-use clap::{Command, Arg};
-use std::fs::{File, create_dir_all};
+use clap::{Command, Arg, ArgAction};
+use std::fs::{File, create_dir_all, Permissions};
 use std::io::Write;
 use std::path::Path;
+use std::os::unix::fs::PermissionsExt;
 use common::crypto::generate_delegate::generate_delegate_key;
 use common::crypto::master_key::{generate_master_key, generate_master_verifying_key};
 use colored::Colorize;
@@ -22,6 +23,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("The file containing the signing key (master or delegate)")
                 .required(true)
                 .value_name("FILE"))
+            .arg(Arg::new("ignore-permissions")
+                .long("ignore-permissions")
+                .help("Ignore file permission checks")
+                .action(ArgAction::SetTrue))
             .arg(Arg::new("message")
                 .long("message")
                 .help("The message to sign (required if --message-file is not provided)")
@@ -178,7 +183,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let message = sub_matches.get_one::<String>("message");
             let message_file = sub_matches.get_one::<String>("message-file");
             let output_file = sub_matches.get_one::<String>("output-file");
-            sign_message_command(signing_key_file, message.map(|s| s.as_str()), message_file.map(|s| s.as_str()), output_file.map(|s| s.as_str()))?;
+            let ignore_permissions = sub_matches.get_flag("ignore-permissions");
+            sign_message_command(signing_key_file, message.map(|s| s.as_str()), message_file.map(|s| s.as_str()), output_file.map(|s| s.as_str()), ignore_permissions)?;
         }
         Some(("verify-signature", sub_matches)) => {
             let verifying_key_file = sub_matches.get_one::<String>("verifying-key-file").unwrap();
@@ -196,7 +202,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn sign_message_command(signing_key_file: &str, message: Option<&str>, message_file: Option<&str>, output_file: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
+fn check_file_permissions(file_path: &str, ignore_permissions: bool) -> Result<(), Box<dyn std::error::Error>> {
+    if !ignore_permissions {
+        let metadata = std::fs::metadata(file_path)?;
+        let permissions = metadata.permissions();
+        let mode = permissions.mode();
+        
+        if mode & 0o077 != 0 {
+            return Err(format!("The signing key file '{}' has incorrect permissions. It should not be readable or writable by group or others. Use chmod 600 to set the correct permissions, or use --ignore-permissions to override this check.", file_path).into());
+        }
+    }
+    Ok(())
+}
+
+fn sign_message_command(signing_key_file: &str, message: Option<&str>, message_file: Option<&str>, output_file: Option<&str>, ignore_permissions: bool) -> Result<(), Box<dyn std::error::Error>> {
+    check_file_permissions(signing_key_file, ignore_permissions)?;
     let signing_key = std::fs::read_to_string(signing_key_file)?;
     
     let message_content = if let Some(msg) = message {
@@ -241,27 +261,34 @@ fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certi
 
 fn generate_and_save_master_key(output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
     let (private_key, public_key) = generate_master_key().map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
-    save_key_to_file(output_dir, "master_signing_key.pem", &private_key)?;
-    save_key_to_file(output_dir, "master_verifying_key.pem", &public_key)?;
+    save_key_to_file(output_dir, "master_signing_key.pem", &private_key, true)?;
+    save_key_to_file(output_dir, "master_verifying_key.pem", &public_key, false)?;
     info!("MASTER_SIGNING_KEY and MASTER_VERIFYING_KEY generated successfully.");
     Ok(())
 }
 
 fn generate_and_save_delegate_key(master_key_file: &str, info: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+    check_file_permissions(master_key_file, false)?;
     let master_signing_key = std::fs::read_to_string(master_key_file)?;
     let delegate_certificate = generate_delegate_key(&master_signing_key, info)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
-    save_key_to_file(output_dir, "delegate_certificate.pem", &delegate_certificate)?;
+    save_key_to_file(output_dir, "delegate_certificate.pem", &delegate_certificate, true)?;
     info!("Delegate certificate generated successfully.");
     Ok(())
 }
 
-
-fn save_key_to_file(output_dir: &str, filename: &str, content: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn save_key_to_file(output_dir: &str, filename: &str, content: &str, is_private: bool) -> Result<(), Box<dyn std::error::Error>> {
     create_dir_all(output_dir)?;
     let file_path = Path::new(output_dir).join(filename);
-    let mut file = File::create(file_path)?;
+    let mut file = File::create(&file_path)?;
     file.write_all(content.as_bytes())?;
+    
+    if is_private {
+        let mut perms = file.metadata()?.permissions();
+        perms.set_mode(0o600);
+        file.set_permissions(perms)?;
+    }
+    
     Ok(())
 }
 fn verify_signature_command(verifying_key_file: &str, message: Option<&str>, message_file: Option<&str>, signature_file: &str, master_verifying_key_file: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
