@@ -132,7 +132,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .long("output-dir")
                 .help("The directory to output the ghost key files")
                 .required(true)
-                .value_name("DIR")))
+                .value_name("DIR"))
+            .arg(Arg::new("overwrite")
+                .long("overwrite")
+                .help("Overwrite existing ghost key file if it exists")
+                .action(ArgAction::SetTrue)))
         .subcommand(Command::new("validate-ghost-key")
             .about("Validates a ghost key certificate using the master verifying key")
             .arg(Arg::new("master-verifying-key-file")
@@ -171,7 +175,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(("generate-ghost-key", sub_matches)) => {
             let delegate_certificate_file = sub_matches.get_one::<String>("delegate-certificate-file").unwrap();
             let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
-            generate_ghostkey_command(delegate_certificate_file, output_dir)?;
+            let overwrite = sub_matches.get_flag("overwrite");
+            generate_ghostkey_command(delegate_certificate_file, output_dir, overwrite)?;
         }
         Some(("validate-ghost-key", sub_matches)) => {
             let master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key-file").unwrap();
@@ -352,7 +357,7 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
     Ok(())
 }
 
-fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str, overwrite: bool) -> Result<(), Box<dyn std::error::Error>> {
     info!("Reading delegate certificate from file: {}", delegate_certificate_file);
     let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)
         .map_err(|e| {
@@ -368,9 +373,9 @@ fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) 
         })?;
     
     let file_path = Path::new(output_dir).join("ghostkey_certificate.pem");
-    if file_path.exists() {
+    if file_path.exists() && !overwrite {
         error!("File '{}' already exists", file_path.display());
-        return Err(format!("File '{}' already exists. Please choose a different output directory or remove the existing file.", file_path.display()).into());
+        return Err(format!("File '{}' already exists. Use --overwrite to replace the existing file or choose a different output directory.", file_path.display()).into());
     }
     
     info!("Saving ghost key certificate to file: {}", file_path.display());
