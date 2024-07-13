@@ -2,27 +2,30 @@ use super::*;
 
 #[derive(Debug, PartialEq)]
 pub enum CryptoError {
-    IoError(String),
-    Base64DecodeError(String),
     KeyCreationError(String),
+    SignatureError(String),
+    SignatureVerificationError(String),
+    Base64DecodeError(String),
     SerializationError(String),
     DeserializationError(String),
     InvalidInput(String),
-    SignatureError(String),
-    SignatureVerificationError(String),
-    NotImplemented(String),
+    ArmorError(String),
 }
+
 
 impl std::error::Error for CryptoError {}
 
-impl fmt::Display for CryptoError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl std::fmt::Display for CryptoError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            CryptoError::IoError(e) => write!(f, "{}", e.red()),
-            CryptoError::Base64DecodeError(e) => write!(f, "{}", e.red()),
-            CryptoError::KeyCreationError(e) => write!(f, "{}", e.red()),
-            CryptoError::SerializationError(e) => write!(f, "{}", e.red()),
-            CryptoError::InvalidInput(e) => write!(f, "{}", e.red()),
+            CryptoError::KeyCreationError(msg) => write!(f, "Key Creation Error: {}", msg),
+            CryptoError::SignatureError(msg) => write!(f, "Signature Error: {}", msg),
+            CryptoError::SignatureVerificationError(msg) => write!(f, "Signature Verification Error: {}", msg),
+            CryptoError::Base64DecodeError(msg) => write!(f, "Base64 Decode Error: {}", msg),
+            CryptoError::SerializationError(msg) => write!(f, "Serialization Error: {}", msg),
+            CryptoError::DeserializationError(msg) => write!(f, "Deserialization Error: {}", msg),
+            CryptoError::InvalidInput(msg) => write!(f, "Invalid Input: {}", msg),
+            CryptoError::ArmorError(msg) => write!(f, "Armor Error: {}", msg),
         }
     }
 }

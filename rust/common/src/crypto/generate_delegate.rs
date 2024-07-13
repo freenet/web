@@ -15,14 +15,14 @@ pub struct DelegateKeyCertificate {
     pub signature: Vec<u8>,
 }
 
-pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> Result<(String, String), CryptoError> {
-    let master_signing_key_base64 = extract_base64_from_armor(master_signing_key_pem, "SERVER MASTER SIGNING KEY")?;
+pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> Result<String, CryptoError> {
+    let master_signing_key_base64 = extract_base64_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
     let master_signing_key_bytes = general_purpose::STANDARD.decode(&master_signing_key_base64)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let master_signing_key = SigningKey::from_slice(&master_signing_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
-    // Generate the delegate signing key
+    // Generate the delegate key pair
     let delegate_signing_key = SigningKey::random(&mut OsRng);
     let delegate_verifying_key = VerifyingKey::from(&delegate_signing_key);
 
@@ -49,10 +49,8 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
     let signed_certificate_base64 = general_purpose::STANDARD.encode(buf);
 
-    // Encode the delegate signing key
-    let delegate_signing_key_bytes = delegate_signing_key.to_bytes();
-    println!("Delegate signing key bytes length: {}", delegate_signing_key_bytes.len());
-    let armored_delegate_signing_key = armor(&delegate_signing_key_bytes, "DELEGATE SIGNING KEY", "DELEGATE SIGNING KEY");
+    // Armor the signed certificate
+    let armored_delegate_certificate = armor(signed_certificate_base64.as_bytes(), "DELEGATE CERTIFICATE", "DELEGATE CERTIFICATE");
 
-    Ok((armored_delegate_signing_key, signed_certificate_base64))
+    Ok(armored_delegate_certificate)
 }
