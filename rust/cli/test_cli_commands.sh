@@ -23,6 +23,7 @@ run_command() {
             echo "Command: $command"
             echo "Output:"
             echo "$output" | grep -v "Compiling" | grep -v "Finished" | grep -v "Running"
+            echo ""
         fi
         return 0
     else
