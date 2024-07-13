@@ -129,14 +129,14 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     debug!("Extracted delegate certificate: {:?}", delegate_certificate);
 
     // Validate the delegate certificate using the master verifying key
-    let delegate_attributes = validate_delegate_certificate(master_verifying_key_pem, delegate_certificate)?;
+    let delegate_info = validate_delegate_certificate(master_verifying_key_pem, delegate_certificate)?;
 
     // Verify the ghostkey signature
     verify_ghostkey_signature(&ghostkey_certificate, delegate_certificate)?;
 
     println!("{}", "Ghost key certificate is valid".green());
 
-    Ok(delegate_attributes)
+    Ok(delegate_info)
 }
 
 pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &[u8]) -> Result<String, CryptoError> {
