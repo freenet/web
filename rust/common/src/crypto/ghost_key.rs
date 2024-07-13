@@ -5,8 +5,9 @@ use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use p256::FieldBytes;
 use crate::armor;
 use serde::{Serialize, Deserialize};
-use rmp_serde::{Serializer};
+use rmp_serde::Serializer;
 use crate::crypto::{CryptoError, extract_base64_from_armor};
+use bincode;
 use bincode;
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -4,7 +4,7 @@ use base64::{engine::general_purpose, Engine as _};
 use p256::ecdsa::{self, signature::Signer};
 use crate::armor;
 use serde::{Serialize, Deserialize};
-use rmp_serde::{Serializer};
+use bincode;
 use crate::crypto::{CryptoError, extract_base64_from_armor};
 
 #[derive(Serialize, Deserialize, Debug)]

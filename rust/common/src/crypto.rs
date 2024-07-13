@@ -13,9 +13,8 @@ use sha2::{Sha256, Digest};
 use p256::{SecretKey, FieldBytes};
 use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use crate::armor;
-use serde::{Serialize, Deserialize};
-use rmp_serde::{Serializer, Deserializer};
-use std::io::Cursor;
+use serde::Serialize;
+use rmp_serde::Serializer;
 use crate::crypto::crypto_error::CryptoError;
 use crate::crypto::generate_delegate::DelegateKeyCertificate;
 
