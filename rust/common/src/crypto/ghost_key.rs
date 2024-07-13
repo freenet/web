@@ -115,31 +115,41 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     println!("Extracted delegate certificate: {:?}", delegate_certificate);
 
     // Validate the delegate certificate using the master verifying key
-    let delegate_attributes = validate_delegate_certificate(master_verifying_key_pem, delegate_certificate)
-        .map_err(|e| {
+    let delegate_attributes = match validate_delegate_certificate(master_verifying_key_pem, delegate_certificate) {
+        Ok(attributes) => {
+            println!("Delegate certificate validated successfully");
+            attributes
+        },
+        Err(e) => {
             println!("Failed to validate delegate certificate: {:?}", e);
-            e
-        })?;
-
-    println!("Delegate certificate validated successfully");
+            return Err(e);
+        }
+    };
 
     // Verify the ghostkey signature
-    verify_ghostkey_signature(&ghostkey_certificate, delegate_certificate)
-        .map_err(|e| {
+    match verify_ghostkey_signature(&ghostkey_certificate, delegate_certificate) {
+        Ok(_) => println!("Ghostkey signature verified successfully"),
+        Err(e) => {
             println!("Failed to verify ghostkey signature: {:?}", e);
-            e
-        })?;
-
-    println!("Ghostkey signature verified successfully");
+            return Err(e);
+        }
+    }
 
     Ok(delegate_attributes)
 }
 
 pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &[u8]) -> Result<String, CryptoError> {
+    println!("Validating delegate certificate");
+    
     // Extract the base64 encoded master verifying key
     let master_verifying_key_bytes = extract_bytes_from_armor(master_verifying_key_pem, "MASTER VERIFYING KEY")?;
+    println!("Master verifying key bytes: {:?}", master_verifying_key_bytes);
+    
     let master_verifying_key = VerifyingKey::from_sec1_bytes(&master_verifying_key_bytes)
-        .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
+        .map_err(|e| {
+            println!("Failed to create VerifyingKey: {:?}", e);
+            CryptoError::KeyCreationError(e.to_string())
+        })?;
 
     // Deserialize the delegate certificate
     let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(delegate_certificate)
@@ -160,13 +170,29 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
 
     // Serialize the certificate data
     let buf = rmp_serde::to_vec(&certificate_data)
-        .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
+        .map_err(|e| {
+            println!("Failed to serialize certificate data: {:?}", e);
+            CryptoError::SerializationError(e.to_string())
+        })?;
+
+    println!("Serialized certificate data: {:?}", buf);
 
     // Verify the signature
     let signature = ecdsa::Signature::from_der(&delegate_cert.signature)
-        .map_err(|e| CryptoError::SignatureError(e.to_string()))?;
+        .map_err(|e| {
+            println!("Failed to create Signature from DER: {:?}", e);
+            CryptoError::SignatureError(e.to_string())
+        })?;
+
+    println!("Signature: {:?}", signature);
+
     master_verifying_key.verify(&buf, &signature)
-        .map_err(|e| CryptoError::SignatureVerificationError(e.to_string()))?;
+        .map_err(|e| {
+            println!("Signature verification failed: {:?}", e);
+            CryptoError::SignatureVerificationError(e.to_string())
+        })?;
+
+    println!("Signature verified successfully");
 
     // If verification is successful, return the attributes
     Ok(delegate_cert.attributes)
