@@ -307,7 +307,7 @@ pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostk
                 CryptoError::DeserializationError(_) => CryptoError::DeserializationError("The ghost key certificate is not in the expected format. It may be corrupted or invalid.".to_string()),
                 CryptoError::KeyCreationError(_) => CryptoError::KeyCreationError("There was an issue with the master verifying key. Please ensure it's correct and try again.".to_string()),
                 CryptoError::SignatureVerificationError(_) => CryptoError::SignatureVerificationError("The ghost key certificate signature is invalid. This could indicate tampering or an incorrect master key.".to_string()),
-                _ => CryptoError::Other("An unexpected error occurred during ghost key validation. Please try again or contact support if the issue persists.".to_string()),
+                _ => CryptoError::InvalidInput("An unexpected error occurred during ghost key validation. Please try again or contact support if the issue persists.".to_string()),
             }
         })
 }
