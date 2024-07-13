@@ -387,7 +387,7 @@ fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str, 
         },
         Err(e) => {
             error!("{}", format!("Failed to save ghostkey certificate: {}", e).red());
-            Err(format!("Failed to save ghostkey certificate: {}", e).into())
+            Err(e.into())
         }
     }
 }
