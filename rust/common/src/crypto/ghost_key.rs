@@ -34,20 +34,26 @@ pub struct GhostkeySigningData {
 }
 
 pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoError> {
+    println!("Generating ghostkey");
+    
     // Extract the delegate certificate bytes
     let delegate_certificate_bytes = extract_bytes_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
+    println!("Delegate certificate bytes: {:?}", delegate_certificate_bytes);
 
     // Deserialize the delegate certificate
     let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
         .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
+    println!("Deserialized delegate certificate: {:?}", delegate_cert);
 
     // Extract the delegate verifying key
-    let _delegate_verifying_key = VerifyingKey::from_sec1_bytes(&delegate_cert.verifying_key)
+    let delegate_verifying_key = VerifyingKey::from_sec1_bytes(&delegate_cert.verifying_key)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
+    println!("Extracted delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
 
     // Generate the ghostkey key pair
     let ghostkey_signing_key = SigningKey::random(&mut OsRng);
     let ghostkey_verifying_key = VerifyingKey::from(&ghostkey_signing_key);
+    println!("Generated ghostkey verifying key: {:?}", ghostkey_verifying_key.to_encoded_point(false));
 
     // Create the signing data
     let ghostkey_signing_data = GhostkeySigningData {
@@ -59,9 +65,11 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
     let mut buf = Vec::new();
     ghostkey_signing_data.serialize(&mut Serializer::new(&mut buf))
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
+    println!("Serialized signing data: {:?}", buf);
 
     // Sign the serialized data with the ghostkey signing key
     let signature: ecdsa::Signature = ghostkey_signing_key.sign(&buf);
+    println!("Generated signature: {:?}", signature);
 
     // Create the final certificate with the signature
     let final_certificate = GhostkeyCertificate {
@@ -74,9 +82,11 @@ pub fn generate_ghostkey(delegate_certificate: &str) -> Result<String, CryptoErr
     let mut final_buf = Vec::new();
     final_certificate.serialize(&mut Serializer::new(&mut final_buf))
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
+    println!("Serialized final certificate: {:?}", final_buf);
 
     // Encode the certificate
     let ghostkey_certificate_armored = armor(&final_buf, "GHOSTKEY CERTIFICATE", "GHOSTKEY CERTIFICATE");
+    println!("Armored ghostkey certificate: {}", ghostkey_certificate_armored);
 
     Ok(ghostkey_certificate_armored)
 }
