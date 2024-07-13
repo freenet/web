@@ -248,11 +248,10 @@ fn generate_and_save_master_key(output_dir: &str) -> Result<(), Box<dyn std::err
 
 fn generate_and_save_delegate_key(master_key_file: &str, attributes: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
     let master_signing_key = std::fs::read_to_string(master_key_file)?;
-    let (delegate_signing_key, delegate_certificate) = generate_delegate_key(&master_signing_key, attributes)
+    let delegate_certificate = generate_delegate_key(&master_signing_key, attributes)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
-    save_key_to_file(output_dir, "delegate_signing_key.pem", &delegate_signing_key)?;
     save_key_to_file(output_dir, "delegate_certificate.pem", &delegate_certificate)?;
-    println!("Delegate signing key and certificate generated successfully.");
+    println!("Delegate certificate generated successfully.");
     Ok(())
 }
 
@@ -309,17 +308,15 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
     Ok(())
 }
 
-fn generate_ghostkey_command(delegate_signing_key_file: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let delegate_signing_key = std::fs::read_to_string(delegate_signing_key_file)?;
+fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)?;
     
-    let (ghostkey_signing_key, ghostkey_certificate) = generate_ghostkey(&delegate_signing_key)
+    let ghostkey_certificate = generate_ghostkey(&delegate_certificate)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     
-    save_key_to_file(output_dir, "ghostkey_signing_key.pem", &ghostkey_signing_key)?;
     save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate)?;
     
     println!("Ghostkey generated successfully.");
-    println!("Ghostkey signing key saved to: {}/ghostkey_signing_key.pem", output_dir);
     println!("Ghostkey certificate saved to: {}/ghostkey_certificate.pem", output_dir);
     Ok(())
 }
