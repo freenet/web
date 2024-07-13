@@ -7,8 +7,7 @@ use crate::armor;
 use serde::{Serialize, Deserialize};
 use rmp_serde::Serializer;
 use crate::crypto::{CryptoError, extract_base64_from_armor};
-use bincode;
-use bincode;
+use rmp_serde;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct DelegateCertificate {
@@ -141,7 +140,7 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
 
     // Deserialize the delegate certificate
-    let delegate_cert: DelegateKeyCertificate = bincode::deserialize(delegate_certificate)
+    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(delegate_certificate)
         .map_err(|e| {
             println!("Deserialization error: {:?}", e);
             println!("Delegate certificate bytes: {:?}", delegate_certificate);
@@ -158,7 +157,7 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
     };
 
     // Serialize the certificate data
-    let buf = bincode::serialize(&certificate_data)
+    let buf = rmp_serde::to_vec(&certificate_data)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
     // Verify the signature

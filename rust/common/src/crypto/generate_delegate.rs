@@ -4,7 +4,7 @@ use base64::{engine::general_purpose, Engine as _};
 use p256::ecdsa::{self, signature::Signer};
 use crate::armor;
 use serde::{Serialize, Deserialize};
-use bincode;
+use rmp_serde;
 use crate::crypto::{CryptoError, extract_base64_from_armor};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -32,7 +32,7 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
         attributes: attributes.to_string(),
         signature: vec![],
     };
-    let certificate_data_bytes = bincode::serialize(&certificate_data)
+    let certificate_data_bytes = rmp_serde::to_vec(&certificate_data)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
     // Sign the certificate data
@@ -44,7 +44,7 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     };
 
     // Serialize the signed certificate data using bincode
-    let signed_certificate_bytes = bincode::serialize(&signed_certificate_data)
+    let signed_certificate_bytes = rmp_serde::to_vec(&signed_certificate_data)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
     // Encode the bincode data in base64
