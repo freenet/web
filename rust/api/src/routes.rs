@@ -1,4 +1,4 @@
-use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse};
+use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse, DelegateInfo};
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
@@ -94,6 +94,7 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Re
             if e.to_string() == "CERTIFICATE_ALREADY_SIGNED" {
                 Ok(Json(SignCertificateResponse {
                     blind_signature: String::new(),
+                    delegate_info: DelegateInfo::default(),
                 }))
             } else {
                 Err(Status::InternalServerError)
@@ -144,8 +145,6 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
 
     let currency = match request.currency.as_str() {
         "usd" => Currency::USD,
-        "eur" => Currency::EUR,
-        "gbp" => Currency::GBP,
         _ => {
             error!("Invalid currency: {}", request.currency);
             return Err(DonationError::InvalidCurrency);
