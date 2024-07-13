@@ -9,6 +9,7 @@ pub enum CryptoError {
     DeserializationError(String),
     InvalidInput(String),
     ArmorError(String),
+    ValidationError(String),
 }
 
 
