@@ -10,19 +10,19 @@ use crate::crypto::{CryptoError, extract_bytes_from_armor};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DelegateKeyCertificate {
     pub verifying_key: Vec<u8>,
-    pub attributes: String,
+    pub info: String,
     pub signature: Vec<u8>,
 }
 
-pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> Result<String, CryptoError> {
-    println!("Generating delegate key with attributes: {}", attributes);
+pub fn generate_delegate_key(master_signing_key_pem: &str, info: &str) -> Result<String, CryptoError> {
+    println!("Generating delegate key with info: {}", info);
     println!("Master signing key PEM: {}", master_signing_key_pem);
 
     let master_signing_key_bytes = extract_bytes_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
-    println!("Extracted base64: {:?}", master_signing_key_base64);
+    println!("Extracted bytes: {:?}", master_signing_key_bytes);
 
     // Convert Vec<u8> to base64 string
-    let base64_string = general_purpose::STANDARD.encode(&master_signing_key_base64);
+    let base64_string = general_purpose::STANDARD.encode(&master_signing_key_bytes);
     let trimmed_base64 = base64_string.trim();
     println!("Trimmed base64: {}", trimmed_base64);
 
@@ -41,11 +41,11 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     let delegate_signing_key = SigningKey::random(&mut OsRng);
     let delegate_verifying_key = VerifyingKey::from(&delegate_signing_key);
 
-    // Serialize the verifying key and attributes
+    // Serialize the verifying key and info
     let verifying_key_bytes = delegate_verifying_key.to_encoded_point(false).as_bytes().to_vec();
     let certificate_data = DelegateKeyCertificate {
         verifying_key: verifying_key_bytes.clone(),
-        attributes: attributes.to_string(),
+        info: info.to_string(),
         signature: vec![],
     };
     let certificate_data_bytes = rmp_serde::to_vec(&certificate_data)
@@ -55,7 +55,7 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, attributes: &str) -> 
     let signature: ecdsa::Signature = master_signing_key.sign(&certificate_data_bytes);
     let signed_certificate_data = DelegateKeyCertificate {
         verifying_key: verifying_key_bytes,
-        attributes: attributes.to_string(),
+        info: info.to_string(),
         signature: signature.to_vec(),
     };
 

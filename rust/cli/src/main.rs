@@ -81,9 +81,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("The file containing the master signing key")
                 .required(true)
                 .value_name("FILE"))
-            .arg(Arg::new("attributes")
-                .long("attributes")
-                .help("The attributes string to be included in the delegate key certificate")
+            .arg(Arg::new("info")
+                .long("info")
+                .help("The info string to be included in the delegate key certificate")
                 .required(true)
                 .value_name("STRING"))
             .arg(Arg::new("output-dir")
@@ -148,9 +148,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Some(("generate-delegate-key", sub_matches)) => {
             let master_signing_key_file = sub_matches.get_one::<String>("master-signing-key-file").unwrap();
-            let attributes = sub_matches.get_one::<String>("attributes").unwrap();
+            let info = sub_matches.get_one::<String>("info").unwrap();
             let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
-            generate_and_save_delegate_key(master_signing_key_file, attributes, output_dir)?;
+            generate_and_save_delegate_key(master_signing_key_file, info, output_dir)?;
         }
         Some(("validate-delegate-key", sub_matches)) => {
             let master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key-file").unwrap();
@@ -226,11 +226,11 @@ fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certi
     let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)?;
     
     match validate_delegate_key(&master_verifying_key, &delegate_certificate) {
-        Ok(attributes) => {
+        Ok(info) => {
             println!("Delegate key certificate is {}.", "valid".green());
-            println!("Attributes: {}", attributes);
+            println!("Info: {}", info);
             Ok(())
-        },
+        }
         Err(e) => {
             println!("Failed to validate delegate key certificate: {}", e);
             Err(Box::new(e))
@@ -246,9 +246,9 @@ fn generate_and_save_master_key(output_dir: &str) -> Result<(), Box<dyn std::err
     Ok(())
 }
 
-fn generate_and_save_delegate_key(master_key_file: &str, attributes: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn generate_and_save_delegate_key(master_key_file: &str, info: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
     let master_signing_key = std::fs::read_to_string(master_key_file)?;
-    let delegate_certificate = generate_delegate_key(&master_signing_key, attributes)
+    let delegate_certificate = generate_delegate_key(&master_signing_key, info)
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
     save_key_to_file(output_dir, "delegate_certificate.pem", &delegate_certificate)?;
     println!("Delegate certificate generated successfully.");
@@ -309,12 +309,14 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
 }
 
 fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)?;
+    let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)
+        .map_err(|e| format!("Failed to read delegate certificate file: {}", e))?;
     
     let ghostkey_certificate = generate_ghostkey(&delegate_certificate)
-        .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
+        .map_err(|e| format!("Failed to generate ghostkey: {}", e))?;
     
-    save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate)?;
+    save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate)
+        .map_err(|e| format!("Failed to save ghostkey certificate: {}", e))?;
     
     println!("Ghostkey generated successfully.");
     println!("Ghostkey certificate saved to: {}/ghostkey_certificate.pem", output_dir);
@@ -326,14 +328,14 @@ fn validate_ghost_key_command(master_verifying_key_file: &str, ghost_certificate
     let ghost_certificate = std::fs::read_to_string(ghost_certificate_file)?;
 
     match validate_ghost_key(&master_verifying_key, &ghost_certificate) {
-        Ok(attributes) => {
+        Ok(info) => {
             println!("Ghost key certificate is {}.", "valid".green());
-            println!("Attributes: {}", attributes);
+            println!("Info: {}", info);
             Ok(())
-        },
+        }
         Err(e) => {
             println!("Ghost key certificate is {}.", "invalid".red());
-            println!("Error: {}", e);
+            println!("Reason: {}", e);
             Err(Box::new(e))
         }
     }
