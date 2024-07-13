@@ -353,9 +353,13 @@ fn generate_master_verifying_key_command(master_signing_key_file: &str, output_f
 }
 
 fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+    println!("Starting ghost key generation process...");
+    
+    println!("Reading delegate certificate from: {}", delegate_certificate_file);
     let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)
         .map_err(|e| format!("Failed to read delegate certificate file: {}", e))?;
     
+    println!("Generating ghost key...");
     let ghostkey_certificate = generate_ghostkey(&delegate_certificate)
         .map_err(|e| format!("Failed to generate ghostkey: {}", e))?;
     
@@ -364,11 +368,13 @@ fn generate_ghostkey_command(delegate_certificate_file: &str, output_dir: &str) 
         return Err(format!("Error: File '{}' already exists. Please choose a different output directory or remove the existing file.", file_path.display()).into());
     }
     
+    println!("Saving ghost key certificate...");
     save_key_to_file(output_dir, "ghostkey_certificate.pem", &ghostkey_certificate, true)
         .map_err(|e| format!("Failed to save ghostkey certificate: {}", e))?;
     
-    println!("Ghostkey generated successfully.");
+    println!("{}", "Ghost key generated successfully.".green().bold());
     println!("File created: {}", file_path.display());
+    println!("Ghost key certificate saved with read-only permissions (0o600).");
     Ok(())
 }
 
