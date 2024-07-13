@@ -241,13 +241,17 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate, del
     // Create the signature from the stored bytes
     let signature = ecdsa::Signature::from_der(&ghostkey_certificate.signature)
         .or_else(|_| {
+            if ghostkey_certificate.signature.len() != 64 {
+                return Err(CryptoError::SignatureError("Invalid signature length".to_string()));
+            }
             let bytes: [u8; 64] = ghostkey_certificate.signature[..64].try_into()
-                .map_err(|_| CryptoError::SignatureError("Invalid signature length".to_string()))?;
-            ecdsa::Signature::from_bytes(&bytes)
+                .map_err(|_| CryptoError::SignatureError("Failed to convert signature to array".to_string()))?;
+            ecdsa::Signature::from_slice(&bytes)
+                .map_err(|e| CryptoError::SignatureError(format!("Failed to create signature from bytes: {}", e)))
         })
         .map_err(|e| {
             println!("Failed to create signature: {:?}", e);
-            CryptoError::SignatureError(e.to_string())
+            e
         })?;
     println!("Created signature: {:?}", signature);
 
