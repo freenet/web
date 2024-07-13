@@ -76,9 +76,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .value_name("DIR")))
         .subcommand(Command::new("generate-delegate-key")
             .about("Generates a new delegate key and certificate")
-            .arg(Arg::new("master-key-file")
-                .long("master-key-file")
-                .help("The file containing the master private key")
+            .arg(Arg::new("master-signing-key-file")
+                .long("master-signing-key-file")
+                .help("The file containing the master signing key")
                 .required(true)
                 .value_name("FILE"))
             .arg(Arg::new("attributes")
@@ -117,9 +117,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .value_name("FILE")))
         .subcommand(Command::new("generate-ghost-key")
             .about("Generates a ghost key from a delegate signing key")
-            .arg(Arg::new("delegate-signing-key-file")
-                .long("delegate-signing-key-file")
-                .help("The file containing the delegate signing key")
+            .arg(Arg::new("delegate-certificate-file")
+                .long("delegate-certificate-file")
+                .help("The file containing the delegate certificate")
                 .required(true)
                 .value_name("FILE"))
             .arg(Arg::new("output-dir")
@@ -147,10 +147,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             generate_and_save_master_key(output_dir)?;
         }
         Some(("generate-delegate-key", sub_matches)) => {
-            let master_key_file = sub_matches.get_one::<String>("master-key-file").unwrap();
+            let master_signing_key_file = sub_matches.get_one::<String>("master-signing-key-file").unwrap();
             let attributes = sub_matches.get_one::<String>("attributes").unwrap();
             let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
-            generate_and_save_delegate_key(master_key_file, attributes, output_dir)?;
+            generate_and_save_delegate_key(master_signing_key_file, attributes, output_dir)?;
         }
         Some(("validate-delegate-key", sub_matches)) => {
             let master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key-file").unwrap();
@@ -163,9 +163,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             generate_master_verifying_key_command(master_signing_key_file, output_file)?;
         }
         Some(("generate-ghost-key", sub_matches)) => {
-            let delegate_signing_key_file = sub_matches.get_one::<String>("delegate-signing-key-file").unwrap();
+            let delegate_certificate_file = sub_matches.get_one::<String>("delegate-certificate-file").unwrap();
             let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
-            generate_ghostkey_command(delegate_signing_key_file, output_dir)?;
+            generate_ghostkey_command(delegate_certificate_file, output_dir)?;
         }
         Some(("validate-ghost-key", sub_matches)) => {
             let master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key-file").unwrap();
@@ -240,9 +240,9 @@ fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certi
 
 fn generate_and_save_master_key(output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
     let (private_key, public_key) = generate_master_key().map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
-    save_key_to_file(output_dir, "server_master_signing_key.pem", &private_key)?;
-    save_key_to_file(output_dir, "server_master_verifying_key.pem", &public_key)?;
-    println!("SERVER_MASTER_PRIVATE_KEY and SERVER_MASTER_VERIFYING_KEY generated successfully.");
+    save_key_to_file(output_dir, "master_signing_key.pem", &private_key)?;
+    save_key_to_file(output_dir, "master_verifying_key.pem", &public_key)?;
+    println!("MASTER_SIGNING_KEY and MASTER_VERIFYING_KEY generated successfully.");
     Ok(())
 }
 

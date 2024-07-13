@@ -61,7 +61,7 @@ fn extract_base64_from_armor(armored_key: &str, expected_armor_type: &str) -> Re
 }
 
 pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
-    let master_verifying_key_base64 = extract_base64_from_armor(master_verifying_key_pem, "SERVER MASTER VERIFYING KEY")?;
+    let master_verifying_key_base64 = extract_base64_from_armor(master_verifying_key_pem, "MASTER VERIFYING KEY")?;
     let master_verifying_key_bytes = general_purpose::STANDARD.decode(&master_verifying_key_base64)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
     let master_verifying_key = VerifyingKey::from_sec1_bytes(&master_verifying_key_bytes)
@@ -103,8 +103,8 @@ mod tests {
     #[test]
     fn test_generate_master_key() {
         let (signing_key, verifying_key) = generate_master_key().unwrap();
-        assert!(signing_key.contains("-----BEGIN SERVER MASTER SIGNING KEY-----"));
-        assert!(verifying_key.contains("-----BEGIN SERVER MASTER VERIFYING KEY-----"));
+        assert!(signing_key.contains("-----BEGIN MASTER SIGNING KEY-----"));
+        assert!(verifying_key.contains("-----BEGIN MASTER VERIFYING KEY-----"));
     }
 
     #[test]
