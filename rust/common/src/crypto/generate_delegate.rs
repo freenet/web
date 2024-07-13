@@ -15,27 +15,27 @@ pub struct DelegateKeyCertificate {
 }
 
 pub fn generate_delegate_key(master_signing_key_pem: &str, info: &str) -> Result<String, CryptoError> {
-    println!("Generating delegate key with info: {}", info);
-    println!("Master signing key PEM: {}", master_signing_key_pem);
+    debug!("Generating delegate key with info: {}", info);
+    debug!("Master signing key PEM: {}", master_signing_key_pem);
 
     let master_signing_key_bytes = extract_bytes_from_armor(master_signing_key_pem, "MASTER SIGNING KEY")?;
-    println!("Extracted bytes: {:?}", master_signing_key_bytes);
+    debug!("Extracted bytes: {:?}", master_signing_key_bytes);
 
     // Convert Vec<u8> to base64 string
     let base64_string = general_purpose::STANDARD.encode(&master_signing_key_bytes);
     let trimmed_base64 = base64_string.trim();
-    println!("Trimmed base64: {}", trimmed_base64);
+    debug!("Trimmed base64: {}", trimmed_base64);
 
     let master_signing_key_bytes = general_purpose::STANDARD.decode(trimmed_base64)
         .map_err(|e| {
-            println!("Base64 decode error: {}. Attempted to decode: {}", e, trimmed_base64);
+            error!("Base64 decode error: {}. Attempted to decode: {}", e, trimmed_base64);
             CryptoError::Base64DecodeError(format!("{}: {}", e, trimmed_base64))
         })?;
-    println!("Decoded key bytes: {:?}", master_signing_key_bytes);
+    debug!("Decoded key bytes: {:?}", master_signing_key_bytes);
 
     let master_signing_key = SigningKey::from_slice(&master_signing_key_bytes)
         .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
-    println!("Created SigningKey successfully");
+    debug!("Created SigningKey successfully");
 
     // Generate the delegate key pair
     let delegate_signing_key = SigningKey::random(&mut OsRng);
@@ -63,7 +63,7 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, info: &str) -> Result
     let signed_certificate_bytes = rmp_serde::to_vec(&signed_certificate_data)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
-    println!("Serialized certificate: {:?}", signed_certificate_bytes);
+    debug!("Serialized certificate: {:?}", signed_certificate_bytes);
 
     // Armor the signed certificate directly (without base64 encoding)
     let armored_delegate_certificate = armor(&signed_certificate_bytes, "DELEGATE CERTIFICATE", "DELEGATE CERTIFICATE");
