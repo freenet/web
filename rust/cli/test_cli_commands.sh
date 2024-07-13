@@ -149,10 +149,12 @@ expect_failure "validate truncated delegate certificate" "cargo run -- validate-
 expect_failure "validate truncated ghost certificate" "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/truncated_ghost.pem"
 
 # Test with modified signature
-sed -i 's/SIGNATURE/MODIFIED/' $TEST_DIR/delegate_certificate.pem
-sed -i 's/SIGNATURE/MODIFIED/' $TEST_DIR/ghostkey_certificate.pem
-expect_failure "validate delegate key with modified signature" "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
-expect_failure "validate ghost key with modified signature" "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/ghostkey_certificate.pem"
+cp $TEST_DIR/delegate_certificate.pem $TEST_DIR/modified_delegate_certificate.pem
+cp $TEST_DIR/ghostkey_certificate.pem $TEST_DIR/modified_ghostkey_certificate.pem
+sed -i 's/[A-Za-z0-9]/X/g' $TEST_DIR/modified_delegate_certificate.pem
+sed -i 's/[A-Za-z0-9]/X/g' $TEST_DIR/modified_ghostkey_certificate.pem
+expect_failure "validate delegate key with modified signature" "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/modified_delegate_certificate.pem"
+expect_failure "validate ghost key with modified signature" "cargo run -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/modified_ghostkey_certificate.pem"
 
 # Test with swapped certificates
 expect_failure "validate delegate key with swapped certificate" "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/ghostkey_certificate.pem"
