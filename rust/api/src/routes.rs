@@ -180,14 +180,14 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         },
         None => {
             error!("Client secret is missing from the PaymentIntent");
-            Err(DonationError::StripeError(stripe::StripeError::InvalidRequestError {
+            Err(DonationError::StripeError(stripe::StripeError::Stripe(stripe::RequestError {
                 message: Some("Client secret is missing".to_string()),
                 charge: None,
                 decline_code: None,
                 payment_method_type: None,
                 request_log_url: None,
                 type_: stripe::ApiErrorsType::InvalidRequestError,
-            }))
+            })))
         }
     }
 }
