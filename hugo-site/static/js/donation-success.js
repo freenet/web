@@ -85,29 +85,29 @@ async function generateAndSignCertificate(paymentIntentId) {
   try {
     // Generate Ed25519 key pair
     const keyPair = nacl.sign.keyPair();
-    const publicKey = keyPair.publicKey;
-    const privateKey = keyPair.secretKey;
+    const verifyingKey = keyPair.publicKey;
+    const signingKey = keyPair.secretKey;
     console.log("Key pair generated");
 
     // Generate random blinding factor
     const blindingFactor = nacl.randomBytes(32);
     console.log("Blinding factor generated");
 
-    // Blind the public key
-    const blindedPublicKey = new Uint8Array(32);
+    // Blind the verifying key
+    const blindedVerifyingKey = new Uint8Array(32);
     for (let i = 0; i < 32; i++) {
-      blindedPublicKey[i] = publicKey[i] ^ blindingFactor[i];
+      blindedVerifyingKey[i] = verifyingKey[i] ^ blindingFactor[i];
     }
-    console.log("Public key blinded");
+    console.log("Verifying key blinded");
 
-    // Send blinded public key to server for signing
+    // Send blinded verifying key to server for signing
     console.log("Sending request to server");
     const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         payment_intent_id: paymentIntentId, 
-        blinded_public_key: bufferToBase64(blindedPublicKey)
+        blinded_verifying_key: bufferToBase64(blindedVerifyingKey)
       })
     });
 
@@ -140,19 +140,19 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.log("Signature unblinded");
 
     // Create the ghostkey certificate
-    const ghostkeyCertificate = createGhostkeyCertificate(publicKey, unblindedSignature, data.delegate_info);
+    const ghostkeyCertificate = createGhostkeyCertificate(verifyingKey, unblindedSignature, data.delegate_info);
 
     console.log("Calling displayCertificate");
-    displayCertificate(publicKey, privateKey, ghostkeyCertificate);
+    displayCertificate(verifyingKey, signingKey, ghostkeyCertificate);
   } catch (error) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
   }
 }
 
-function createGhostkeyCertificate(publicKey, unblindedSignature, delegateInfo) {
+function createGhostkeyCertificate(verifyingKey, unblindedSignature, delegateInfo) {
   const certificateData = {
-    publicKey: bufferToBase64(publicKey),
+    verifyingKey: bufferToBase64(verifyingKey),
     unblindedSignature: bufferToBase64(unblindedSignature),
     delegateCertificate: delegateInfo.certificate,
     amount: delegateInfo.amount
@@ -162,14 +162,14 @@ function createGhostkeyCertificate(publicKey, unblindedSignature, delegateInfo) 
 }
 
 function generateTestCertificate() {
-  const publicKey = nacl.randomBytes(32);
-  const privateKey = nacl.randomBytes(64);
+  const verifyingKey = nacl.randomBytes(32);
+  const signingKey = nacl.randomBytes(64);
   const unblindedSignature = nacl.randomBytes(64);
 
-  displayCertificate(publicKey, privateKey, unblindedSignature);
+  displayCertificate(verifyingKey, signingKey, unblindedSignature);
 }
 
-function displayCertificate(publicKey, privateKey, ghostkeyCertificate) {
+function displayCertificate(verifyingKey, signingKey, ghostkeyCertificate) {
   console.log("Displaying certificate");
   try {
     // Armor the ghostkey certificate and private key
@@ -177,12 +177,12 @@ function displayCertificate(publicKey, privateKey, ghostkeyCertificate) {
 ${wrapBase64(btoa(ghostkeyCertificate), 64)}
 -----END FREENET GHOSTKEY CERTIFICATE-----`;
 
-    const armoredPrivateKey = `-----BEGIN FREENET GHOSTKEY PRIVATE KEY-----
-${wrapBase64(bufferToBase64(privateKey), 64)}
------END FREENET GHOSTKEY PRIVATE KEY-----`;
+    const armoredSigningKey = `-----BEGIN FREENET GHOSTKEY SIGNING KEY-----
+${wrapBase64(bufferToBase64(signingKey), 64)}
+-----END FREENET GHOSTKEY SIGNING KEY-----`;
 
-    // Combine certificate and private key
-    const combinedKey = `${armoredCertificate}\n\n${armoredPrivateKey}`;
+    // Combine certificate and signing key
+    const combinedKey = `${armoredCertificate}\n\n${armoredSigningKey}`;
 
     // Display the combined key if the element exists
     const combinedKeyElement = document.getElementById('combinedKey');
