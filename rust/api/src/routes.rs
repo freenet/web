@@ -184,8 +184,8 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
                 message: Some("Client secret is missing".to_string()),
                 charge: None,
                 decline_code: None,
-                http_status: None,
-                error_type: stripe::ErrorType::InvalidRequestError,
+                http_status: 0,
+                error_type: stripe::ErrorType::InvalidRequest,
                 code: None,
             })))
         }
