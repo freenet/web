@@ -163,7 +163,7 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     };
 
     let params = stripe::CreatePaymentIntent {
-        amount: 100,
+        amount: 500, // Placeholder amount (e.g., $5.00)
         currency,
         payment_method_types: Some(vec!["card".to_string()]),
         capture_method: Some(stripe::PaymentIntentCaptureMethod::Manual),
@@ -194,7 +194,32 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     }
 }
 
-#[get("/check-payment-status/<payment_intent_id>")]
+#[derive(Deserialize)]
+pub struct UpdateDonationRequest {
+    pub payment_intent_id: String,
+    pub amount: i64,
+}
+
+#[post("/update-donation", data = "<request>")]
+pub async fn update_donation(request: Json<UpdateDonationRequest>) -> Result<Status, DonationError> {
+    info!("Received update-donation request: {:?}", request);
+
+    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
+    let client = Client::new(&secret_key);
+
+    let payment_intent_id = PaymentIntentId::from_str(&request.payment_intent_id).map_err(|_| DonationError::InvalidCurrency)?;
+    let params = stripe::UpdatePaymentIntent {
+        amount: Some(request.amount),
+        ..Default::default()
+    };
+
+    stripe::PaymentIntent::update(&client, &payment_intent_id, params)
+        .await
+        .map_err(DonationError::StripeError)?;
+
+    info!("Payment intent updated successfully");
+    Ok(Status::Ok)
+}
 pub async fn check_payment_status(payment_intent_id: String) -> Result<Json<serde_json::Value>, Status> {
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(|_| Status::InternalServerError)?;
     let client = Client::new(&secret_key);
@@ -220,6 +245,7 @@ pub fn routes() -> Vec<Route> {
         options_sign_certificate,
         create_donation,
         options_create_donation,
-        check_payment_status
+        check_payment_status,
+        update_donation
     ]
 }
