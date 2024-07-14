@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use stripe::{Client, Currency};
 use log::{info, error};
-use log::{info, error};
 
 pub struct CORS;
 
