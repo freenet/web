@@ -9,6 +9,7 @@ use std::time::Instant;
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
 use log::{info, error};
 use serde_json::json;
+use std::str::FromStr;
 
 pub struct CORS;
 
@@ -179,7 +180,7 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         },
         None => {
             error!("Client secret is missing from the PaymentIntent");
-            Err(DonationError::StripeError(stripe::StripeError::InvalidRequestError { message: "Client secret is missing".to_string() }))
+            Err(DonationError::StripeError(stripe::StripeError::InvalidRequest("Client secret is missing".to_string())))
         }
     }
 }
@@ -189,7 +190,7 @@ pub async fn check_payment_status(payment_intent_id: String) -> Result<Json<serd
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(|_| Status::InternalServerError)?;
     let client = Client::new(&secret_key);
 
-    let pi = PaymentIntent::retrieve(&client, &PaymentIntentId::from_str(&payment_intent_id).map_err(|_| Status::BadRequest)?, &[])
+    let pi = PaymentIntent::retrieve(&client, &PaymentIntentId::from(&payment_intent_id).map_err(|_| Status::BadRequest)?, &[])
         .await
         .map_err(|_| Status::InternalServerError)?;
 
