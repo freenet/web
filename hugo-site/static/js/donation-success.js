@@ -83,6 +83,21 @@ function generateTestCertificate() {
 async function generateAndSignCertificate(paymentIntentId) {
   console.log("Starting generateAndSignCertificate");
   try {
+    // Check payment intent status
+    const statusResponse = await fetch(`http://127.0.0.1:8000/check-payment-status/${paymentIntentId}`, {
+      method: 'GET',
+    });
+
+    if (!statusResponse.ok) {
+      const errorText = await statusResponse.text();
+      throw new Error(`Error checking payment status: ${errorText}`);
+    }
+
+    const statusData = await statusResponse.json();
+    if (statusData.status !== 'succeeded') {
+      throw new Error(`Payment not successful. Status: ${statusData.status}`);
+    }
+
     // Generate Ed25519 key pair
     const keyPair = nacl.sign.keyPair();
     const verifyingKey = keyPair.publicKey;
