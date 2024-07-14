@@ -107,7 +107,7 @@ async function generateAndSignCertificate(paymentIntentId) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         payment_intent_id: paymentIntentId, 
-        blinded_verifying_key: bufferToBase64(blindedVerifyingKey)
+        blinded_public_key: bufferToBase64(blindedVerifyingKey)
       })
     });
 
