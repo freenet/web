@@ -162,31 +162,10 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         }
     };
 
-    let params = stripe::CreatePaymentIntent {
-        amount: 500, // Placeholder amount (e.g., $5.00)
-        currency,
-        payment_method_types: Some(vec!["card".to_string()]),
-        capture_method: Some(stripe::PaymentIntentCaptureMethod::Manual),
-        application_fee_amount: None,
-        automatic_payment_methods: None,
-        confirm: None,
-        confirmation_method: None,
-        customer: None,
-        description: None,
-        metadata: None,
-        off_session: None,
-        on_behalf_of: None,
-        payment_method: None,
-        payment_method_options: None,
-        receipt_email: None,
-        return_url: None,
-        setup_future_usage: None,
-        shipping: None,
-        statement_descriptor: None,
-        statement_descriptor_suffix: None,
-        transfer_data: None,
-        transfer_group: None,
-    };
+    let params = stripe::CreatePaymentIntent::new(currency)
+        .amount(500) // Placeholder amount (e.g., $5.00)
+        .payment_method_types(vec!["card".to_string()])
+        .capture_method(stripe::PaymentIntentCaptureMethod::Manual);
 
     let intent = stripe::PaymentIntent::create(&client, params)
         .await
