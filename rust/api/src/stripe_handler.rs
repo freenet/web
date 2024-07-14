@@ -62,7 +62,7 @@ use serde_json::Value;
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
     payment_intent_id: String,
-    blinded_verifying_key: Value,
+    blinded_public_key: Value,
 }
 
 #[derive(Debug, Serialize)]
