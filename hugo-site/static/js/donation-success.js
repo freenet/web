@@ -187,10 +187,18 @@ function generateTestCertificate() {
 function displayCertificate(verifyingKey, signingKey, ghostkeyCertificate) {
   console.log("Displaying certificate");
   try {
+    if (!ghostkeyCertificate) {
+      throw new Error("Ghost Key Certificate is missing or invalid");
+    }
+
     // Armor the ghostkey certificate and private key
     const armoredCertificate = `-----BEGIN FREENET GHOSTKEY CERTIFICATE-----
 ${wrapBase64(btoa(ghostkeyCertificate), 64)}
 -----END FREENET GHOSTKEY CERTIFICATE-----`;
+
+    if (!signingKey) {
+      throw new Error("Signing Key is missing or invalid");
+    }
 
     const armoredSigningKey = `-----BEGIN FREENET GHOSTKEY SIGNING KEY-----
 ${wrapBase64(bufferToBase64(signingKey), 64)}
