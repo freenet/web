@@ -54,6 +54,6 @@ fn rocket() -> _ {
             res.set_header(Header::new("X-Content-Type-Options", "nosniff"));
             res.set_header(Header::new("Referrer-Policy", "strict-origin-when-cross-origin"));
         })))
-        .mount("/", routes::routes())
+        .mount("/", routes::get_routes())
         .register("/", catchers![not_found, internal_error])
 }
