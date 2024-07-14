@@ -6,7 +6,8 @@ use rocket::{Request, Response, Route};
 use rocket::{get, post, options, routes};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
-use stripe::{Client, Currency, PaymentIntent, PaymentIntentId, InvalidRequestError};
+use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
+use stripe::ApiErrorsType::InvalidRequestError;
 use std::str::FromStr;
 use log::{info, error};
 use serde_json::json;
@@ -162,8 +163,7 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         }
     };
 
-    let params = stripe::CreatePaymentIntent::new(currency)
-        .amount(500) // Placeholder amount (e.g., $5.00)
+    let params = stripe::CreatePaymentIntent::new(500, currency) // Placeholder amount (e.g., $5.00)
         .payment_method_types(vec!["card".to_string()])
         .capture_method(stripe::PaymentIntentCaptureMethod::Manual);
 
@@ -181,7 +181,7 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         },
         None => {
             error!("Client secret is missing from the PaymentIntent");
-            Err(DonationError::StripeError(stripe::StripeError::InvalidRequestError(InvalidRequestError {
+            Err(DonationError::StripeError(stripe::StripeError::ApiErrorsType::InvalidRequestError(InvalidRequestError {
                 message: Some("Client secret is missing".to_string()),
                 http_status: 0,
                 error_type: stripe::ErrorType::InvalidRequest,
@@ -245,7 +245,7 @@ pub fn routes() -> Vec<Route> {
         options_sign_certificate,
         create_donation,
         options_create_donation,
-        check_payment_status,
+        // check_payment_status, // This line should be removed as it is not a struct, variant, or union type
         update_donation
     ]
 }
