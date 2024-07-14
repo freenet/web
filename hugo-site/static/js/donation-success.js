@@ -139,16 +139,17 @@ async function generateAndSignCertificate(paymentIntentId) {
       data = await response.json();
     } catch (error) {
       console.error("Error parsing JSON response:", error);
+      console.error("Response text:", await response.text());
       throw new Error("Failed to parse server response");
     }
 
-    if (!data.blind_signature) {
-      if (data.message === "CERTIFICATE_ALREADY_SIGNED") {
+    if (!data || !data.blind_signature) {
+      console.error("Invalid data received from server:", data);
+      if (data && data.message === "CERTIFICATE_ALREADY_SIGNED") {
         showError('Certificate already signed for this payment.');
         return;
       }
-      console.error("Invalid data received from server:", data);
-      throw new Error('No blind signature received from server');
+      throw new Error('Invalid or missing data received from server');
     }
 
     console.log("Blind signature received");
