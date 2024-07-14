@@ -126,7 +126,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     log::info!("Payment intent verified successfully");
 
     let amount = pi.amount;
-    let (signature, delegate_info) = sign_with_delegate_key(&request.blinded_verifying_key, amount).map_err(|e| {
+    let (signature, delegate_info) = sign_with_delegate_key(&request.blinded_public_key, amount).map_err(|e| {
         log::error!("Error in sign_with_delegate_key: {:?}", e);
         match e {
             CertificateError::Base64Error(be) => {
