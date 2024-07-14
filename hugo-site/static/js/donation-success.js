@@ -73,11 +73,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function generateTestCertificate() {
   console.log("Generating test certificate");
-  const publicKey = nacl.randomBytes(32);
-  const privateKey = nacl.randomBytes(64);
+  const verifyingKey = nacl.randomBytes(32);
+  const signingKey = nacl.randomBytes(64);
   const unblindedSignature = nacl.randomBytes(64);
 
-  displayCertificate(publicKey, privateKey, unblindedSignature);
+  displayCertificate(verifyingKey, signingKey, unblindedSignature);
 }
 
 async function generateAndSignCertificate(paymentIntentId) {
@@ -254,7 +254,7 @@ function wrapBase64(str, maxWidth) {
   }).join('\n');
 }
 
-function verifyCertificate(publicKey, signature) {
+function verifyCertificate(verifyingKey, signature) {
   try {
     // In a real implementation, we would verify the signature against a known message
     // For now, we'll just check if the signature is the correct length
