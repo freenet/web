@@ -241,6 +241,9 @@ async function generateAndSignCertificate(paymentIntentId) {
   } catch (error) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
+    // Log additional details for debugging
+    console.log("Payment Intent ID:", paymentIntentId);
+    console.log("Full error object:", JSON.stringify(error, null, 2));
   }
 }
 
