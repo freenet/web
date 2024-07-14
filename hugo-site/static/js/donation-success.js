@@ -90,6 +90,85 @@ async function generateAndSignCertificate(paymentIntentId) {
 
     if (!statusResponse.ok) {
       const errorText = await statusResponse.text();
+      console.error("Error checking payment status:", errorText);
+      throw new Error(`Failed to check payment status: ${errorText}`);
+    }
+
+    const statusData = await statusResponse.json();
+    if (statusData.status !== 'succeeded') {
+      throw new Error(`Payment not successful. Status: ${statusData.status}`);
+    }
+
+    // Generate Ed25519 key pair
+    const keyPair = nacl.sign.keyPair();
+    const verifyingKey = keyPair.publicKey;
+    const signingKey = keyPair.secretKey;
+    console.log("Key pair generated");
+
+    // Generate random blinding factor
+    const blindingFactor = nacl.randomBytes(32);
+    console.log("Blinding factor generated");
+
+    // Blind the verifying key
+    const blindedVerifyingKey = new Uint8Array(32);
+    for (let i = 0; i < 32; i++) {
+      blindedVerifyingKey[i] = verifyingKey[i] ^ blindingFactor[i];
+    }
+    console.log("Verifying key blinded");
+
+    // Send blinded verifying key to server for signing
+    console.log("Sending request to server");
+    const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        payment_intent_id: paymentIntentId, 
+        blinded_public_key: bufferToBase64(blindedVerifyingKey)
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error signing certificate:", errorText);
+      throw new Error(`Error signing certificate: ${errorText}`);
+    }
+
+    console.log("Received response from server");
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      console.error("Error parsing JSON response:", error);
+      throw new Error("Failed to parse server response");
+    }
+
+    if (!data.blind_signature) {
+      if (data.message === "CERTIFICATE_ALREADY_SIGNED") {
+        showError('Certificate already signed for this payment.');
+        return;
+      }
+      console.error("Invalid data received from server:", data);
+      throw new Error('No blind signature received from server');
+    }
+
+    console.log("Blind signature received");
+    const blindSignature = base64ToBuffer(data.blind_signature);
+
+    // Unblind the signature
+    const unblindedSignature = new Uint8Array(64);
+    for (let i = 0; i < 32; i++) {
+      unblindedSignature[i] = blindSignature[i] ^ blindingFactor[i];
+    }
+    for (let i = 32; i < 64; i++) {
+      unblindedSignature[i] = blindSignature[i];
+    }
+    console.log("Signature unblinded");
+
+    // Create the ghostkey certificate
+    const ghostkeyCertificate = createGhostkeyCertificate(verifyingKey, unblindedSignature, data.delegate_info);
+
+    console.log("Calling displayCertificate");
+    displayCertificate(verifyingKey, signingKey, ghostkeyCertificate);
       throw new Error(`Error checking payment status: ${errorText}`);
     }
 
@@ -293,4 +372,7 @@ function showError(message) {
   errorElement.textContent = message;
   errorElement.style.display = 'block';
   document.getElementById('certificate-info').style.display = 'none';
+  
+  // Add more detailed error information
+  console.error("Detailed error:", message);
 }
