@@ -62,7 +62,7 @@ use serde_json::Value;
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
     payment_intent_id: String,
-    blinded_public_key: Value,
+    blinded_verifying_key: Value,
 }
 
 #[derive(Debug, Serialize)]
@@ -150,7 +150,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     })
 }
 
-fn sign_with_delegate_key(blinded_public_key: &Value, amount: i64) -> Result<(String, DelegateInfo), CertificateError> {
+fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<(String, DelegateInfo), CertificateError> {
     let delegate_dir = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/root".to_string()))
         .join(".config")
         .join("ghostkey")
@@ -165,7 +165,7 @@ fn sign_with_delegate_key(blinded_public_key: &Value, amount: i64) -> Result<(St
     let delegate_key = fs::read_to_string(&delegate_key_path)
         .map_err(|e| CertificateError::KeyError(format!("Failed to read delegate key: {}", e)))?;
 
-    log::info!("Starting sign_with_delegate_key function with blinded_public_key: {:?}", blinded_public_key);
+    log::info!("Starting sign_with_delegate_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
 
     let signing_key = SigningKey::from_pkcs8_pem(&delegate_key)
         .map_err(|e| {
@@ -173,9 +173,9 @@ fn sign_with_delegate_key(blinded_public_key: &Value, amount: i64) -> Result<(St
             CertificateError::KeyError(e.to_string())
         })?;
 
-    log::debug!("Parsed blinded public key JSON: {:?}", blinded_public_key);
+    log::debug!("Parsed blinded verifying key JSON: {:?}", blinded_verifying_key);
 
-    let blinded_public_key_bytes = match blinded_public_key {
+    let blinded_verifying_key_bytes = match blinded_verifying_key {
         Value::String(s) => general_purpose::STANDARD.decode(s).map_err(|e| {
             log::error!("Failed to decode blinded verifying key: {}", e);
             CertificateError::Base64Error(e)
@@ -209,15 +209,15 @@ fn sign_with_delegate_key(blinded_public_key: &Value, amount: i64) -> Result<(St
         }
     };
 
-    log::debug!("Decoded blinded public key bytes: {:?}", blinded_public_key_bytes);
+    log::debug!("Decoded blinded verifying key bytes: {:?}", blinded_verifying_key_bytes);
 
     // Generate a random nonce
     let nonce = SecretKey::random(&mut OsRng);
     let nonce_bytes = nonce.to_bytes();
 
-    // Combine the blinded public key and nonce, and hash them
+    // Combine the blinded verifying key and nonce, and hash them
     let mut hasher = Sha256::new();
-    hasher.update(&blinded_public_key_bytes);
+    hasher.update(&blinded_verifying_key_bytes);
     hasher.update(&nonce_bytes);
     let message = hasher.finalize();
 
