@@ -64,6 +64,7 @@ pub struct DonationRequest {
 #[derive(Serialize)]
 pub struct DonationResponse {
     pub client_secret: String,
+    pub payment_intent_id: String,
 }
 
 #[get("/")]
@@ -168,9 +169,32 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         .map_err(DonationError::StripeError)?;
 
     info!("Payment intent created successfully");
-    Ok(Json(DonationResponse {
-        client_secret: intent.client_secret.unwrap_or_default(),
-    }))
+    match intent.client_secret {
+        Some(secret) => {
+            Ok(Json(DonationResponse {
+                client_secret: secret,
+                payment_intent_id: intent.id.to_string(),
+            }))
+        },
+        None => {
+            error!("Client secret is missing from the PaymentIntent");
+            Err(DonationError::StripeError(stripe::StripeError::InvalidRequestError { message: "Client secret is missing".to_string() }))
+        }
+    }
+}
+
+#[get("/check-payment-status/<payment_intent_id>")]
+pub async fn check_payment_status(payment_intent_id: String) -> Result<Json<serde_json::Value>, Status> {
+    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(|_| Status::InternalServerError)?;
+    let client = Client::new(&secret_key);
+
+    let pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&payment_intent_id).map_err(|_| Status::BadRequest)?, &[])
+        .await
+        .map_err(|_| Status::InternalServerError)?;
+
+    Ok(Json(json!({
+        "status": pi.status.to_string()
+    })))
 }
 
 pub fn routes() -> Vec<Route> {
@@ -180,6 +204,7 @@ pub fn routes() -> Vec<Route> {
         sign_certificate_route,
         options_sign_certificate,
         create_donation,
-        options_create_donation
+        options_create_donation,
+        check_payment_status
     ]
 }
