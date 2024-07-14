@@ -162,9 +162,13 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         }
     };
 
-    let mut params = stripe::CreatePaymentIntent::new(100, currency);
-    params.payment_method_types = Some(vec!["card".to_string()]);
-    params.capture_method = Some(stripe::PaymentIntentCaptureMethod::Manual);
+    let params = stripe::CreatePaymentIntent {
+        amount: 100,
+        currency,
+        payment_method_types: Some(vec!["card".to_string()]),
+        capture_method: Some(stripe::PaymentIntentCaptureMethod::Manual),
+        ..Default::default()
+    };
 
     let intent = stripe::PaymentIntent::create(&client, params)
         .await
@@ -180,10 +184,8 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         },
         None => {
             error!("Client secret is missing from the PaymentIntent");
-            Err(DonationError::StripeError(stripe::StripeError::Stripe(stripe::RequestError {
+            Err(DonationError::StripeError(stripe::StripeError::RequestError(stripe::RequestError {
                 message: Some("Client secret is missing".to_string()),
-                charge: None,
-                decline_code: None,
                 http_status: 0,
                 error_type: stripe::ErrorType::InvalidRequest,
                 code: None,
