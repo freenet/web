@@ -88,6 +88,11 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Re
     match sign_certificate(request.into_inner()).await {
         Ok(response) => {
             info!("Certificate signed successfully");
+            let json_response = serde_json::to_string(&response).unwrap_or_else(|e| {
+                error!("Failed to serialize response: {:?}", e);
+                "{}".to_string()
+            });
+            info!("Sending response: {}", json_response);
             Ok(Json(response))
         },
         Err(e) => {
