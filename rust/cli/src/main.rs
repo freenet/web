@@ -10,7 +10,7 @@ use colored::Colorize;
 use log::{error, info};
 use common::crypto::ghost_key::{generate_ghostkey, validate_ghost_key};
 use common::crypto::signature::{sign_message, verify_signature};
-use common::crypto::delegate_key::validate_delegate_key;
+use common::crypto::generate_delegate::validate_delegate_key;
 
 fn main() {
     let result = run();
