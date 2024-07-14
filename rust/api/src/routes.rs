@@ -90,13 +90,22 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Re
         },
         Err(e) => {
             error!("Error signing certificate: {:?}", e);
-            if e.to_string() == "CERTIFICATE_ALREADY_SIGNED" {
-                Ok(Json(SignCertificateResponse {
-                    blind_signature: String::new(),
-                    delegate_info: DelegateInfo::default(),
-                }))
-            } else {
-                Err(Status::InternalServerError)
+            match e {
+                CertificateError::PaymentNotSuccessful => {
+                    error!("Payment not successful. Please check the Stripe dashboard for more details.");
+                    Err(Status::BadRequest)
+                },
+                CertificateError::CertificateAlreadySigned => {
+                    info!("Certificate already signed");
+                    Ok(Json(SignCertificateResponse {
+                        blind_signature: String::new(),
+                        delegate_info: DelegateInfo::default(),
+                    }))
+                },
+                _ => {
+                    error!("Unexpected error: {:?}", e);
+                    Err(Status::InternalServerError)
+                }
             }
         },
     }
