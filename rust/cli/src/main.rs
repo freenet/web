@@ -4,7 +4,6 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::os::unix::fs::PermissionsExt;
-use common::crypto::generate_delegate::generate_delegate_key;
 use common::crypto::master_key::{generate_master_key, generate_master_verifying_key};
 use colored::Colorize;
 use log::{error, info};
