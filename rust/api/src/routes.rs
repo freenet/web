@@ -159,9 +159,10 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         }
     };
 
-    let mut params = stripe::CreatePaymentIntent::new(100, currency); // Use a placeholder amount of $1.00
+    let mut params = stripe::CreatePaymentIntent::new(100, currency);
     params.payment_method_types = Some(vec!["card".to_string()]);
     params.capture_method = Some(stripe::PaymentIntentCaptureMethod::Manual);
+    params.amount = Some(100); // Set the amount to 100 cents ($1.00)
 
     let intent = stripe::PaymentIntent::create(&client, params)
         .await
