@@ -6,7 +6,7 @@ use rocket::{Request, Response, Route};
 use rocket::{get, post, options, routes};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
-use stripe::{Client, Currency, PaymentIntent};
+use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
 use log::{info, error};
 use serde_json::json;
 
@@ -179,10 +179,10 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         },
         None => {
             error!("Client secret is missing from the PaymentIntent");
-            Err(DonationError::StripeError(stripe::StripeError::ApiError(stripe::ApiError {
+            Err(DonationError::StripeError(stripe::StripeError::ApiError {
                 message: "Client secret is missing".to_string(),
                 ..Default::default()
-            })))
+            }))
         }
     }
 }
@@ -192,7 +192,7 @@ pub async fn check_payment_status(payment_intent_id: String) -> Result<Json<serd
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(|_| Status::InternalServerError)?;
     let client = Client::new(&secret_key);
 
-    let pi = PaymentIntent::retrieve(&client, &payment_intent_id, &[])
+    let pi = PaymentIntent::retrieve(&client, &PaymentIntentId::from_str(&payment_intent_id).map_err(|_| Status::BadRequest)?, &[])
         .await
         .map_err(|e| {
             error!("Error retrieving PaymentIntent: {:?}", e);
