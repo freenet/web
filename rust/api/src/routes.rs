@@ -1,4 +1,4 @@
-use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse, DelegateInfo, CertificateError};
+use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse, DelegateInfo, CertificateError, check_payment_status};
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
@@ -247,7 +247,25 @@ pub async fn update_donation(request: Json<UpdateDonationRequest>) -> Result<Sta
     Ok(Status::Ok)
 }
 
-pub fn routes() -> Vec<Route> {
+#[get("/check-payment-status/<payment_intent_id>")]
+pub async fn check_payment_status_route(payment_intent_id: String) -> Result<Status, DonationError> {
+    info!("Received check-payment-status request for PaymentIntent ID: {}", payment_intent_id);
+
+    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
+    let client = Client::new(&secret_key);
+
+    let payment_intent_id = PaymentIntentId::from_str(&payment_intent_id).map_err(|_| DonationError::InvalidCurrency)?;
+
+    let intent = stripe::PaymentIntent::retrieve(&client, &payment_intent_id, &[]).await.map_err(DonationError::StripeError)?;
+
+    if intent.status == stripe::PaymentIntentStatus::Succeeded {
+        info!("Payment intent succeeded");
+        Ok(Status::Ok)
+    } else {
+        error!("Payment intent not successful: {:?}", intent.status);
+        Err(DonationError::OtherError("Payment not successful".to_string()))
+    }
+}
     routes![
         index,
         get_message,
@@ -255,7 +273,7 @@ pub fn routes() -> Vec<Route> {
         options_sign_certificate,
         create_donation,
         options_create_donation,
-        // check_payment_status, // This line should be removed as it is not a struct, variant, or union type
+        check_payment_status,
         update_donation
     ]
 }
