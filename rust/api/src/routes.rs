@@ -266,6 +266,7 @@ pub async fn check_payment_status_route(payment_intent_id: String) -> Result<Sta
         Err(DonationError::OtherError("Payment not successful".to_string()))
     }
 }
+pub fn get_routes() -> Vec<Route> {
     routes![
         index,
         get_message,
@@ -273,7 +274,7 @@ pub async fn check_payment_status_route(payment_intent_id: String) -> Result<Sta
         options_sign_certificate,
         create_donation,
         options_create_donation,
-        check_payment_status,
+        check_payment_status_route,
         update_donation
     ]
 }
