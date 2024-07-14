@@ -1,4 +1,4 @@
-use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse, DelegateInfo};
+use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse, DelegateInfo, CertificateError};
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
@@ -7,6 +7,7 @@ use rocket::{get, post, options, routes};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use stripe::{Client, Currency};
+use log::{info, error};
 use log::{info, error};
 
 pub struct CORS;
