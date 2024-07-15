@@ -11,18 +11,20 @@ function base64ToBuffer(base64) {
 // Function to check for required elements
 function checkRequiredElements() {
   const requiredElements = [
-    { id: 'combinedKey', selector: '#combinedKey' },
-    { id: 'certificateSection', selector: '#certificateSection' },
-    { id: 'certificate-info', selector: '#certificate-info' },
-    { id: 'copyCombinedKey', selector: '#copyCombinedKey' },
-    { id: 'errorMessage', selector: '#errorMessage' }
+    { id: 'combinedKey', selector: 'textarea#combinedKey' },
+    { id: 'certificateSection', selector: 'div#certificateSection' },
+    { id: 'certificate-info', selector: 'div#certificate-info' },
+    { id: 'copyCombinedKey', selector: 'button#copyCombinedKey' },
+    { id: 'errorMessage', selector: 'div#errorMessage' }
   ];
   
   const missingElements = requiredElements.filter(el => !document.querySelector(el.selector));
   
   if (missingElements.length > 0) {
     console.error("Missing required elements:", missingElements.map(el => el.id));
-    showError(`Error: Missing required elements: ${missingElements.map(el => el.id).join(', ')}`);
+    const errorMessage = `Error: Missing required elements: ${missingElements.map(el => el.id).join(', ')}. ` +
+                         `Please ensure you're on the correct page and all elements are present in the HTML.`;
+    showError(errorMessage);
     return false;
   }
   return true;
@@ -31,13 +33,20 @@ function checkRequiredElements() {
 // Function to initialize the page
 function initPage(retryCount = 0) {
   console.log("Initializing page, attempt:", retryCount + 1);
+  
+  // Check if we're on the correct page
+  if (!document.querySelector('#certificateSection')) {
+    console.log("Not on the donation success page, script will not run.");
+    return;
+  }
+
   if (!checkRequiredElements()) {
-    if (retryCount < 10) { // Max 10 retries
-      console.log("Required elements not found, retrying in 500ms");
-      setTimeout(() => initPage(retryCount + 1), 500);
+    if (retryCount < 5) { // Max 5 retries
+      console.log("Required elements not found, retrying in 1000ms");
+      setTimeout(() => initPage(retryCount + 1), 1000);
     } else {
-      console.error("Failed to find required elements after 10 attempts");
-      showError('Failed to initialize the page. Please refresh and try again.');
+      console.error("Failed to find required elements after 5 attempts");
+      showError('Failed to initialize the page. Please refresh and try again. If the problem persists, contact support.');
     }
     return;
   }
