@@ -109,6 +109,10 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Re
                         delegate_info: DelegateInfo::default(),
                     }))
                 },
+                CertificateError::KeyError(msg) => {
+                    error!("Key error: {}", msg);
+                    Err(Status::InternalServerError)
+                },
                 _ => {
                     error!("Unexpected error: {:?}", e);
                     Err(Status::InternalServerError)
