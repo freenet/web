@@ -41,11 +41,11 @@ function initPage(retryCount = 0) {
   }
 
   if (!checkRequiredElements()) {
-    if (retryCount < 5) { // Max 5 retries
-      console.log("Required elements not found, retrying in 1000ms");
-      setTimeout(() => initPage(retryCount + 1), 1000);
+    if (retryCount < 10) { // Increase max retries to 10
+      console.log("Required elements not found, retrying in 500ms");
+      setTimeout(() => initPage(retryCount + 1), 500);
     } else {
-      console.error("Failed to find required elements after 5 attempts");
+      console.error("Failed to find required elements after 10 attempts");
       showError('Failed to initialize the page. Please refresh and try again. If the problem persists, contact support.');
     }
     return;
@@ -67,17 +67,17 @@ function initPage(retryCount = 0) {
   }
 }
 
-// Check if we're in the correct context before initializing
-if (document.querySelector('#certificateSection')) {
-  // Ensure the DOM is fully loaded before running the script
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => initPage());
-  } else {
-    initPage();
-  }
-} else {
-  console.log("Not on the donation success page, script will not run.");
-}
+// Ensure the DOM is fully loaded before running the script
+document.addEventListener('DOMContentLoaded', () => {
+  // Wait a bit longer before starting the initialization process
+  setTimeout(() => {
+    if (document.querySelector('#certificateSection')) {
+      initPage();
+    } else {
+      console.log("Not on the donation success page, script will not run.");
+    }
+  }, 1000); // Wait for 1 second before starting
+});
 
 function generateTestCertificate() {
   console.log("Generating test certificate");
