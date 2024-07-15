@@ -60,6 +60,7 @@ struct Message {
 #[derive(Deserialize, Debug)]
 pub struct DonationRequest {
     pub currency: String,
+    pub amount: u64,
 }
 
 #[derive(Serialize)]
@@ -167,46 +168,19 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(&secret_key);
 
-    let currency = match request.currency.as_str() {
-        "usd" => Currency::USD,
-        _ => {
-            error!("Invalid currency: {}", request.currency);
-            return Err(DonationError::InvalidCurrency);
-        }
-    };
+    let currency = Currency::from_str(&request.currency).map_err(|_| {
+        error!("Invalid currency: {}", request.currency);
+        DonationError::InvalidCurrency
+    })?;
 
     let params = stripe::CreatePaymentIntent {
-        amount: 500,
-        application_fee_amount: None,
-        automatic_payment_methods: None,
-        capture_method: None,
-        confirm: None,
-        confirmation_method: None,
+        amount: request.amount,
         currency,
-        customer: None,
-        description: None,
-        error_on_requires_action: None,
-        expand: &[],
-        mandate: None,
-        mandate_data: None,
-        metadata: None,
-        off_session: None,
-        on_behalf_of: None,
-        payment_method: None,
-        payment_method_configuration: None,
-        payment_method_data: None,
-        payment_method_options: None,
-        payment_method_types: None,
-        radar_options: None,
-        receipt_email: None,
-        return_url: None,
-        setup_future_usage: None,
-        shipping: None,
-        statement_descriptor: None,
-        statement_descriptor_suffix: None,
-        transfer_data: None,
-        transfer_group: None,
-        use_stripe_sdk: None,
+        automatic_payment_methods: Some(stripe::CreatePaymentIntentAutomaticPaymentMethods {
+            enabled: true,
+            ..Default::default()
+        }),
+        ..Default::default()
     };
 
     let intent = PaymentIntent::create(&client, params)
