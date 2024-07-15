@@ -23,7 +23,7 @@ links:
 ---
 
 The centralization of the internet poses a fundamental threat to individual
-freedom. In 2024, a few corporations control most online services and2
+freedom. In 2024, a few corporations control most of our online services and 
 infrastructure, wielding immense power with little accountability. They can
 censor content, exploit data, and exclude users from essential services,
 undermining democracy. We need a solution urgently.
