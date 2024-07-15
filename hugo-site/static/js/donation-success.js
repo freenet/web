@@ -8,57 +8,57 @@ function base64ToBuffer(base64) {
     return nacl.util.decodeBase64(base64);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  console.log("DOM fully loaded");
+// Function to check for required elements
+function checkRequiredElements() {
+  const requiredElements = [
+    { id: 'combinedKey', selector: '#combinedKey' },
+    { id: 'certificateSection', selector: '#certificateSection' },
+    { id: 'certificate-info', selector: '#certificate-info' },
+    { id: 'copyCombinedKey', selector: '#copyCombinedKey' },
+    { id: 'errorMessage', selector: '#errorMessage' }
+  ];
   
-  // Function to check for required elements
-  function checkRequiredElements() {
-    const requiredElements = [
-      { id: 'combinedKey', selector: '#combinedKey' },
-      { id: 'certificateSection', selector: '#certificateSection' },
-      { id: 'certificate-info', selector: '#certificate-info' },
-      { id: 'copyCombinedKey', selector: '#copyCombinedKey' },
-      { id: 'errorMessage', selector: '#errorMessage' }
-    ];
-    
-    const missingElements = requiredElements.filter(el => !document.querySelector(el.selector));
-    
-    if (missingElements.length > 0) {
-      console.error("Missing required elements:", missingElements.map(el => el.id));
-      showError(`Error: Missing required elements: ${missingElements.map(el => el.id).join(', ')}`);
-      return false;
-    }
-    return true;
+  const missingElements = requiredElements.filter(el => !document.querySelector(el.selector));
+  
+  if (missingElements.length > 0) {
+    console.error("Missing required elements:", missingElements.map(el => el.id));
+    showError(`Error: Missing required elements: ${missingElements.map(el => el.id).join(', ')}`);
+    return false;
+  }
+  return true;
+}
+
+// Function to initialize the page
+function initPage() {
+  console.log("Initializing page");
+  if (!checkRequiredElements()) {
+    console.log("Required elements not found, retrying in 100ms");
+    setTimeout(initPage, 100);
+    return;
   }
 
-  // Function to initialize the page
-  function initPage() {
-    if (!checkRequiredElements()) {
-      return;
-    }
+  const urlParams = new URLSearchParams(window.location.search);
+  const paymentIntent = urlParams.get('payment_intent');
+  const isTestMode = urlParams.get('test') !== null;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const paymentIntent = urlParams.get('payment_intent');
-    const isTestMode = urlParams.get('test') !== null;
-
-    if (isTestMode) {
-      console.log("Test mode detected");
-      generateTestCertificate();
-    } else if (paymentIntent) {
-      console.log("Payment intent detected:", paymentIntent);
-      generateAndSignCertificate(paymentIntent);
-    } else {
-      console.log("No payment intent or test mode detected");
-      showError('Payment information not found.');
-    }
+  if (isTestMode) {
+    console.log("Test mode detected");
+    generateTestCertificate();
+  } else if (paymentIntent) {
+    console.log("Payment intent detected:", paymentIntent);
+    generateAndSignCertificate(paymentIntent);
+  } else {
+    console.log("No payment intent or test mode detected");
+    showError('Payment information not found.');
   }
+}
 
-  // Try to initialize immediately
+// Ensure the DOM is fully loaded before running the script
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPage);
+} else {
   initPage();
-
-  // If it fails, try again after a short delay
-  setTimeout(initPage, 500);
-});
+}
 
 function generateTestCertificate() {
   console.log("Generating test certificate");
