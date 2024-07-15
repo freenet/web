@@ -155,17 +155,34 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
 
     let delegate_amount = (amount / 100) as u64; // Convert cents to dollars
     let delegate_cert_path = delegate_dir.join(format!("delegate_certificate_{}.pem", delegate_amount));
-    let delegate_key_path = delegate_dir.join(format!("delegate_key_{}.pem", delegate_amount));
+    let delegate_key_path = delegate_dir.join(format!("delegate_signing_key_{}.pem", delegate_amount));
 
     log::info!("Attempting to read delegate certificate from: {:?}", delegate_cert_path);
     log::info!("Attempting to read delegate key from: {:?}", delegate_key_path);
 
-    let delegate_cert = fs::read_to_string(&delegate_cert_path)
-        .map_err(|e| CertificateError::KeyError(format!("Failed to read delegate certificate from {:?}: {}", delegate_cert_path, e)))?;
-    let delegate_key = fs::read_to_string(&delegate_key_path)
-        .map_err(|e| CertificateError::KeyError(format!("Failed to read delegate key from {:?}: {}", delegate_key_path, e)))?;
+    let delegate_cert = match fs::read_to_string(&delegate_cert_path) {
+        Ok(cert) => {
+            log::info!("Successfully read delegate certificate");
+            cert
+        },
+        Err(e) => {
+            log::error!("Failed to read delegate certificate from {:?}: {}", delegate_cert_path, e);
+            return Err(CertificateError::KeyError(format!("Failed to read delegate certificate from {:?}: {}", delegate_cert_path, e)));
+        }
+    };
 
-    log::info!("Successfully read delegate certificate and key");
+    let delegate_key = match fs::read_to_string(&delegate_key_path) {
+        Ok(key) => {
+            log::info!("Successfully read delegate key");
+            key
+        },
+        Err(e) => {
+            log::error!("Failed to read delegate key from {:?}: {}", delegate_key_path, e);
+            return Err(CertificateError::KeyError(format!("Failed to read delegate key from {:?}: {}", delegate_key_path, e)));
+        }
+    };
+
+    log::info!("Successfully read both delegate certificate and key");
     log::info!("Starting sign_with_delegate_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
 
     let signing_key = SigningKey::from_pkcs8_pem(&delegate_key)
