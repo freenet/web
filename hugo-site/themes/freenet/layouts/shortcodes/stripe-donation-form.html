@@ -13,9 +13,10 @@
         <option value="gbp">GBP</option>
       </select>
     </div>
-    <div id="payment-element" style="margin-bottom: 20px;">
+    <div id="card-element" style="margin-bottom: 20px;">
       <!-- Stripe Elements will be inserted here -->
     </div>
+    <div id="card-errors" role="alert" style="color: red; margin-bottom: 10px;"></div>
     <button id="submit" class="button is-primary" style="width: 100%; padding: 10px; background-color: #0066cc; color: white; border: none; border-radius: 5px;">Donate</button>
     <div id="error-message" style="margin-top: 20px; color: red;"></div>
   </form>
@@ -24,35 +25,30 @@
 <script src="https://js.stripe.com/v3/"></script>
 <script>
   const stripe = Stripe('{{ .Site.Params.stripePublishableKey }}');
-  let elements;
+  let card;
 
   document.addEventListener('DOMContentLoaded', initializeStripe);
 
-  async function initializeStripe() {
-    try {
-      const checkedAmountInput = document.querySelector('input[name="amount"]:checked');
-      const initialAmount = checkedAmountInput ? checkedAmountInput.value : '10';
-      const initialCurrency = document.getElementById('currency').value || 'usd';
+  function initializeStripe() {
+    const elements = stripe.elements();
+    card = elements.create('card', {
+      style: {
+        base: {
+          fontSize: '16px',
+          color: '#32325d',
+        },
+      },
+    });
+    card.mount('#card-element');
 
-      const response = await fetch('http://127.0.0.1:8000/create-donation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: parseInt(initialAmount) * 100, currency: initialCurrency })
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('API endpoint not found. Please check your server configuration.');
-        }
-        const errorText = await response.text();
-        throw new Error(`Failed to initialize Stripe: ${errorText}`);
+    card.addEventListener('change', function(event) {
+      const displayError = document.getElementById('card-errors');
+      if (event.error) {
+        displayError.textContent = event.error.message;
+      } else {
+        displayError.textContent = '';
       }
-
-      const { client_secret } = await response.json();
-
-      elements = stripe.elements({ clientSecret: client_secret });
-      const paymentElement = elements.create('payment');
-      paymentElement.mount('#payment-element');
+    });
     } catch (error) {
       console.error('Stripe initialization error:', error);
       const messageContainer = document.querySelector('#error-message');
@@ -69,11 +65,20 @@
     const amount = document.querySelector('input[name="amount"]:checked').value;
     const currency = document.getElementById('currency').value;
 
-    try {
+    const { token, error } = await stripe.createToken(card);
+
+    if (error) {
+      const errorElement = document.getElementById('card-errors');
+      errorElement.textContent = error.message;
+    } else {
       const response = await fetch('http://127.0.0.1:8000/create-donation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: parseInt(amount) * 100, currency })
+        body: JSON.stringify({ 
+          amount: parseInt(amount) * 100, 
+          currency,
+          token: token.id
+        })
       });
 
       if (!response.ok) {
@@ -81,19 +86,14 @@
         throw new Error(errorMessage);
       }
 
-      const { client_secret } = await response.json();
-
-      const { error } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/donate/ghostkey/success`,
-        },
-      });
-
-      if (error) {
-        throw new Error(error.message);
+      const result = await response.json();
+      
+      if (result.success) {
+        window.location.href = `${window.location.origin}/donate/ghostkey/success?payment_intent=${result.paymentIntentId}`;
+      } else {
+        throw new Error('Payment failed');
       }
-      // Payment successful, the page will redirect automatically
+    }
     } catch (error) {
       const messageContainer = document.querySelector('#error-message');
       messageContainer.textContent = error.message;
