@@ -26,13 +26,13 @@ fn rocket() -> _ {
         .format(|buf, record| {
             use std::io::Write;
             writeln!(buf,
-                "{} [{}] {} - {}:{} - {}",
+                "{} [{}] {} - {}",
                 chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
                 record.level(),
                 record.args(),
-                record.file().unwrap_or("unknown"),
-                record.line().unwrap_or(0),
-                record.module_path().unwrap_or("unknown")
+                record.file().map_or_else(|| "unknown".to_string(), |path| {
+                    format!("{}:{}", path, record.line().unwrap_or(0))
+                })
             )
         })
         .filter(None, LevelFilter::Info)
