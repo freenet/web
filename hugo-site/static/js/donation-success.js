@@ -8,7 +8,7 @@ function base64ToBuffer(base64) {
     return nacl.util.decodeBase64(base64);
 }
 
-// Function to check for required elements
+// Function to check for required elements and log detailed information
 function checkRequiredElements() {
   const requiredElements = [
     { id: 'combinedKey', selector: 'textarea#combinedKey' },
@@ -18,7 +18,17 @@ function checkRequiredElements() {
     { id: 'errorMessage', selector: 'div#errorMessage' }
   ];
   
-  const missingElements = requiredElements.filter(el => !document.querySelector(el.selector));
+  console.log("Checking for required elements...");
+  
+  const missingElements = requiredElements.filter(el => {
+    const element = document.querySelector(el.selector);
+    if (!element) {
+      console.error(`Element not found: ${el.id} (selector: ${el.selector})`);
+    } else {
+      console.log(`Element found: ${el.id}`);
+    }
+    return !element;
+  });
   
   if (missingElements.length > 0) {
     console.error("Missing required elements:", missingElements.map(el => el.id));
@@ -27,12 +37,13 @@ function checkRequiredElements() {
     showError(errorMessage);
     return false;
   }
+  console.log("All required elements found.");
   return true;
 }
 
 // Function to initialize the page
-function initPage(retryCount = 0) {
-  console.log("Initializing page, attempt:", retryCount + 1);
+function initPage() {
+  console.log("Initializing page");
   
   // Check if we're on the correct page
   if (!document.querySelector('#certificateSection')) {
@@ -40,20 +51,20 @@ function initPage(retryCount = 0) {
     return;
   }
 
+  console.log("Donation success page detected. Checking required elements...");
   if (!checkRequiredElements()) {
-    if (retryCount < 10) { // Increase max retries to 10
-      console.log("Required elements not found, retrying in 500ms");
-      setTimeout(() => initPage(retryCount + 1), 500);
-    } else {
-      console.error("Failed to find required elements after 10 attempts");
-      showError('Failed to initialize the page. Please refresh and try again. If the problem persists, contact support.');
-    }
+    console.error("Required elements not found. Page initialization failed.");
     return;
   }
 
   const urlParams = new URLSearchParams(window.location.search);
   const paymentIntent = urlParams.get('payment_intent');
   const isTestMode = urlParams.get('test') !== null;
+
+  console.log("URL parameters:", {
+    paymentIntent: paymentIntent || 'Not found',
+    isTestMode: isTestMode
+  });
 
   if (isTestMode) {
     console.log("Test mode detected");
@@ -69,15 +80,14 @@ function initPage(retryCount = 0) {
 
 // Ensure the DOM is fully loaded before running the script
 document.addEventListener('DOMContentLoaded', () => {
-  // Wait a bit longer before starting the initialization process
-  setTimeout(() => {
-    if (document.querySelector('#certificateSection')) {
-      initPage();
-    } else {
-      console.log("Not on the donation success page, script will not run.");
-    }
-  }, 1000); // Wait for 1 second before starting
+  console.log("DOMContentLoaded event fired");
+  initPage();
 });
+
+// Log any errors that occur during script execution
+window.onerror = function(message, source, lineno, colno, error) {
+  console.error("Unhandled error:", { message, source, lineno, colno, error });
+};
 
 function generateTestCertificate() {
   console.log("Generating test certificate");
