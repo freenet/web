@@ -23,11 +23,3 @@ fantoccini = "0.19"
 thiserror = "1.0"
 chrono = "0.4"
 serde = { version = "1.0", features = ["derive"] }
-
-[[bin]]
-name = "ghostkey"
-path = "src/bin/ghostkey.rs"
-
-[[lib]]
-name = "ghostkey"
-path = "src/lib.rs"
