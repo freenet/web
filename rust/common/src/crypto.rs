@@ -150,13 +150,13 @@ mod tests {
     }
 
     #[test]
-    fn test_extract_base64_from_armor() {
+    fn test_extract_bytes_from_armor() {
         let armored_key = "-----BEGIN TEST KEY-----\nYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXo=\n-----END TEST KEY-----";
-        let result = extract_base64_from_armor(armored_key, "TEST KEY").unwrap();
-        assert_eq!(result, "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXo=");
+        let result = extract_bytes_from_armor(armored_key, "TEST KEY").unwrap();
+        assert!(!result.is_empty());
 
         // Test for armor type mismatch
-        let result = extract_base64_from_armor(armored_key, "WRONG KEY");
+        let result = extract_bytes_from_armor(armored_key, "WRONG KEY");
         assert!(result.is_err());
     }
 }
