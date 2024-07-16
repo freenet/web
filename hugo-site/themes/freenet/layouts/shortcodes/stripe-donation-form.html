@@ -94,15 +94,22 @@
       const result = await response.json();
       console.log('Server response:', result);
       
-      if (result.success) {
+      if (result.client_secret && result.payment_intent_id) {
+        window.location.href = `${window.location.origin}/donate/ghostkey/success?payment_intent=${result.payment_intent_id}`;
+      } else if (result.success) {
         window.location.href = `${window.location.origin}/donate/ghostkey/success?payment_intent=${result.paymentIntentId}`;
       } else {
-        console.error('Payment failed:', result);
-        throw new Error(result.error || 'Payment failed');
+        console.error('Payment processing error:', result);
+        throw new Error(result.error || 'Payment processing failed. Please try again or contact support.');
       }
     } catch (error) {
       console.error('Payment error:', error);
-      messageContainer.textContent = `Error: ${error.message}. Please try again or contact support.`;
+      let errorMessage = `Error: ${error.message}. `;
+      if (error.response) {
+        errorMessage += `Server responded with status ${error.response.status}. `;
+      }
+      errorMessage += 'Please try again or contact support.';
+      messageContainer.textContent = errorMessage;
     }
   }
 </script>
