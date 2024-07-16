@@ -60,7 +60,7 @@ struct Message {
 #[derive(Deserialize, Debug)]
 pub struct DonationRequest {
     pub currency: String,
-    pub amount: u64,
+    pub amount: i64,
 }
 
 #[derive(Serialize)]
@@ -174,10 +174,10 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     })?;
 
     let params = stripe::CreatePaymentIntent {
-        amount: request.amount,
-        currency,
+        amount: Some(request.amount),
+        currency: Some(currency),
         automatic_payment_methods: Some(stripe::CreatePaymentIntentAutomaticPaymentMethods {
-            enabled: true,
+            enabled: Some(true),
             ..Default::default()
         }),
         ..Default::default()
