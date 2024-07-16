@@ -22,9 +22,9 @@ impl Fairing for CORS {
     }
 
     async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
-        response.set_header(Header::new("Access-Control-Allow-Origin", "http://localhost:1313"));
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
         response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS"));
-        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "Content-Type, Authorization"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
         response.set_header(Header::new("Access-Control-Max-Age", "86400"));
     }
@@ -180,34 +180,13 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
             enabled: true,
             allow_redirects: None,
         }),
-        application_fee_amount: None,
-        capture_method: None,
-        confirm: None,
-        confirmation_method: None,
-        customer: None,
-        description: None,
-        error_on_requires_action: None,
-        mandate: None,
-        mandate_data: None,
-        metadata: None,
-        off_session: None,
-        on_behalf_of: None,
-        payment_method: None,
-        payment_method_data: None,
-        payment_method_options: None,
-        payment_method_types: None,
-        receipt_email: None,
-        return_url: None,
-        setup_future_usage: None,
-        shipping: None,
-        statement_descriptor: None,
-        statement_descriptor_suffix: None,
-        transfer_data: None,
-        transfer_group: None,
-        use_stripe_sdk: None,
-        expand: &[],
-        payment_method_configuration: None,
-        radar_options: None,
+        metadata: Some(hashmap! {
+            "donation_type".to_string() => "freenet".to_string(),
+        }),
+        description: Some("Freenet Donation".to_string()),
+        statement_descriptor: Some("Freenet Donation".to_string()),
+        statement_descriptor_suffix: Some("Thank You".to_string()),
+        ..Default::default()
     };
 
     let intent = PaymentIntent::create(&client, params)
