@@ -205,7 +205,7 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         transfer_data: None,
         transfer_group: None,
         use_stripe_sdk: None,
-        expand: None,
+        expand: &[],
         payment_method_configuration: None,
         radar_options: None,
     };
