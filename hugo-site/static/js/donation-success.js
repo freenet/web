@@ -32,10 +32,11 @@ function checkRequiredElements() {
   
   if (missingElements.length > 0) {
     console.error("Missing required elements:", missingElements.map(el => el.id));
-    const errorMessage = `Error: Missing required elements: ${missingElements.map(el => el.id).join(', ')}. ` +
-                         `Please ensure you're on the correct page and all elements are present in the HTML.`;
+    const errorMessage = `Warning: Some elements are missing. The page may not function correctly. ` +
+                         `Missing elements: ${missingElements.map(el => el.id).join(', ')}. `;
     showError(errorMessage);
-    return false;
+    // Return true to allow the script to continue
+    return true;
   }
   console.log("All required elements found.");
   return true;
