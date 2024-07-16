@@ -126,6 +126,7 @@ async function generateAndSignCertificate(paymentIntentId) {
 
     // Send blinded public key to server for signing
     console.log("Sending request to server");
+    let data;
     try {
       const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
         method: 'POST',
@@ -146,7 +147,7 @@ async function generateAndSignCertificate(paymentIntentId) {
       }
 
       console.log("Received response from server");
-      const data = await response.json();
+      data = await response.json();
       if (!data.blind_signature) {
         if (data.message === "CERTIFICATE_ALREADY_SIGNED") {
           showError('Certificate already signed for this payment.');
@@ -179,14 +180,6 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
   }
-}
-
-function generateTestCertificate() {
-  const publicKey = nacl.randomBytes(32);
-  const privateKey = nacl.randomBytes(64);
-  const unblindedSignature = nacl.randomBytes(64);
-
-  displayCertificate(publicKey, privateKey, unblindedSignature);
 }
 
 function displayCertificate(publicKey, privateKey, unblindedSignature) {
@@ -277,7 +270,16 @@ function verifyCertificate(publicKey, signature) {
 
 function showError(message) {
   const errorElement = document.getElementById('errorMessage');
-  errorElement.textContent = message;
-  errorElement.style.display = 'block';
-  document.getElementById('certificate-info').style.display = 'none';
+  if (errorElement) {
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+  } else {
+    console.error("Error element not found. Error message:", message);
+  }
+  const certificateInfo = document.getElementById('certificate-info');
+  if (certificateInfo) {
+    certificateInfo.style.display = 'none';
+  } else {
+    console.error("Certificate info element not found");
+  }
 }
