@@ -154,7 +154,7 @@ mod tests {
     fn test_sign_with_key_armored() {
         let _ = env_logger::builder().is_test(true).try_init();
 
-        let armored_signing_key = "-----BEGIN MASTER SIGNING KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgevZzL1gdAFr88hb2\nOF/2NxApJCzGCEDdfSp6VQO30hyhRANCAAQRWz+jn65BtOMvdyHKcvjBeBSDZH2r\n1RTwjmYSi9R/zpBnuQ4EiMnCqfMPWiZqB4QdbAd0E7oH50VpuZ1P087G\n-----END MASTER SIGNING KEY-----";
+        let (armored_signing_key, _) = generate_master_key().unwrap();
         
         let blinded_verifying_key = json!({
             "x": general_purpose::STANDARD.encode([1u8; 32]),
@@ -162,7 +162,7 @@ mod tests {
         });
         println!("Blinded verifying key: {}", blinded_verifying_key);
         
-        let signature = sign_with_key(&blinded_verifying_key, armored_signing_key);
+        let signature = sign_with_key(&blinded_verifying_key, &armored_signing_key);
         match signature {
             Ok(sig) => {
                 println!("Signature generated successfully: {}", sig);
