@@ -1,4 +1,5 @@
 use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse, DelegateInfo, CertificateError};
+use std::collections::HashMap;
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
@@ -173,6 +174,9 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         DonationError::InvalidCurrency
     })?;
 
+    let mut metadata = HashMap::new();
+    metadata.insert("donation_type".to_string(), "freenet".to_string());
+
     let params = stripe::CreatePaymentIntent {
         amount: request.amount,
         currency,
@@ -180,12 +184,10 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
             enabled: true,
             allow_redirects: None,
         }),
-        metadata: Some(hashmap! {
-            "donation_type".to_string() => "freenet".to_string(),
-        }),
-        description: Some("Freenet Donation".to_string()),
-        statement_descriptor: Some("Freenet Donation".to_string()),
-        statement_descriptor_suffix: Some("Thank You".to_string()),
+        metadata: Some(metadata),
+        description: Some("Freenet Donation"),
+        statement_descriptor: Some("Freenet Donation"),
+        statement_descriptor_suffix: Some("Thank You"),
         ..Default::default()
     };
 
