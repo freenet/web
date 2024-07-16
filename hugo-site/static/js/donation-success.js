@@ -81,12 +81,18 @@ function initPage() {
 // Ensure the DOM is fully loaded before running the script
 document.addEventListener('DOMContentLoaded', () => {
   console.log("DOMContentLoaded event fired");
+  if (typeof nacl === 'undefined' || typeof nacl.util === 'undefined') {
+    console.error("nacl or nacl.util is not defined. Make sure the TweetNaCl library is properly loaded.");
+    showError('An error occurred while loading the necessary libraries. Please try again later.');
+    return;
+  }
   initPage();
 });
 
 // Log any errors that occur during script execution
 window.onerror = function(message, source, lineno, colno, error) {
   console.error("Unhandled error:", { message, source, lineno, colno, error });
+  showError('An unexpected error occurred. Please try again later.');
 };
 
 function generateTestCertificate() {
