@@ -7,10 +7,10 @@ use std::os::unix::fs::PermissionsExt;
 use common::crypto::master_key::{generate_master_key, generate_master_verifying_key};
 use colored::Colorize;
 use log::{error, info};
-use common::crypto::ghost_key::{generate_ghostkey, validate_ghost_key};
-use common::crypto::signature::{sign_message, verify_signature};
-use common::crypto::generate_delegate::generate_delegate_key;
-use common::crypto::validate_delegate_key;
+use crate::crypto::ghost_key::{generate_ghostkey, validate_ghost_key};
+use crate::crypto::signature::{sign_message, verify_signature};
+use crate::crypto::generate_delegate::generate_delegate_key;
+use crate::crypto::validate_delegate_key;
 
 fn main() {
     let result = run();
