@@ -10,13 +10,6 @@ pub fn sign_with_key(blinded_verifying_key: &Value, server_master_signing_key: &
     let decoded_key = extract_bytes_from_armor(server_master_signing_key, "MASTER SIGNING KEY")?;
     debug!("Extracted bytes from armor: {:?}", decoded_key);
 
-    let decoded_key = general_purpose::STANDARD.decode(&decoded_key)
-        .map_err(|e| {
-            error!("Failed to decode extracted bytes: {}", e);
-            CryptoError::Base64DecodeError(e.to_string())
-        })?;
-    debug!("Decoded extracted bytes: {:?}", decoded_key);
-
     let master_signing_key = SigningKey::from_slice(&decoded_key)
         .map_err(|e| {
             error!("Failed to create SigningKey: {}", e);

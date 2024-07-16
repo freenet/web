@@ -155,6 +155,7 @@ mod tests {
         let _ = env_logger::builder().is_test(true).try_init();
 
         let (armored_signing_key, _) = generate_master_key().unwrap();
+        println!("Generated armored signing key: {}", armored_signing_key);
         
         let blinded_verifying_key = json!({
             "x": general_purpose::STANDARD.encode([1u8; 32]),
