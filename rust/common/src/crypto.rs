@@ -18,6 +18,7 @@ use rmp_serde::Serializer;
 use crate::crypto::crypto_error::CryptoError;
 use crate::crypto::generate_delegate::DelegateKeyCertificate;
 use log::{warn, debug};
+use rand::Rng;
 
 pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
     // Generate the signing key
