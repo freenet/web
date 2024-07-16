@@ -151,6 +151,31 @@ mod tests {
     }
 
     #[test]
+    fn test_sign_with_key_armored() {
+        let _ = env_logger::builder().is_test(true).try_init();
+
+        let armored_signing_key = "-----BEGIN MASTER SIGNING KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgevZzL1gdAFr88hb2\nOF/2NxApJCzGCEDdfSp6VQO30hyhRANCAAQRWz+jn65BtOMvdyHKcvjBeBSDZH2r\n1RTwjmYSi9R/zpBnuQ4EiMnCqfMPWiZqB4QdbAd0E7oH50VpuZ1P087G\n-----END MASTER SIGNING KEY-----";
+        
+        let blinded_verifying_key = json!({
+            "x": general_purpose::STANDARD.encode([1u8; 32]),
+            "y": general_purpose::STANDARD.encode([2u8; 32])
+        });
+        println!("Blinded verifying key: {}", blinded_verifying_key);
+        
+        let signature = sign_with_key(&blinded_verifying_key, armored_signing_key);
+        match signature {
+            Ok(sig) => {
+                println!("Signature generated successfully: {}", sig);
+                assert!(!sig.is_empty());
+            },
+            Err(e) => {
+                println!("Error generating signature: {:?}", e);
+                panic!("Failed to generate signature: {:?}", e);
+            }
+        }
+    }
+
+    #[test]
     fn test_generate_signing_key() {
         let (signing_key, verifying_key) = generate_signing_key().unwrap();
         assert!(signing_key.contains("-----BEGIN SERVER SIGNING KEY-----"));
