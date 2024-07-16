@@ -126,6 +126,8 @@ mod tests {
 
     #[test]
     fn test_sign_with_key() {
+        let _ = env_logger::builder().is_test(true).try_init();
+
         let (signing_key, _) = generate_master_key().unwrap();
         println!("Generated signing key: {}", signing_key);
         
@@ -143,7 +145,7 @@ mod tests {
             },
             Err(e) => {
                 println!("Error generating signature: {:?}", e);
-                panic!("Failed to generate signature");
+                panic!("Failed to generate signature: {:?}", e);
             }
         }
     }
