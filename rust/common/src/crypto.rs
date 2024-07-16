@@ -127,14 +127,25 @@ mod tests {
     #[test]
     fn test_sign_with_key() {
         let (signing_key, _) = generate_master_key().unwrap();
+        println!("Generated signing key: {}", signing_key);
+        
         let blinded_verifying_key = json!({
             "x": general_purpose::STANDARD.encode([1u8; 32]),
             "y": general_purpose::STANDARD.encode([2u8; 32])
         });
+        println!("Blinded verifying key: {}", blinded_verifying_key);
+        
         let signature = sign_with_key(&blinded_verifying_key, &signing_key);
-        assert!(signature.is_ok());
-        let signature = signature.unwrap();
-        assert!(!signature.is_empty());
+        match signature {
+            Ok(sig) => {
+                println!("Signature generated successfully: {}", sig);
+                assert!(!sig.is_empty());
+            },
+            Err(e) => {
+                println!("Error generating signature: {:?}", e);
+                panic!("Failed to generate signature");
+            }
+        }
     }
 
     #[test]
