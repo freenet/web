@@ -89,29 +89,25 @@ pub struct SignCertificateResponse {
 pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, CertificateError> {
     log::info!("Starting sign_certificate function with request: {:?}", request);
 
-    let stripe_secret_key = match std::env::var("STRIPE_SECRET_KEY") {
-        Ok(key) => {
-            log::info!("STRIPE_SECRET_KEY found: {}", key);
-            key
-        },
-        Err(e) => {
-            log::error!("Environment variable STRIPE_SECRET_KEY not found: {}", e);
-            log::error!("Current environment variables: {:?}", std::env::vars().collect::<Vec<_>>());
-            return Err(CertificateError::KeyError("STRIPE_SECRET_KEY environment variable not set".to_string()));
-        }
-    };
+    let stripe_secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(|e| {
+        log::error!("Environment variable STRIPE_SECRET_KEY not found: {}", e);
+        log::error!("Current environment variables: {:?}", std::env::vars().collect::<Vec<_>>());
+        CertificateError::KeyError("STRIPE_SECRET_KEY environment variable not set".to_string())
+    })?;
+
+    log::info!("STRIPE_SECRET_KEY found");
     let client = Client::new(stripe_secret_key);
 
     // Verify payment intent
-    let pi = match PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await {
-        Ok(pi) => pi,
-        Err(e) => {
+    let pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await
+        .map_err(|e| {
             log::error!("Failed to retrieve PaymentIntent: {:?}", e);
-            return Err(CertificateError::StripeError(e));
-        }
-    };
+            CertificateError::StripeError(e)
+        })?;
+
     log::info!("Retrieved PaymentIntent: {:?}", pi);
     log::info!("PaymentIntent status: {:?}", pi.status);
+
     if pi.status != PaymentIntentStatus::Succeeded {
         log::error!("Payment not successful. Status: {:?}", pi.status);
         return Err(CertificateError::PaymentNotSuccessful);
@@ -136,21 +132,19 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     log::info!("Payment intent verified successfully");
 
     let amount = pi.amount;
-    match sign_with_delegate_key(&request.blinded_public_key, amount) {
-        Ok((signature, delegate_info)) => {
-            log::info!("Certificate signed successfully");
-            log::debug!("Signature: {}", signature);
-
-            Ok(SignCertificateResponse { 
-                blind_signature: signature,
-                delegate_info,
-            })
-        },
-        Err(e) => {
+    let (signature, delegate_info) = sign_with_delegate_key(&request.blinded_public_key, amount)
+        .map_err(|e| {
             log::error!("Error in sign_with_delegate_key: {:?}", e);
-            Err(e)
-        }
-    }
+            e
+        })?;
+
+    log::info!("Certificate signed successfully");
+    log::debug!("Signature: {}", signature);
+
+    Ok(SignCertificateResponse { 
+        blind_signature: signature,
+        delegate_info,
+    })
 }
 
 fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<(String, DelegateInfo), CertificateError> {
@@ -163,74 +157,50 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
     let delegate_cert_path = delegate_dir.join(format!("delegate_certificate_{}.pem", delegate_amount));
     let delegate_key_path = delegate_dir.join(format!("delegate_signing_key_{}.pem", delegate_amount));
 
-    log::info!("Attempting to read delegate certificate from: {:?}", delegate_cert_path);
-    log::info!("Attempting to read delegate key from: {:?}", delegate_key_path);
+    log::info!("Reading delegate certificate from: {:?}", delegate_cert_path);
+    log::info!("Reading delegate key from: {:?}", delegate_key_path);
 
-    let delegate_cert = match fs::read_to_string(&delegate_cert_path) {
-        Ok(cert) => {
-            log::info!("Successfully read delegate certificate");
-            cert
-        },
-        Err(e) => {
+    let delegate_cert = fs::read_to_string(&delegate_cert_path)
+        .map_err(|e| {
             log::error!("Failed to read delegate certificate from {:?}: {}", delegate_cert_path, e);
-            return Err(CertificateError::KeyError(format!("Failed to read delegate certificate from {:?}: {}", delegate_cert_path, e)));
-        }
-    };
+            CertificateError::KeyError(format!("Failed to read delegate certificate: {}", e))
+        })?;
 
-    let delegate_key = match fs::read_to_string(&delegate_key_path) {
-        Ok(key) => {
-            log::info!("Successfully read delegate key");
-            key
-        },
-        Err(e) => {
+    let delegate_key = fs::read_to_string(&delegate_key_path)
+        .map_err(|e| {
             log::error!("Failed to read delegate key from {:?}: {}", delegate_key_path, e);
-            return Err(CertificateError::KeyError(format!("Failed to read delegate key from {:?}: {}", delegate_key_path, e)));
-        }
-    };
+            CertificateError::KeyError(format!("Failed to read delegate key: {}", e))
+        })?;
 
     log::info!("Successfully read both delegate certificate and key");
-    log::info!("Starting sign_with_delegate_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
+    log::debug!("Starting sign_with_delegate_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
 
     let signing_key = SigningKey::from_pkcs8_pem(&delegate_key)
         .map_err(|e| {
             log::error!("Failed to create signing key: {}", e);
-            CertificateError::KeyError(e.to_string())
+            CertificateError::KeyError(format!("Failed to create signing key: {}", e))
         })?;
 
-    log::debug!("Parsed blinded verifying key JSON: {:?}", blinded_verifying_key);
-
     let blinded_verifying_key_bytes = match blinded_verifying_key {
-        Value::String(s) => general_purpose::STANDARD.decode(s).map_err(|e| {
-            log::error!("Failed to decode blinded verifying key: {}", e);
-            CertificateError::Base64Error(e)
-        })?,
+        Value::String(s) => general_purpose::STANDARD.decode(s)
+            .map_err(|e| {
+                log::error!("Failed to decode blinded verifying key: {}", e);
+                CertificateError::Base64Error(e)
+            })?,
         Value::Object(obj) => {
             let x = obj.get("x").and_then(Value::as_str)
-                .ok_or_else(|| {
-                    log::error!("Missing 'x' coordinate in blinded verifying key JSON");
-                    CertificateError::KeyError("Missing 'x' coordinate".to_string())
-                })?;
+                .ok_or_else(|| CertificateError::KeyError("Missing 'x' coordinate".to_string()))?;
             let y = obj.get("y").and_then(Value::as_str)
-                .ok_or_else(|| {
-                    log::error!("Missing 'y' coordinate in blinded verifying key JSON");
-                    CertificateError::KeyError("Missing 'y' coordinate".to_string())
-                })?;
+                .ok_or_else(|| CertificateError::KeyError("Missing 'y' coordinate".to_string()))?;
 
             let mut bytes = Vec::new();
-            bytes.extend_from_slice(&general_purpose::STANDARD.decode(x).map_err(|e| {
-                log::error!("Failed to decode 'x' coordinate: {}", e);
-                CertificateError::Base64Error(e)
-            })?);
-            bytes.extend_from_slice(&general_purpose::STANDARD.decode(y).map_err(|e| {
-                log::error!("Failed to decode 'y' coordinate: {}", e);
-                CertificateError::Base64Error(e)
-            })?);
+            bytes.extend_from_slice(&general_purpose::STANDARD.decode(x)
+                .map_err(|e| CertificateError::Base64Error(e))?);
+            bytes.extend_from_slice(&general_purpose::STANDARD.decode(y)
+                .map_err(|e| CertificateError::Base64Error(e))?);
             bytes
         },
-        _ => {
-            log::error!("Invalid blinded verifying key format");
-            return Err(CertificateError::KeyError("Invalid blinded verifying key format".to_string()));
-        }
+        _ => return Err(CertificateError::KeyError("Invalid blinded verifying key format".to_string())),
     };
 
     log::debug!("Decoded blinded verifying key bytes: {:?}", blinded_verifying_key_bytes);
