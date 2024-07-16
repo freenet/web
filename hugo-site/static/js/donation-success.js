@@ -126,28 +126,38 @@ async function generateAndSignCertificate(paymentIntentId) {
 
     // Send blinded public key to server for signing
     console.log("Sending request to server");
-    const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        payment_intent_id: paymentIntentId, 
-        blinded_public_key: bufferToBase64(blindedPublicKey)
-      })
-    });
+    try {
+      const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Origin': window.location.origin
+        },
+        body: JSON.stringify({ 
+          payment_intent_id: paymentIntentId, 
+          blinded_public_key: bufferToBase64(blindedPublicKey)
+        }),
+        credentials: 'include'
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Error signing certificate: ${errorText}`);
-    }
-
-    console.log("Received response from server");
-    const data = await response.json();
-    if (!data.blind_signature) {
-      if (data.message === "CERTIFICATE_ALREADY_SIGNED") {
-        showError('Certificate already signed for this payment.');
-        return;
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error signing certificate: ${errorText}`);
       }
-      throw new Error('No blind signature received from server');
+
+      console.log("Received response from server");
+      const data = await response.json();
+      if (!data.blind_signature) {
+        if (data.message === "CERTIFICATE_ALREADY_SIGNED") {
+          showError('Certificate already signed for this payment.');
+          return;
+        }
+        throw new Error('No blind signature received from server');
+      }
+    } catch (error) {
+      console.error("Error in server communication:", error);
+      showError(`Error communicating with server: ${error.message}`);
+      return;
     }
 
     console.log("Blind signature received");
