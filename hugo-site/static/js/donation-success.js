@@ -142,8 +142,11 @@ async function generateAndSignCertificate(paymentIntentId) {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error signing certificate: ${errorText}`);
+        if (response.status === 400) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Bad Request');
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       console.log("Received response from server");
@@ -175,14 +178,14 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.log("Signature unblinded");
 
     console.log("Calling displayCertificate");
-    displayCertificate(publicKey, privateKey, unblindedSignature);
+    displayCertificate(publicKey, privateKey, unblindedSignature, data.delegate_info);
   } catch (error) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
   }
 }
 
-function displayCertificate(publicKey, privateKey, unblindedSignature) {
+function displayCertificate(publicKey, privateKey, unblindedSignature, delegateInfo) {
   console.log("Displaying certificate");
   try {
     // Armor the certificate and private key
@@ -232,6 +235,29 @@ ${bufferToBase64(privateKey)}
         this.textContent = 'Copy Ghost Key';
       }, 2000);
     });
+
+    // Set up download button
+    const downloadButton = document.getElementById('downloadCertificate');
+    if (downloadButton) {
+      downloadButton.addEventListener('click', function() {
+        const blob = new Blob([combinedKey], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'freenet_ghost_key.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    // Display delegate info
+    if (delegateInfo) {
+      const delegateInfoElement = document.createElement('p');
+      delegateInfoElement.textContent = `Donation amount: $${delegateInfo.amount}`;
+      certificateSection.appendChild(delegateInfoElement);
+    }
 
     // Verify the certificate
     if (!verifyCertificate(publicKey, unblindedSignature)) {
