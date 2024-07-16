@@ -131,9 +131,11 @@ mod tests {
         let (signing_key, _) = generate_master_key().unwrap();
         println!("Generated signing key: {}", signing_key);
         
+        let random_x = rand::random::<[u8; 32]>();
+        let random_y = rand::random::<[u8; 32]>();
         let blinded_verifying_key = json!({
-            "x": general_purpose::STANDARD.encode([1u8; 32]),
-            "y": general_purpose::STANDARD.encode([2u8; 32])
+            "x": general_purpose::STANDARD.encode(random_x),
+            "y": general_purpose::STANDARD.encode(random_y)
         });
         println!("Blinded verifying key: {}", blinded_verifying_key);
         
@@ -157,9 +159,11 @@ mod tests {
         let (armored_signing_key, _) = generate_master_key().unwrap();
         println!("Generated armored signing key: {}", armored_signing_key);
         
+        let random_x = rand::random::<[u8; 32]>();
+        let random_y = rand::random::<[u8; 32]>();
         let blinded_verifying_key = json!({
-            "x": general_purpose::STANDARD.encode([1u8; 32]),
-            "y": general_purpose::STANDARD.encode([2u8; 32])
+            "x": general_purpose::STANDARD.encode(random_x),
+            "y": general_purpose::STANDARD.encode(random_y)
         });
         println!("Blinded verifying key: {}", blinded_verifying_key);
         
