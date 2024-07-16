@@ -131,7 +131,9 @@ mod tests {
             "x": general_purpose::STANDARD.encode([1u8; 32]),
             "y": general_purpose::STANDARD.encode([2u8; 32])
         });
-        let signature = sign_with_key(&blinded_verifying_key, &signing_key).unwrap();
+        let signature = sign_with_key(&blinded_verifying_key, &signing_key);
+        assert!(signature.is_ok());
+        let signature = signature.unwrap();
         assert!(!signature.is_empty());
     }
 
