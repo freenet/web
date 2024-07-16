@@ -17,6 +17,6 @@ log = "0.4.20"
 name = "ghostkey"
 path = "src/bin/ghostkey.rs"
 
-[[lib]]
+[lib]
 name = "ghostkey"
 path = "src/lib.rs"
