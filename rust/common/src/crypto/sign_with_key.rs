@@ -1,15 +1,31 @@
 use super::*;
 
+use log::{debug, error};
+
 pub fn sign_with_key(blinded_verifying_key: &Value, server_master_signing_key: &str) -> Result<String, CryptoError> {
+    debug!("Entering sign_with_key function");
+    debug!("Server master signing key: {}", server_master_signing_key);
+    debug!("Blinded verifying key: {:?}", blinded_verifying_key);
+
     let decoded_key = extract_bytes_from_armor(server_master_signing_key, "MASTER SIGNING KEY")?;
-    let decoded_key = general_purpose::STANDARD.decode(&decoded_key).map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?;
-    let field_bytes = FieldBytes::from_slice(&decoded_key);
-    let master_signing_key = SigningKey::from_bytes(field_bytes)
-        .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
+    debug!("Extracted bytes from armor: {:?}", decoded_key);
+
+    let master_signing_key = SigningKey::from_slice(&decoded_key)
+        .map_err(|e| {
+            error!("Failed to create SigningKey: {}", e);
+            CryptoError::KeyCreationError(e.to_string())
+        })?;
+    debug!("Created master signing key");
 
     let blinded_verifying_key_bytes = match blinded_verifying_key {
-        Value::String(s) => general_purpose::STANDARD.decode(s)
-            .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))?,
+        Value::String(s) => {
+            debug!("Blinded verifying key is a string: {}", s);
+            general_purpose::STANDARD.decode(s)
+                .map_err(|e| {
+                    error!("Failed to decode blinded verifying key: {}", e);
+                    CryptoError::Base64DecodeError(e.to_string())
+                })?
+        },
         Value::Object(obj) => {
             let x = obj.get("x").and_then(Value::as_str)
                 .ok_or_else(|| CryptoError::InvalidInput("Missing 'x' coordinate".to_string()))?;

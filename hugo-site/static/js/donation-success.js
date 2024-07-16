@@ -8,148 +8,140 @@ function base64ToBuffer(base64) {
     return nacl.util.decodeBase64(base64);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  console.log("DOM fully loaded");
+// Function to check for required elements and log detailed information
+function checkRequiredElements() {
+  const requiredElements = [
+    { id: 'combinedKey', selector: 'textarea#combinedKey' },
+    { id: 'certificateSection', selector: 'div#certificateSection' },
+    { id: 'certificate-info', selector: 'div#certificate-info' },
+    { id: 'copyCombinedKey', selector: 'button#copyCombinedKey' },
+    { id: 'errorMessage', selector: 'div#errorMessage' }
+  ];
   
-  // Function to check for required elements
-  function checkRequiredElements() {
-    const requiredElements = [
-      { id: 'certificateSection', selector: '#certificateSection' },
-      { id: 'certificate-info', selector: '#certificate-info' },
-      { id: 'errorMessage', selector: '#errorMessage' }
-    ];
-    
-    const missingElements = requiredElements.filter(el => !document.querySelector(el.selector));
-    
-    if (missingElements.length > 0) {
-      console.error("Missing required elements:", missingElements.map(el => el.id));
-      showError(`Error: Missing required elements: ${missingElements.map(el => el.id).join(', ')}`);
-      return false;
-    }
-
-    // Check for optional elements
-    const optionalElements = [
-      { id: 'combinedKey', selector: '#combinedKey' },
-      { id: 'copyCombinedKey', selector: '#copyCombinedKey' }
-    ];
-
-    optionalElements.forEach(el => {
-      if (!document.querySelector(el.selector)) {
-        console.warn(`Optional element missing: ${el.id}`);
-      }
-    });
-
-    return true;
-  }
-
-  // Function to initialize the page
-  function initPage() {
-    if (!checkRequiredElements()) {
-      return;
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const paymentIntent = urlParams.get('payment_intent');
-    const isTestMode = urlParams.get('test') !== null;
-
-    if (isTestMode) {
-      console.log("Test mode detected");
-      generateTestCertificate();
-    } else if (paymentIntent) {
-      console.log("Payment intent detected:", paymentIntent);
-      generateAndSignCertificate(paymentIntent);
+  console.log("Checking for required elements...");
+  
+  const missingElements = requiredElements.filter(el => {
+    const element = document.querySelector(el.selector);
+    if (!element) {
+      console.error(`Element not found: ${el.id} (selector: ${el.selector})`);
     } else {
-      console.log("No payment intent or test mode detected");
-      showError('Payment information not found.');
+      console.log(`Element found: ${el.id}`);
     }
+    return !element;
+  });
+  
+  if (missingElements.length > 0) {
+    console.error("Missing required elements:", missingElements.map(el => el.id));
+    const errorMessage = `Error: Missing required elements: ${missingElements.map(el => el.id).join(', ')}. ` +
+                         `Please ensure you're on the correct page and all elements are present in the HTML.`;
+    showError(errorMessage);
+    return false;
+  }
+  console.log("All required elements found.");
+  return true;
+}
+
+// Function to initialize the page
+function initPage() {
+  console.log("Initializing page");
+  
+  // Check if we're on the correct page
+  if (!document.querySelector('#certificateSection')) {
+    console.log("Not on the donation success page, script will not run.");
+    return;
   }
 
-  // Try to initialize immediately
-  initPage();
+  console.log("Donation success page detected. Checking required elements...");
+  if (!checkRequiredElements()) {
+    console.error("Required elements not found. Page initialization failed.");
+    return;
+  }
 
-  // If it fails, try again after a short delay
-  setTimeout(initPage, 500);
+  const urlParams = new URLSearchParams(window.location.search);
+  const paymentIntent = urlParams.get('payment_intent');
+  const isTestMode = urlParams.get('test') !== null;
+
+  console.log("URL parameters:", {
+    paymentIntent: paymentIntent || 'Not found',
+    isTestMode: isTestMode
+  });
+
+  if (isTestMode) {
+    console.log("Test mode detected");
+    generateTestCertificate();
+  } else if (paymentIntent) {
+    console.log("Payment intent detected:", paymentIntent);
+    generateAndSignCertificate(paymentIntent);
+  } else {
+    console.log("No payment intent or test mode detected");
+    showError('Payment information not found.');
+  }
+}
+
+// Ensure the DOM is fully loaded before running the script
+document.addEventListener('DOMContentLoaded', () => {
+  console.log("DOMContentLoaded event fired");
+  initPage();
 });
+
+// Log any errors that occur during script execution
+window.onerror = function(message, source, lineno, colno, error) {
+  console.error("Unhandled error:", { message, source, lineno, colno, error });
+};
 
 function generateTestCertificate() {
   console.log("Generating test certificate");
-  const verifyingKey = nacl.randomBytes(32);
-  const signingKey = nacl.randomBytes(64);
+  const publicKey = nacl.randomBytes(32);
+  const privateKey = nacl.randomBytes(64);
   const unblindedSignature = nacl.randomBytes(64);
 
-  displayCertificate(verifyingKey, signingKey, unblindedSignature);
+  displayCertificate(publicKey, privateKey, unblindedSignature);
 }
 
 async function generateAndSignCertificate(paymentIntentId) {
   console.log("Starting generateAndSignCertificate");
   try {
-    // Check payment intent status
-    const statusResponse = await fetch(`http://127.0.0.1:8000/check-payment-status/${paymentIntentId}`, {
-      method: 'GET',
-    });
-
-    if (!statusResponse.ok) {
-      const errorText = await statusResponse.text();
-      console.error("Error checking payment status:", errorText);
-      throw new Error(`Failed to check payment status: ${errorText}`);
-    }
-
-    const statusData = await statusResponse.json();
-    if (statusData.status !== 'succeeded') {
-      throw new Error(`Payment not successful. Status: ${statusData.status}`);
-    }
-
     // Generate Ed25519 key pair
     const keyPair = nacl.sign.keyPair();
-    const verifyingKey = keyPair.publicKey;
-    const signingKey = keyPair.secretKey;
+    const publicKey = keyPair.publicKey;
+    const privateKey = keyPair.secretKey;
     console.log("Key pair generated");
 
     // Generate random blinding factor
     const blindingFactor = nacl.randomBytes(32);
     console.log("Blinding factor generated");
 
-    // Blind the verifying key
-    const blindedVerifyingKey = new Uint8Array(32);
+    // Blind the public key
+    const blindedPublicKey = new Uint8Array(32);
     for (let i = 0; i < 32; i++) {
-      blindedVerifyingKey[i] = verifyingKey[i] ^ blindingFactor[i];
+      blindedPublicKey[i] = publicKey[i] ^ blindingFactor[i];
     }
-    console.log("Verifying key blinded");
+    console.log("Public key blinded");
 
-    // Send blinded verifying key to server for signing
+    // Send blinded public key to server for signing
     console.log("Sending request to server");
     const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         payment_intent_id: paymentIntentId, 
-        blinded_public_key: bufferToBase64(blindedVerifyingKey)
+        blinded_public_key: bufferToBase64(blindedPublicKey)
       })
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error signing certificate:", errorText);
       throw new Error(`Error signing certificate: ${errorText}`);
     }
 
     console.log("Received response from server");
-    let data;
-    try {
-      data = await response.json();
-    } catch (error) {
-      console.error("Error parsing JSON response:", error);
-      console.error("Response text:", await response.text());
-      throw new Error("Failed to parse server response");
-    }
-
-    if (!data || !data.blind_signature) {
-      console.error("Invalid data received from server:", data);
-      if (data && data.message === "CERTIFICATE_ALREADY_SIGNED") {
+    const data = await response.json();
+    if (!data.blind_signature) {
+      if (data.message === "CERTIFICATE_ALREADY_SIGNED") {
         showError('Certificate already signed for this payment.');
         return;
       }
-      throw new Error('Invalid or missing data received from server');
+      throw new Error('No blind signature received from server');
     }
 
     console.log("Blind signature received");
@@ -165,69 +157,45 @@ async function generateAndSignCertificate(paymentIntentId) {
     }
     console.log("Signature unblinded");
 
-    // Create the ghostkey certificate
-    const ghostkeyCertificate = createGhostkeyCertificate(verifyingKey, unblindedSignature, data.delegate_info);
-
     console.log("Calling displayCertificate");
-    displayCertificate(verifyingKey, signingKey, ghostkeyCertificate);
+    displayCertificate(publicKey, privateKey, unblindedSignature);
   } catch (error) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
-    // Log additional details for debugging
-    console.log("Payment Intent ID:", paymentIntentId);
-    console.log("Full error object:", JSON.stringify(error, null, 2));
   }
 }
 
-function createGhostkeyCertificate(verifyingKey, unblindedSignature, delegateInfo) {
-  const certificateData = {
-    verifyingKey: bufferToBase64(verifyingKey),
-    unblindedSignature: bufferToBase64(unblindedSignature),
-    delegateCertificate: delegateInfo.certificate,
-    amount: delegateInfo.amount
-  };
-
-  return JSON.stringify(certificateData);
-}
-
 function generateTestCertificate() {
-  const verifyingKey = nacl.randomBytes(32);
-  const signingKey = nacl.randomBytes(64);
+  const publicKey = nacl.randomBytes(32);
+  const privateKey = nacl.randomBytes(64);
   const unblindedSignature = nacl.randomBytes(64);
 
-  displayCertificate(verifyingKey, signingKey, unblindedSignature);
+  displayCertificate(publicKey, privateKey, unblindedSignature);
 }
 
-function displayCertificate(verifyingKey, signingKey, ghostkeyCertificate) {
+function displayCertificate(publicKey, privateKey, unblindedSignature) {
   console.log("Displaying certificate");
   try {
-    if (!ghostkeyCertificate) {
-      throw new Error("Ghost Key Certificate is missing or invalid");
-    }
+    // Armor the certificate and private key
+    const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
+${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}
+-----END FREENET DONATION CERTIFICATE-----`;
 
-    // Armor the ghostkey certificate and private key
-    const armoredCertificate = `-----BEGIN FREENET GHOSTKEY CERTIFICATE-----
-${wrapBase64(btoa(ghostkeyCertificate), 64)}
------END FREENET GHOSTKEY CERTIFICATE-----`;
+    const armoredPrivateKey = `-----BEGIN FREENET DONATION PRIVATE KEY-----
+${bufferToBase64(privateKey)}
+-----END FREENET DONATION PRIVATE KEY-----`;
 
-    if (!signingKey) {
-      throw new Error("Signing Key is missing or invalid");
-    }
+    // Combine certificate and private key
+    const combinedKey = `${wrapBase64(armoredCertificate, 64)}\n\n${wrapBase64(armoredPrivateKey, 64)}`;
 
-    const armoredSigningKey = `-----BEGIN FREENET GHOSTKEY SIGNING KEY-----
-${wrapBase64(bufferToBase64(signingKey), 64)}
------END FREENET GHOSTKEY SIGNING KEY-----`;
-
-    // Combine certificate and signing key
-    const combinedKey = `${armoredCertificate}\n\n${armoredSigningKey}`;
-
-    // Display the combined key if the element exists
+    // Display the combined key
     const combinedKeyElement = document.getElementById('combinedKey');
-    if (combinedKeyElement) {
-      combinedKeyElement.value = combinedKey;
-    } else {
-      console.warn("Combined key textarea not found. Skipping display.");
+    if (!combinedKeyElement) {
+      console.error("Combined key textarea not found");
+      throw new Error("Combined key textarea not found");
     }
+    
+    combinedKeyElement.value = combinedKey;
     
     const certificateSection = document.getElementById('certificateSection');
     const certificateInfo = document.getElementById('certificate-info');
@@ -240,23 +208,24 @@ ${wrapBase64(bufferToBase64(signingKey), 64)}
     certificateSection.style.display = 'block';
     certificateInfo.style.display = 'none';
 
-    // Set up copy button if it exists
+    // Set up copy button
     const copyButton = document.getElementById('copyCombinedKey');
-    if (copyButton && combinedKeyElement) {
-      copyButton.addEventListener('click', function() {
-        combinedKeyElement.select();
-        document.execCommand('copy');
-        this.textContent = 'Copied!';
-        setTimeout(() => {
-          this.textContent = 'Copy Ghost Key';
-        }, 2000);
-      });
-    } else {
-      console.warn("Copy button or combined key textarea not found. Skipping copy functionality.");
+    if (!copyButton) {
+      console.error("Copy button not found");
+      throw new Error("Copy button not found");
     }
+    
+    copyButton.addEventListener('click', function() {
+      combinedKeyElement.select();
+      document.execCommand('copy');
+      this.textContent = 'Copied!';
+      setTimeout(() => {
+        this.textContent = 'Copy Ghost Key';
+      }, 2000);
+    });
 
     // Verify the certificate
-    if (!verifyCertificate(ghostkeyCertificate)) {
+    if (!verifyCertificate(publicKey, unblindedSignature)) {
       console.error("Certificate verification failed");
       throw new Error("Certificate verification failed");
     }
@@ -265,18 +234,6 @@ ${wrapBase64(bufferToBase64(signingKey), 64)}
   } catch (error) {
     console.error("Error in displayCertificate:", error);
     showError(`Error displaying Ghost Key: ${error.message}. Please contact support.`);
-  }
-}
-
-function verifyCertificate(ghostkeyCertificate) {
-  // In a real implementation, we would verify the ghostkey certificate
-  // For now, we'll just check if it's a valid JSON
-  try {
-    JSON.parse(ghostkeyCertificate);
-    return true;
-  } catch (error) {
-    console.error("Invalid ghostkey certificate:", error);
-    return false;
   }
 }
 
@@ -291,7 +248,7 @@ function wrapBase64(str, maxWidth) {
   }).join('\n');
 }
 
-function verifyCertificate(verifyingKey, signature) {
+function verifyCertificate(publicKey, signature) {
   try {
     // In a real implementation, we would verify the signature against a known message
     // For now, we'll just check if the signature is the correct length
@@ -307,7 +264,4 @@ function showError(message) {
   errorElement.textContent = message;
   errorElement.style.display = 'block';
   document.getElementById('certificate-info').style.display = 'none';
-  
-  // Add more detailed error information
-  console.error("Detailed error:", message);
 }

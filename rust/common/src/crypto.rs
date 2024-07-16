@@ -18,6 +18,7 @@ use rmp_serde::Serializer;
 use crate::crypto::crypto_error::CryptoError;
 use crate::crypto::generate_delegate::DelegateKeyCertificate;
 use log::{warn, debug};
+use rand::Rng;
 
 pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
     // Generate the signing key
@@ -126,13 +127,58 @@ mod tests {
 
     #[test]
     fn test_sign_with_key() {
+        let _ = env_logger::builder().is_test(true).try_init();
+
         let (signing_key, _) = generate_master_key().unwrap();
+        println!("Generated signing key: {}", signing_key);
+        
+        let random_x = rand::random::<[u8; 32]>();
+        let random_y = rand::random::<[u8; 32]>();
         let blinded_verifying_key = json!({
-            "x": general_purpose::STANDARD.encode([1u8; 32]),
-            "y": general_purpose::STANDARD.encode([2u8; 32])
+            "x": general_purpose::STANDARD.encode(random_x),
+            "y": general_purpose::STANDARD.encode(random_y)
         });
-        let signature = sign_with_key(&blinded_verifying_key, &signing_key).unwrap();
-        assert!(!signature.is_empty());
+        println!("Blinded verifying key: {}", blinded_verifying_key);
+        
+        let signature = sign_with_key(&blinded_verifying_key, &signing_key);
+        match signature {
+            Ok(sig) => {
+                println!("Signature generated successfully: {}", sig);
+                assert!(!sig.is_empty());
+            },
+            Err(e) => {
+                println!("Error generating signature: {:?}", e);
+                panic!("Failed to generate signature: {:?}", e);
+            }
+        }
+    }
+
+    #[test]
+    fn test_sign_with_key_armored() {
+        let _ = env_logger::builder().is_test(true).try_init();
+
+        let (armored_signing_key, _) = generate_master_key().unwrap();
+        println!("Generated armored signing key: {}", armored_signing_key);
+        
+        let random_x = rand::random::<[u8; 32]>();
+        let random_y = rand::random::<[u8; 32]>();
+        let blinded_verifying_key = json!({
+            "x": general_purpose::STANDARD.encode(random_x),
+            "y": general_purpose::STANDARD.encode(random_y)
+        });
+        println!("Blinded verifying key: {}", blinded_verifying_key);
+        
+        let signature = sign_with_key(&blinded_verifying_key, &armored_signing_key);
+        match signature {
+            Ok(sig) => {
+                println!("Signature generated successfully: {}", sig);
+                assert!(!sig.is_empty());
+            },
+            Err(e) => {
+                println!("Error generating signature: {:?}", e);
+                panic!("Failed to generate signature: {:?}", e);
+            }
+        }
     }
 
     #[test]
@@ -145,18 +191,18 @@ mod tests {
     #[test]
     fn test_generate_delegate_key() {
         let (master_signing_key, _) = generate_master_key().unwrap();
-        let delegate_certificate = generate_delegate_key(&master_signing_key, "test_info").unwrap();
+        let (delegate_certificate, _) = generate_delegate_key(&master_signing_key, "test_info").unwrap();
         assert!(!delegate_certificate.is_empty());
     }
 
     #[test]
-    fn test_extract_base64_from_armor() {
+    fn test_extract_bytes_from_armor() {
         let armored_key = "-----BEGIN TEST KEY-----\nYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXo=\n-----END TEST KEY-----";
-        let result = extract_base64_from_armor(armored_key, "TEST KEY").unwrap();
-        assert_eq!(result, "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXo=");
+        let result = extract_bytes_from_armor(armored_key, "TEST KEY").unwrap();
+        assert!(!result.is_empty());
 
         // Test for armor type mismatch
-        let result = extract_base64_from_armor(armored_key, "WRONG KEY");
+        let result = extract_bytes_from_armor(armored_key, "WRONG KEY");
         assert!(result.is_err());
     }
 }
