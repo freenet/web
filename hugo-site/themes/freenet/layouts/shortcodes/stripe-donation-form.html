@@ -86,20 +86,23 @@
       });
 
       if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(errorMessage);
+        const errorText = await response.text();
+        console.error('Server response error:', response.status, errorText);
+        throw new Error(`Server error: ${response.status} - ${errorText}`);
       }
 
       const result = await response.json();
+      console.log('Server response:', result);
       
       if (result.success) {
         window.location.href = `${window.location.origin}/donate/ghostkey/success?payment_intent=${result.paymentIntentId}`;
       } else {
-        throw new Error('Payment failed');
+        console.error('Payment failed:', result);
+        throw new Error(result.error || 'Payment failed');
       }
     } catch (error) {
       console.error('Payment error:', error);
-      messageContainer.textContent = error.message || 'An error occurred. Please try again.';
+      messageContainer.textContent = `Error: ${error.message}. Please try again or contact support.`;
     }
   }
 </script>

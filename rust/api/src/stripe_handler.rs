@@ -103,7 +103,13 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     let client = Client::new(stripe_secret_key);
 
     // Verify payment intent
-    let pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await?;
+    let pi = match PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await {
+        Ok(pi) => pi,
+        Err(e) => {
+            log::error!("Failed to retrieve PaymentIntent: {:?}", e);
+            return Err(CertificateError::StripeError(e));
+        }
+    };
     log::info!("Retrieved PaymentIntent: {:?}", pi);
     log::info!("PaymentIntent status: {:?}", pi.status);
     if pi.status != PaymentIntentStatus::Succeeded {

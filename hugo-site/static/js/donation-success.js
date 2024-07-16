@@ -142,15 +142,14 @@ async function generateAndSignCertificate(paymentIntentId) {
       });
 
       if (!response.ok) {
-        if (response.status === 400) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Bad Request');
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Server response error:', response.status, errorText);
+        throw new Error(`Server error: ${response.status} - ${errorText}`);
       }
 
       console.log("Received response from server");
       data = await response.json();
+      console.log("Server response data:", data);
       if (!data.blind_signature) {
         if (data.message === "CERTIFICATE_ALREADY_SIGNED") {
           showError('Certificate already signed for this payment.');
