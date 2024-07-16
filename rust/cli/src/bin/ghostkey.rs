@@ -4,13 +4,13 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::os::unix::fs::PermissionsExt;
-use common::crypto::master_key::{generate_master_key, generate_master_verifying_key};
+use ghostkey::crypto::master_key::{generate_master_key, generate_master_verifying_key};
 use colored::Colorize;
 use log::{error, info};
-use crate::crypto::ghost_key::{generate_ghostkey, validate_ghost_key};
-use crate::crypto::signature::{sign_message, verify_signature};
-use crate::crypto::generate_delegate::generate_delegate_key;
-use crate::crypto::validate_delegate_key;
+use ghostkey::crypto::ghost_key::{generate_ghostkey, validate_ghost_key};
+use ghostkey::crypto::signature::{sign_message, verify_signature};
+use ghostkey::crypto::generate_delegate::generate_delegate_key;
+use ghostkey::crypto::validate_delegate_key;
 
 fn main() {
     let result = run();
