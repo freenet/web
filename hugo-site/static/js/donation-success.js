@@ -143,6 +143,10 @@ async function generateAndSignCertificate(paymentIntentId) {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Server response error:', response.status, errorText);
+        if (response.status === 400 && errorText.includes("Payment method is missing")) {
+          showError('Payment method is missing. Please return to the donation page and try again.');
+          return;
+        }
         throw new Error(`Server error: ${response.status} - ${errorText}`);
       }
 
