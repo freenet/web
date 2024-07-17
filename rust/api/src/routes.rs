@@ -22,12 +22,17 @@ impl Fairing for CORS {
         }
     }
 
-    async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
-        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
-        response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS"));
-        response.set_header(Header::new("Access-Control-Allow-Headers", "Content-Type, Authorization"));
-        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
-        response.set_header(Header::new("Access-Control-Max-Age", "86400"));
+    async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
+        let allowed_origins = ["http://localhost:1313", "https://freenet.org"];
+        let origin = request.headers().get_one("Origin").unwrap_or("");
+        
+        if allowed_origins.contains(&origin) {
+            response.set_header(Header::new("Access-Control-Allow-Origin", origin));
+            response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS"));
+            response.set_header(Header::new("Access-Control-Allow-Headers", "Content-Type, Authorization"));
+            response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+            response.set_header(Header::new("Access-Control-Max-Age", "86400"));
+        }
     }
 }
 
