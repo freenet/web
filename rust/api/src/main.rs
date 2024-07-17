@@ -24,8 +24,7 @@ fn rocket() -> _ {
         .format_timestamp(Some(env_logger::TimestampPrecision::Millis))
         .format_module_path(false)
         .format_target(false)
-        .filter_level(LevelFilter::Info)
-        .filter(Some("rocket"), LevelFilter::Off)
+        .filter_level(LevelFilter::Debug)
         .init();
 
     info!("Starting Freenet Certified Donation API");
