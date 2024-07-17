@@ -18,6 +18,7 @@ use std::path::PathBuf;
 pub enum CertificateError {
     StripeError(stripe::StripeError),
     PaymentNotSuccessful,
+    PaymentMethodMissing,
     CertificateAlreadySigned,
     Base64Error(base64::DecodeError),
     KeyError(String),
@@ -29,6 +30,7 @@ impl std::fmt::Display for CertificateError {
         match self {
             CertificateError::StripeError(e) => write!(f, "Stripe error: {}", e),
             CertificateError::PaymentNotSuccessful => write!(f, "Payment not successful"),
+            CertificateError::PaymentMethodMissing => write!(f, "Payment method is missing"),
             CertificateError::CertificateAlreadySigned => write!(f, "Certificate already signed"),
             CertificateError::Base64Error(e) => write!(f, "Base64 decoding error: {}", e),
             CertificateError::KeyError(e) => write!(f, "Key error: {}", e),
@@ -108,9 +110,18 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     log::info!("Retrieved PaymentIntent: {:?}", pi);
     log::info!("PaymentIntent status: {:?}", pi.status);
 
-    if pi.status != PaymentIntentStatus::Succeeded {
-        log::error!("Payment not successful. Status: {:?}", pi.status);
-        return Err(CertificateError::PaymentNotSuccessful);
+    match pi.status {
+        PaymentIntentStatus::Succeeded => {
+            // Proceed with certificate signing
+        },
+        PaymentIntentStatus::RequiresPaymentMethod => {
+            log::error!("Payment method is missing. Status: {:?}", pi.status);
+            return Err(CertificateError::PaymentMethodMissing);
+        },
+        _ => {
+            log::error!("Payment not successful. Status: {:?}", pi.status);
+            return Err(CertificateError::PaymentNotSuccessful);
+        }
     }
 
     // Check if the certificate has already been signed
