@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
 use std::str::FromStr;
-use log::{info, error};
+use log::{info, error, debug};
 
 pub struct CORS;
 
@@ -49,7 +49,7 @@ impl Fairing for RequestTimer {
     async fn on_response<'r>(&self, request: &'r Request<'_>, _: &mut Response<'r>) {
         let start_time = request.local_cache(|| Instant::now());
         let duration = start_time.elapsed();
-        println!("Request to {} took {}ms", request.uri(), duration.as_millis());
+        debug!("Request to {} took {}ms", request.uri(), duration.as_millis());
     }
 }
 

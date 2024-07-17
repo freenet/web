@@ -2,10 +2,8 @@ use rocket::{launch, catchers};
 use rocket::fairing::AdHoc;
 use rocket::http::Header;
 use rocket::{Request, catch};
-use env_logger::Env;
 use dotenv::dotenv;
-use log::LevelFilter;
-use chrono;
+use log::{LevelFilter, info, error};
 
 mod routes;
 mod stripe_handler;
@@ -22,26 +20,18 @@ fn internal_error() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
-    env_logger::Builder::from_env(Env::default().default_filter_or("info"))
-        .format(|buf, record| {
-            use std::io::Write;
-            writeln!(buf,
-                "{} [{}] {} - {}",
-                chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
-                record.level(),
-                record.args(),
-                record.file().map_or_else(|| "unknown".to_string(), |path| {
-                    format!("{}:{}", path, record.line().unwrap_or(0))
-                })
-            )
-        })
-        .filter(None, LevelFilter::Info)
+    env_logger::builder()
+        .format_timestamp(Some(env_logger::TimestampPrecision::Millis))
+        .format_module_path(false)
+        .format_target(false)
+        .filter_level(LevelFilter::Info)
+        .filter(Some("rocket"), LevelFilter::Off)
         .init();
 
-    log::info!("Starting Freenet Certified Donation API");
+    info!("Starting Freenet Certified Donation API");
     match dotenv() {
-        Ok(path) => log::info!(".env file loaded successfully from: {:?}", path),
-        Err(e) => log::error!("Failed to load .env file: {}", e),
+        Ok(path) => info!(".env file loaded successfully from: {:?}", path),
+        Err(e) => error!("Failed to load .env file: {}", e),
     }
     rocket::build()
         .attach(routes::CORS)
