@@ -11,10 +11,8 @@ function base64ToBuffer(base64) {
 // Function to check for required elements and log detailed information
 function checkRequiredElements() {
   const requiredElements = [
-    { id: 'combinedKey', selector: 'textarea#combinedKey' },
     { id: 'certificateSection', selector: 'div#certificateSection' },
     { id: 'certificate-info', selector: 'div#certificate-info' },
-    { id: 'copyCombinedKey', selector: 'button#copyCombinedKey' },
     { id: 'errorMessage', selector: 'div#errorMessage' }
   ];
   
@@ -200,15 +198,6 @@ ${bufferToBase64(privateKey)}
     // Combine certificate and private key
     const combinedKey = `${wrapBase64(armoredCertificate, 64)}\n\n${wrapBase64(armoredPrivateKey, 64)}`;
 
-    // Display the combined key
-    const combinedKeyElement = document.getElementById('combinedKey');
-    if (!combinedKeyElement) {
-      console.error("Combined key textarea not found");
-      throw new Error("Combined key textarea not found");
-    }
-    
-    combinedKeyElement.value = combinedKey;
-    
     const certificateSection = document.getElementById('certificateSection');
     const certificateInfo = document.getElementById('certificate-info');
     
@@ -219,22 +208,6 @@ ${bufferToBase64(privateKey)}
     
     certificateSection.style.display = 'block';
     certificateInfo.style.display = 'none';
-
-    // Set up copy button
-    const copyButton = document.getElementById('copyCombinedKey');
-    if (!copyButton) {
-      console.error("Copy button not found");
-      throw new Error("Copy button not found");
-    }
-    
-    copyButton.addEventListener('click', function() {
-      combinedKeyElement.select();
-      document.execCommand('copy');
-      this.textContent = 'Copied!';
-      setTimeout(() => {
-        this.textContent = 'Copy Ghost Key';
-      }, 2000);
-    });
 
     // Set up download button
     const downloadButton = document.getElementById('downloadCertificate');
