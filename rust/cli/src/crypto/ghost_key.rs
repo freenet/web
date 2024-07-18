@@ -347,7 +347,7 @@ fn extract_ghostkey_certificate(armored_text: &str) -> Result<Vec<u8>, CryptoErr
     }
 
     let start_line = "-----BEGIN GHOSTKEY CERTIFICATE-----";
-    let end_line = "-----END GHOST KEY-----";
+    let end_line = "-----END GHOSTKEY CERTIFICATE-----";
 
     if !lines[0].trim().eq(start_line) || !lines[lines.len() - 1].trim().eq(end_line) {
         return Err(CryptoError::InvalidInput(format!(
