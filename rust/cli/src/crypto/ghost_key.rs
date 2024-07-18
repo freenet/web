@@ -358,5 +358,5 @@ fn extract_ghostkey_certificate(armored_text: &str) -> Result<Vec<u8>, CryptoErr
 
     let base64_data = lines[1..lines.len() - 1].join("");
     general_purpose::STANDARD.decode(base64_data)
-        .map_err(|e| CryptoError::DecodingError(e.to_string()))
+        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))
 }
