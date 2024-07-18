@@ -139,6 +139,11 @@ pub fn options_create_donation() -> Status {
     Status::Ok
 }
 
+#[options("/create-payment-intent")]
+pub fn options_create_payment_intent() -> Status {
+    Status::Ok
+}
+
 #[derive(Debug)]
 pub enum DonationError {
     InvalidCurrency,
@@ -294,6 +299,7 @@ pub fn get_routes() -> Vec<Route> {
         create_donation,
         options_create_donation,
         check_payment_status_route,
-        update_donation
+        update_donation,
+        options_create_payment_intent
     ]
 }
