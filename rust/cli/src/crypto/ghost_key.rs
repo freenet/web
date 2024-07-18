@@ -9,6 +9,7 @@ use rmp_serde;
 use log::{debug, info, warn, error};
 use colored::Colorize;
 use base64::engine::general_purpose;
+use base64::Engine;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct DelegateCertificate {
