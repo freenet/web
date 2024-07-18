@@ -269,14 +269,14 @@ fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certi
         )));
     }
     
-    match validate_delegate_key(&master_verifying_key, &delegate_certificate) {
+    match validate_armored_ghost_key_command(&master_verifying_key, &ghost_certificate, ghost_certificate_file) {
         Ok(info) => {
-            info!("Delegate key certificate is {}.", "valid".green());
+            info!("Ghost key certificate is {}.", "valid".green());
             info!("Info: {}", info);
             Ok(())
         }
         Err(e) => {
-            error!("Failed to validate delegate key certificate: {}", e);
+            error!("Failed to validate ghost key certificate: {}", e);
             Err(Box::new(e))
         }
     }
