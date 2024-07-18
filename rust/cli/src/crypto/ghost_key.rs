@@ -282,7 +282,7 @@ pub fn extract_delegate_verifying_key(delegate_certificate: &[u8]) -> Result<Ver
 ///
 /// The delegate info as a string if validation is successful, or a CryptoError if validation fails.
 pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<(), CryptoError> {
-    match validate_ghost_key(master_verifying_key_pem, ghostkey_certificate_armored) {
+    match validate_ghost_key(master_verifying_key_pem, ghostkey_certificate_armored, "unknown_file") {
         Ok(delegate_info) => {
             println!("{}", "Ghost key certificate validation successful.".green().bold());
             println!("{} {}", "Delegate info:".cyan(), delegate_info);
