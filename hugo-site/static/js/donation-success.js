@@ -195,18 +195,32 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       throw new Error("Delegate certificate is missing");
     }
 
-    // Create a ghost key certificate object matching the Rust structure
-    const ghostKeyCertificate = {
-      delegate_certificate: base64ToBuffer(delegateInfo.certificate),
-      ghostkey_verifying_key: publicKey,
-      signature: unblindedSignature
-    };
+    console.log("Delegate certificate:", delegateInfo.certificate);
+    console.log("Public key:", bufferToBase64(publicKey));
+    console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
 
-    // Serialize the ghost key certificate using MessagePack
-    const serializedCertificate = msgpack.encode(ghostKeyCertificate);
+    let ghostKeyCertificate, serializedCertificate, base64Certificate;
 
-    // Convert the serialized certificate to base64
-    const base64Certificate = bufferToBase64(serializedCertificate);
+    try {
+      // Create a ghost key certificate object matching the Rust structure
+      ghostKeyCertificate = {
+        delegate_certificate: base64ToBuffer(delegateInfo.certificate),
+        ghostkey_verifying_key: publicKey,
+        signature: unblindedSignature
+      };
+      console.log("Ghost key certificate object created");
+
+      // Serialize the ghost key certificate using MessagePack
+      serializedCertificate = msgpack.encode(ghostKeyCertificate);
+      console.log("Certificate serialized");
+
+      // Convert the serialized certificate to base64
+      base64Certificate = bufferToBase64(serializedCertificate);
+      console.log("Serialized certificate converted to base64");
+    } catch (encodingError) {
+      console.error("Error in certificate encoding:", encodingError);
+      throw new Error(`Certificate encoding failed: ${encodingError.message}`);
+    }
 
     // Format the ghost key
     const formattedGhostKey = `-----BEGIN GHOST KEY-----
@@ -219,6 +233,8 @@ ${base64Certificate}
 -----END GHOSTKEY CERTIFICATE-----
 
 ${formattedGhostKey}`;
+
+    console.log("Combined key created successfully");
 
     const certificateSection = document.getElementById('certificateSection');
     const certificateInfo = document.getElementById('certificate-info');
