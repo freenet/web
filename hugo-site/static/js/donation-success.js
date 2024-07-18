@@ -190,9 +190,22 @@ async function generateAndSignCertificate(paymentIntentId) {
 function displayCertificate(publicKey, privateKey, unblindedSignature, delegateInfo) {
   console.log("Displaying certificate");
   try {
+    // Create a ghost key certificate object
+    const ghostKeyCertificate = {
+      verifying_key: publicKey,
+      info: delegateInfo.certificate,
+      signature: unblindedSignature
+    };
+
+    // Serialize the ghost key certificate using MessagePack
+    const serializedCertificate = msgpack.encode(ghostKeyCertificate);
+
+    // Convert the serialized certificate to base64
+    const base64Certificate = bufferToBase64(serializedCertificate);
+
     // Format the ghost key certificate
-    const ghostKeyCertificate = `-----BEGIN GHOST KEY CERTIFICATE-----
-${delegateInfo.certificate.trim()}
+    const formattedCertificate = `-----BEGIN GHOST KEY CERTIFICATE-----
+${base64Certificate}
 -----END GHOST KEY CERTIFICATE-----
 
 -----BEGIN GHOST KEY-----
@@ -210,13 +223,8 @@ ${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}|${bufferToBas
     
     certificateSection.style.display = 'block';
     certificateInfo.style.display = 'block';
-    certificateTextarea.value = ghostKeyCertificate;
+    certificateTextarea.value = formattedCertificate;
     console.log("Ghost key certificate populated in textarea");
-    
-    if (!certificateSection || !certificateInfo) {
-      console.error("Certificate section or info element not found");
-      throw new Error("Certificate section or info element not found");
-    }
     
     certificateSection.style.display = 'block';
     certificateInfo.style.display = 'none';
@@ -225,7 +233,7 @@ ${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}|${bufferToBas
     const downloadButton = document.getElementById('downloadCertificate');
     if (downloadButton) {
       downloadButton.addEventListener('click', function() {
-        const blob = new Blob([combinedKey], { type: 'text/plain' });
+        const blob = new Blob([formattedCertificate], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -278,6 +286,9 @@ function verifyCertificate(publicKey, signature) {
     return false;
   }
 }
+
+// Add MessagePack library
+const msgpack = require('msgpack-lite');
 
 function showError(message) {
   const errorElement = document.getElementById('errorMessage');

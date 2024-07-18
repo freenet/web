@@ -1,0 +1,15 @@
+{{ define "main" }}
+<div class="container">
+    <h1>Donation Successful</h1>
+    <div id="certificateSection" style="display: none;">
+        <h2>Your Ghost Key Certificate</h2>
+        <div id="certificate-info"></div>
+        <textarea id="certificate" rows="10" cols="50" readonly></textarea>
+        <button id="downloadCertificate">Download Certificate</button>
+    </div>
+    <div id="errorMessage" style="display: none;"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/msgpack-lite/0.1.26/msgpack.min.js"></script>
+<script src="/js/donation-success.js"></script>
+{{ end }}
