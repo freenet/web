@@ -269,7 +269,7 @@ fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certi
         )));
     }
     
-    match validate_armored_ghost_key_command(&master_verifying_key, &ghost_certificate, ghost_certificate_file) {
+    match validate_armored_ghost_key_command(&master_verifying_key, &delegate_certificate, delegate_certificate_file) {
         Ok(_) => {
             info!("Ghost key certificate is {}.", "valid".green());
             Ok(())
