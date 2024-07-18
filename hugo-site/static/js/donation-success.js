@@ -14,7 +14,7 @@ function checkRequiredElements() {
     { id: 'certificateSection', selector: 'div#certificateSection' },
     { id: 'certificate-info', selector: 'div#certificate-info' },
     { id: 'errorMessage', selector: 'div#errorMessage' },
-    { id: 'certificate', selector: 'textarea#certificate' }
+    { id: 'combinedKey', selector: 'textarea#combinedKey' }
   ];
   
   console.log("Checking for required elements...");
