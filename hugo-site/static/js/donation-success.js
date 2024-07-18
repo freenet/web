@@ -203,20 +203,29 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
 
     try {
       // Create a ghost key certificate object matching the Rust structure
+      let decodedDelegateCertificate;
+      try {
+        decodedDelegateCertificate = base64ToBuffer(delegateInfo.certificate);
+        console.log("Decoded delegate certificate:", decodedDelegateCertificate);
+      } catch (decodeError) {
+        console.error("Error decoding delegate certificate:", decodeError);
+        throw new Error(`Failed to decode delegate certificate: ${decodeError.message}`);
+      }
+
       ghostKeyCertificate = {
-        delegate_certificate: base64ToBuffer(delegateInfo.certificate),
+        delegate_certificate: decodedDelegateCertificate,
         ghostkey_verifying_key: publicKey,
         signature: unblindedSignature
       };
-      console.log("Ghost key certificate object created");
+      console.log("Ghost key certificate object created:", ghostKeyCertificate);
 
       // Serialize the ghost key certificate using MessagePack
       serializedCertificate = msgpack.encode(ghostKeyCertificate);
-      console.log("Certificate serialized");
+      console.log("Certificate serialized:", serializedCertificate);
 
       // Convert the serialized certificate to base64
       base64Certificate = bufferToBase64(serializedCertificate);
-      console.log("Serialized certificate converted to base64");
+      console.log("Serialized certificate converted to base64:", base64Certificate);
     } catch (encodingError) {
       console.error("Error in certificate encoding:", encodingError);
       throw new Error(`Certificate encoding failed: ${encodingError.message}`);
