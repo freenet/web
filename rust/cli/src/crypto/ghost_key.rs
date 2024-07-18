@@ -99,32 +99,11 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
     // Encode the certificate
     let ghostkey_certificate_armored = armor(&final_buf, "GHOSTKEY CERTIFICATE", "GHOSTKEY CERTIFICATE");
 
-    // Create a single GhostKey structure
-    let ghost_key = GhostKey {
-        version: 1,
-        certificate: final_certificate,
-        verifying_key: ghostkey_verifying_key.to_sec1_bytes().to_vec(),
-        signing_key: ghostkey_signing_key.to_bytes().to_vec(),
-    };
-
-    // Serialize the GhostKey to MessagePack
-    let ghost_key_bytes = rmp_serde::to_vec(&ghost_key)
-        .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
-
-    // Encode the serialized GhostKey
-    let encoded_ghost_key = general_purpose::STANDARD.encode(&ghost_key_bytes);
-    
     // Format the final output
-    let wrapped_ghost_key = encoded_ghost_key.chars()
-        .collect::<Vec<char>>()
-        .chunks(64)
-        .map(|c| c.iter().collect::<String>())
-        .collect::<Vec<String>>()
-        .join("\n");
-
     let formatted_output = format!(
-        "-----BEGIN GHOST KEY-----\n{}\n-----END GHOST KEY-----",
-        wrapped_ghost_key
+        "{}\n\n-----BEGIN GHOST KEY-----\n{}\n-----END GHOST KEY-----",
+        ghostkey_certificate_armored,
+        general_purpose::STANDARD.encode(&ghostkey_signing_key.to_bytes())
     );
 
     debug!("Formatted Ghost Key: {}", formatted_output);
