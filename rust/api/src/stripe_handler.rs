@@ -90,6 +90,8 @@ pub struct SignCertificateResponse {
 
 pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, CertificateError> {
     log::info!("Starting sign_certificate function with request: {:?}", request);
+    log::debug!("Current working directory: {:?}", std::env::current_dir());
+    log::debug!("HOME environment variable: {:?}", std::env::var("HOME"));
 
     let stripe_secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(|e| {
         log::error!("Environment variable STRIPE_SECRET_KEY not found: {}", e);
@@ -187,9 +189,12 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
     log::debug!("Starting sign_with_delegate_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
 
     let signing_key = SigningKey::from_pkcs8_pem(&delegate_key)
+        .or_else(|_| SigningKey::from_sec1_pem(&delegate_key))
+        .or_else(|_| SigningKey::from_pkcs8_der(&general_purpose::STANDARD.decode(&delegate_key).unwrap_or_default()))
         .map_err(|e| {
             log::error!("Failed to create signing key: {}", e);
-            CertificateError::KeyError(format!("Failed to create signing key: {}", e))
+            log::error!("Delegate key content: {}", delegate_key);
+            CertificateError::KeyError(format!("Failed to create signing key: {}. Key content: {}", e, delegate_key))
         })?;
 
     let blinded_verifying_key_bytes = match blinded_verifying_key {
