@@ -238,19 +238,25 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       throw new Error(`Certificate encoding failed: ${encodingError.message}`);
     }
 
-    // Format the ghost key
-    const formattedGhostKey = `-----BEGIN GHOST KEY-----
-${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}|${bufferToBase64(privateKey)}
+    // Create a single GhostKey structure
+    const ghostKey = {
+      certificate: ghostKeyCertificate,
+      verifying_key: publicKey,
+      signing_key: privateKey
+    };
+
+    // Serialize the GhostKey using MessagePack
+    const serializedGhostKey = msgpack.encode(ghostKey);
+
+    // Convert the serialized GhostKey to base64
+    const base64GhostKey = bufferToBase64(serializedGhostKey);
+
+    // Format the final output
+    const formattedOutput = `-----BEGIN GHOST KEY-----
+${wrapBase64(base64GhostKey, 64)}
 -----END GHOST KEY-----`;
 
-    // Combine certificate and ghost key
-    const combinedKey = `-----BEGIN GHOSTKEY CERTIFICATE-----
-${base64Certificate}
------END GHOSTKEY CERTIFICATE-----
-
-${formattedGhostKey}`;
-
-    console.log("Combined key created successfully");
+    console.log("Ghost Key created successfully");
 
     const certificateSection = document.getElementById('certificateSection');
     const certificateInfo = document.getElementById('certificate-info');
