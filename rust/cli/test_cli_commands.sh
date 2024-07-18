@@ -60,6 +60,8 @@ run_command() {
         echo "Command: $command"
         echo "Output:"
         echo "$output" | grep -v "Compiling" | grep -v "Finished" | grep -v "Running"
+        echo "Error details:"
+        echo "$output"
         return 1
     fi
 }
@@ -76,6 +78,8 @@ expect_failure() {
         echo "Command: $command"
         echo "Output:"
         echo "$output" | grep -v "Compiling" | grep -v "Finished" | grep -v "Running"
+        echo "Error details:"
+        echo "$output"
         return 1
     else
         echo "OK"
