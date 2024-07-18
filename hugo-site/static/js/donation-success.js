@@ -194,7 +194,7 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
     // Create a ghost key certificate object
     const ghostKeyCertificate = {
       verifying_key: publicKey,
-      info: delegateInfo.certificate,
+      info: delegateInfo ? delegateInfo.certificate : null,
       signature: unblindedSignature
     };
 
@@ -204,37 +204,48 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
     // Convert the serialized certificate to base64
     const base64Certificate = bufferToBase64(serializedCertificate);
 
-    // Format the ghost key certificate
-    const formattedCertificate = `-----BEGIN GHOST KEY CERTIFICATE-----
-${base64Certificate}
------END GHOST KEY CERTIFICATE-----
-
------BEGIN GHOST KEY-----
+    // Format the ghost key
+    const formattedGhostKey = `-----BEGIN GHOST KEY-----
 ${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}|${bufferToBase64(privateKey)}
 -----END GHOST KEY-----`;
 
+    // Combine certificate and ghost key
+    const combinedKey = `-----BEGIN GHOST KEY CERTIFICATE-----
+${base64Certificate}
+-----END GHOST KEY CERTIFICATE-----
+
+${formattedGhostKey}`;
+
     const certificateSection = document.getElementById('certificateSection');
     const certificateInfo = document.getElementById('certificate-info');
-    const certificateTextarea = document.getElementById('certificate');
+    const combinedKeyTextarea = document.getElementById('combinedKey');
     
-    if (!certificateSection || !certificateInfo) {
+    if (!certificateSection || !certificateInfo || !combinedKeyTextarea) {
       console.error("Required elements not found");
       throw new Error("Required elements not found");
     }
     
     certificateSection.style.display = 'block';
-    certificateInfo.style.display = 'block';
-    
-    certificateTextarea.value = formattedCertificate;
-    console.log("Ghost key certificate populated in textarea");
-    
     certificateInfo.style.display = 'none';
+    
+    combinedKeyTextarea.value = combinedKey;
+    console.log("Combined key populated in textarea");
+
+    // Set up copy button
+    const copyButton = document.getElementById('copyCombinedKey');
+    if (copyButton) {
+      copyButton.addEventListener('click', function() {
+        combinedKeyTextarea.select();
+        document.execCommand('copy');
+        alert('Ghost Key copied to clipboard!');
+      });
+    }
 
     // Set up download button
     const downloadButton = document.getElementById('downloadCertificate');
     if (downloadButton) {
       downloadButton.addEventListener('click', function() {
-        const blob = new Blob([formattedCertificate], { type: 'text/plain' });
+        const blob = new Blob([combinedKey], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -248,9 +259,11 @@ ${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}|${bufferToBas
 
     // Display delegate info
     if (delegateInfo) {
-      const delegateInfoElement = document.createElement('p');
-      delegateInfoElement.textContent = `Donation amount: $${delegateInfo.amount}`;
-      certificateSection.appendChild(delegateInfoElement);
+      const delegateInfoElement = document.getElementById('certificate-info');
+      if (delegateInfoElement) {
+        delegateInfoElement.innerHTML = `<p>Your donation certificate is ready. Donation amount: $${delegateInfo.amount}</p>`;
+        delegateInfoElement.style.display = 'block';
+      }
     }
 
     // Verify the certificate
