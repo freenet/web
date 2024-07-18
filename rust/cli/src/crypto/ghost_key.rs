@@ -8,8 +8,6 @@ use crate::crypto::{CryptoError, extract_bytes_from_armor};
 use rmp_serde;
 use log::{debug, info, warn, error};
 use colored::Colorize;
-use base64::engine::general_purpose;
-use base64::Engine;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct DelegateCertificate {
@@ -140,7 +138,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
 
     // Validate the delegate certificate using the master verifying key
     info!("Validating delegate certificate");
-    let delegate_info = validate_delegate_certificate(master_verifying_key_pem, delegate_certificate)?;
+    let delegate_info = validate_delegate_certificate(master_verifying_key_pem, &String::from_utf8_lossy(delegate_certificate))?;
     info!("Delegate certificate validated successfully");
 
     // Verify the ghostkey signature
@@ -153,7 +151,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     Ok(delegate_info)
 }
 
-pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
+pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &[u8]) -> Result<String, CryptoError> {
     info!("Validating delegate certificate");
     
     // Extract the base64 encoded master verifying key
@@ -166,13 +164,11 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
             CryptoError::KeyCreationError(e.to_string())
         })?;
 
-    // Extract and deserialize the delegate certificate
-    let delegate_certificate_bytes = extract_bytes_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
-    debug!("Delegate certificate bytes: {:?}", delegate_certificate_bytes);
-    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
+    // Deserialize the delegate certificate
+    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(delegate_certificate)
         .map_err(|e| {
             error!("Deserialization error: {:?}", e);
-            debug!("Delegate certificate bytes: {:?}", delegate_certificate_bytes);
+            debug!("Delegate certificate bytes: {:?}", delegate_certificate);
             CryptoError::DeserializationError(e.to_string())
         })?;
 
