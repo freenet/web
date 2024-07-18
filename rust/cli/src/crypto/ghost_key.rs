@@ -109,44 +109,21 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
 }
 
 
-pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str, ghost_certificate_file: &str) -> Result<String, CryptoError> {
-    info!("Starting validate_ghost_key function");
+pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificate_armored: &str, delegate_certificate_file: &str) -> Result<String, CryptoError> {
+    info!("Starting validate_delegate_key function");
     
-    // Extract the base64 encoded ghostkey certificate
-    let ghostkey_certificate_bytes = extract_ghostkey_certificate(ghostkey_certificate_armored)?;
+    // Extract the base64 encoded delegate certificate
+    let delegate_certificate_bytes = extract_delegate_certificate(delegate_certificate_armored)?;
 
-    debug!("Extracted ghostkey certificate bytes: {:?}", ghostkey_certificate_bytes);
-    info!("Extracted ghostkey certificate length: {}", ghostkey_certificate_bytes.len());
-
-    // Deserialize the ghostkey certificate
-    let ghostkey_certificate: GhostkeyCertificate = rmp_serde::from_slice(&ghostkey_certificate_bytes)
-        .map_err(|e| {
-            error!("Failed to deserialize ghostkey certificate '{}': {:?}", ghost_certificate_file, e);
-            error!("Certificate bytes: {:?}", ghostkey_certificate_bytes);
-            error!("Certificate bytes length: {}", ghostkey_certificate_bytes.len());
-            CryptoError::DeserializationError(format!("Failed to deserialize ghost certificate file '{}': {}", ghost_certificate_file, e))
-        })?;
-
-    debug!("Deserialized ghostkey certificate: {:?}", ghostkey_certificate);
-    info!("Deserialized ghostkey certificate successfully");
-
-    // Extract the delegate certificate
-    let delegate_certificate = &ghostkey_certificate.delegate_certificate;
-
-    debug!("Extracted delegate certificate: {:?}", delegate_certificate);
-    info!("Extracted delegate certificate length: {}", delegate_certificate.len());
+    debug!("Extracted delegate certificate bytes: {:?}", delegate_certificate_bytes);
+    info!("Extracted delegate certificate length: {}", delegate_certificate_bytes.len());
 
     // Validate the delegate certificate using the master verifying key
     info!("Validating delegate certificate");
-    let delegate_info = validate_delegate_certificate(master_verifying_key_pem, delegate_certificate)?;
+    let delegate_info = validate_delegate_certificate(master_verifying_key_pem, &delegate_certificate_bytes)?;
     info!("Delegate certificate validated successfully");
 
-    // Verify the ghostkey signature
-    info!("Verifying ghostkey signature");
-    verify_ghostkey_signature(&ghostkey_certificate)?;
-    info!("Ghostkey signature verified successfully");
-
-    info!("{}", "Ghost key certificate is valid.".green().bold());
+    info!("{}", "Delegate key certificate is valid.".green().bold());
 
     Ok(delegate_info)
 }
@@ -338,6 +315,6 @@ pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostk
         }
     }
 }
-fn extract_ghostkey_certificate(armored_text: &str) -> Result<Vec<u8>, CryptoError> {
-    crate::crypto::extract_bytes_from_armor(armored_text, "GHOSTKEY CERTIFICATE")
+fn extract_delegate_certificate(armored_text: &str) -> Result<Vec<u8>, CryptoError> {
+    crate::crypto::extract_bytes_from_armor(armored_text, "DELEGATE CERTIFICATE")
 }
