@@ -115,7 +115,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     info!("Starting validate_ghost_key function");
     
     // Extract the base64 encoded ghostkey certificate
-    let ghostkey_certificate_bytes = extract_bytes_from_armor(ghostkey_certificate_armored, "GHOSTKEY CERTIFICATE")?;
+    let ghostkey_certificate_bytes = extract_ghostkey_certificate(ghostkey_certificate_armored)?;
 
     debug!("Extracted ghostkey certificate bytes: {:?}", ghostkey_certificate_bytes);
     info!("Extracted ghostkey certificate length: {}", ghostkey_certificate_bytes.len());
@@ -339,4 +339,24 @@ pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostk
             Err(CryptoError::ValidationError(error_message))
         }
     }
+}
+fn extract_ghostkey_certificate(armored_text: &str) -> Result<Vec<u8>, CryptoError> {
+    let lines: Vec<&str> = armored_text.lines().collect();
+    if lines.len() < 3 {
+        return Err(CryptoError::InvalidInput("Invalid armored text".to_string()));
+    }
+
+    let start_line = "-----BEGIN GHOSTKEY CERTIFICATE-----";
+    let end_line = "-----END GHOST KEY-----";
+
+    if !lines[0].trim().eq(start_line) || !lines[lines.len() - 1].trim().eq(end_line) {
+        return Err(CryptoError::InvalidInput(format!(
+            "Armor type mismatch. Expected: '{}' and '{}', but found '{}' and '{}'.",
+            start_line, end_line, lines[0].trim(), lines[lines.len() - 1].trim()
+        )));
+    }
+
+    let base64_data = lines[1..lines.len() - 1].join("");
+    general_purpose::STANDARD.decode(base64_data)
+        .map_err(|e| CryptoError::DecodingError(e.to_string()))
 }
