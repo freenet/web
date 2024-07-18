@@ -248,6 +248,7 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
             error!("Signature verification failed: {:?}", e);
             debug!("Data being verified: {:?}", buf);
             debug!("Signature being verified: {:?}", signature);
+            debug!("Master verifying key: {:?}", master_verifying_key.to_encoded_point(false));
             Err(CryptoError::SignatureVerificationError(format!("Signature verification failed: {:?}", e)))
         }
     }
@@ -352,6 +353,7 @@ pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostk
                 CryptoError::DeserializationError(msg) => format!("The ghost key certificate format is invalid: {}. It may be corrupted or incompatible.", msg),
                 CryptoError::KeyCreationError(msg) => format!("There's an issue with the master verifying key: {}. Please verify its correctness and try again.", msg),
                 CryptoError::SignatureVerificationError(msg) => format!("The ghost key certificate signature is invalid: {}. This may indicate tampering or use of an incorrect master key.", msg),
+                CryptoError::ValidationError(msg) => format!("Validation error: {}. Please check the certificate and master key.", msg),
                 _ => format!("An unexpected error occurred during ghost key validation: {:?}. If this persists, please contact support.", e),
             };
             error!("Validation error: {}", error_message);
