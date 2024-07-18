@@ -213,6 +213,11 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
           .replace(/\s/g, '');
         decodedDelegateCertificate = base64ToBuffer(base64Content);
         console.log("Decoded delegate certificate:", decodedDelegateCertificate);
+        
+        // Ensure decodedDelegateCertificate is a Uint8Array
+        if (!(decodedDelegateCertificate instanceof Uint8Array)) {
+          decodedDelegateCertificate = new Uint8Array(decodedDelegateCertificate);
+        }
       } catch (decodeError) {
         console.error("Error decoding armored delegate certificate:", decodeError);
         throw new Error(`Failed to decode armored delegate certificate: ${decodeError.message}`);

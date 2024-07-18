@@ -109,9 +109,16 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
     let encoded_ghost_key = general_purpose::STANDARD.encode(&ghost_key_bytes);
     
     // Format the final output
+    let wrapped_ghost_key = encoded_ghost_key.chars()
+        .collect::<Vec<char>>()
+        .chunks(64)
+        .map(|c| c.iter().collect::<String>())
+        .collect::<Vec<String>>()
+        .join("\n");
+
     let formatted_output = format!(
         "-----BEGIN GHOST KEY-----\n{}\n-----END GHOST KEY-----",
-        encoded_ghost_key
+        wrapped_ghost_key
     );
 
     debug!("Formatted Ghost Key: {}", formatted_output);
