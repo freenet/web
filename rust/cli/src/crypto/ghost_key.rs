@@ -138,7 +138,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
 
     // Validate the delegate certificate using the master verifying key
     info!("Validating delegate certificate");
-    let delegate_info = validate_delegate_certificate(master_verifying_key_pem, &String::from_utf8_lossy(delegate_certificate))?;
+    let delegate_info = validate_delegate_certificate(master_verifying_key_pem, delegate_certificate)?;
     info!("Delegate certificate validated successfully");
 
     // Verify the ghostkey signature
