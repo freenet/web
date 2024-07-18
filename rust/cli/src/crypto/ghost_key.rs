@@ -128,6 +128,32 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
     Ok(delegate_info)
 }
 
+pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str, ghost_certificate_file: &str) -> Result<String, CryptoError> {
+    info!("Starting validate_ghost_key function");
+    
+    // Extract the base64 encoded ghostkey certificate
+    let ghostkey_certificate_bytes = extract_bytes_from_armor(ghostkey_certificate_armored, "GHOSTKEY CERTIFICATE")?;
+
+    debug!("Extracted ghostkey certificate bytes: {:?}", ghostkey_certificate_bytes);
+    info!("Extracted ghostkey certificate length: {}", ghostkey_certificate_bytes.len());
+
+    // Deserialize the ghostkey certificate
+    let ghostkey_certificate: GhostkeyCertificate = rmp_serde::from_slice(&ghostkey_certificate_bytes)
+        .map_err(|e| CryptoError::DeserializationError(format!("Failed to deserialize ghost certificate file '{}': {}", ghost_certificate_file, e)))?;
+
+    debug!("Deserialized ghostkey certificate: {:?}", ghostkey_certificate);
+
+    // Validate the delegate certificate within the ghostkey certificate
+    let delegate_info = validate_delegate_certificate(master_verifying_key_pem, &ghostkey_certificate.delegate_certificate)?;
+
+    // Verify the ghostkey signature
+    verify_ghostkey_signature(&ghostkey_certificate)?;
+
+    info!("{}", "Ghost key certificate is valid.".green().bold());
+
+    Ok(delegate_info)
+}
+
 pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &[u8]) -> Result<String, CryptoError> {
     info!("Validating delegate certificate");
     
@@ -292,9 +318,9 @@ pub fn extract_delegate_verifying_key(delegate_certificate: &[u8]) -> Result<Ver
 /// # Returns
 ///
 /// The delegate info as a string if validation is successful, or a CryptoError if validation fails.
-pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str, ghost_certificate_file: &str) -> Result<(), CryptoError> {
+pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str, ghostkey_certificate_file: &str) -> Result<(), CryptoError> {
     info!("Starting validate_armored_ghost_key_command");
-    match validate_ghost_key(master_verifying_key_pem, ghostkey_certificate_armored, ghost_certificate_file) {
+    match validate_ghost_key(master_verifying_key_pem, ghostkey_certificate_armored, ghostkey_certificate_file) {
         Ok(delegate_info) => {
             println!("{}", "Ghost key certificate validation successful.".green().bold());
             println!("{} {}", "Delegate info:".cyan(), delegate_info);
