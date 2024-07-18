@@ -275,7 +275,8 @@ fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certi
             Ok(())
         }
         Err(e) => {
-            error!("Failed to validate ghost key certificate: {}", e);
+            error!("Ghost key certificate is {}.", "invalid".red());
+            error!("Error: {}", e);
             Err(Box::new(e))
         }
     }
