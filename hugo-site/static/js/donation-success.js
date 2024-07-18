@@ -231,30 +231,28 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       };
       console.log("Ghost key certificate object created:", ghostKeyCertificate);
 
-      // Serialize the ghost key certificate using MessagePack
-      serializedCertificate = msgpack.encode(ghostKeyCertificate);
-      console.log("Certificate serialized:", serializedCertificate);
+      // Create a single GhostKey structure
+      const ghostKey = {
+        certificate: {
+          delegate_certificate: ghostKeyCertificate.delegate_certificate,
+          ghostkey_verifying_key: ghostKeyCertificate.ghostkey_verifying_key,
+          signature: ghostKeyCertificate.signature
+        },
+        verifying_key: publicKey,
+        signing_key: privateKey
+      };
 
-      // Convert the serialized certificate to base64
-      base64Certificate = bufferToBase64(serializedCertificate);
-      console.log("Serialized certificate converted to base64:", base64Certificate);
+      // Serialize the GhostKey using MessagePack
+      const serializedGhostKey = msgpack.encode(ghostKey);
+      console.log("GhostKey serialized:", serializedGhostKey);
+
+      // Convert the serialized GhostKey to base64
+      const base64GhostKey = bufferToBase64(serializedGhostKey);
+      console.log("Serialized GhostKey converted to base64:", base64GhostKey);
     } catch (encodingError) {
-      console.error("Error in certificate encoding:", encodingError);
-      throw new Error(`Certificate encoding failed: ${encodingError.message}`);
+      console.error("Error in GhostKey encoding:", encodingError);
+      throw new Error(`GhostKey encoding failed: ${encodingError.message}`);
     }
-
-    // Create a single GhostKey structure
-    const ghostKey = {
-      certificate: ghostKeyCertificate,
-      verifying_key: publicKey,
-      signing_key: privateKey
-    };
-
-    // Serialize the GhostKey using MessagePack
-    const serializedGhostKey = msgpack.encode(ghostKey);
-
-    // Convert the serialized GhostKey to base64
-    const base64GhostKey = bufferToBase64(serializedGhostKey);
 
     // Format the final output
     const formattedOutput = `-----BEGIN GHOST KEY-----
