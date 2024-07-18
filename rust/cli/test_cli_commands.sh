@@ -117,7 +117,7 @@ run_command "generate ghost key" "cargo run --quiet -- generate-ghost-key --dele
 run_command "generate wrong ghost key" "cargo run --quiet -- generate-ghost-key --delegate-dir $TEST_DIR/wrong_delegate --output-dir $TEST_DIR/wrong_ghost" || handle_error "generate wrong ghost key" "cargo run --quiet -- generate-ghost-key --delegate-dir $TEST_DIR/wrong_delegate --output-dir $TEST_DIR/wrong_ghost" "$?"
 
 # Validate delegate key (correct)
-run_command "validate correct delegate key" "cargo run --quiet -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
+run_command "validate correct delegate key" "cargo run -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
 
 # Validate delegate key (wrong master key)
 expect_failure "validate delegate key with wrong master key" "cargo run --quiet -- validate-delegate-key --master-verifying-key-file $TEST_DIR/wrong_master/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
