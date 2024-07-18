@@ -7,7 +7,7 @@ use p256::{
     SecretKey,
     pkcs8::DecodePrivateKey,
 };
-use p256::ecdsa::signature::hazmat::PrehashSigner;
+use p256::elliptic_curve::generic_array::GenericArray;
 use rand_core::OsRng;
 use sha2::{Sha256, Digest};
 use base64::{Engine as _, engine::general_purpose};
@@ -190,7 +190,14 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
     log::debug!("Starting sign_with_delegate_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
 
     let signing_key = SigningKey::from_pkcs8_pem(&delegate_key)
-        .or_else(|_| SigningKey::from_bytes(&general_purpose::STANDARD.decode(&delegate_key).unwrap_or_default()))
+        .or_else(|_| {
+            let decoded = general_purpose::STANDARD.decode(&delegate_key).unwrap_or_default();
+            if decoded.len() == 32 {
+                SigningKey::from_bytes(GenericArray::from_slice(&decoded))
+            } else {
+                Err(ecdsa::Error::new())
+            }
+        })
         .map_err(|e| {
             log::error!("Failed to create signing key: {}", e);
             log::error!("Delegate key content: {}", delegate_key);
