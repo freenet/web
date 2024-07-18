@@ -225,7 +225,8 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
 
       // Create the GhostkeyCertificate object
       ghostKeyCertificate = {
-        delegate_certificate: decodedDelegateCertificate,
+        version: 1,
+        delegate_certificate: new Uint8Array(decodedDelegateCertificate),
         ghostkey_verifying_key: publicKey,
         signature: unblindedSignature
       };
@@ -233,6 +234,7 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
 
       // Create a single GhostKey structure
       const ghostKey = {
+        version: 1,
         certificate: ghostKeyCertificate,
         verifying_key: publicKey,
         signing_key: privateKey
