@@ -35,7 +35,7 @@ pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
     Ok((armored_signing_key, armored_verifying_key))
 }
 
-fn extract_bytes_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<Vec<u8>, CryptoError> {
+pub fn extract_bytes_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<Vec<u8>, CryptoError> {
     let lines: Vec<&str> = armored_key.lines().collect();
     if lines.len() < 3 {
         return Err(CryptoError::InvalidInput(format!("Invalid armored key format. Expected at least 3 lines, found {}.", lines.len())));

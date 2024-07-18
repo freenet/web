@@ -13,8 +13,7 @@ use sha2::{Sha256, Digest};
 use base64::{Engine as _, engine::general_purpose};
 use std::error::Error as StdError;
 use std::path::PathBuf;
-use ghostkey::crypto::{extract_bytes_from_armor, dearmor};
-use ghostkey::armor;
+use ghostkey::crypto::extract_bytes_from_armor;
 
 #[derive(Debug)]
 pub enum CertificateError {
