@@ -13,7 +13,8 @@ function checkRequiredElements() {
   const requiredElements = [
     { id: 'certificateSection', selector: 'div#certificateSection' },
     { id: 'certificate-info', selector: 'div#certificate-info' },
-    { id: 'errorMessage', selector: 'div#errorMessage' }
+    { id: 'errorMessage', selector: 'div#errorMessage' },
+    { id: 'certificate', selector: 'textarea#certificate' }
   ];
   
   console.log("Checking for required elements...");
@@ -216,17 +217,25 @@ ${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}|${bufferToBas
     const certificateInfo = document.getElementById('certificate-info');
     const certificateTextarea = document.getElementById('certificate');
     
-    if (!certificateSection || !certificateInfo || !certificateTextarea) {
-      console.error("One or more required elements not found");
+    if (!certificateSection || !certificateInfo) {
+      console.error("Required elements not found");
       throw new Error("Required elements not found");
     }
     
     certificateSection.style.display = 'block';
     certificateInfo.style.display = 'block';
-    certificateTextarea.value = formattedCertificate;
-    console.log("Ghost key certificate populated in textarea");
     
-    certificateSection.style.display = 'block';
+    if (certificateTextarea) {
+      certificateTextarea.value = formattedCertificate;
+      console.log("Ghost key certificate populated in textarea");
+    } else {
+      console.warn("Certificate textarea not found. Creating a new one.");
+      const newTextarea = document.createElement('textarea');
+      newTextarea.id = 'certificate';
+      newTextarea.value = formattedCertificate;
+      certificateSection.appendChild(newTextarea);
+    }
+    
     certificateInfo.style.display = 'none';
 
     // Set up download button
