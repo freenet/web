@@ -153,7 +153,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     Ok(delegate_info)
 }
 
-pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &[u8]) -> Result<String, CryptoError> {
+pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
     info!("Validating delegate certificate");
     
     // Extract the base64 encoded master verifying key
@@ -166,11 +166,13 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
             CryptoError::KeyCreationError(e.to_string())
         })?;
 
-    // Deserialize the delegate certificate
-    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(delegate_certificate)
+    // Extract and deserialize the delegate certificate
+    let delegate_certificate_bytes = extract_bytes_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
+    debug!("Delegate certificate bytes: {:?}", delegate_certificate_bytes);
+    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
         .map_err(|e| {
             error!("Deserialization error: {:?}", e);
-            debug!("Delegate certificate bytes: {:?}", delegate_certificate);
+            debug!("Delegate certificate bytes: {:?}", delegate_certificate_bytes);
             CryptoError::DeserializationError(e.to_string())
         })?;
 
