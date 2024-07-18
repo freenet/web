@@ -24,15 +24,9 @@ struct DelegateKeyCertificate {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GhostkeyCertificate {
-    delegate_certificate: Vec<u8>,
-    ghostkey_verifying_key: Vec<u8>,
-    signature: Vec<u8>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct GhostkeySigningData {
-    delegate_certificate: Vec<u8>,
-    ghostkey_verifying_key: Vec<u8>,
+    pub delegate_certificate: Vec<u8>,
+    pub ghostkey_verifying_key: Vec<u8>,
+    pub signature: Vec<u8>,
 }
 
 pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str) -> Result<String, CryptoError> {
