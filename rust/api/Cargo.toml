@@ -7,7 +7,7 @@ edition = "2021"
 ghostkey = { path = "../cli" }
 rocket = { version = "0.5.0-rc.3", features = ["json"] }
 serde_json = "1.0"
-cli = { path = "../cli" }
+ghostkey = { path = "../cli" }
 rmp-serde = "1.1"
 stripe = { version = "0.37.1", package = "async-stripe", features = ["runtime-tokio-hyper"] }
 dotenv = "0.15.0"
