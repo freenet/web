@@ -218,13 +218,20 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
 pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> Result<(), CryptoError> {
     info!("Verifying ghostkey signature");
     
+    // Extract the delegate certificate bytes
+    let delegate_certificate_bytes = if ghostkey_certificate.delegate_certificate.starts_with(b"-----BEGIN DELEGATE CERTIFICATE-----") {
+        extract_bytes_from_armor(&String::from_utf8_lossy(&ghostkey_certificate.delegate_certificate), "DELEGATE CERTIFICATE")?
+    } else {
+        ghostkey_certificate.delegate_certificate.clone()
+    };
+    
     // Extract the delegate verifying key from the delegate certificate
-    let delegate_verifying_key = extract_delegate_verifying_key(&ghostkey_certificate.delegate_certificate)?;
+    let delegate_verifying_key = extract_delegate_verifying_key(&delegate_certificate_bytes)?;
     debug!("Extracted delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
 
     // Recreate the certificate data that was originally signed
     let ghostkey_signing_data = GhostkeySigningData {
-        delegate_certificate: ghostkey_certificate.delegate_certificate.clone(),
+        delegate_certificate: delegate_certificate_bytes,
         ghostkey_verifying_key: ghostkey_certificate.ghostkey_verifying_key.clone(),
     };
     debug!("Recreated ghostkey signing data: {:?}", ghostkey_signing_data);
