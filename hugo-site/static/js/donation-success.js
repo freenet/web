@@ -204,6 +204,17 @@ ${bufferToBase64(privateKey)}
 
     const certificateSection = document.getElementById('certificateSection');
     const certificateInfo = document.getElementById('certificate-info');
+    const certificateTextarea = document.getElementById('certificate');
+    
+    if (!certificateSection || !certificateInfo || !certificateTextarea) {
+      console.error("One or more required elements not found");
+      throw new Error("Required elements not found");
+    }
+    
+    certificateSection.style.display = 'block';
+    certificateInfo.style.display = 'block';
+    certificateTextarea.value = combinedKey;
+    console.log("Certificate and private key populated in textarea");
     
     if (!certificateSection || !certificateInfo) {
       console.error("Certificate section or info element not found");
