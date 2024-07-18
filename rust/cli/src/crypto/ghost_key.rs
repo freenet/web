@@ -42,11 +42,6 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
     let delegate_certificate_bytes = extract_bytes_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
     debug!("Delegate certificate bytes: {:?}", delegate_certificate_bytes);
 
-    // Deserialize the delegate certificate
-    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(&delegate_certificate_bytes)
-        .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
-    debug!("Deserialized delegate certificate: {:?}", delegate_cert);
-
     // Extract the delegate signing key
     let delegate_signing_key_bytes = extract_bytes_from_armor(delegate_signing_key, "DELEGATE SIGNING KEY")?;
     let delegate_signing_key = SigningKey::from_slice(&delegate_signing_key_bytes)
@@ -89,9 +84,22 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
 
     // Encode the certificate
     let ghostkey_certificate_armored = armor(&final_buf, "GHOSTKEY CERTIFICATE", "GHOSTKEY CERTIFICATE");
-    debug!("Armored ghostkey certificate: {}", ghostkey_certificate_armored);
 
-    Ok(ghostkey_certificate_armored)
+    // Format the ghost key
+    let ghostkey_formatted = format!(
+        "-----BEGIN GHOST KEY-----\n{}\n-----END GHOST KEY-----",
+        general_purpose::STANDARD.encode(&[
+            &ghostkey_verifying_key.to_sec1_bytes()[..],
+            &signature.to_der().as_bytes()[..],
+            &ghostkey_signing_key.to_bytes()[..]
+        ].concat())
+    );
+
+    // Combine certificate and ghost key
+    let combined_key = format!("{}\n\n{}", ghostkey_certificate_armored, ghostkey_formatted);
+    debug!("Combined key: {}", combined_key);
+
+    Ok(combined_key)
 }
 
 
