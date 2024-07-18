@@ -10,6 +10,7 @@ pub enum CryptoError {
     InvalidInput(String),
     ArmorError(String),
     ValidationError(String),
+    DecodingError(String),
 }
 
 
