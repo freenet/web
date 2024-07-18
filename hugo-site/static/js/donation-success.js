@@ -233,11 +233,7 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
 
       // Create a single GhostKey structure
       const ghostKey = {
-        certificate: {
-          delegate_certificate: ghostKeyCertificate.delegate_certificate,
-          ghostkey_verifying_key: ghostKeyCertificate.ghostkey_verifying_key,
-          signature: ghostKeyCertificate.signature
-        },
+        certificate: ghostKeyCertificate,
         verifying_key: publicKey,
         signing_key: privateKey
       };
