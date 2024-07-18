@@ -67,6 +67,7 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
 
     // Create the signing data
     let ghostkey_signing_data = GhostkeySigningData {
+        version: 1,
         delegate_certificate: delegate_certificate_bytes.clone(),
         ghostkey_verifying_key: ghostkey_verifying_key.to_sec1_bytes().to_vec(),
     };
@@ -83,6 +84,7 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
 
     // Create the final certificate with the signature
     let final_certificate = GhostkeyCertificate {
+        version: 1,
         delegate_certificate: delegate_certificate_bytes,
         ghostkey_verifying_key: ghostkey_signing_data.ghostkey_verifying_key,
         signature: signature.to_der().as_bytes().to_vec(),
@@ -99,6 +101,7 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
 
     // Create a single GhostKey structure
     let ghost_key = GhostKey {
+        version: 1,
         certificate: final_certificate,
         verifying_key: ghostkey_verifying_key.to_sec1_bytes().to_vec(),
         signing_key: ghostkey_signing_key.to_bytes().to_vec(),
@@ -266,6 +269,7 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
 
     // Recreate the certificate data that was originally signed
     let ghostkey_signing_data = GhostkeySigningData {
+        version: 1,
         delegate_certificate: delegate_certificate_bytes,
         ghostkey_verifying_key: ghostkey_certificate.ghostkey_verifying_key.clone(),
     };
