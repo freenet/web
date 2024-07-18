@@ -190,17 +190,14 @@ async function generateAndSignCertificate(paymentIntentId) {
 function displayCertificate(publicKey, privateKey, unblindedSignature, delegateInfo) {
   console.log("Displaying certificate");
   try {
-    // Armor the certificate and private key
-    const armoredCertificate = `-----BEGIN FREENET DONATION CERTIFICATE-----
-${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}
------END FREENET DONATION CERTIFICATE-----`;
+    // Format the ghost key certificate
+    const ghostKeyCertificate = `-----BEGIN GHOST KEY CERTIFICATE-----
+${delegateInfo.certificate.trim()}
+-----END GHOST KEY CERTIFICATE-----
 
-    const armoredPrivateKey = `-----BEGIN FREENET DONATION PRIVATE KEY-----
-${bufferToBase64(privateKey)}
------END FREENET DONATION PRIVATE KEY-----`;
-
-    // Combine certificate and private key
-    const combinedKey = `${wrapBase64(armoredCertificate, 64)}\n\n${wrapBase64(armoredPrivateKey, 64)}`;
+-----BEGIN GHOST KEY-----
+${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}|${bufferToBase64(privateKey)}
+-----END GHOST KEY-----`;
 
     const certificateSection = document.getElementById('certificateSection');
     const certificateInfo = document.getElementById('certificate-info');
@@ -213,8 +210,8 @@ ${bufferToBase64(privateKey)}
     
     certificateSection.style.display = 'block';
     certificateInfo.style.display = 'block';
-    certificateTextarea.value = combinedKey;
-    console.log("Certificate and private key populated in textarea");
+    certificateTextarea.value = ghostKeyCertificate;
+    console.log("Ghost key certificate populated in textarea");
     
     if (!certificateSection || !certificateInfo) {
       console.error("Certificate section or info element not found");
