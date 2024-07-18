@@ -113,7 +113,7 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
     info!("Starting validate_delegate_key function");
     
     // Extract the base64 encoded delegate certificate
-    let delegate_certificate_bytes = extract_delegate_certificate(delegate_certificate_armored)?;
+    let delegate_certificate_bytes = extract_bytes_from_armor(delegate_certificate_armored, "DELEGATE CERTIFICATE")?;
 
     debug!("Extracted delegate certificate bytes: {:?}", delegate_certificate_bytes);
     info!("Extracted delegate certificate length: {}", delegate_certificate_bytes.len());
@@ -340,7 +340,4 @@ pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostk
             Err(CryptoError::ValidationError(error_message))
         }
     }
-}
-fn extract_delegate_certificate(armored_text: &str) -> Result<Vec<u8>, CryptoError> {
-    crate::crypto::extract_bytes_from_armor(armored_text, "DELEGATE CERTIFICATE")
 }
