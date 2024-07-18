@@ -7,7 +7,7 @@ use std::os::unix::fs::PermissionsExt;
 use ghostkey::crypto::master_key::{generate_master_key, generate_master_verifying_key};
 use colored::Colorize;
 use log::{error, info};
-use ghostkey::crypto::ghost_key::{generate_ghostkey, validate_ghost_key};
+use ghostkey::crypto::ghost_key::{generate_ghostkey, validate_armored_ghost_key_command};
 use ghostkey::crypto::signature::{sign_message, verify_signature};
 use ghostkey::crypto::generate_delegate::generate_delegate_key;
 use ghostkey::crypto::validate_delegate_key;
