@@ -44,7 +44,14 @@
           currency: document.getElementById('currency').value
         })
       });
-      const { clientSecret } = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (!data.client_secret) {
+        throw new Error('The server response did not include a client secret.');
+      }
+      const { client_secret: clientSecret } = data;
 
       const appearance = {
         theme: 'stripe',
@@ -57,6 +64,10 @@
       console.error('Stripe initialization error:', error);
       const messageContainer = document.querySelector('#error-message');
       messageContainer.textContent = '{{ .Get "error-message" }}' || `Error: ${error.message}. Please try again later or contact support.`;
+      // Display the error message
+      messageContainer.style.display = 'block';
+      // Hide the payment form
+      document.querySelector('#payment-form').style.display = 'none';
     }
   }
 
