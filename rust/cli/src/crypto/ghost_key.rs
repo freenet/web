@@ -105,6 +105,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     let ghostkey_certificate: GhostkeyCertificate = rmp_serde::from_slice(&ghostkey_certificate_bytes)
         .map_err(|e| {
             error!("Failed to deserialize ghostkey certificate '{}': {:?}", ghost_certificate_file, e);
+            error!("Certificate bytes: {:?}", ghostkey_certificate_bytes);
             CryptoError::DeserializationError(format!("Failed to deserialize ghost certificate file '{}': {}", ghost_certificate_file, e))
         })?;
 
