@@ -12,8 +12,9 @@ use rand_core::OsRng;
 use sha2::{Sha256, Digest};
 use base64::{Engine as _, engine::general_purpose};
 use std::error::Error as StdError;
-use std::fs;
 use std::path::PathBuf;
+use cli::crypto::{extract_bytes_from_armor, dearmor};
+use cli::armor;
 
 #[derive(Debug)]
 pub enum CertificateError {
@@ -174,13 +175,13 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
     log::info!("Reading delegate certificate from: {:?}", delegate_cert_path);
     log::info!("Reading delegate key from: {:?}", delegate_key_path);
 
-    let delegate_cert = fs::read_to_string(&delegate_cert_path)
+    let delegate_cert = std::fs::read_to_string(&delegate_cert_path)
         .map_err(|e| {
             log::error!("Failed to read delegate certificate from {:?}: {}", delegate_cert_path, e);
             CertificateError::KeyError(format!("Failed to read delegate certificate: {}", e))
         })?;
 
-    let delegate_key = fs::read_to_string(&delegate_key_path)
+    let delegate_key = std::fs::read_to_string(&delegate_key_path)
         .map_err(|e| {
             log::error!("Failed to read delegate key from {:?}: {}", delegate_key_path, e);
             CertificateError::KeyError(format!("Failed to read delegate key: {}", e))
@@ -189,23 +190,11 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
     log::info!("Successfully read both delegate certificate and key");
     log::debug!("Starting sign_with_delegate_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
 
-    let signing_key = {
-        let key_content = delegate_key.trim()
-            .strip_prefix("-----BEGIN DELEGATE SIGNING KEY-----")
-            .and_then(|s| s.strip_suffix("-----END DELEGATE SIGNING KEY-----"))
-            .ok_or_else(|| CertificateError::KeyError("Invalid key format".to_string()))?
-            .trim();
-        
-        let decoded = general_purpose::STANDARD.decode(key_content)
-            .map_err(|e| CertificateError::KeyError(format!("Failed to decode key: {}", e)))?;
-        
-        if decoded.len() != 32 {
-            return Err(CertificateError::KeyError(format!("Invalid key length: expected 32, got {}", decoded.len())));
-        }
-        
-        SigningKey::from_bytes(GenericArray::from_slice(&decoded))
-            .map_err(|e| CertificateError::KeyError(format!("Failed to create signing key: {}", e)))?
-    };
+    let signing_key_bytes = extract_bytes_from_armor(&delegate_key, "DELEGATE SIGNING KEY")
+        .map_err(|e| CertificateError::KeyError(format!("Failed to extract delegate signing key: {}", e)))?;
+
+    let signing_key = SigningKey::from_bytes(GenericArray::from_slice(&signing_key_bytes))
+        .map_err(|e| CertificateError::KeyError(format!("Failed to create signing key: {}", e)))?;
 
     log::info!("Successfully created signing key");
 
