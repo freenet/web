@@ -87,21 +87,29 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
     // Encode the certificate
     let ghostkey_certificate_armored = armor(&final_buf, "GHOSTKEY CERTIFICATE", "GHOSTKEY CERTIFICATE");
 
-    // Format the ghost key
-    let ghostkey_formatted = format!(
+    // Create a single GhostKey structure
+    let ghost_key = GhostKey {
+        certificate: final_certificate,
+        verifying_key: ghostkey_verifying_key.to_sec1_bytes().to_vec(),
+        signing_key: ghostkey_signing_key.to_bytes().to_vec(),
+    };
+
+    // Serialize the GhostKey to MessagePack
+    let ghost_key_bytes = rmp_serde::to_vec(&ghost_key)
+        .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
+
+    // Encode the serialized GhostKey
+    let encoded_ghost_key = general_purpose::STANDARD.encode(&ghost_key_bytes);
+    
+    // Format the final output
+    let formatted_output = format!(
         "-----BEGIN GHOST KEY-----\n{}\n-----END GHOST KEY-----",
-        general_purpose::STANDARD.encode(&[
-            &ghostkey_verifying_key.to_sec1_bytes()[..],
-            &signature.to_der().as_bytes()[..],
-            &ghostkey_signing_key.to_bytes()[..]
-        ].concat())
+        encoded_ghost_key
     );
 
-    // Combine certificate and ghost key
-    let combined_key = format!("{}\n\n{}", ghostkey_certificate_armored, ghostkey_formatted);
-    debug!("Combined key: {}", combined_key);
+    debug!("Formatted Ghost Key: {}", formatted_output);
 
-    Ok(combined_key)
+    Ok(formatted_output)
 }
 
 
