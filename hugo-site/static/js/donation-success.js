@@ -191,10 +191,14 @@ async function generateAndSignCertificate(paymentIntentId) {
 function displayCertificate(publicKey, privateKey, unblindedSignature, delegateInfo) {
   console.log("Displaying certificate");
   try {
-    // Create a ghost key certificate object
+    if (!delegateInfo || !delegateInfo.certificate) {
+      throw new Error("Delegate certificate is missing");
+    }
+
+    // Create a ghost key certificate object matching the Rust structure
     const ghostKeyCertificate = {
-      verifying_key: publicKey,
-      info: delegateInfo ? delegateInfo.certificate : null,
+      delegate_certificate: base64ToBuffer(delegateInfo.certificate),
+      ghostkey_verifying_key: publicKey,
       signature: unblindedSignature
     };
 
@@ -264,6 +268,8 @@ ${formattedGhostKey}`;
         delegateInfoElement.innerHTML = `<p>Your donation certificate is ready. Donation amount: $${delegateInfo.amount}</p>`;
         delegateInfoElement.style.display = 'block';
       }
+    } else {
+      throw new Error("Delegate information is missing");
     }
 
     // Verify the certificate
