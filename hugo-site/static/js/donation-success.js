@@ -225,16 +225,8 @@ ${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}|${bufferToBas
     certificateSection.style.display = 'block';
     certificateInfo.style.display = 'block';
     
-    if (certificateTextarea) {
-      certificateTextarea.value = formattedCertificate;
-      console.log("Ghost key certificate populated in textarea");
-    } else {
-      console.warn("Certificate textarea not found. Creating a new one.");
-      const newTextarea = document.createElement('textarea');
-      newTextarea.id = 'certificate';
-      newTextarea.value = formattedCertificate;
-      certificateSection.appendChild(newTextarea);
-    }
+    certificateTextarea.value = formattedCertificate;
+    console.log("Ghost key certificate populated in textarea");
     
     certificateInfo.style.display = 'none';
 
