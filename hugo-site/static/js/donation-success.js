@@ -218,17 +218,7 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
         throw new Error(`Failed to decode armored delegate certificate: ${decodeError.message}`);
       }
 
-      // Create a GhostkeySigningData object
-      const ghostkeySigningData = {
-        delegate_certificate: decodedDelegateCertificate,
-        ghostkey_verifying_key: publicKey
-      };
-
-      // Serialize the GhostkeySigningData using MessagePack
-      const serializedSigningData = msgpack.encode(ghostkeySigningData);
-      console.log("Signing data serialized:", serializedSigningData);
-
-      // Create the final GhostkeyCertificate object
+      // Create the GhostkeyCertificate object
       ghostKeyCertificate = {
         delegate_certificate: decodedDelegateCertificate,
         ghostkey_verifying_key: publicKey,
