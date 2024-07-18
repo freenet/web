@@ -29,6 +29,12 @@ pub struct GhostkeyCertificate {
     pub signature: Vec<u8>,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GhostkeySigningData {
+    pub delegate_certificate: Vec<u8>,
+    pub ghostkey_verifying_key: Vec<u8>,
+}
+
 pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str) -> Result<String, CryptoError> {
     info!("Generating ghostkey");
     
@@ -217,19 +223,19 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
     debug!("Extracted delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
 
     // Recreate the certificate data that was originally signed
-    let certificate_data = GhostkeySigningData {
+    let ghostkey_signing_data = GhostkeySigningData {
         delegate_certificate: ghostkey_certificate.delegate_certificate.clone(),
         ghostkey_verifying_key: ghostkey_certificate.ghostkey_verifying_key.clone(),
     };
-    debug!("Recreated certificate data: {:?}", certificate_data);
+    debug!("Recreated ghostkey signing data: {:?}", ghostkey_signing_data);
 
-    // Serialize the certificate data
-    let buf = rmp_serde::to_vec(&certificate_data)
+    // Serialize the ghostkey signing data
+    let buf = rmp_serde::to_vec(&ghostkey_signing_data)
         .map_err(|e| {
-            error!("Failed to serialize certificate data: {:?}", e);
+            error!("Failed to serialize ghostkey signing data: {:?}", e);
             CryptoError::SerializationError(e.to_string())
         })?;
-    debug!("Serialized certificate data: {:?}", buf);
+    debug!("Serialized ghostkey signing data: {:?}", buf);
 
     // Create the signature from the stored bytes
     let signature = ecdsa::Signature::from_der(&ghostkey_certificate.signature)
