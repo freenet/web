@@ -189,20 +189,25 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
     log::info!("Successfully read both delegate certificate and key");
     log::debug!("Starting sign_with_delegate_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
 
-    let signing_key = SigningKey::from_pkcs8_pem(&delegate_key)
-        .or_else(|_| {
-            let decoded = general_purpose::STANDARD.decode(&delegate_key).unwrap_or_default();
-            if decoded.len() == 32 {
-                SigningKey::from_bytes(GenericArray::from_slice(&decoded))
-            } else {
-                Err(ecdsa::Error::new())
-            }
-        })
-        .map_err(|e| {
-            log::error!("Failed to create signing key: {}", e);
-            log::error!("Delegate key content: {}", delegate_key);
-            CertificateError::KeyError(format!("Failed to create signing key: {}. Key content: {}", e, delegate_key))
-        })?;
+    let signing_key = {
+        let key_content = delegate_key.trim()
+            .strip_prefix("-----BEGIN DELEGATE SIGNING KEY-----")
+            .and_then(|s| s.strip_suffix("-----END DELEGATE SIGNING KEY-----"))
+            .ok_or_else(|| CertificateError::KeyError("Invalid key format".to_string()))?
+            .trim();
+        
+        let decoded = general_purpose::STANDARD.decode(key_content)
+            .map_err(|e| CertificateError::KeyError(format!("Failed to decode key: {}", e)))?;
+        
+        if decoded.len() != 32 {
+            return Err(CertificateError::KeyError(format!("Invalid key length: expected 32, got {}", decoded.len())));
+        }
+        
+        SigningKey::from_bytes(GenericArray::from_slice(&decoded))
+            .map_err(|e| CertificateError::KeyError(format!("Failed to create signing key: {}", e)))?
+    };
+
+    log::info!("Successfully created signing key");
 
     let blinded_verifying_key_bytes = match blinded_verifying_key {
         Value::String(s) => general_purpose::STANDARD.decode(s)
