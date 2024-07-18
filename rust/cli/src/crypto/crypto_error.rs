@@ -28,6 +28,7 @@ impl std::fmt::Display for CryptoError {
             CryptoError::InvalidInput(msg) => write!(f, "Invalid Input: {}", msg),
             CryptoError::ArmorError(msg) => write!(f, "Armor Error: {}", msg),
             CryptoError::ValidationError(msg) => write!(f, "Validation Error: {}", msg),
+            CryptoError::DecodingError(msg) => write!(f, "Decoding Error: {}", msg),
         }
     }
 }
