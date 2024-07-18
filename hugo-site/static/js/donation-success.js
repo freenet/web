@@ -198,6 +198,7 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
     console.log("Delegate certificate:", delegateInfo.certificate);
     console.log("Public key:", bufferToBase64(publicKey));
     console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
+    console.log("Delegate info:", delegateInfo);
 
     let ghostKeyCertificate, serializedCertificate, base64Certificate;
 
@@ -205,7 +206,12 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       // Create a ghost key certificate object matching the Rust structure
       let decodedDelegateCertificate;
       try {
-        decodedDelegateCertificate = base64ToBuffer(delegateInfo.certificate);
+        // Extract the base64 content from the PEM-like format
+        const base64Content = delegateInfo.certificate
+          .replace(/-----BEGIN DELEGATE CERTIFICATE-----/, '')
+          .replace(/-----END DELEGATE CERTIFICATE-----/, '')
+          .replace(/\s/g, '');
+        decodedDelegateCertificate = base64ToBuffer(base64Content);
         console.log("Decoded delegate certificate:", decodedDelegateCertificate);
       } catch (decodeError) {
         console.error("Error decoding delegate certificate:", decodeError);
