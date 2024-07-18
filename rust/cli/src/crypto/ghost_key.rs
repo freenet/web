@@ -340,8 +340,6 @@ pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostk
         }
     }
 }
-use crate::crypto::extract_bytes_from_armor;
-
 fn extract_ghostkey_certificate(armored_text: &str) -> Result<Vec<u8>, CryptoError> {
-    extract_bytes_from_armor(armored_text, "GHOSTKEY CERTIFICATE")
+    crate::crypto::extract_bytes_from_armor(armored_text, "GHOSTKEY CERTIFICATE")
 }
