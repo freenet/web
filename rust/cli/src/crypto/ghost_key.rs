@@ -340,24 +340,8 @@ pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostk
         }
     }
 }
+use crate::crypto::extract_bytes_from_armor;
+
 fn extract_ghostkey_certificate(armored_text: &str) -> Result<Vec<u8>, CryptoError> {
-    let start_line = "-----BEGIN GHOSTKEY CERTIFICATE-----";
-    let end_line = "-----END GHOSTKEY CERTIFICATE-----";
-
-    let start_index = armored_text.find(start_line)
-        .ok_or_else(|| CryptoError::InvalidInput("Missing start of GHOSTKEY CERTIFICATE".to_string()))?;
-    let end_index = armored_text[start_index..].find(end_line)
-        .ok_or_else(|| CryptoError::InvalidInput("Missing end of GHOSTKEY CERTIFICATE".to_string()))?
-        + start_index + end_line.len();
-
-    let certificate_section = &armored_text[start_index..end_index];
-    let lines: Vec<&str> = certificate_section.lines().collect();
-
-    if lines.len() < 3 {
-        return Err(CryptoError::InvalidInput("Invalid armored text".to_string()));
-    }
-
-    let base64_data = lines[1..lines.len() - 1].join("");
-    general_purpose::STANDARD.decode(base64_data)
-        .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))
+    extract_bytes_from_armor(armored_text, "GHOSTKEY CERTIFICATE")
 }
