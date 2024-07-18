@@ -96,15 +96,14 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
     debug!("Serialized final certificate: {:?}", final_buf);
 
-    // Encode the certificate
+    // Armor the certificate
     let ghostkey_certificate_armored = armor(&final_buf, "GHOSTKEY CERTIFICATE", "GHOSTKEY CERTIFICATE");
 
-    // Format the final output
-    let formatted_output = format!(
-        "{}\n\n-----BEGIN GHOST KEY-----\n{}\n-----END GHOST KEY-----",
-        ghostkey_certificate_armored,
-        general_purpose::STANDARD.encode(&ghostkey_signing_key.to_bytes())
-    );
+    // Armor the ghost key
+    let ghost_key_armored = armor(&ghostkey_signing_key.to_bytes(), "GHOST KEY", "GHOST KEY");
+
+    // Combine the armored certificate and ghost key
+    let formatted_output = format!("{}\n\n{}", ghostkey_certificate_armored, ghost_key_armored);
 
     debug!("Formatted Ghost Key: {}", formatted_output);
 
