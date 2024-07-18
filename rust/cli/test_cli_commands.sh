@@ -62,6 +62,9 @@ run_command() {
         echo "$output" | grep -v "Compiling" | grep -v "Finished" | grep -v "Running"
         echo "Error details:"
         echo "$output"
+        # Always display full output for failed tests
+        echo "Full command output:"
+        echo "$output"
         return 1
     fi
 }
