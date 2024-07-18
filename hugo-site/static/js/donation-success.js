@@ -287,8 +287,7 @@ function verifyCertificate(publicKey, signature) {
   }
 }
 
-// Add MessagePack library
-const msgpack = require('msgpack-lite');
+// MessagePack library is loaded globally, no need to require it
 
 function showError(message) {
   const errorElement = document.getElementById('errorMessage');
