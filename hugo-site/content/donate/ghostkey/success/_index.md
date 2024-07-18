@@ -1,7 +1,7 @@
 ---
 title: "Ghost Key Donation Success"
 date: 2023-07-10
-draft: true
+draft: false
 ---
 
 Thank you for your Ghost Key donation to Freenet! Your support helps us maintain and improve the 
