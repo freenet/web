@@ -440,7 +440,7 @@ fn validate_ghost_key_command(master_verifying_key_file: &str, ghost_certificate
     let master_verifying_key = std::fs::read_to_string(master_verifying_key_file)?;
     let ghost_certificate = std::fs::read_to_string(ghost_certificate_file)?;
 
-    match validate_ghost_key(&master_verifying_key, &ghost_certificate, ghost_certificate_file) {
+    match validate_armored_ghost_key_command(&master_verifying_key, &ghost_certificate, ghost_certificate_file) {
         Ok(info) => {
             info!("Ghost key certificate is {}.", "valid".green());
             info!("Info: {}", info);
