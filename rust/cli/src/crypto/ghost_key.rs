@@ -19,6 +19,7 @@ struct DelegateCertificate {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct GhostKey {
+    version: u8,
     certificate: GhostkeyCertificate,
     verifying_key: Vec<u8>,
     signing_key: Vec<u8>,
@@ -33,6 +34,7 @@ struct DelegateKeyCertificate {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GhostkeyCertificate {
+    pub version: u8,
     pub delegate_certificate: Vec<u8>,
     pub ghostkey_verifying_key: Vec<u8>,
     pub signature: Vec<u8>,
@@ -40,6 +42,7 @@ pub struct GhostkeyCertificate {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GhostkeySigningData {
+    pub version: u8,
     pub delegate_certificate: Vec<u8>,
     pub ghostkey_verifying_key: Vec<u8>,
 }
