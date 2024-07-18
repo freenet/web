@@ -210,9 +210,9 @@ ${bufferToBase64(publicKey)}|${bufferToBase64(unblindedSignature)}|${bufferToBas
 -----END GHOST KEY-----`;
 
     // Combine certificate and ghost key
-    const combinedKey = `-----BEGIN GHOST KEY CERTIFICATE-----
+    const combinedKey = `-----BEGIN GHOSTKEY CERTIFICATE-----
 ${base64Certificate}
------END GHOST KEY CERTIFICATE-----
+-----END GHOSTKEY CERTIFICATE-----
 
 ${formattedGhostKey}`;
 
