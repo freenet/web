@@ -95,7 +95,7 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
 }
 
 
-pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str) -> Result<String, CryptoError> {
+pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_armored: &str, ghost_certificate_file: &str) -> Result<String, CryptoError> {
     // Extract the base64 encoded ghostkey certificate
     let ghostkey_certificate_bytes = extract_bytes_from_armor(ghostkey_certificate_armored, "GHOSTKEY CERTIFICATE")?;
 
@@ -104,8 +104,8 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     // Deserialize the ghostkey certificate
     let ghostkey_certificate: GhostkeyCertificate = rmp_serde::from_slice(&ghostkey_certificate_bytes)
         .map_err(|e| {
-            error!("Failed to deserialize ghostkey certificate: {:?}", e);
-            CryptoError::DeserializationError(e.to_string())
+            error!("Failed to deserialize ghostkey certificate '{}': {:?}", ghost_certificate_file, e);
+            CryptoError::DeserializationError(format!("Failed to deserialize ghost certificate file '{}': {}", ghost_certificate_file, e))
         })?;
 
     debug!("Deserialized ghostkey certificate: {:?}", ghostkey_certificate);
