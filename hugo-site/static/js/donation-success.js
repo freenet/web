@@ -223,22 +223,22 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
         throw new Error(`Failed to decode armored delegate certificate: ${decodeError.message}`);
       }
 
-      // Create the GhostkeyCertificate array
-      const ghostKeyCertificate = [
-        1, // version
-        new Uint8Array(decodedDelegateCertificate),
-        new Uint8Array(publicKey),
-        new Uint8Array(unblindedSignature)
-      ];
-      console.log("Ghost key certificate array created:", ghostKeyCertificate);
+      // Create the GhostkeyCertificate object
+      const ghostKeyCertificate = {
+        version: 1,
+        delegate_certificate: new Uint8Array(decodedDelegateCertificate),
+        ghostkey_verifying_key: new Uint8Array(publicKey),
+        signature: new Uint8Array(unblindedSignature)
+      };
+      console.log("Ghost key certificate object created:", ghostKeyCertificate);
 
-      // Create the GhostkeySigningData array
-      const ghostkeySigningData = [
-        1, // version
-        new Uint8Array(decodedDelegateCertificate),
-        new Uint8Array(publicKey)
-      ];
-      console.log("Ghost key signing data array created:", ghostkeySigningData);
+      // Create the GhostkeySigningData object
+      const ghostkeySigningData = {
+        version: 1,
+        delegate_certificate: new Uint8Array(decodedDelegateCertificate),
+        ghostkey_verifying_key: new Uint8Array(publicKey)
+      };
+      console.log("Ghost key signing data object created:", ghostkeySigningData);
 
       // Serialize the GhostkeyCertificate using MessagePack
       const serializedCertificate = msgpack.encode(ghostKeyCertificate);
