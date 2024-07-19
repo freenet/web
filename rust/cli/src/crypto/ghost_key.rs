@@ -262,7 +262,7 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
             error!("Failed to serialize ghostkey signing data: {:?}", e);
             CryptoError::SerializationError(e.to_string())
         })?;
-    debug!("Serialized ghostkey signing data: {:?}", buf);
+    debug!("Serialized ghostkey signing data (hex): {:?}", hex::encode(&buf));
 
     // Create the signature from the stored bytes
     let signature = ecdsa::Signature::from_der(&ghostkey_certificate.signature)
@@ -284,7 +284,7 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
             error!("Failed to create signature: {:?}", e);
             e
         })?;
-    debug!("Created signature: {:?}", signature);
+    debug!("Created signature (hex): {:?}", hex::encode(signature.to_bytes()));
 
     // Verify the signature using the delegate verifying key
     match delegate_verifying_key.verify(&buf, &signature) {
@@ -294,12 +294,12 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
         },
         Err(e) => {
             error!("Signature verification failed: {:?}", e);
-            debug!("Delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
-            debug!("Data being verified (base64): {:?}", BASE64_STANDARD.encode(&buf));
-            debug!("Signature being verified (base64): {:?}", BASE64_STANDARD.encode(signature.to_bytes()));
-            debug!("Ghostkey verifying key (base64): {:?}", BASE64_STANDARD.encode(&ghostkey_certificate.ghostkey_verifying_key));
-            debug!("Delegate certificate (base64): {:?}", BASE64_STANDARD.encode(&delegate_certificate_bytes));
-            debug!("Original delegate certificate (base64): {:?}", BASE64_STANDARD.encode(&ghostkey_certificate.delegate_certificate));
+            debug!("Delegate verifying key (hex): {:?}", hex::encode(delegate_verifying_key.to_encoded_point(false).as_bytes()));
+            debug!("Data being verified (hex): {:?}", hex::encode(&buf));
+            debug!("Signature being verified (hex): {:?}", hex::encode(signature.to_bytes()));
+            debug!("Ghostkey verifying key (hex): {:?}", hex::encode(&ghostkey_certificate.ghostkey_verifying_key));
+            debug!("Delegate certificate (hex): {:?}", hex::encode(&delegate_certificate_bytes));
+            debug!("Original delegate certificate (hex): {:?}", hex::encode(&ghostkey_certificate.delegate_certificate));
             Err(CryptoError::SignatureVerificationError(format!("Signature verification failed: {:?}. Delegate verifying key: {:?}", e, delegate_verifying_key.to_encoded_point(false))))
         }
     }
