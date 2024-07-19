@@ -187,7 +187,7 @@ async fn run_browser_test() -> Result<()> {
     let form = wait_for_element(&driver, By::Id("payment-form"), Duration::from_secs(10)).await?;
 
     // Wait for the card number input to be present and visible
-    let _card_number_input = wait_for_element(&driver, By::Css("input[name='number']"), Duration::from_secs(10)).await?;
+    let card_number = wait_for_element(&driver, By::Id("Field-numberInput"), Duration::from_secs(10)).await?;
 
     // Select donation amount
     let amount_radio = form.find(By::Css("input[name='amount'][value='20']")).await?;
@@ -199,7 +199,6 @@ async fn run_browser_test() -> Result<()> {
     currency_option.click().await?;
 
     // Fill out credit card information
-    let card_number = driver.find(By::Css("input[name='cardnumber']")).await?;
     card_number.send_keys("4242424242424242").await?;
 
     let card_expiry = driver.find(By::Css("input[name='exp-date']")).await?;
