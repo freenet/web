@@ -8,6 +8,7 @@ use crate::crypto::{CryptoError, extract_bytes_from_armor};
 use rmp_serde;
 use log::{debug, info, warn, error};
 use colored::Colorize;
+use hex;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct DelegateCertificate {
