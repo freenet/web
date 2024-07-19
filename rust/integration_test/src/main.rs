@@ -225,7 +225,7 @@ async fn run_browser_test() -> Result<()> {
     submit_button.click().await?;
 
     // Wait for the combined key textarea
-    let combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(10)).await?;
+    let _combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(10)).await?;
     
     // Get the content of the textarea using JavaScript
     let combined_key_content = c.execute(
@@ -296,11 +296,10 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<()> {
     use serde::Deserialize;
 
     // Extract the ghost key certificate from the combined key
-    let parts: Vec<&str> = combined_key_text.split('\n').collect();
-    let ghost_key_cert_base64 = parts.iter()
-        .skip_while(|&&line| !line.starts_with("-----BEGIN GHOSTKEY CERTIFICATE-----"))
-        .take_while(|&&line| !line.starts_with("-----END GHOSTKEY CERTIFICATE-----"))
-        .filter(|&&line| !line.starts_with("-----"))
+    let ghost_key_cert_base64 = combined_key_text.lines()
+        .skip_while(|line| !line.starts_with("-----BEGIN GHOSTKEY CERTIFICATE-----"))
+        .take_while(|line| !line.starts_with("-----END GHOSTKEY CERTIFICATE-----"))
+        .filter(|line| !line.starts_with("-----"))
         .collect::<Vec<&str>>()
         .join("");
 
