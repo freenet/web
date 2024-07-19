@@ -342,7 +342,7 @@ ${wrapBase64(base64SigningKey, 64)}
     }
 
     // Verify the certificate
-    if (!verifyCertificate(publicKey, unblindedSignature)) {
+    if (!verifyCertificate(publicKey, unblindedSignature, decodedDelegateCertificate)) {
       console.error("Certificate verification failed");
       throw new Error("Certificate verification failed");
     }
@@ -365,12 +365,12 @@ function wrapBase64(str, maxWidth) {
   }).join('\n');
 }
 
-function verifyCertificate(publicKey, signature) {
+function verifyCertificate(publicKey, signature, delegateCertificate) {
   try {
     // Create the GhostkeySigningData object
     const ghostkeySigningData = {
       version: 1,
-      delegate_certificate: Array.from(new Uint8Array(decodedDelegateCertificate)),
+      delegate_certificate: Array.from(new Uint8Array(delegateCertificate)),
       ghostkey_verifying_key: Array.from(new Uint8Array(publicKey))
     };
 

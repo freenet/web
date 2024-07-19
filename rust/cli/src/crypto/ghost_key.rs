@@ -308,14 +308,6 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
             error!("Data to verify (len={}): {:?}", buf.len(), buf);
             error!("Signature (len={}): {:?}", signature.to_bytes().len(), signature);
             
-            // Try to verify the signature with the ghostkey verifying key as well
-            let ghostkey_verifying_key = VerifyingKey::from_sec1_bytes(&ghostkey_certificate.ghostkey_verifying_key)
-                .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
-            match ghostkey_verifying_key.verify(&buf, &signature) {
-                Ok(_) => error!("Signature verified with ghostkey verifying key, but not with delegate verifying key"),
-                Err(e) => error!("Signature verification also failed with ghostkey verifying key: {:?}", e),
-            }
-            
             Err(CryptoError::SignatureVerificationError(format!("Signature verification failed: {:?}. Delegate verifying key: {:?}", e, delegate_verifying_key.to_encoded_point(false))))
         }
     }
