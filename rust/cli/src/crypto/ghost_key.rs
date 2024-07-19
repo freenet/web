@@ -294,8 +294,10 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
         Err(e) => {
             error!("Signature verification failed: {:?}", e);
             debug!("Delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
-            debug!("Data being verified: {:?}", buf);
-            debug!("Signature being verified: {:?}", signature);
+            debug!("Data being verified (hex): {:?}", hex::encode(&buf));
+            debug!("Signature being verified (hex): {:?}", hex::encode(signature.to_bytes()));
+            debug!("Ghostkey verifying key (hex): {:?}", hex::encode(&ghostkey_certificate.ghostkey_verifying_key));
+            debug!("Delegate certificate (hex): {:?}", hex::encode(&ghostkey_certificate.delegate_certificate));
             Err(CryptoError::SignatureVerificationError(e.to_string()))
         }
     }
