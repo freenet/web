@@ -54,15 +54,28 @@ async fn main() -> Result<()> {
 }
 
 fn generate_delegate_keys() -> Result<String> {
-    let temp_dir = env::temp_dir().join("ghostkey_delegates");
+    let temp_dir = env::temp_dir().join("ghostkey_test");
     fs::create_dir_all(&temp_dir)?;
 
-    // Use the generate_delegate_keys.sh script to generate delegate keys
+    // Generate master key
+    let master_key_file = temp_dir.join("master_signing_key.pem");
+    let output = Command::new("cargo")
+        .args(&["run", "--quiet", "--", "generate-master-key", "--output-dir"])
+        .arg(&temp_dir)
+        .current_dir("../cli")
+        .output()?;
+
+    if !output.status.success() {
+        return Err(anyhow::anyhow!("Failed to generate master key: {}", String::from_utf8_lossy(&output.stderr)));
+    }
+
+    // Generate delegate keys
+    let delegate_dir = temp_dir.join("delegates");
     let output = Command::new("bash")
         .arg("../cli/generate_delegate_keys.sh")
-        .args(&["--master-key", "../cli/master_signing_key.pem"])
+        .args(&["--master-key", master_key_file.to_str().unwrap()])
         .arg("--delegate-dir")
-        .arg(&temp_dir)
+        .arg(&delegate_dir)
         .arg("--overwrite")
         .output()?;
 
@@ -70,11 +83,7 @@ fn generate_delegate_keys() -> Result<String> {
         return Err(anyhow::anyhow!("Failed to generate delegate keys: {}", String::from_utf8_lossy(&output.stderr)));
     }
 
-    if !output.status.success() {
-        return Err(anyhow::anyhow!("Failed to generate delegate keys"));
-    }
-
-    Ok(temp_dir.to_string_lossy().into_owned())
+    Ok(delegate_dir.to_string_lossy().into_owned())
 }
 
 fn is_port_in_use(port: u16) -> bool {
