@@ -63,10 +63,11 @@ fn setup_delegate_keys() -> Result<()> {
     // Generate master key
     let master_key_file = temp_dir.join("master_signing_key.pem");
     println!("Generating master key: {:?}", master_key_file);
+    let cli_dir = std::env::current_dir()?.join("../cli");
     let output = Command::new("cargo")
         .args(&["run", "--quiet", "--", "generate-master-key", "--output-file"])
         .arg(&master_key_file)
-        .current_dir("../cli")
+        .current_dir(&cli_dir)
         .output()
         .context("Failed to execute generate-master-key command")?;
 
