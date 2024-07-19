@@ -4,9 +4,15 @@ use std::time::Duration;
 use thirtyfour::prelude::*;
 use std::thread;
 use std::time::Instant;
+use std::env;
+use std::fs;
+use std::path::Path;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Generate delegate keys and set environment variable
+    let delegate_dir = generate_delegate_keys()?;
+    env::set_var("GHOSTKEY_DELEGATE_DIR", &delegate_dir);
     // Check if ChromeDriver is running, start it if not
     let mut chromedriver_handle = None;
     if !is_port_in_use(9515) {
@@ -45,6 +51,23 @@ async fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn generate_delegate_keys() -> Result<String> {
+    let temp_dir = env::temp_dir().join("ghostkey_delegates");
+    fs::create_dir_all(&temp_dir)?;
+
+    // Generate delegate keys (you may need to adjust this based on your actual key generation logic)
+    let output = Command::new("openssl")
+        .args(&["genrsa", "-out", "delegate_key.pem", "2048"])
+        .current_dir(&temp_dir)
+        .output()?;
+
+    if !output.status.success() {
+        return Err(anyhow::anyhow!("Failed to generate delegate keys"));
+    }
+
+    Ok(temp_dir.to_string_lossy().into_owned())
 }
 
 fn is_port_in_use(port: u16) -> bool {

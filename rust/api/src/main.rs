@@ -4,9 +4,12 @@ use rocket::http::Header;
 use rocket::{Request, catch};
 use dotenv::dotenv;
 use log::{LevelFilter, info, error};
+use std::env;
 
 mod routes;
 mod stripe_handler;
+
+pub static DELEGATE_DIR: &str = "GHOSTKEY_DELEGATE_DIR";
 
 #[catch(404)]
 fn not_found(req: &Request) -> String {
