@@ -262,14 +262,26 @@ ${wrapBase64(base64GhostKey, 64)}
 -----END GHOST KEY-----`;
 
       console.log("Ghost Key created successfully");
+
+      const certificateSection = document.getElementById('certificateSection');
+      const certificateInfo = document.getElementById('certificate-info');
+      const combinedKeyTextarea = document.getElementById('combinedKey');
+      
+      if (!certificateSection || !certificateInfo || !combinedKeyTextarea) {
+        console.error("Required elements not found");
+        throw new Error("Required elements not found");
+      }
+      
+      certificateSection.style.display = 'block';
+      certificateInfo.style.display = 'none';
+      
+      combinedKeyTextarea.value = formattedOutput;
+      console.log("Ghost Key populated in textarea");
+
     } catch (encodingError) {
       console.error("Error in GhostKey encoding:", encodingError);
       throw new Error(`GhostKey encoding failed: ${encodingError.message}`);
     }
-
-    const certificateSection = document.getElementById('certificateSection');
-    const certificateInfo = document.getElementById('certificate-info');
-    const combinedKeyTextarea = document.getElementById('combinedKey');
     
     if (!certificateSection || !certificateInfo || !combinedKeyTextarea) {
       console.error("Required elements not found");
