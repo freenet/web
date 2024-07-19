@@ -212,6 +212,9 @@ async fn run_browser_test() -> Result<()> {
     let card_cvc = wait_for_element(&c, Locator::Css("input[name='cvc']"), Duration::from_secs(5)).await?;
     card_cvc.send_keys("123").await?;
 
+    let postal_code = wait_for_element(&c, Locator::Css("input[name='postalCode']"), Duration::from_secs(5)).await?;
+    postal_code.send_keys("12345").await?;
+
     // Switch back to the default content
     c.enter_frame(None).await?;
 
