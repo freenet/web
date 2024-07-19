@@ -97,9 +97,13 @@ async fn run_browser_test() -> Result<()> {
     // Navigate to the donation page
     driver.goto("http://localhost:1313/donate/ghostkey/").await?;
 
-    // Wait for the Stripe form to load
+    // Wait for the Stripe form to load with a timeout
     let form = driver.find(By::Id("payment-form")).await?;
-    form.wait_until().displayed().await?;
+    form.wait_until().with_timeout(Duration::from_secs(10)).displayed().await?;
+
+    // Wait for the card number input to be present and visible
+    let card_number_input = driver.find(By::Css("input[name='number']")).await?;
+    card_number_input.wait_until().with_timeout(Duration::from_secs(10)).displayed().await?;
 
     // Select donation amount
     let amount_radio = form.find(By::Css("input[name='amount'][value='20']")).await?;
