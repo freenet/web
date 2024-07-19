@@ -198,7 +198,8 @@ async fn run_browser_test() -> Result<()> {
     let stripe_iframe = wait_for_element(&c, Locator::Css("iframe[name^='__privateStripeFrame']"), Duration::from_secs(10)).await?;
 
     // Switch to the Stripe iframe
-    c.enter_frame(stripe_iframe).await?;
+    let iframe_index = c.find_all(Locator::Css("iframe")).await?.iter().position(|e| e == &stripe_iframe).unwrap() as u16;
+    c.enter_frame(Some(iframe_index)).await?;
 
     // Wait for the card number input to be present and visible inside the iframe
     let card_number = wait_for_element(&c, Locator::Css("input[name='cardnumber']"), Duration::from_secs(10)).await?;
