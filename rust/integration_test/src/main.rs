@@ -61,6 +61,17 @@ fn setup_delegate_keys() -> Result<()> {
     fs::create_dir_all(&temp_dir)?;
 
     // Generate master key
+    let master_key_file = generate_master_key(&temp_dir)?;
+
+    // Generate delegate keys
+    generate_delegate_keys(&master_key_file, &delegate_dir)?;
+
+    println!("Successfully generated delegate keys");
+    env::set_var("GHOSTKEY_DELEGATE_DIR", delegate_dir.to_str().unwrap());
+    Ok(())
+}
+
+fn generate_master_key(temp_dir: &std::path::Path) -> Result<std::path::PathBuf> {
     let master_key_file = temp_dir.join("master_signing_key.pem");
     println!("Generating master key in directory: {:?}", temp_dir);
     let cli_dir = std::env::current_dir()?.join("../cli");
@@ -78,13 +89,16 @@ fn setup_delegate_keys() -> Result<()> {
         return Err(anyhow::anyhow!(error_msg));
     }
 
-    // Generate delegate keys
+    Ok(master_key_file)
+}
+
+fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std::path::Path) -> Result<()> {
     println!("Generating delegate keys in: {:?}", delegate_dir);
     let output = Command::new("bash")
         .arg("../cli/generate_delegate_keys.sh")
         .args(&["--master-key", master_key_file.to_str().unwrap()])
         .arg("--delegate-dir")
-        .arg(&delegate_dir)
+        .arg(delegate_dir)
         .arg("--overwrite")
         .output()
         .context("Failed to execute generate_delegate_keys.sh")?;
@@ -96,8 +110,6 @@ fn setup_delegate_keys() -> Result<()> {
         return Err(anyhow::anyhow!(error_msg));
     }
 
-    println!("Successfully generated delegate keys");
-    env::set_var("GHOSTKEY_DELEGATE_DIR", delegate_dir.to_str().unwrap());
     Ok(())
 }
 
