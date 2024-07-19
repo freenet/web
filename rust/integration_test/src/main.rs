@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use std::process::{Command, Stdio, Child};
 use std::time::Duration;
-use fantoccini::{ClientBuilder, Locator};
+use fantoccini::{Client, ClientBuilder, Locator};
 use std::thread;
 use std::time::Instant;
 use std::env;
@@ -162,7 +162,7 @@ fn start_chromedriver() -> Result<Child> {
         .context("Failed to start ChromeDriver")
 }
 
-async fn wait_for_element(client: &fantoccini::Client, locator: Locator, timeout: Duration) -> Result<fantoccini::elements::Element> {
+async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Duration) -> Result<fantoccini::elements::Element> {
     let start = Instant::now();
     while start.elapsed() < timeout {
         if let Ok(element) = client.find(locator.clone()).await {
@@ -177,22 +177,21 @@ async fn wait_for_element(client: &fantoccini::Client, locator: Locator, timeout
 
 
 async fn run_browser_test() -> Result<()> {
-    let caps = DesiredCapabilities::chrome();
-    let driver = WebDriver::new("http://localhost:9515", caps).await?;
+    let c = ClientBuilder::native().connect("http://localhost:9515").await?;
 
     // Navigate to the donation page
-    driver.goto("http://localhost:1313/donate/ghostkey/").await?;
+    c.goto("http://localhost:1313/donate/ghostkey/").await?;
 
     // Wait for the Stripe form to load with a timeout
-    let form = wait_for_element(&driver, By::Id("payment-form"), Duration::from_secs(10)).await?;
+    let form = wait_for_element(&c, Locator::Id("payment-form"), Duration::from_secs(10)).await?;
 
     // Select donation amount
-    let amount_radio = form.find(By::Css("input[name='amount'][value='20']")).await?;
+    let amount_radio = form.find(Locator::Css("input[name='amount'][value='20']")).await?;
     amount_radio.click().await?;
 
     // Select currency
-    let currency_select = form.find(By::Id("currency")).await?;
-    let currency_option = currency_select.find(By::Css("option[value='usd']")).await?;
+    let currency_select = form.find(Locator::Id("currency")).await?;
+    let currency_option = currency_select.find(Locator::Css("option[value='usd']")).await?;
     currency_option.click().await?;
 
     // Wait for the Stripe iframe to be present
@@ -215,14 +214,14 @@ async fn run_browser_test() -> Result<()> {
     c.enter_default_frame().await?;
 
     // Submit the form
-    let submit_button = form.find(By::Id("submit")).await?;
+    let submit_button = form.find(Locator::Id("submit")).await?;
     submit_button.click().await?;
 
     // Wait for the success message
-    let success_message = wait_for_element(&driver, By::Css(".donation-success"), Duration::from_secs(10)).await?;
+    let success_message = wait_for_element(&c, Locator::Css(".donation-success"), Duration::from_secs(10)).await?;
 
     // Close the browser
-    driver.quit().await?;
+    c.close().await?;
 
     Ok(())
 }
