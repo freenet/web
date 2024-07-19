@@ -240,28 +240,31 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       };
       console.log("Ghost key signing data object created:", ghostkeySigningData);
 
-      // Create a single GhostKey structure
-      const ghostKey = {
-        version: 1,
-        certificate: ghostKeyCertificate,
-        verifying_key: publicKey,
-        signing_key: privateKey
-      };
+      // Serialize the GhostkeyCertificate using MessagePack
+      const serializedCertificate = msgpack.encode(ghostKeyCertificate);
+      console.log("GhostkeyCertificate serialized:", serializedCertificate);
 
-      // Serialize the GhostKey using MessagePack
-      const serializedGhostKey = msgpack.encode(ghostKey);
-      console.log("GhostKey serialized:", serializedGhostKey);
+      // Convert the serialized certificate to base64
+      const base64Certificate = bufferToBase64(serializedCertificate);
+      console.log("Serialized certificate converted to base64:", base64Certificate);
 
-      // Convert the serialized GhostKey to base64
-      const base64GhostKey = bufferToBase64(serializedGhostKey);
-      console.log("Serialized GhostKey converted to base64:", base64GhostKey);
+      // Format the certificate output
+      const formattedCertificate = `-----BEGIN GHOST KEY CERTIFICATE-----
+${wrapBase64(base64Certificate, 64)}
+-----END GHOST KEY CERTIFICATE-----`;
 
-      // Format the final output
-      const formattedOutput = `-----BEGIN GHOST KEY-----
-${wrapBase64(base64GhostKey, 64)}
+      // Convert the ghost signing key (privateKey) to base64
+      const base64SigningKey = bufferToBase64(privateKey);
+
+      // Format the ghost signing key output
+      const formattedSigningKey = `-----BEGIN GHOST KEY-----
+${wrapBase64(base64SigningKey, 64)}
 -----END GHOST KEY-----`;
 
-      console.log("Ghost Key created successfully");
+      // Combine the certificate and signing key
+      const formattedOutput = `${formattedCertificate}\n\n${formattedSigningKey}`;
+
+      console.log("Ghost Key Certificate and Signing Key created successfully");
 
       const certificateSection = document.getElementById('certificateSection');
       const certificateInfo = document.getElementById('certificate-info');
