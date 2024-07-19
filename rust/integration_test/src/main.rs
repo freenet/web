@@ -250,6 +250,14 @@ async fn run_browser_test() -> Result<()> {
     println!("Master verifying key file: {:?}", master_verifying_key_file);
     println!("Ghost certificate file: {:?}", output_file);
     
+    // Log the contents of the master verifying key file
+    println!("Contents of master verifying key file:");
+    if let Ok(contents) = std::fs::read_to_string(&master_verifying_key_file) {
+        println!("{}", contents);
+    } else {
+        println!("Failed to read master verifying key file");
+    }
+
     let output = Command::new("cargo")
         .args(&[
             "run",
@@ -280,6 +288,20 @@ async fn run_browser_test() -> Result<()> {
             println!("{}", contents);
         } else {
             println!("Failed to read ghost certificate file");
+        }
+        
+        // Log the hex representation of the ghost certificate file
+        println!("Hex representation of ghost certificate file:");
+        if let Ok(contents) = std::fs::read(&output_file) {
+            for (i, byte) in contents.iter().enumerate() {
+                print!("{:02x} ", byte);
+                if (i + 1) % 16 == 0 {
+                    println!();
+                }
+            }
+            println!();
+        } else {
+            println!("Failed to read ghost certificate file for hex representation");
         }
         
         return Err(anyhow::anyhow!("Ghost key validation failed: {}", stderr));
