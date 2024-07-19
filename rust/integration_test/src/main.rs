@@ -172,7 +172,7 @@ async fn wait_for_element(driver: &WebDriver, locator: By, timeout: Duration) ->
         }
         tokio::time::sleep(Duration::from_millis(100)).await;
     }
-    Err(anyhow::anyhow!("Timeout waiting for element"))
+    Err(anyhow::anyhow!("Timeout waiting for element with selector: {:?}", locator))
 }
 
 
