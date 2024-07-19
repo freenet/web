@@ -6,7 +6,6 @@ use std::thread;
 use std::time::Instant;
 use std::env;
 use std::fs;
-use std::path::Path;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -17,16 +16,10 @@ async fn main() -> Result<()> {
         thread::sleep(Duration::from_secs(2)); // Give ChromeDriver time to start
     }
 
-    // Check if Hugo is already running
+    // Always attempt to kill Hugo if it's running
     if is_port_in_use(1313) {
-        println!("Hugo is already running on port 1313. Do you want to kill it? (y/n)");
-        let mut input = String::new();
-        std::io::stdin().read_line(&mut input)?;
-        if input.trim().to_lowercase() == "y" {
-            kill_process_on_port(1313)?;
-        } else {
-            return Err(anyhow::anyhow!("Hugo is already running. Please stop it and try again."));
-        }
+        println!("Attempting to kill Hugo process on port 1313");
+        kill_process_on_port(1313)?;
     }
 
     // Start Hugo
@@ -63,7 +56,8 @@ fn generate_delegate_keys() -> Result<String> {
         .args(&["run", "--quiet", "--", "generate-master-key", "--output-dir"])
         .arg(&temp_dir)
         .current_dir("../cli")
-        .output()?;
+        .output()
+        .context("Failed to execute generate-master-key command")?;
 
     if !output.status.success() {
         return Err(anyhow::anyhow!("Failed to generate master key: {}", String::from_utf8_lossy(&output.stderr)));
@@ -77,7 +71,8 @@ fn generate_delegate_keys() -> Result<String> {
         .arg("--delegate-dir")
         .arg(&delegate_dir)
         .arg("--overwrite")
-        .output()?;
+        .output()
+        .context("Failed to execute generate_delegate_keys.sh")?;
 
     if !output.status.success() {
         return Err(anyhow::anyhow!("Failed to generate delegate keys: {}", String::from_utf8_lossy(&output.stderr)));
@@ -160,7 +155,7 @@ async fn run_browser_test() -> Result<()> {
     let form = wait_for_element(&driver, By::Id("payment-form"), Duration::from_secs(10)).await?;
 
     // Wait for the card number input to be present and visible
-    let card_number_input = wait_for_element(&driver, By::Css("input[name='number']"), Duration::from_secs(10)).await?;
+    let _card_number_input = wait_for_element(&driver, By::Css("input[name='number']"), Duration::from_secs(10)).await?;
 
     // Select donation amount
     let amount_radio = form.find(By::Css("input[name='amount'][value='20']")).await?;
