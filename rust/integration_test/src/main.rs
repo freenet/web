@@ -1,9 +1,18 @@
 use anyhow::{Context, Result};
-use std::process::{Command, Stdio};
+use std::process::{Command, Stdio, Child};
+use std::time::Duration;
 use thirtyfour::prelude::*;
+use std::thread;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Check if ChromeDriver is running, start it if not
+    let mut chromedriver_handle = None;
+    if !is_port_in_use(9515) {
+        chromedriver_handle = Some(start_chromedriver()?);
+        thread::sleep(Duration::from_secs(2)); // Give ChromeDriver time to start
+    }
+
     // Check if Hugo is already running
     if is_port_in_use(1313) {
         println!("Hugo is already running on port 1313. Do you want to kill it? (y/n)");
@@ -28,6 +37,11 @@ async fn main() -> Result<()> {
     // Clean up
     hugo_handle.kill()?;
     api_handle.kill()?;
+
+    // Stop ChromeDriver if we started it
+    if let Some(mut handle) = chromedriver_handle {
+        handle.kill()?;
+    }
 
     Ok(())
 }
@@ -65,6 +79,15 @@ fn start_api() -> Result<std::process::Child> {
         .stderr(Stdio::piped())
         .spawn()
         .context("Failed to start API")
+}
+
+fn start_chromedriver() -> Result<Child> {
+    Command::new("chromedriver")
+        .arg("--port=9515")
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .context("Failed to start ChromeDriver")
 }
 
 async fn run_browser_test() -> Result<()> {
