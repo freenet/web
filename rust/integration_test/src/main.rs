@@ -42,7 +42,7 @@ async fn main() -> Result<()> {
     setup_delegate_keys().context("Failed to setup delegate keys")?;
 
     // Run the browser test
-    run_browser_test().await?;
+    run_browser_test(headless).await?;
 
     // Clean up
     hugo_handle.kill()?;
@@ -211,7 +211,7 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
 }
 
 
-async fn run_browser_test() -> Result<()> {
+async fn run_browser_test(headless: bool) -> Result<()> {
     use serde_json::json;
     let mut caps = serde_json::map::Map::new();
     let chrome_args = if headless {
