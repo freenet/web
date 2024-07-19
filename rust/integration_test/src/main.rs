@@ -3,6 +3,7 @@ use std::process::{Command, Stdio, Child};
 use std::time::Duration;
 use thirtyfour::prelude::*;
 use std::thread;
+use std::time::Instant;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -90,6 +91,19 @@ fn start_chromedriver() -> Result<Child> {
         .context("Failed to start ChromeDriver")
 }
 
+async fn wait_for_element(driver: &WebDriver, locator: By, timeout: Duration) -> Result<WebElement> {
+    let start = Instant::now();
+    while start.elapsed() < timeout {
+        if let Ok(element) = driver.find(locator.clone()).await {
+            if element.is_displayed().await? {
+                return Ok(element);
+            }
+        }
+        tokio::time::sleep(Duration::from_millis(100)).await;
+    }
+    Err(anyhow::anyhow!("Timeout waiting for element"))
+}
+
 async fn run_browser_test() -> Result<()> {
     let caps = DesiredCapabilities::chrome();
     let driver = WebDriver::new("http://localhost:9515", caps).await?;
@@ -98,12 +112,10 @@ async fn run_browser_test() -> Result<()> {
     driver.goto("http://localhost:1313/donate/ghostkey/").await?;
 
     // Wait for the Stripe form to load with a timeout
-    let form = driver.find(By::Id("payment-form")).await?;
-    form.wait_until().with_timeout(Duration::from_secs(10)).displayed().await?;
+    let form = wait_for_element(&driver, By::Id("payment-form"), Duration::from_secs(10)).await?;
 
     // Wait for the card number input to be present and visible
-    let card_number_input = driver.find(By::Css("input[name='number']")).await?;
-    card_number_input.wait_until().with_timeout(Duration::from_secs(10)).displayed().await?;
+    let card_number_input = wait_for_element(&driver, By::Css("input[name='number']"), Duration::from_secs(10)).await?;
 
     // Select donation amount
     let amount_radio = form.find(By::Css("input[name='amount'][value='20']")).await?;
