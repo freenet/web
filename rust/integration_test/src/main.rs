@@ -179,7 +179,14 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
 
 
 async fn run_browser_test() -> Result<()> {
-    let c = ClientBuilder::native().connect("http://localhost:9515").await?;
+    let mut caps = serde_json::map::Map::new();
+    let chrome_args = serde_json::json!(["--headless", "--disable-gpu"]);
+    caps.insert("goog:chromeOptions".to_string(), json!({"args": chrome_args}));
+    
+    let c = ClientBuilder::native()
+        .capabilities(caps)
+        .connect("http://localhost:9515")
+        .await?;
 
     // Navigate to the donation page
     c.goto("http://localhost:1313/donate/ghostkey/").await?;
