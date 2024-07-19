@@ -261,7 +261,6 @@ async fn run_browser_test() -> Result<()> {
     let output = Command::new("cargo")
         .args(&[
             "run",
-            "--quiet",
             "--manifest-path",
             "../cli/Cargo.toml",
             "--",
@@ -270,6 +269,7 @@ async fn run_browser_test() -> Result<()> {
             master_verifying_key_file.to_str().unwrap(),
             "--ghost-certificate-file",
             output_file.to_str().unwrap(),
+            "--debug",
         ])
         .output()?;
 
