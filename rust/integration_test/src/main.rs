@@ -6,6 +6,7 @@ use std::thread;
 use std::time::Instant;
 use std::env;
 use std::fs;
+use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -228,13 +229,37 @@ async fn run_browser_test() -> Result<()> {
     // Get the content of the textarea
     let combined_key_content = combined_key_element.text().await?;
     
-    // Save the content to a file
-    let output_file = "ghostkey_certificate.pem";
-    std::fs::write(output_file, combined_key_content)?;
-    println!("Ghost key certificate saved to: {}", output_file);
+    // Save the content to a file in the temporary directory
+    let temp_dir = env::temp_dir().join("ghostkey_test");
+    let output_file = temp_dir.join("ghostkey_certificate.pem");
+    std::fs::write(&output_file, combined_key_content)?;
+    println!("Ghost key certificate saved to: {}", output_file.display());
 
     // Close the browser
     c.close().await?;
+
+    // Validate the ghost key certificate using the CLI
+    let master_verifying_key_file = temp_dir.join("master_verifying_key.pem");
+    let status = Command::new("cargo")
+        .args(&[
+            "run",
+            "--quiet",
+            "--manifest-path",
+            "../cli/Cargo.toml",
+            "--",
+            "validate-ghost-key",
+            "--master-verifying-key-file",
+            master_verifying_key_file.to_str().unwrap(),
+            "--ghost-certificate-file",
+            output_file.to_str().unwrap(),
+        ])
+        .status()?;
+
+    if !status.success() {
+        return Err(anyhow::anyhow!("Ghost key validation failed"));
+    }
+
+    println!("Ghost key certificate validated successfully");
 
     Ok(())
 }
