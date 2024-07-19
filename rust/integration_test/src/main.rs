@@ -301,6 +301,7 @@ async fn run_browser_test() -> Result<()> {
         println!("Base64 representation of ghost certificate file:");
         if let Ok(contents) = std::fs::read(&output_file) {
             use base64::{engine::general_purpose::STANDARD, Engine as _};
+            use serde_json::json;
             println!("{}", STANDARD.encode(&contents));
         } else {
             println!("Failed to read ghost certificate file for base64 representation");
@@ -350,7 +351,6 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<()> {
 
     // Print the delegate certificate bytes for debugging
     println!("\nDelegate Certificate Bytes (Base64):");
-    use base64::{engine::general_purpose::STANDARD, Engine as _};
     println!("{}", STANDARD.encode(&ghost_key_cert.delegate_certificate));
 
     // Attempt to deserialize the delegate certificate
