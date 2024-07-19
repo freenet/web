@@ -118,11 +118,6 @@ async function generateAndSignCertificate(paymentIntentId) {
     const privateKey = keyPair.secretKey;
     console.log("Key pair generated");
 
-    // Generate random blinding factor
-    const blindingFactor = nacl.randomBytes(32);
-    console.log("Blinding factor generated");
-
-    // Generate a random blinding factor
     const blindingFactor = nacl.randomBytes(32);
     console.log("Blinding factor generated:", bufferToBase64(blindingFactor));
 
