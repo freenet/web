@@ -2,6 +2,7 @@ use anyhow::{Context, Result};
 use std::process::{Command, Stdio, Child};
 use std::time::Duration;
 use thirtyfour::prelude::*;
+use thirtyfour::Frame;
 use std::thread;
 use std::time::Instant;
 use std::env;
@@ -199,7 +200,7 @@ async fn run_browser_test() -> Result<()> {
     let stripe_iframe = wait_for_element(&driver, By::Css("iframe[name^='__privateStripeFrame']"), Duration::from_secs(10)).await?;
 
     // Switch to the Stripe iframe
-    driver.enter_frame(stripe_iframe).await?;
+    driver.enter_frame(Frame::Element(stripe_iframe)).await?;
 
     // Wait for the card number input to be present and visible inside the iframe
     let card_number = wait_for_element(&driver, By::Css("input[name='cardnumber']"), Duration::from_secs(10)).await?;
