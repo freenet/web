@@ -244,6 +244,9 @@ async fn run_browser_test() -> Result<()> {
 
     // Validate the ghost key certificate using the CLI
     let master_verifying_key_file = temp_dir.join("master_verifying_key.pem");
+    println!("Master verifying key file: {:?}", master_verifying_key_file);
+    println!("Ghost certificate file: {:?}", output_file);
+    
     let output = Command::new("cargo")
         .args(&[
             "run",
@@ -259,11 +262,23 @@ async fn run_browser_test() -> Result<()> {
         ])
         .output()?;
 
+    println!("Validation command executed. Exit status: {:?}", output.status);
+
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stdout = String::from_utf8_lossy(&output.stdout);
-        println!("Ghost key validation failed. Stderr: {}", stderr);
+        println!("Ghost key validation failed.");
+        println!("Stderr: {}", stderr);
         println!("Stdout: {}", stdout);
+        
+        // Print the contents of the ghost certificate file
+        println!("Contents of ghost certificate file:");
+        if let Ok(contents) = std::fs::read_to_string(&output_file) {
+            println!("{}", contents);
+        } else {
+            println!("Failed to read ghost certificate file");
+        }
+        
         return Err(anyhow::anyhow!("Ghost key validation failed: {}", stderr));
     }
 
