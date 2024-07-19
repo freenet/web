@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set -e
-set -x  # Enable debugging output
 
 # Default values
 DEFAULT_AMOUNTS=(5 20 50 100)
@@ -10,11 +9,7 @@ OVERWRITE=false
 
 # Function to display usage information
 usage() {
-    echo "Usage: $0 --master-key <master_signing_key_file> [--delegate-dir <delegate_dir>] [--amounts <amount1> <amount2> ...] [--overwrite]"
-    echo "  --master-key <master_signing_key_file>: Path to the master signing key file"
-    echo "  --delegate-dir <delegate_dir>: Directory to store delegate keys and certificates (default: $DEFAULT_DELEGATE_DIR)"
-    echo "  --amounts: List of monetary values (default: ${DEFAULT_AMOUNTS[*]})"
-    echo "  --overwrite: Allow overwriting existing files"
+    echo "Usage: $0 --master-key <master_signing_key_file> [--delegate-dir <delegate_dir>] [--amounts <amount1> <amount2> ...] [--overwrite]" >&2
     exit 1
 }
 
@@ -45,7 +40,7 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         *)
-            echo "Unknown option: $1"
+            echo "Unknown option: $1" >&2
             usage
             ;;
     esac
@@ -53,7 +48,7 @@ done
 
 # Check if required arguments are provided
 if [ -z "$MASTER_KEY_FILE" ]; then
-    echo "Error: Master key file is required."
+    echo "Error: Master key file is required." >&2
     usage
 fi
 
@@ -67,10 +62,6 @@ if [ ! -f "$MASTER_KEY_FILE" ]; then
     echo "Error: Master signing key file not found: $MASTER_KEY_FILE" >&2
     exit 1
 fi
-
-echo "Master key file: $MASTER_KEY_FILE"
-echo "Delegate directory: $DELEGATE_DIR"
-echo "Amounts: ${AMOUNTS[*]}"
 
 # Create output directory
 mkdir -p "$DELEGATE_DIR"
@@ -93,12 +84,11 @@ for amount in "${AMOUNTS[@]}"; do
         fi
     fi
     
-    echo "Generating delegate key for amount: $amount"
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     if ! cargo run --quiet --manifest-path "$script_dir/Cargo.toml" -- generate-delegate-key \
         --master-signing-key-file "$MASTER_KEY_FILE" \
         --info "$info" \
-        --output-dir "$DELEGATE_DIR"; then
+        --output-dir "$DELEGATE_DIR" >/dev/null 2>&1; then
         echo "Error: Failed to generate delegate key for amount $amount" >&2
         exit 1
     fi
@@ -122,8 +112,4 @@ for amount in "${AMOUNTS[@]}"; do
     # Set appropriate permissions for the signing key and certificate
     chmod 600 "$signing_key_file"
     chmod 600 "$cert_file"
-    
-    echo "Generated delegate key for amount $amount"
 done
-
-echo "Delegate keys generated successfully in $DELEGATE_DIR"

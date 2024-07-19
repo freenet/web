@@ -103,16 +103,12 @@ fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std:
         .output()
         .context("Failed to execute generate_delegate_keys.sh")?;
 
-    println!("Command executed. Checking output...");
-
-    // Print full stdout and stderr regardless of success
-    println!("Stdout: {}", String::from_utf8_lossy(&output.stdout));
-    println!("Stderr: {}", String::from_utf8_lossy(&output.stderr));
-
     if !output.status.success() {
         let error_msg = format!(
-            "Failed to generate delegate keys. Exit status: {}",
-            output.status
+            "Failed to generate delegate keys. Exit status: {}\nStdout: {}\nStderr: {}",
+            output.status,
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
         );
         println!("Error: {}", error_msg);
         return Err(anyhow::anyhow!(error_msg));
