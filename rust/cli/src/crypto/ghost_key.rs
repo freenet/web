@@ -123,7 +123,7 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
     let delegate_info = validate_delegate_certificate(master_verifying_key_pem, &delegate_certificate_bytes)?;
     info!("Delegate certificate validated successfully");
 
-    info!("{}", "Delegate key certificate is valid.".green().bold());
+    println!("{}", "Delegate key certificate is valid.".green().bold());
 
     Ok(delegate_info)
 }
