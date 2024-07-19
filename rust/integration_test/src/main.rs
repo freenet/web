@@ -196,23 +196,23 @@ async fn run_browser_test() -> Result<()> {
     currency_option.click().await?;
 
     // Wait for the Stripe iframe to be present
-    let stripe_iframe = wait_for_element(&driver, By::Css("iframe[name^='__privateStripeFrame']"), Duration::from_secs(10)).await?;
+    let stripe_iframe = wait_for_element(&c, Locator::Css("iframe[name^='__privateStripeFrame']"), Duration::from_secs(10)).await?;
 
     // Switch to the Stripe iframe
-    driver.enter_frame(stripe_iframe).await?;
+    c.enter_frame(fantoccini::elements::Element::from(stripe_iframe)).await?;
 
     // Wait for the card number input to be present and visible inside the iframe
-    let card_number = wait_for_element(&driver, By::Css("input[name='cardnumber']"), Duration::from_secs(10)).await?;
+    let card_number = wait_for_element(&c, Locator::Css("input[name='cardnumber']"), Duration::from_secs(10)).await?;
     card_number.send_keys("4242424242424242").await?;
 
-    let card_expiry = wait_for_element(&driver, By::Css("input[name='exp-date']"), Duration::from_secs(5)).await?;
+    let card_expiry = wait_for_element(&c, Locator::Css("input[name='exp-date']"), Duration::from_secs(5)).await?;
     card_expiry.send_keys("1225").await?;
 
-    let card_cvc = wait_for_element(&driver, By::Css("input[name='cvc']"), Duration::from_secs(5)).await?;
+    let card_cvc = wait_for_element(&c, Locator::Css("input[name='cvc']"), Duration::from_secs(5)).await?;
     card_cvc.send_keys("123").await?;
 
     // Switch back to the default content
-    driver.enter_default_frame().await?;
+    c.enter_default_frame().await?;
 
     // Submit the form
     let submit_button = form.find(By::Id("submit")).await?;
