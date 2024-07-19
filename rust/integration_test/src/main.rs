@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
     let mut api_handle = start_api()?;
 
     // Setup delegate keys
-    setup_delegate_keys()?;
+    setup_delegate_keys().context("Failed to setup delegate keys")?;
 
     // Run the browser test
     run_browser_test().await?;
