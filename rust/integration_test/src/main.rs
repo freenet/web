@@ -63,11 +63,12 @@ fn setup_delegate_keys() -> Result<()> {
     // Generate master key
     let master_key_file = temp_dir.join("master_signing_key.pem");
     println!("Generating master key: {:?}", master_key_file);
-    let output = Command::new("openssl")
-        .args(&["genpkey", "-algorithm", "ED25519", "-out"])
+    let output = Command::new("cargo")
+        .args(&["run", "--quiet", "--", "generate-master-key", "--output-file"])
         .arg(&master_key_file)
+        .current_dir("../cli")
         .output()
-        .context("Failed to execute openssl command to generate master key")?;
+        .context("Failed to execute generate-master-key command")?;
 
     if !output.status.success() {
         let error_msg = format!("Failed to generate master key: {}", String::from_utf8_lossy(&output.stderr));
