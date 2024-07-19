@@ -258,13 +258,18 @@ fn sign_message_command(signing_key_file: &str, message: Option<&str>, message_f
 
 fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certificate_file: &str) -> Result<(), Box<dyn std::error::Error>> {
     let master_verifying_key = std::fs::read_to_string(master_verifying_key_file)
-        .map_err(|e| format!("Failed to read master verifying key file: {}", e))?;
-    
-    let delegate_certificate = std::fs::read_to_string(delegate_certificate_file)
         .map_err(|e| {
-            error!("Failed to read delegate certificate file: {}", e);
-            format!("Failed to read delegate certificate file: {}", e)
+            error!("Failed to read master verifying key file: {}", e);
+            format!("Failed to read master verifying key file: {}", e)
         })?;
+    
+    let delegate_certificate = match std::fs::read_to_string(delegate_certificate_file) {
+        Ok(content) => content,
+        Err(e) => {
+            error!("Failed to read delegate certificate file: {}", e);
+            return Err(format!("Failed to read delegate certificate file: {}", e).into());
+        }
+    };
     
     match validate_delegate_key(&master_verifying_key, &delegate_certificate) {
         Ok(delegate_info) => {
