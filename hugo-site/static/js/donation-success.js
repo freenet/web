@@ -249,9 +249,9 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       console.log("Serialized certificate converted to base64:", base64Certificate);
 
       // Format the certificate output
-      const formattedCertificate = `-----BEGIN GHOST KEY CERTIFICATE-----
+      const formattedCertificate = `-----BEGIN GHOSTKEY CERTIFICATE-----
 ${wrapBase64(base64Certificate, 64)}
------END GHOST KEY CERTIFICATE-----`;
+-----END GHOSTKEY CERTIFICATE-----`;
 
       // Convert the ghost signing key (privateKey) to base64
       const base64SigningKey = bufferToBase64(privateKey);
