@@ -226,17 +226,17 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       // Create the GhostkeyCertificate object
       const ghostKeyCertificate = {
         version: 1,
-        delegate_certificate: new Uint8Array(decodedDelegateCertificate),
-        ghostkey_verifying_key: new Uint8Array(publicKey),
-        signature: new Uint8Array(unblindedSignature)
+        delegate_certificate: Array.from(new Uint8Array(decodedDelegateCertificate)),
+        ghostkey_verifying_key: Array.from(new Uint8Array(publicKey)),
+        signature: Array.from(new Uint8Array(unblindedSignature))
       };
       console.log("Ghost key certificate object created:", ghostKeyCertificate);
 
       // Create the GhostkeySigningData object
       const ghostkeySigningData = {
         version: 1,
-        delegate_certificate: new Uint8Array(decodedDelegateCertificate),
-        ghostkey_verifying_key: new Uint8Array(publicKey)
+        delegate_certificate: Array.from(new Uint8Array(decodedDelegateCertificate)),
+        ghostkey_verifying_key: Array.from(new Uint8Array(publicKey))
       };
       console.log("Ghost key signing data object created:", ghostkeySigningData);
 
