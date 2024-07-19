@@ -144,7 +144,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     debug!("Deserialized ghostkey certificate: {:?}", ghostkey_certificate);
 
     // Validate the delegate certificate within the ghostkey certificate
-    let delegate_info = validate_delegate_certificate(master_verifying_key_pem, &ghostkey_certificate.1)?;
+    let delegate_info = validate_delegate_certificate(master_verifying_key_pem, &ghostkey_certificate.delegate_certificate)?;
 
     // Verify the ghostkey signature
     verify_ghostkey_signature(&ghostkey_certificate)?;
