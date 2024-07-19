@@ -179,8 +179,9 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
 
 
 async fn run_browser_test() -> Result<()> {
+    use serde_json::json;
     let mut caps = serde_json::map::Map::new();
-    let chrome_args = serde_json::json!(["--headless", "--disable-gpu"]);
+    let chrome_args = json!(["--headless", "--disable-gpu"]);
     caps.insert("goog:chromeOptions".to_string(), json!({"args": chrome_args}));
     
     let c = ClientBuilder::native()
@@ -301,7 +302,7 @@ async fn run_browser_test() -> Result<()> {
         println!("Base64 representation of ghost certificate file:");
         if let Ok(contents) = std::fs::read(&output_file) {
             use base64::{engine::general_purpose::STANDARD, Engine as _};
-            use serde_json::{json, Value};
+            use serde_json::Value;
             println!("{}", STANDARD.encode(&contents));
         } else {
             println!("Failed to read ghost certificate file for base64 representation");
