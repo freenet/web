@@ -203,10 +203,10 @@ async fn run_browser_test() -> Result<()> {
     c.enter_frame(Some(iframe_index)).await?;
 
     // Wait for the card number input to be present and visible inside the iframe
-    let card_number = wait_for_element(&c, Locator::Css("input[name='cardnumber']"), Duration::from_secs(10)).await?;
+    let card_number = wait_for_element(&c, Locator::Css("input[name='number']"), Duration::from_secs(10)).await?;
     card_number.send_keys("4242424242424242").await?;
 
-    let card_expiry = wait_for_element(&c, Locator::Css("input[name='exp-date']"), Duration::from_secs(5)).await?;
+    let card_expiry = wait_for_element(&c, Locator::Css("input[name='expiry']"), Duration::from_secs(5)).await?;
     card_expiry.send_keys("1225").await?;
 
     let card_cvc = wait_for_element(&c, Locator::Css("input[name='cvc']"), Duration::from_secs(5)).await?;
