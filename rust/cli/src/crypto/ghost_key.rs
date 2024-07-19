@@ -8,7 +8,7 @@ use crate::crypto::{CryptoError, extract_bytes_from_armor};
 use rmp_serde;
 use log::{debug, info, warn, error};
 use colored::Colorize;
-use hex;
+use base64::{engine::general_purpose, Engine as _};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct DelegateCertificate {
@@ -295,10 +295,10 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
         Err(e) => {
             error!("Signature verification failed: {:?}", e);
             debug!("Delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
-            debug!("Data being verified (hex): {:?}", hex::encode(&buf));
-            debug!("Signature being verified (hex): {:?}", hex::encode(signature.to_bytes()));
-            debug!("Ghostkey verifying key (hex): {:?}", hex::encode(&ghostkey_certificate.ghostkey_verifying_key));
-            debug!("Delegate certificate (hex): {:?}", hex::encode(&ghostkey_certificate.delegate_certificate));
+            debug!("Data being verified (base64): {:?}", general_purpose::STANDARD.encode(&buf));
+            debug!("Signature being verified (base64): {:?}", general_purpose::STANDARD.encode(signature.to_bytes()));
+            debug!("Ghostkey verifying key (base64): {:?}", general_purpose::STANDARD.encode(&ghostkey_certificate.ghostkey_verifying_key));
+            debug!("Delegate certificate (base64): {:?}", general_purpose::STANDARD.encode(&ghostkey_certificate.delegate_certificate));
             Err(CryptoError::SignatureVerificationError(e.to_string()))
         }
     }
