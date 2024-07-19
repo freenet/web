@@ -199,7 +199,7 @@ async fn run_browser_test() -> Result<()> {
     let stripe_iframe = wait_for_element(&driver, By::Css("iframe[name^='__privateStripeFrame']"), Duration::from_secs(10)).await?;
 
     // Switch to the Stripe iframe
-    driver.switch_to().frame(stripe_iframe).await?;
+    driver.switch_to_frame(stripe_iframe).await?;
 
     // Wait for the card number input to be present and visible inside the iframe
     let card_number = wait_for_element(&driver, By::Css("input[name='cardnumber']"), Duration::from_secs(10)).await?;
@@ -212,7 +212,7 @@ async fn run_browser_test() -> Result<()> {
     card_cvc.send_keys("123").await?;
 
     // Switch back to the default content
-    driver.switch_to().default_content().await?;
+    driver.switch_to_default_content().await?;
 
     // Submit the form
     let submit_button = form.find(By::Id("submit")).await?;
