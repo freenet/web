@@ -123,6 +123,8 @@ async function generateAndSignCertificate(paymentIntentId) {
       blindedPublicKey[i] = publicKey[i] ^ blindingFactor[i];
     }
     console.log("Public key blinded");
+    console.log("Original public key:", bufferToBase64(publicKey));
+    console.log("Blinded public key:", bufferToBase64(blindedPublicKey));
 
     // Send blinded public key to server for signing
     console.log("Sending request to server");
@@ -179,6 +181,8 @@ async function generateAndSignCertificate(paymentIntentId) {
       unblindedSignature[i] = blindSignature[i];
     }
     console.log("Signature unblinded");
+    console.log("Blind signature:", bufferToBase64(blindSignature));
+    console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
 
     console.log("Calling displayCertificate");
     displayCertificate(publicKey, privateKey, unblindedSignature, data.delegate_info);
@@ -228,8 +232,9 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
         version: 1,
         delegate_certificate: Array.from(new Uint8Array(decodedDelegateCertificate)),
         ghostkey_verifying_key: Array.from(new Uint8Array(publicKey)),
-        signature: Array.from(new Uint8Array(unblindedSignature))
+        signature: Array.from(new Uint8Array(unblindedSignature.buffer))
       };
+      console.log("Ghost key certificate:", ghostKeyCertificate);
       console.log("Ghost key certificate object created:", ghostKeyCertificate);
 
       // Create the GhostkeySigningData object
