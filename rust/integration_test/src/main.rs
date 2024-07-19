@@ -277,7 +277,6 @@ async fn run_browser_test() -> Result<()> {
             master_verifying_key_file.to_str().unwrap(),
             "--ghost-certificate-file",
             output_file.to_str().unwrap(),
-            "--debug",
         ])
         .output()?;
 
@@ -302,7 +301,7 @@ async fn run_browser_test() -> Result<()> {
         println!("Base64 representation of ghost certificate file:");
         if let Ok(contents) = std::fs::read(&output_file) {
             use base64::{engine::general_purpose::STANDARD, Engine as _};
-            use serde_json::Value;
+            // Removed unused import
             println!("{}", STANDARD.encode(&contents));
         } else {
             println!("Failed to read ghost certificate file for base64 representation");
