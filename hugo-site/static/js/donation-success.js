@@ -8,6 +8,11 @@ function base64ToBuffer(base64) {
     return nacl.util.decodeBase64(base64);
 }
 
+// Helper function to encode ArrayBuffer to base64
+function arrayBufferToBase64(buffer) {
+    return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+}
+
 // Function to check for required elements and log detailed information
 function checkRequiredElements() {
   const requiredElements = [
