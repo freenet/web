@@ -262,8 +262,8 @@ fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certi
     
     match validate_delegate_key(&master_verifying_key, &delegate_certificate) {
         Ok(delegate_info) => {
-            info!("Delegate certificate is {}.", "valid".green());
-            info!("Delegate info: {}", delegate_info);
+            println!("Delegate certificate is {}.", "valid".green());
+            println!("Delegate info: {}", delegate_info);
             Ok(())
         }
         Err(e) => {
