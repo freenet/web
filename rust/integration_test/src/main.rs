@@ -225,7 +225,7 @@ async fn run_browser_test() -> Result<()> {
     submit_button.click().await?;
 
     // Wait for the combined key textarea
-    let _combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(10)).await?;
+    let combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(10)).await?;
     
     // Get the content of the textarea using JavaScript
     let combined_key_content = c.execute(
@@ -236,11 +236,14 @@ async fn run_browser_test() -> Result<()> {
     // Save the content to a file in the temporary directory
     let temp_dir = env::temp_dir().join("ghostkey_test");
     let output_file = temp_dir.join("ghostkey_certificate.pem");
-    std::fs::write(&output_file, combined_key_content)?;
+    std::fs::write(&output_file, combined_key_content.clone())?;
     println!("Ghost key certificate saved to: {}", output_file.display());
 
     // Close the browser
     c.close().await?;
+
+    // Inspect the ghost key certificate
+    inspect_ghost_key_certificate(&combined_key_content)?;
 
     // Validate the ghost key certificate using the CLI
     let master_verifying_key_file = temp_dir.join("master_verifying_key.pem");
@@ -283,6 +286,73 @@ async fn run_browser_test() -> Result<()> {
     }
 
     println!("Ghost key certificate validated successfully");
+
+    Ok(())
+}
+
+fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<()> {
+    use base64::{engine::general_purpose::STANDARD, Engine as _};
+    use rmp_serde::Deserializer;
+    use serde::Deserialize;
+
+    // Extract the ghost key certificate from the combined key
+    let parts: Vec<&str> = combined_key_text.split('\n').collect();
+    let ghost_key_cert_base64 = parts.iter()
+        .skip_while(|&&line| !line.starts_with("-----BEGIN GHOSTKEY CERTIFICATE-----"))
+        .take_while(|&&line| !line.starts_with("-----END GHOSTKEY CERTIFICATE-----"))
+        .filter(|&&line| !line.starts_with("-----"))
+        .collect::<Vec<&str>>()
+        .join("");
+
+    let ghost_key_cert_bytes = STANDARD.decode(ghost_key_cert_base64)?;
+
+    // Deserialize the ghost key certificate
+    #[derive(Debug, Deserialize)]
+    struct GhostkeyCertificate {
+        version: u8,
+        delegate_certificate: Vec<u8>,
+        ghostkey_verifying_key: Vec<u8>,
+        signature: Vec<u8>,
+    }
+
+    let mut deserializer = Deserializer::new(&ghost_key_cert_bytes[..]);
+    let ghost_key_cert: GhostkeyCertificate = Deserialize::deserialize(&mut deserializer)?;
+
+    println!("Ghost Key Certificate:");
+    println!("Version: {}", ghost_key_cert.version);
+    println!("Delegate Certificate Length: {}", ghost_key_cert.delegate_certificate.len());
+    println!("Ghostkey Verifying Key Length: {}", ghost_key_cert.ghostkey_verifying_key.len());
+    println!("Signature Length: {}", ghost_key_cert.signature.len());
+
+    // Deserialize the delegate certificate
+    #[derive(Debug, Deserialize)]
+    struct DelegateKeyCertificate {
+        version: u8,
+        verifying_key: Vec<u8>,
+        info: String,
+        signature: Vec<u8>,
+    }
+
+    let mut deserializer = Deserializer::new(&ghost_key_cert.delegate_certificate[..]);
+    let delegate_cert: DelegateKeyCertificate = Deserialize::deserialize(&mut deserializer)?;
+
+    println!("\nDelegate Certificate:");
+    println!("Version: {}", delegate_cert.version);
+    println!("Verifying Key Length: {}", delegate_cert.verifying_key.len());
+    println!("Info: {}", delegate_cert.info);
+    println!("Signature Length: {}", delegate_cert.signature.len());
+
+    // Verify that the delegate certificate contains the correct amount
+    let info: serde_json::Value = serde_json::from_str(&delegate_cert.info)?;
+    if let Some(amount) = info.get("amount").and_then(|v| v.as_u64()) {
+        if amount == 20 {
+            println!("Delegate certificate contains the correct amount: $20");
+        } else {
+            println!("Warning: Delegate certificate contains an unexpected amount: ${}", amount);
+        }
+    } else {
+        println!("Warning: Couldn't find or parse the amount in the delegate certificate info");
+    }
 
     Ok(())
 }
