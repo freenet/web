@@ -1,0 +1,10 @@
+[package]
+name = "integration_test"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.28", features = ["full"] }
+thirtyfour = "0.31.0"
+anyhow = "1.0"
+reqwest = "0.11"
