@@ -106,7 +106,7 @@ for amount in "${AMOUNTS[@]}"; do
     if [ ! -f "$DELEGATE_DIR/delegate_signing_key.pem" ] || [ ! -f "$DELEGATE_DIR/delegate_certificate.pem" ]; then
         echo "Error: Expected files were not generated for amount $amount" >&2
         exit 1
-    }
+    fi
     
     # Rename the generated files
     mv "$DELEGATE_DIR/delegate_signing_key.pem" "$signing_key_file" || {
