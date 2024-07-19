@@ -274,7 +274,32 @@ fn validate_delegate_key_command(master_verifying_key_file: &str, delegate_certi
     match validate_delegate_key(&master_verifying_key, &delegate_certificate) {
         Ok(delegate_info) => {
             println!("Delegate certificate is {}.", "valid".green());
-            println!("Delegate info: {}", delegate_info);
+            println!("Delegate Certificate (deserialized):");
+            
+            // Parse the delegate_info JSON string
+            let parsed: serde_json::Value = serde_json::from_str(&delegate_info)?;
+            
+            // Display the parsed information in a more readable format
+            if let serde_json::Value::Object(map) = parsed {
+                for (key, value) in map {
+                    match value {
+                        serde_json::Value::String(s) => println!("{}: {}", key, s),
+                        serde_json::Value::Number(n) => println!("{}: {}", key, n),
+                        serde_json::Value::Bool(b) => println!("{}: {}", key, b),
+                        serde_json::Value::Array(arr) => {
+                            println!("{}: [", key);
+                            for (i, item) in arr.iter().enumerate() {
+                                println!("  {}: {:?}", i, item);
+                            }
+                            println!("]");
+                        },
+                        _ => println!("{}: {:?}", key, value),
+                    }
+                }
+            } else {
+                println!("Unexpected format: {:?}", parsed);
+            }
+            
             Ok(())
         }
         Err(e) => {
