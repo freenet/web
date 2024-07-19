@@ -31,19 +31,19 @@ pub struct DelegateKeyCertificate {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct GhostkeyCertificate(
-    pub u8,
-    pub Vec<u8>,
-    pub Vec<u8>,
-    pub Vec<u8>,
-);
+pub struct GhostkeyCertificate {
+    pub version: u8,
+    pub delegate_certificate: Vec<u8>,
+    pub ghostkey_verifying_key: Vec<u8>,
+    pub signature: Vec<u8>,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct GhostkeySigningData(
-    pub u8,
-    pub Vec<u8>,
-    pub Vec<u8>,
-);
+pub struct GhostkeySigningData {
+    pub version: u8,
+    pub delegate_certificate: Vec<u8>,
+    pub ghostkey_verifying_key: Vec<u8>,
+}
 
 pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str) -> Result<String, CryptoError> {
     info!("Generating ghostkey");
@@ -64,11 +64,11 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
     debug!("Generated ghostkey verifying key: {:?}", ghostkey_verifying_key.to_encoded_point(false));
 
     // Create the signing data
-    let ghostkey_signing_data = GhostkeySigningData(
-        1,
-        delegate_certificate_bytes.clone(),
-        ghostkey_verifying_key.to_sec1_bytes().to_vec(),
-    );
+    let ghostkey_signing_data = GhostkeySigningData {
+        version: 1,
+        delegate_certificate: delegate_certificate_bytes.clone(),
+        ghostkey_verifying_key: ghostkey_verifying_key.to_sec1_bytes().to_vec(),
+    };
 
     // Serialize the signing data to MessagePack
     let mut buf = Vec::new();
@@ -81,12 +81,12 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
     debug!("Generated signature: {:?}", signature);
 
     // Create the final certificate with the signature
-    let final_certificate = GhostkeyCertificate(
-        1,
-        delegate_certificate_bytes,
-        ghostkey_signing_data.2,
-        signature.to_der().as_bytes().to_vec(),
-    );
+    let final_certificate = GhostkeyCertificate {
+        version: 1,
+        delegate_certificate: delegate_certificate_bytes,
+        ghostkey_verifying_key: ghostkey_signing_data.ghostkey_verifying_key,
+        signature: signature.to_der().as_bytes().to_vec(),
+    };
 
     // Serialize the final certificate to MessagePack
     let mut final_buf = Vec::new();
@@ -237,10 +237,10 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
     info!("Verifying ghostkey signature");
     
     // Extract the delegate certificate bytes
-    let delegate_certificate_bytes = if ghostkey_certificate.1.starts_with(b"-----BEGIN DELEGATE CERTIFICATE-----") {
-        extract_bytes_from_armor(&String::from_utf8_lossy(&ghostkey_certificate.1), "DELEGATE CERTIFICATE")?
+    let delegate_certificate_bytes = if ghostkey_certificate.delegate_certificate.starts_with(b"-----BEGIN DELEGATE CERTIFICATE-----") {
+        extract_bytes_from_armor(&String::from_utf8_lossy(&ghostkey_certificate.delegate_certificate), "DELEGATE CERTIFICATE")?
     } else {
-        ghostkey_certificate.1.clone()
+        ghostkey_certificate.delegate_certificate.clone()
     };
     
     // Extract the delegate verifying key from the delegate certificate
@@ -248,11 +248,11 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
     debug!("Extracted delegate verifying key: {:?}", delegate_verifying_key.to_encoded_point(false));
 
     // Recreate the certificate data that was originally signed
-    let ghostkey_signing_data = GhostkeySigningData(
-        1,
-        delegate_certificate_bytes,
-        ghostkey_certificate.2.clone(),
-    );
+    let ghostkey_signing_data = GhostkeySigningData {
+        version: 1,
+        delegate_certificate: delegate_certificate_bytes,
+        ghostkey_verifying_key: ghostkey_certificate.ghostkey_verifying_key.clone(),
+    };
     debug!("Recreated ghostkey signing data: {:?}", ghostkey_signing_data);
 
     // Serialize the ghostkey signing data
@@ -264,14 +264,14 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
     debug!("Serialized ghostkey signing data: {:?}", buf);
 
     // Create the signature from the stored bytes
-    let signature = ecdsa::Signature::from_der(&ghostkey_certificate.3)
+    let signature = ecdsa::Signature::from_der(&ghostkey_certificate.signature)
         .or_else(|e| {
             warn!("Failed to create signature from DER: {:?}", e);
-            if ghostkey_certificate.3.len() != 64 {
-                error!("Invalid signature length: {}", ghostkey_certificate.3.len());
+            if ghostkey_certificate.signature.len() != 64 {
+                error!("Invalid signature length: {}", ghostkey_certificate.signature.len());
                 return Err(CryptoError::SignatureError("Invalid signature length".to_string()));
             }
-            let bytes: [u8; 64] = ghostkey_certificate.3[..64].try_into()
+            let bytes: [u8; 64] = ghostkey_certificate.signature[..64].try_into()
                 .map_err(|_| CryptoError::SignatureError("Failed to convert signature to array".to_string()))?;
             ecdsa::Signature::from_slice(&bytes)
                 .map_err(|e| {
