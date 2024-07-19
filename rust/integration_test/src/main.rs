@@ -76,7 +76,7 @@ fn generate_master_key(temp_dir: &std::path::Path) -> Result<std::path::PathBuf>
     println!("Generating master key in directory: {:?}", temp_dir);
     let cli_dir = std::env::current_dir()?.join("../cli");
     let output = Command::new("cargo")
-        .args(&["run", "--quiet", "--", "generate-master-key", "--output-dir"])
+        .args(&["run", "--quiet", "--manifest-path", cli_dir.join("Cargo.toml").to_str().unwrap(), "--", "generate-master-key", "--output-dir"])
         .arg(temp_dir)
         .current_dir(&cli_dir)
         .output()

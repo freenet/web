@@ -94,7 +94,8 @@ for amount in "${AMOUNTS[@]}"; do
     fi
     
     echo "Generating delegate key for amount: $amount"
-    if ! cargo run --quiet -- generate-delegate-key \
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if ! cargo run --quiet --manifest-path "$script_dir/Cargo.toml" -- generate-delegate-key \
         --master-signing-key-file "$MASTER_KEY_FILE" \
         --info "$info" \
         --output-dir "$DELEGATE_DIR"; then
