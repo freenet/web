@@ -279,8 +279,8 @@ ${wrapBase64(base64GhostKey, 64)}
     certificateSection.style.display = 'block';
     certificateInfo.style.display = 'none';
     
-    combinedKeyTextarea.value = combinedKey;
-    console.log("Combined key populated in textarea");
+    combinedKeyTextarea.value = formattedOutput;
+    console.log("Ghost Key populated in textarea");
 
     // Set up copy button
     const copyButton = document.getElementById('copyCombinedKey');
