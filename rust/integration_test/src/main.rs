@@ -290,18 +290,13 @@ async fn run_browser_test() -> Result<()> {
             println!("Failed to read ghost certificate file");
         }
         
-        // Log the hex representation of the ghost certificate file
-        println!("Hex representation of ghost certificate file:");
+        // Log the base64 representation of the ghost certificate file
+        println!("Base64 representation of ghost certificate file:");
         if let Ok(contents) = std::fs::read(&output_file) {
-            for (i, byte) in contents.iter().enumerate() {
-                print!("{:02x} ", byte);
-                if (i + 1) % 16 == 0 {
-                    println!();
-                }
-            }
-            println!();
+            use base64::{engine::general_purpose::STANDARD, Engine as _};
+            println!("{}", STANDARD.encode(&contents));
         } else {
-            println!("Failed to read ghost certificate file for hex representation");
+            println!("Failed to read ghost certificate file for base64 representation");
         }
         
         return Err(anyhow::anyhow!("Ghost key validation failed: {}", stderr));
