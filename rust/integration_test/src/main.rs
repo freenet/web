@@ -6,7 +6,7 @@ use std::thread;
 use std::time::Instant;
 use std::env;
 use std::fs;
-use std::path::PathBuf;
+// use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -225,7 +225,7 @@ async fn run_browser_test() -> Result<()> {
     submit_button.click().await?;
 
     // Wait for the combined key textarea
-    let combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(10)).await?;
+    let _combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(10)).await?;
     
     // Get the content of the textarea using JavaScript
     let combined_key_content = c.execute(
