@@ -157,12 +157,6 @@ async fn wait_for_element(driver: &WebDriver, locator: By, timeout: Duration) ->
     Err(anyhow::anyhow!("Timeout waiting for element"))
 }
 
-fn setup_delegate_keys() -> Result<()> {
-    let delegate_dir = env::temp_dir().join("ghostkey_test").join("delegates");
-    env::set_var("GHOSTKEY_DELEGATE_DIR", delegate_dir.to_str().unwrap());
-    generate_delegate_keys()?;
-    Ok(())
-}
 
 async fn run_browser_test() -> Result<()> {
     let caps = DesiredCapabilities::chrome();
