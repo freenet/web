@@ -8,7 +8,7 @@ use crate::crypto::{CryptoError, extract_bytes_from_armor};
 use rmp_serde;
 use log::{debug, info, warn, error};
 use colored::Colorize;
-use base64::{engine::general_purpose::STANDARD, Engine};
+// Removed unused imports
 
 #[derive(Serialize, Deserialize, Debug)]
 struct DelegateCertificate {
@@ -295,18 +295,26 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
         },
         Err(e) => {
             error!("Signature verification failed: {:?}", e);
-            debug!("Delegate verifying key (hex): {}", hex::encode(delegate_verifying_key.to_encoded_point(false).as_bytes()));
-            debug!("Data being verified (hex): {}", hex::encode(&buf));
-            debug!("Signature being verified (hex): {}", hex::encode(signature.to_bytes()));
-            debug!("Ghostkey verifying key (hex): {}", hex::encode(&ghostkey_certificate.ghostkey_verifying_key));
-            debug!("Delegate certificate (hex): {}", hex::encode(&delegate_certificate_bytes));
-            debug!("Original delegate certificate (hex): {}", hex::encode(&ghostkey_certificate.delegate_certificate));
+            error!("Delegate verifying key (hex): {}", hex::encode(delegate_verifying_key.to_encoded_point(false).as_bytes()));
+            error!("Data being verified (hex): {}", hex::encode(&buf));
+            error!("Signature being verified (hex): {}", hex::encode(signature.to_bytes()));
+            error!("Ghostkey verifying key (hex): {}", hex::encode(&ghostkey_certificate.ghostkey_verifying_key));
+            error!("Delegate certificate (hex): {}", hex::encode(&delegate_certificate_bytes));
+            error!("Original delegate certificate (hex): {}", hex::encode(&ghostkey_certificate.delegate_certificate));
             
             // Additional logging for debugging
-            info!("Signature verification details:");
-            info!("Delegate verifying key: {:?}", delegate_verifying_key);
-            info!("Data to verify (len={}): {:?}", buf.len(), buf);
-            info!("Signature (len={}): {:?}", signature.to_bytes().len(), signature);
+            error!("Signature verification details:");
+            error!("Delegate verifying key: {:?}", delegate_verifying_key);
+            error!("Data to verify (len={}): {:?}", buf.len(), buf);
+            error!("Signature (len={}): {:?}", signature.to_bytes().len(), signature);
+            
+            // Try to verify the signature with the ghostkey verifying key as well
+            let ghostkey_verifying_key = VerifyingKey::from_sec1_bytes(&ghostkey_certificate.ghostkey_verifying_key)
+                .map_err(|e| CryptoError::KeyCreationError(e.to_string()))?;
+            match ghostkey_verifying_key.verify(&buf, &signature) {
+                Ok(_) => error!("Signature verified with ghostkey verifying key, but not with delegate verifying key"),
+                Err(e) => error!("Signature verification also failed with ghostkey verifying key: {:?}", e),
+            }
             
             Err(CryptoError::SignatureVerificationError(format!("Signature verification failed: {:?}. Delegate verifying key: {:?}", e, delegate_verifying_key.to_encoded_point(false))))
         }
