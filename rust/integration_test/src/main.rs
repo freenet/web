@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use std::process::{Command, Stdio, Child};
 use std::time::Duration;
-use thirtyfour::prelude::*;
+use fantoccini::{ClientBuilder, Locator};
 use std::thread;
 use std::time::Instant;
 use std::env;
@@ -162,10 +162,10 @@ fn start_chromedriver() -> Result<Child> {
         .context("Failed to start ChromeDriver")
 }
 
-async fn wait_for_element(driver: &WebDriver, locator: By, timeout: Duration) -> Result<WebElement> {
+async fn wait_for_element(client: &fantoccini::Client, locator: Locator, timeout: Duration) -> Result<fantoccini::elements::Element> {
     let start = Instant::now();
     while start.elapsed() < timeout {
-        if let Ok(element) = driver.find(locator.clone()).await {
+        if let Ok(element) = client.find(locator.clone()).await {
             if element.is_displayed().await? {
                 return Ok(element);
             }
