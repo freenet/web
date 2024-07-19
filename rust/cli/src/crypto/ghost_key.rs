@@ -251,7 +251,7 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
     // Recreate the certificate data that was originally signed
     let ghostkey_signing_data = GhostkeySigningData {
         version: 1,
-        delegate_certificate: delegate_certificate_bytes,
+        delegate_certificate: delegate_certificate_bytes.clone(),
         ghostkey_verifying_key: ghostkey_certificate.ghostkey_verifying_key.clone(),
     };
     debug!("Recreated ghostkey signing data: {:?}", ghostkey_signing_data);
@@ -298,8 +298,9 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
             debug!("Data being verified (base64): {:?}", BASE64_STANDARD.encode(&buf));
             debug!("Signature being verified (base64): {:?}", BASE64_STANDARD.encode(signature.to_bytes()));
             debug!("Ghostkey verifying key (base64): {:?}", BASE64_STANDARD.encode(&ghostkey_certificate.ghostkey_verifying_key));
-            debug!("Delegate certificate (base64): {:?}", BASE64_STANDARD.encode(&ghostkey_certificate.delegate_certificate));
-            Err(CryptoError::SignatureVerificationError(e.to_string()))
+            debug!("Delegate certificate (base64): {:?}", BASE64_STANDARD.encode(&delegate_certificate_bytes));
+            debug!("Original delegate certificate (base64): {:?}", BASE64_STANDARD.encode(&ghostkey_certificate.delegate_certificate));
+            Err(CryptoError::SignatureVerificationError(format!("Signature verification failed: {:?}. Delegate verifying key: {:?}", e, delegate_verifying_key.to_encoded_point(false))))
         }
     }
 }

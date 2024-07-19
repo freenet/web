@@ -244,7 +244,7 @@ async fn run_browser_test() -> Result<()> {
 
     // Validate the ghost key certificate using the CLI
     let master_verifying_key_file = temp_dir.join("master_verifying_key.pem");
-    let status = Command::new("cargo")
+    let output = Command::new("cargo")
         .args(&[
             "run",
             "--quiet",
@@ -257,10 +257,14 @@ async fn run_browser_test() -> Result<()> {
             "--ghost-certificate-file",
             output_file.to_str().unwrap(),
         ])
-        .status()?;
+        .output()?;
 
-    if !status.success() {
-        return Err(anyhow::anyhow!("Ghost key validation failed"));
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        println!("Ghost key validation failed. Stderr: {}", stderr);
+        println!("Stdout: {}", stdout);
+        return Err(anyhow::anyhow!("Ghost key validation failed: {}", stderr));
     }
 
     println!("Ghost key certificate validated successfully");
