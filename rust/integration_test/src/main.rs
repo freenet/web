@@ -222,8 +222,16 @@ async fn run_browser_test() -> Result<()> {
     let submit_button = form.find(Locator::Id("submit")).await?;
     submit_button.click().await?;
 
-    // Wait for the success message
-    let success_message = wait_for_element(&c, Locator::Css(".donation-success"), Duration::from_secs(10)).await?;
+    // Wait for the combined key textarea
+    let combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(10)).await?;
+    
+    // Get the content of the textarea
+    let combined_key_content = combined_key_element.text().await?;
+    
+    // Save the content to a file
+    let output_file = "ghostkey_certificate.pem";
+    std::fs::write(output_file, combined_key_content)?;
+    println!("Ghost key certificate saved to: {}", output_file);
 
     // Close the browser
     c.close().await?;
