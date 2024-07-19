@@ -373,6 +373,10 @@ async fn run_browser_test() -> Result<()> {
         println!("{}", browser_ghost_key);
     }
 
+    // Inspect the CLI-generated ghost key certificate
+    println!("\nInspecting CLI-generated ghost key certificate:");
+    inspect_ghost_key_certificate(&cli_ghost_key)?;
+
     Ok(())
 }
 
