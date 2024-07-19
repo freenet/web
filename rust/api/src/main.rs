@@ -4,7 +4,6 @@ use rocket::http::Header;
 use rocket::{Request, catch};
 use dotenv::dotenv;
 use log::{LevelFilter, info, error};
-use std::env;
 
 mod routes;
 mod stripe_handler;

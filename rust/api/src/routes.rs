@@ -10,8 +10,6 @@ use std::time::Instant;
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
 use std::str::FromStr;
 use log::{info, error, debug};
-use std::env;
-use crate::DELEGATE_DIR;
 
 pub struct CORS;
 

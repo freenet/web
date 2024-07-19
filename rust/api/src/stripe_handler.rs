@@ -5,7 +5,6 @@ use std::collections::HashMap;
 use p256::{
     ecdsa::{self, SigningKey, signature::Signer},
     SecretKey,
-    pkcs8::DecodePrivateKey,
 };
 use p256::elliptic_curve::generic_array::GenericArray;
 use rand_core::OsRng;

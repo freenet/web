@@ -35,27 +35,25 @@ pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
     Ok((armored_signing_key, armored_verifying_key))
 }
 
-pub fn extract_bytes_from_armor(armored_key: &str, expected_armor_type: &str) -> Result<Vec<u8>, CryptoError> {
-    let lines: Vec<&str> = armored_key.lines().collect();
-    if lines.len() < 3 {
-        return Err(CryptoError::InvalidInput(format!("Invalid armored key format. Expected at least 3 lines, found {}.", lines.len())));
-    }
-
+pub fn extract_bytes_from_armor(armored_text: &str, expected_armor_type: &str) -> Result<Vec<u8>, CryptoError> {
     let start_line = format!("-----BEGIN {}-----", expected_armor_type);
     let end_line = format!("-----END {}-----", expected_armor_type);
 
-    if !lines[0].trim().eq(&start_line) || !lines[lines.len() - 1].trim().eq(&end_line) {
-        let actual_start = lines[0].trim();
-        let actual_end = lines[lines.len() - 1].trim();
-        return Err(CryptoError::InvalidInput(format!(
-            "Armor type mismatch. Expected: '{}' and '{}', but found '{}' and '{}'.",
-            start_line, end_line, actual_start, actual_end
-        )));
+    let start_index = armored_text.find(&start_line)
+        .ok_or_else(|| CryptoError::InvalidInput(format!("Missing start of {}", expected_armor_type)))?;
+    let end_index = armored_text[start_index..].find(&end_line)
+        .ok_or_else(|| CryptoError::InvalidInput(format!("Missing end of {}", expected_armor_type)))?
+        + start_index + end_line.len();
+
+    let armored_section = &armored_text[start_index..end_index];
+    let lines: Vec<&str> = armored_section.lines().collect();
+
+    if lines.len() < 3 {
+        return Err(CryptoError::InvalidInput("Invalid armored text".to_string()));
     }
-    
-    let content_lines = &lines[1..lines.len() - 1];
-    let content = content_lines.join("");
-    general_purpose::STANDARD.decode(content)
+
+    let base64_data = lines[1..lines.len() - 1].join("");
+    general_purpose::STANDARD.decode(base64_data)
         .map_err(|e| CryptoError::Base64DecodeError(e.to_string()))
 }
 
