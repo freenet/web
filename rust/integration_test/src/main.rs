@@ -46,8 +46,9 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn generate_delegate_keys() -> Result<String> {
+fn setup_delegate_keys() -> Result<()> {
     let temp_dir = env::temp_dir().join("ghostkey_test");
+    let delegate_dir = temp_dir.join("delegates");
     
     println!("Temporary directory: {:?}", temp_dir);
 
@@ -77,7 +78,6 @@ fn generate_delegate_keys() -> Result<String> {
     }
 
     // Generate delegate keys
-    let delegate_dir = temp_dir.join("delegates");
     println!("Generating delegate keys in: {:?}", delegate_dir);
     let output = Command::new("bash")
         .arg("../cli/generate_delegate_keys.sh")
@@ -96,7 +96,8 @@ fn generate_delegate_keys() -> Result<String> {
     }
 
     println!("Successfully generated delegate keys");
-    Ok(delegate_dir.to_string_lossy().into_owned())
+    env::set_var("GHOSTKEY_DELEGATE_DIR", delegate_dir.to_str().unwrap());
+    Ok(())
 }
 
 fn is_port_in_use(port: u16) -> bool {
