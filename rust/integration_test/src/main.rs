@@ -45,7 +45,38 @@ async fn main() -> Result<()> {
         handle.kill()?;
     }
 
-    Ok(())
+    let cert_info = CertificateInfo {
+        version: ghost_key_cert.version,
+        amount: info.get("amount").and_then(|v| v.as_u64()).unwrap_or(0),
+        currency: info.get("currency").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+    };
+
+    Ok(cert_info)
+}
+
+fn validate_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: &std::path::Path) -> Result<()> {
+    let output = Command::new("cargo")
+        .args(&[
+            "run",
+            "--manifest-path",
+            "../cli/Cargo.toml",
+            "--",
+            "validate-ghost-key",
+            "--master-verifying-key-file",
+            master_key_file.to_str().unwrap(),
+            "--ghost-certificate-file",
+            cert_file.to_str().unwrap(),
+        ])
+        .output()?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        println!("Ghost key validation failed: {}", stderr);
+        Err(anyhow::anyhow!("Ghost key validation failed"))
+    } else {
+        println!("Ghost key validated successfully");
+        Ok(())
+    }
 }
 
 fn setup_delegate_keys() -> Result<()> {
@@ -358,29 +389,46 @@ async fn run_browser_test() -> Result<()> {
         println!("CLI-generated ghost key validated successfully");
     }
 
-    // Compare the CLI-generated ghost key with the browser-generated one
-    println!("Comparing CLI-generated and browser-generated ghost keys...");
+    // Compare and validate the CLI-generated ghost key with the browser-generated one
+    println!("Comparing and validating CLI-generated and browser-generated ghost keys...");
     let cli_ghost_key = std::fs::read_to_string(temp_dir.join("cli_ghostkey_certificate.pem"))?;
     let browser_ghost_key = std::fs::read_to_string(&output_file)?;
 
-    if cli_ghost_key == browser_ghost_key {
-        println!("CLI-generated and browser-generated ghost keys are identical");
+    println!("Inspecting CLI-generated ghost key certificate:");
+    let cli_cert_info = inspect_ghost_key_certificate(&cli_ghost_key)?;
+    
+    println!("\nInspecting browser-generated ghost key certificate:");
+    let browser_cert_info = inspect_ghost_key_certificate(&browser_ghost_key)?;
+
+    // Compare relevant parts of the certificates
+    if cli_cert_info.version == browser_cert_info.version &&
+       cli_cert_info.amount == browser_cert_info.amount &&
+       cli_cert_info.currency == browser_cert_info.currency {
+        println!("CLI-generated and browser-generated ghost keys have matching version, amount, and currency");
     } else {
-        println!("CLI-generated and browser-generated ghost keys differ");
-        println!("CLI-generated ghost key:");
-        println!("{}", cli_ghost_key);
-        println!("Browser-generated ghost key:");
-        println!("{}", browser_ghost_key);
+        println!("Warning: CLI-generated and browser-generated ghost keys differ in version, amount, or currency");
+        println!("CLI-generated: {:?}", cli_cert_info);
+        println!("Browser-generated: {:?}", browser_cert_info);
     }
 
-    // Inspect the CLI-generated ghost key certificate
-    println!("\nInspecting CLI-generated ghost key certificate:");
-    inspect_ghost_key_certificate(&cli_ghost_key)?;
+    // Validate both certificates
+    println!("\nValidating CLI-generated ghost key:");
+    validate_ghost_key_certificate(&temp_dir.join("cli_ghostkey_certificate.pem"), &master_verifying_key_file)?;
+
+    println!("\nValidating browser-generated ghost key:");
+    validate_ghost_key_certificate(&output_file, &master_verifying_key_file)?;
 
     Ok(())
 }
 
-fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<()> {
+#[derive(Debug)]
+struct CertificateInfo {
+    version: u8,
+    amount: u64,
+    currency: String,
+}
+
+fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateInfo> {
     use base64::{engine::general_purpose::STANDARD, Engine as _};
     use rmp_serde::Deserializer;
     use serde::Deserialize;
