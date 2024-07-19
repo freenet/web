@@ -25,6 +25,7 @@ async fn main() -> Result<()> {
 
     // Start Hugo
     let mut hugo_handle = start_hugo()?;
+    println!("Hugo started successfully");
 
     // Start API
     let mut api_handle = start_api()?;
