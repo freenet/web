@@ -48,6 +48,11 @@ async fn main() -> Result<()> {
 
 fn generate_delegate_keys() -> Result<String> {
     let temp_dir = env::temp_dir().join("ghostkey_test");
+    
+    // Clean up the temporary directory if it exists
+    if temp_dir.exists() {
+        fs::remove_dir_all(&temp_dir)?;
+    }
     fs::create_dir_all(&temp_dir)?;
 
     // Generate master key
