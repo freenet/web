@@ -122,11 +122,15 @@ async function generateAndSignCertificate(paymentIntentId) {
     const blindingFactor = nacl.randomBytes(32);
     console.log("Blinding factor generated");
 
-    // Blind the public key
-    const blindedPublicKey = new Uint8Array(32);
-    for (let i = 0; i < 32; i++) {
-      blindedPublicKey[i] = publicKey[i] ^ blindingFactor[i];
-    }
+    // Generate a random blinding factor
+    const blindingFactor = nacl.randomBytes(32);
+    console.log("Blinding factor generated:", bufferToBase64(blindingFactor));
+
+    // Convert the public key to a curve point
+    const publicKeyPoint = nacl.scalarMult.base(publicKey);
+
+    // Blind the public key (message)
+    const blindedPublicKey = nacl.scalarMult(blindingFactor, publicKeyPoint);
     console.log("Public key blinded");
     console.log("Original public key:", bufferToBase64(publicKey));
     console.log("Blinded public key:", bufferToBase64(blindedPublicKey));
@@ -178,10 +182,7 @@ async function generateAndSignCertificate(paymentIntentId) {
     const blindSignature = base64ToBuffer(data.blind_signature);
 
     // Unblind the signature
-    const unblindedSignature = new Uint8Array(64);
-    for (let i = 0; i < 64; i++) {
-      unblindedSignature[i] = blindSignature[i] ^ (i < 32 ? blindingFactor[i] : 0);
-    }
+    const unblindedSignature = nacl.scalarMult(nacl.scalarMult.scalarReciprocal(blindingFactor), blindSignature);
     console.log("Signature unblinded");
     console.log("Blind signature:", bufferToBase64(blindSignature));
     console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
