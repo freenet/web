@@ -129,15 +129,9 @@ run_command "validate correct delegate key" "cargo run -- validate-delegate-key 
 # Validate delegate key (wrong master key)
 expect_failure "validate delegate key with wrong master key" "cargo run --quiet -- validate-delegate-key --master-verifying-key-file $TEST_DIR/wrong_master/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
 
-# Test validating delegate key with missing signing key
-mv $TEST_DIR/delegate_signing_key.pem $TEST_DIR/delegate_signing_key.pem.bak
-expect_failure "validate delegate key with missing signing key" "cargo run --quiet -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
-mv $TEST_DIR/delegate_signing_key.pem.bak $TEST_DIR/delegate_signing_key.pem
 
 # Test validating delegate key with missing certificate
-mv $TEST_DIR/delegate_certificate.pem $TEST_DIR/delegate_certificate.pem.bak
-expect_failure "validate delegate key with missing certificate" "cargo run --quiet -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/delegate_certificate.pem"
-mv $TEST_DIR/delegate_certificate.pem.bak $TEST_DIR/delegate_certificate.pem
+expect_failure "validate delegate key with missing certificate" "cargo run --quiet -- validate-delegate-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --delegate-certificate-file $TEST_DIR/nonexistent_certificate.pem"
 
 # Validate ghost key (correct)
 run_command "validate correct ghost key" "cargo run --quiet -- validate-ghost-key --master-verifying-key-file $TEST_DIR/master_verifying_key.pem --ghost-certificate-file $TEST_DIR/ghostkey_certificate.pem"
