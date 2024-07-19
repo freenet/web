@@ -342,14 +342,9 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<()> {
     println!("Signature Length: {}", ghost_key_cert.signature.len());
 
     // Print the delegate certificate bytes for debugging
-    println!("\nDelegate Certificate Bytes:");
-    for (i, byte) in ghost_key_cert.delegate_certificate.iter().enumerate() {
-        print!("{:02x} ", byte);
-        if (i + 1) % 16 == 0 {
-            println!();
-        }
-    }
-    println!();
+    println!("\nDelegate Certificate Bytes (Base64):");
+    use base64::{engine::general_purpose::STANDARD, Engine as _};
+    println!("{}", STANDARD.encode(&ghost_key_cert.delegate_certificate));
 
     // Attempt to deserialize the delegate certificate
     let mut deserializer = Deserializer::new(&ghost_key_cert.delegate_certificate[..]);
