@@ -319,6 +319,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<()> {
     use base64::{engine::general_purpose::STANDARD, Engine as _};
     use rmp_serde::Deserializer;
     use serde::Deserialize;
+    use serde_json::Value;
 
     // Extract the ghost key certificate from the combined key
     let ghost_key_cert_base64 = combined_key_text.lines()
