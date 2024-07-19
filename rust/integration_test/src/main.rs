@@ -45,13 +45,7 @@ async fn main() -> Result<()> {
         handle.kill()?;
     }
 
-    let cert_info = CertificateInfo {
-        version: ghost_key_cert.version,
-        amount: info.get("amount").and_then(|v| v.as_u64()).unwrap_or(0),
-        currency: info.get("currency").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-    };
-
-    Ok(cert_info)
+    Ok(())
 }
 
 fn validate_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: &std::path::Path) -> Result<()> {
@@ -476,24 +470,30 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     }
 
     // Extract and parse the JSON string containing the certificate info
+    let mut cert_info = CertificateInfo {
+        version: ghost_key_cert.version,
+        amount: 0,
+        currency: String::new(),
+    };
+
     if let Value::String(info_str) = &delegate_cert[1] {
         let info: serde_json::Value = serde_json::from_str(info_str)?;
         println!("\nCertificate Info:");
         println!("{}", serde_json::to_string_pretty(&info)?);
 
+        // Extract amount and currency
+        cert_info.amount = info.get("amount").and_then(|v| v.as_u64()).unwrap_or(0);
+        cert_info.currency = info.get("currency").and_then(|v| v.as_str()).unwrap_or("").to_string();
+
         // Verify that the delegate certificate contains the correct amount
-        if let Some(amount) = info.get("amount").and_then(|v| v.as_u64()) {
-            if amount == 20 {
-                println!("Delegate certificate contains the correct amount: $20");
-            } else {
-                println!("Warning: Delegate certificate contains an unexpected amount: ${}", amount);
-            }
+        if cert_info.amount == 20 {
+            println!("Delegate certificate contains the correct amount: $20");
         } else {
-            println!("Warning: Couldn't find or parse the amount in the delegate certificate info");
+            println!("Warning: Delegate certificate contains an unexpected amount: ${}", cert_info.amount);
         }
     } else {
         println!("Warning: Couldn't find the certificate info string in the delegate certificate");
     }
 
-    Ok(())
+    Ok(cert_info)
 }
