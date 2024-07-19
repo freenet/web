@@ -134,11 +134,13 @@ async fn wait_for_element(driver: &WebDriver, locator: By, timeout: Duration) ->
     Err(anyhow::anyhow!("Timeout waiting for element"))
 }
 
-async fn run_browser_test() -> Result<()> {
-    // Generate delegate keys and set the environment variable
+fn setup_delegate_keys() -> Result<()> {
     let delegate_dir = generate_delegate_keys()?;
     env::set_var("GHOSTKEY_DELEGATE_DIR", &delegate_dir);
+    Ok(())
+}
 
+async fn run_browser_test() -> Result<()> {
     let caps = DesiredCapabilities::chrome();
     let driver = WebDriver::new("http://localhost:9515", caps).await?;
 
