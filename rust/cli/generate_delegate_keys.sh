@@ -94,13 +94,13 @@ for amount in "${AMOUNTS[@]}"; do
     fi
     
     echo "Generating delegate key for amount: $amount"
-    cargo run --quiet -- generate-delegate-key \
+    if ! cargo run --quiet -- generate-delegate-key \
         --master-signing-key-file "$MASTER_KEY_FILE" \
         --info "$info" \
-        --output-dir "$DELEGATE_DIR" || {
+        --output-dir "$DELEGATE_DIR"; then
         echo "Error: Failed to generate delegate key for amount $amount" >&2
         exit 1
-    }
+    fi
     
     # Check if files were generated
     if [ ! -f "$DELEGATE_DIR/delegate_signing_key.pem" ] || [ ! -f "$DELEGATE_DIR/delegate_certificate.pem" ]; then
