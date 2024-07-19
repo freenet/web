@@ -109,7 +109,7 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
 }
 
 
-pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificate_armored: &str, delegate_certificate_file: &str) -> Result<String, CryptoError> {
+pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificate_armored: &str) -> Result<String, CryptoError> {
     info!("Starting validate_delegate_key function");
     
     // Extract the base64 encoded delegate certificate
