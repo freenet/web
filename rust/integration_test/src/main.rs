@@ -198,7 +198,7 @@ async fn run_browser_test() -> Result<()> {
     let stripe_iframe = wait_for_element(&c, Locator::Css("iframe[name^='__privateStripeFrame']"), Duration::from_secs(10)).await?;
 
     // Switch to the Stripe iframe
-    c.enter_frame(fantoccini::elements::Element::from(stripe_iframe)).await?;
+    c.enter_frame(Some(stripe_iframe)).await?;
 
     // Wait for the card number input to be present and visible inside the iframe
     let card_number = wait_for_element(&c, Locator::Css("input[name='cardnumber']"), Duration::from_secs(10)).await?;
@@ -211,7 +211,7 @@ async fn run_browser_test() -> Result<()> {
     card_cvc.send_keys("123").await?;
 
     // Switch back to the default content
-    c.enter_default_frame().await?;
+    c.enter_frame(None).await?;
 
     // Submit the form
     let submit_button = form.find(Locator::Id("submit")).await?;
