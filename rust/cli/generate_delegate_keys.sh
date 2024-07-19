@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -x  # Enable debugging output
 
 # Default values
 DEFAULT_AMOUNTS=(5 20 50 100)
@@ -96,11 +97,26 @@ for amount in "${AMOUNTS[@]}"; do
     cargo run --quiet -- generate-delegate-key \
         --master-signing-key-file "$MASTER_KEY_FILE" \
         --info "$info" \
-        --output-dir "$DELEGATE_DIR"
+        --output-dir "$DELEGATE_DIR" || {
+        echo "Error: Failed to generate delegate key for amount $amount" >&2
+        exit 1
+    }
+    
+    # Check if files were generated
+    if [ ! -f "$DELEGATE_DIR/delegate_signing_key.pem" ] || [ ! -f "$DELEGATE_DIR/delegate_certificate.pem" ]; then
+        echo "Error: Expected files were not generated for amount $amount" >&2
+        exit 1
+    }
     
     # Rename the generated files
-    mv "$DELEGATE_DIR/delegate_signing_key.pem" "$signing_key_file"
-    mv "$DELEGATE_DIR/delegate_certificate.pem" "$cert_file"
+    mv "$DELEGATE_DIR/delegate_signing_key.pem" "$signing_key_file" || {
+        echo "Error: Failed to rename delegate signing key for amount $amount" >&2
+        exit 1
+    }
+    mv "$DELEGATE_DIR/delegate_certificate.pem" "$cert_file" || {
+        echo "Error: Failed to rename delegate certificate for amount $amount" >&2
+        exit 1
+    }
     
     # Set appropriate permissions for the signing key and certificate
     chmod 600 "$signing_key_file"
