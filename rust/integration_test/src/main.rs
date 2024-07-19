@@ -294,6 +294,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<()> {
     use base64::{engine::general_purpose::STANDARD, Engine as _};
     use rmp_serde::Deserializer;
     use serde::Deserialize;
+    use serde_json::Value;
 
     // Extract the ghost key certificate from the combined key
     let ghost_key_cert_base64 = combined_key_text.lines()
@@ -335,7 +336,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<()> {
 
     // Attempt to deserialize the delegate certificate
     let mut deserializer = Deserializer::new(&ghost_key_cert.delegate_certificate[..]);
-    let delegate_cert: Vec<rmp_serde::Value> = Deserialize::deserialize(&mut deserializer)?;
+    let delegate_cert: Vec<Value> = Deserialize::deserialize(&mut deserializer)?;
 
     println!("\nDelegate Certificate (deserialized):");
     for (i, value) in delegate_cert.iter().enumerate() {
@@ -343,7 +344,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<()> {
     }
 
     // Extract and parse the JSON string containing the certificate info
-    if let rmp_serde::Value::String(info_str) = &delegate_cert[1] {
+    if let Value::String(info_str) = &delegate_cert[1] {
         let info: serde_json::Value = serde_json::from_str(info_str)?;
         println!("\nCertificate Info:");
         println!("{}", serde_json::to_string_pretty(&info)?);
