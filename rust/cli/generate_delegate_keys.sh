@@ -67,6 +67,10 @@ if [ ! -f "$MASTER_KEY_FILE" ]; then
     exit 1
 fi
 
+echo "Master key file: $MASTER_KEY_FILE"
+echo "Delegate directory: $DELEGATE_DIR"
+echo "Amounts: ${AMOUNTS[*]}"
+
 # Create output directory
 mkdir -p "$DELEGATE_DIR"
 
@@ -92,7 +96,7 @@ for amount in "${AMOUNTS[@]}"; do
     cargo run --quiet -- generate-delegate-key \
         --master-signing-key-file "$MASTER_KEY_FILE" \
         --info "$info" \
-        --output-dir "$DELEGATE_DIR" > /dev/null
+        --output-dir "$DELEGATE_DIR"
     
     # Rename the generated files
     mv "$DELEGATE_DIR/delegate_signing_key.pem" "$signing_key_file"
@@ -101,6 +105,8 @@ for amount in "${AMOUNTS[@]}"; do
     # Set appropriate permissions for the signing key and certificate
     chmod 600 "$signing_key_file"
     chmod 600 "$cert_file"
+    
+    echo "Generated delegate key for amount $amount"
 done
 
 echo "Delegate keys generated successfully in $DELEGATE_DIR"

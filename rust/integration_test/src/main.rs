@@ -72,6 +72,7 @@ fn generate_delegate_keys() -> Result<String> {
     if !output.status.success() {
         let error_msg = format!("Failed to generate master key: {}", String::from_utf8_lossy(&output.stderr));
         println!("Error: {}", error_msg);
+        println!("Stdout: {}", String::from_utf8_lossy(&output.stdout));
         return Err(anyhow::anyhow!(error_msg));
     }
 
@@ -90,6 +91,7 @@ fn generate_delegate_keys() -> Result<String> {
     if !output.status.success() {
         let error_msg = format!("Failed to generate delegate keys: {}", String::from_utf8_lossy(&output.stderr));
         println!("Error: {}", error_msg);
+        println!("Stdout: {}", String::from_utf8_lossy(&output.stdout));
         return Err(anyhow::anyhow!(error_msg));
     }
 
