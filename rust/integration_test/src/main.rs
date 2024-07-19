@@ -186,9 +186,6 @@ async fn run_browser_test() -> Result<()> {
     // Wait for the Stripe form to load with a timeout
     let form = wait_for_element(&driver, By::Id("payment-form"), Duration::from_secs(10)).await?;
 
-    // Wait for the card number input to be present and visible
-    let card_number = wait_for_element(&driver, By::Id("Field-numberInput"), Duration::from_secs(10)).await?;
-
     // Select donation amount
     let amount_radio = form.find(By::Css("input[name='amount'][value='20']")).await?;
     amount_radio.click().await?;
@@ -198,22 +195,31 @@ async fn run_browser_test() -> Result<()> {
     let currency_option = currency_select.find(By::Css("option[value='usd']")).await?;
     currency_option.click().await?;
 
-    // Fill out credit card information
+    // Wait for the Stripe iframe to be present
+    let stripe_iframe = wait_for_element(&driver, By::Css("iframe[name^='__privateStripeFrame']"), Duration::from_secs(10)).await?;
+
+    // Switch to the Stripe iframe
+    driver.switch_to_frame(WebElement::from(stripe_iframe)).await?;
+
+    // Wait for the card number input to be present and visible inside the iframe
+    let card_number = wait_for_element(&driver, By::Css("input[name='cardnumber']"), Duration::from_secs(10)).await?;
     card_number.send_keys("4242424242424242").await?;
 
-    let card_expiry = driver.find(By::Css("input[name='exp-date']")).await?;
+    let card_expiry = wait_for_element(&driver, By::Css("input[name='exp-date']"), Duration::from_secs(5)).await?;
     card_expiry.send_keys("1225").await?;
 
-    let card_cvc = driver.find(By::Css("input[name='cvc']")).await?;
+    let card_cvc = wait_for_element(&driver, By::Css("input[name='cvc']"), Duration::from_secs(5)).await?;
     card_cvc.send_keys("123").await?;
+
+    // Switch back to the default content
+    driver.switch_to_default_content().await?;
 
     // Submit the form
     let submit_button = form.find(By::Id("submit")).await?;
     submit_button.click().await?;
 
     // Wait for the success message
-    let success_message = driver.find(By::Css(".donation-success")).await?;
-    success_message.wait_until().displayed().await?;
+    let success_message = wait_for_element(&driver, By::Css(".donation-success"), Duration::from_secs(10)).await?;
 
     // Close the browser
     driver.quit().await?;
