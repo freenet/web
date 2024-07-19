@@ -310,7 +310,68 @@ async fn run_browser_test() -> Result<()> {
         return Err(anyhow::anyhow!("Ghost key validation failed: {}", stderr));
     }
 
-    println!("Ghost key certificate validated successfully");
+    println!("Ghost key certificate validation failed");
+
+    // Generate a ghost key using the CLI
+    println!("Generating ghost key using CLI...");
+    let cli_output = Command::new("cargo")
+        .args(&[
+            "run",
+            "--manifest-path",
+            "../cli/Cargo.toml",
+            "--",
+            "generate-ghostkey",
+            "--delegate-dir",
+            temp_dir.join("delegates").join("20").to_str().unwrap(),
+            "--output-file",
+            temp_dir.join("cli_ghostkey_certificate.pem").to_str().unwrap(),
+        ])
+        .output()?;
+
+    if !cli_output.status.success() {
+        let stderr = String::from_utf8_lossy(&cli_output.stderr);
+        println!("Failed to generate ghost key using CLI: {}", stderr);
+        return Err(anyhow::anyhow!("Failed to generate ghost key using CLI"));
+    }
+
+    println!("Ghost key generated successfully using CLI");
+
+    // Validate the CLI-generated ghost key
+    let cli_validation_output = Command::new("cargo")
+        .args(&[
+            "run",
+            "--manifest-path",
+            "../cli/Cargo.toml",
+            "--",
+            "validate-ghost-key",
+            "--master-verifying-key-file",
+            master_verifying_key_file.to_str().unwrap(),
+            "--ghost-certificate-file",
+            temp_dir.join("cli_ghostkey_certificate.pem").to_str().unwrap(),
+        ])
+        .output()?;
+
+    if !cli_validation_output.status.success() {
+        let stderr = String::from_utf8_lossy(&cli_validation_output.stderr);
+        println!("CLI-generated ghost key validation failed: {}", stderr);
+    } else {
+        println!("CLI-generated ghost key validated successfully");
+    }
+
+    // Compare the CLI-generated ghost key with the browser-generated one
+    println!("Comparing CLI-generated and browser-generated ghost keys...");
+    let cli_ghost_key = std::fs::read_to_string(temp_dir.join("cli_ghostkey_certificate.pem"))?;
+    let browser_ghost_key = std::fs::read_to_string(&output_file)?;
+
+    if cli_ghost_key == browser_ghost_key {
+        println!("CLI-generated and browser-generated ghost keys are identical");
+    } else {
+        println!("CLI-generated and browser-generated ghost keys differ");
+        println!("CLI-generated ghost key:");
+        println!("{}", cli_ghost_key);
+        println!("Browser-generated ghost key:");
+        println!("{}", browser_ghost_key);
+    }
 
     Ok(())
 }
