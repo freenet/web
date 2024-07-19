@@ -61,20 +61,20 @@ fn kill_process_on_port(port: u16) -> Result<()> {
     Ok(())
 }
 
-fn start_hugo() -> Result<std::process::Child> {
+fn start_hugo() -> Result<Child> {
     Command::new("hugo")
         .args(&["server", "--disableFastRender"])
-        .current_dir("../hugo-site")
+        .current_dir("../../hugo-site")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
         .context("Failed to start Hugo")
 }
 
-fn start_api() -> Result<std::process::Child> {
+fn start_api() -> Result<Child> {
     Command::new("cargo")
         .args(&["run"])
-        .current_dir("api")
+        .current_dir("../api")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
