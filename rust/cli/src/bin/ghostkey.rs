@@ -406,11 +406,14 @@ fn generate_ghostkey_command(delegate_dir: &str, output_dir: &str, overwrite: bo
             error!("{}", format!("Failed to read delegate certificate file: {}", e).red());
             format!("Failed to read delegate certificate file: {}", e)
         })?;
+    info!("Delegate certificate content length: {} bytes", delegate_certificate.len());
+    
     let delegate_signing_key = std::fs::read_to_string(Path::new(delegate_dir).join("delegate_signing_key.pem"))
         .map_err(|e| {
             error!("{}", format!("Failed to read delegate signing key file: {}", e).red());
             format!("Failed to read delegate signing key file: {}", e)
         })?;
+    info!("Delegate signing key content length: {} bytes", delegate_signing_key.len());
     
     info!("Generating ghost key from delegate certificate and signing key");
     let ghostkey_certificate = generate_ghostkey(&delegate_certificate, &delegate_signing_key)
@@ -418,6 +421,7 @@ fn generate_ghostkey_command(delegate_dir: &str, output_dir: &str, overwrite: bo
             error!("{}", format!("Failed to generate ghostkey: {}", e).red());
             format!("Failed to generate ghostkey: {}", e)
         })?;
+    info!("Generated ghost key certificate length: {} bytes", ghostkey_certificate.len());
     
     let file_path = Path::new(output_dir).join("ghostkey_certificate.pem");
     if file_path.exists() && !overwrite {
@@ -430,6 +434,15 @@ fn generate_ghostkey_command(delegate_dir: &str, output_dir: &str, overwrite: bo
         Ok(_) => {
             println!("{}", "Ghost key generated and saved successfully.".green());
             println!("File created: {}", file_path.display());
+            
+            // Verify the file content after saving
+            let saved_content = std::fs::read_to_string(&file_path)?;
+            info!("Saved ghost key certificate length: {} bytes", saved_content.len());
+            if saved_content.is_empty() {
+                error!("Saved ghost key certificate is empty!");
+                return Err("Ghost key certificate was saved but the file is empty".into());
+            }
+            
             Ok(())
         },
         Err(e) => {
