@@ -334,25 +334,32 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<()> {
     println!();
 
     // Attempt to deserialize the delegate certificate
-    match rmp_serde::from_slice::<serde_json::Value>(&ghost_key_cert.delegate_certificate) {
-        Ok(delegate_cert) => {
-            println!("\nDelegate Certificate (deserialized):");
-            println!("{}", serde_json::to_string_pretty(&delegate_cert)?);
+    let mut deserializer = Deserializer::new(&ghost_key_cert.delegate_certificate[..]);
+    let delegate_cert: Vec<rmp_serde::Value> = Deserialize::deserialize(&mut deserializer)?;
 
-            // Verify that the delegate certificate contains the correct amount
-            if let Some(amount) = delegate_cert.get("amount").and_then(|v| v.as_u64()) {
-                if amount == 20 {
-                    println!("Delegate certificate contains the correct amount: $20");
-                } else {
-                    println!("Warning: Delegate certificate contains an unexpected amount: ${}", amount);
-                }
+    println!("\nDelegate Certificate (deserialized):");
+    for (i, value) in delegate_cert.iter().enumerate() {
+        println!("Item {}: {:?}", i, value);
+    }
+
+    // Extract and parse the JSON string containing the certificate info
+    if let rmp_serde::Value::String(info_str) = &delegate_cert[1] {
+        let info: serde_json::Value = serde_json::from_str(info_str)?;
+        println!("\nCertificate Info:");
+        println!("{}", serde_json::to_string_pretty(&info)?);
+
+        // Verify that the delegate certificate contains the correct amount
+        if let Some(amount) = info.get("amount").and_then(|v| v.as_u64()) {
+            if amount == 20 {
+                println!("Delegate certificate contains the correct amount: $20");
             } else {
-                println!("Warning: Couldn't find or parse the amount in the delegate certificate info");
+                println!("Warning: Delegate certificate contains an unexpected amount: ${}", amount);
             }
-        },
-        Err(e) => {
-            println!("\nFailed to deserialize delegate certificate: {:?}", e);
+        } else {
+            println!("Warning: Couldn't find or parse the amount in the delegate certificate info");
         }
+    } else {
+        println!("Warning: Couldn't find the certificate info string in the delegate certificate");
     }
 
     Ok(())
