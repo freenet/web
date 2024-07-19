@@ -1,0 +1,13 @@
+[package]
+name = "integration_test"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+fantoccini = "0.19"
+serde_json = "1.0"
+base64 = "0.21"
+rmp-serde = "1.1"
+serde = { version = "1.0", features = ["derive"] }
