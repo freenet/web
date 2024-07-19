@@ -1,7 +1,6 @@
 use anyhow::{Context, Result};
 use std::process::{Command, Stdio};
 use thirtyfour::prelude::*;
-use tokio::time::{sleep, Duration};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -18,10 +17,10 @@ async fn main() -> Result<()> {
     }
 
     // Start Hugo
-    let hugo_handle = start_hugo()?;
+    let mut hugo_handle = start_hugo()?;
 
     // Start API
-    let api_handle = start_api()?;
+    let mut api_handle = start_api()?;
 
     // Run the browser test
     run_browser_test().await?;
@@ -85,7 +84,8 @@ async fn run_browser_test() -> Result<()> {
 
     // Select currency
     let currency_select = form.find(By::Id("currency")).await?;
-    currency_select.select_by_value("usd").await?;
+    let currency_option = currency_select.find(By::Css("option[value='usd']")).await?;
+    currency_option.click().await?;
 
     // Fill out credit card information
     let card_number = driver.find(By::Css("input[name='cardnumber']")).await?;
