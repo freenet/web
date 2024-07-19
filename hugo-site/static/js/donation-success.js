@@ -255,17 +255,17 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       // Convert the serialized GhostKey to base64
       const base64GhostKey = bufferToBase64(serializedGhostKey);
       console.log("Serialized GhostKey converted to base64:", base64GhostKey);
+
+      // Format the final output
+      const formattedOutput = `-----BEGIN GHOST KEY-----
+${wrapBase64(base64GhostKey, 64)}
+-----END GHOST KEY-----`;
+
+      console.log("Ghost Key created successfully");
     } catch (encodingError) {
       console.error("Error in GhostKey encoding:", encodingError);
       throw new Error(`GhostKey encoding failed: ${encodingError.message}`);
     }
-
-    // Format the final output
-    const formattedOutput = `-----BEGIN GHOST KEY-----
-${wrapBase64(base64GhostKey, 64)}
------END GHOST KEY-----`;
-
-    console.log("Ghost Key created successfully");
 
     const certificateSection = document.getElementById('certificateSection');
     const certificateInfo = document.getElementById('certificate-info');
