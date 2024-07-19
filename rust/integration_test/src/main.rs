@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use std::process::{Command, Stdio, Child};
+use clap::{App, Arg};
 use std::time::Duration;
 use fantoccini::{Client, ClientBuilder, Locator};
 use std::thread;
@@ -10,7 +11,14 @@ use std::fs;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Check if ChromeDriver is running, start it if not
+    // Parse command line arguments
+    let matches = App::new("Integration Test")
+        .arg(Arg::with_name("headless")
+            .long("headless")
+            .help("Run browser in headless mode"))
+        .get_matches();
+
+    let headless = matches.is_present("headless");
     let mut chromedriver_handle = None;
     if !is_port_in_use(9515) {
         chromedriver_handle = Some(start_chromedriver()?);
@@ -206,7 +214,11 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
 async fn run_browser_test() -> Result<()> {
     use serde_json::json;
     let mut caps = serde_json::map::Map::new();
-    let chrome_args = json!(["--headless", "--disable-gpu"]);
+    let chrome_args = if headless {
+        json!(["--headless", "--disable-gpu"])
+    } else {
+        json!([])
+    };
     caps.insert("goog:chromeOptions".to_string(), json!({"args": chrome_args}));
     
     let c = ClientBuilder::native()
