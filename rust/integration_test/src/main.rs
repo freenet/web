@@ -10,9 +10,6 @@ use std::path::Path;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Generate delegate keys and set environment variable
-    let delegate_dir = generate_delegate_keys()?;
-    env::set_var("GHOSTKEY_DELEGATE_DIR", &delegate_dir);
     // Check if ChromeDriver is running, start it if not
     let mut chromedriver_handle = None;
     if !is_port_in_use(9515) {
@@ -37,6 +34,9 @@ async fn main() -> Result<()> {
 
     // Start API
     let mut api_handle = start_api()?;
+
+    // Setup delegate keys
+    setup_delegate_keys()?;
 
     // Run the browser test
     run_browser_test().await?;
