@@ -57,11 +57,18 @@ fn generate_delegate_keys() -> Result<String> {
     let temp_dir = env::temp_dir().join("ghostkey_delegates");
     fs::create_dir_all(&temp_dir)?;
 
-    // Generate delegate keys (you may need to adjust this based on your actual key generation logic)
-    let output = Command::new("openssl")
-        .args(&["genrsa", "-out", "delegate_key.pem", "2048"])
-        .current_dir(&temp_dir)
+    // Use the generate_delegate_keys.sh script to generate delegate keys
+    let output = Command::new("bash")
+        .arg("../cli/generate_delegate_keys.sh")
+        .args(&["--master-key", "../cli/master_signing_key.pem"])
+        .arg("--delegate-dir")
+        .arg(&temp_dir)
+        .arg("--overwrite")
         .output()?;
+
+    if !output.status.success() {
+        return Err(anyhow::anyhow!("Failed to generate delegate keys: {}", String::from_utf8_lossy(&output.stderr)));
+    }
 
     if !output.status.success() {
         return Err(anyhow::anyhow!("Failed to generate delegate keys"));
@@ -128,6 +135,10 @@ async fn wait_for_element(driver: &WebDriver, locator: By, timeout: Duration) ->
 }
 
 async fn run_browser_test() -> Result<()> {
+    // Generate delegate keys and set the environment variable
+    let delegate_dir = generate_delegate_keys()?;
+    env::set_var("GHOSTKEY_DELEGATE_DIR", &delegate_dir);
+
     let caps = DesiredCapabilities::chrome();
     let driver = WebDriver::new("http://localhost:9515", caps).await?;
 
