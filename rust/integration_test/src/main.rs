@@ -226,8 +226,11 @@ async fn run_browser_test() -> Result<()> {
     // Wait for the combined key textarea
     let combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(10)).await?;
     
-    // Get the content of the textarea
-    let combined_key_content = combined_key_element.text().await?;
+    // Get the content of the textarea using JavaScript
+    let combined_key_content = c.execute(
+        "return document.querySelector('textarea#combinedKey').value;",
+        vec![],
+    ).await?.as_str().unwrap_or("").to_string();
     
     // Save the content to a file in the temporary directory
     let temp_dir = env::temp_dir().join("ghostkey_test");
