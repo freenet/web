@@ -269,6 +269,16 @@ async fn run_browser_test(headless: bool) -> Result<()> {
     let submit_button = form.find(Locator::Id("submit")).await?;
     submit_button.click().await?;
 
+    // Check for error message
+    if let Ok(error_element) = c.find(Locator::Id("errorMessage")).await {
+        if let Ok(error_text) = error_element.text().await {
+            if !error_text.trim().is_empty() {
+                println!("Error occurred on the page: {}", error_text);
+                return Err(anyhow::anyhow!("Error occurred on the page: {}", error_text));
+            }
+        }
+    }
+
     // Wait for the combined key textarea
     let _combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(10)).await?;
     
