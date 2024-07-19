@@ -49,14 +49,19 @@ async fn main() -> Result<()> {
 fn generate_delegate_keys() -> Result<String> {
     let temp_dir = env::temp_dir().join("ghostkey_test");
     
+    println!("Temporary directory: {:?}", temp_dir);
+
     // Clean up the temporary directory if it exists
     if temp_dir.exists() {
+        println!("Removing existing temporary directory");
         fs::remove_dir_all(&temp_dir)?;
     }
+    println!("Creating temporary directory");
     fs::create_dir_all(&temp_dir)?;
 
     // Generate master key
     let master_key_file = temp_dir.join("master_signing_key.pem");
+    println!("Generating master key: {:?}", master_key_file);
     let output = Command::new("cargo")
         .args(&["run", "--quiet", "--", "generate-master-key", "--output-dir"])
         .arg(&temp_dir)
@@ -65,11 +70,14 @@ fn generate_delegate_keys() -> Result<String> {
         .context("Failed to execute generate-master-key command")?;
 
     if !output.status.success() {
-        return Err(anyhow::anyhow!("Failed to generate master key: {}", String::from_utf8_lossy(&output.stderr)));
+        let error_msg = format!("Failed to generate master key: {}", String::from_utf8_lossy(&output.stderr));
+        println!("Error: {}", error_msg);
+        return Err(anyhow::anyhow!(error_msg));
     }
 
     // Generate delegate keys
     let delegate_dir = temp_dir.join("delegates");
+    println!("Generating delegate keys in: {:?}", delegate_dir);
     let output = Command::new("bash")
         .arg("../cli/generate_delegate_keys.sh")
         .args(&["--master-key", master_key_file.to_str().unwrap()])
@@ -80,9 +88,12 @@ fn generate_delegate_keys() -> Result<String> {
         .context("Failed to execute generate_delegate_keys.sh")?;
 
     if !output.status.success() {
-        return Err(anyhow::anyhow!("Failed to generate delegate keys: {}", String::from_utf8_lossy(&output.stderr)));
+        let error_msg = format!("Failed to generate delegate keys: {}", String::from_utf8_lossy(&output.stderr));
+        println!("Error: {}", error_msg);
+        return Err(anyhow::anyhow!(error_msg));
     }
 
+    println!("Successfully generated delegate keys");
     Ok(delegate_dir.to_string_lossy().into_owned())
 }
 
