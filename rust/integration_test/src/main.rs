@@ -323,34 +323,36 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<()> {
     println!("Ghostkey Verifying Key Length: {}", ghost_key_cert.ghostkey_verifying_key.len());
     println!("Signature Length: {}", ghost_key_cert.signature.len());
 
-    // Deserialize the delegate certificate
-    #[derive(Debug, Deserialize)]
-    struct DelegateKeyCertificate {
-        version: u8,
-        verifying_key: Vec<u8>,
-        info: String,
-        signature: Vec<u8>,
-    }
-
-    let mut deserializer = Deserializer::new(&ghost_key_cert.delegate_certificate[..]);
-    let delegate_cert: DelegateKeyCertificate = Deserialize::deserialize(&mut deserializer)?;
-
-    println!("\nDelegate Certificate:");
-    println!("Version: {}", delegate_cert.version);
-    println!("Verifying Key Length: {}", delegate_cert.verifying_key.len());
-    println!("Info: {}", delegate_cert.info);
-    println!("Signature Length: {}", delegate_cert.signature.len());
-
-    // Verify that the delegate certificate contains the correct amount
-    let info: serde_json::Value = serde_json::from_str(&delegate_cert.info)?;
-    if let Some(amount) = info.get("amount").and_then(|v| v.as_u64()) {
-        if amount == 20 {
-            println!("Delegate certificate contains the correct amount: $20");
-        } else {
-            println!("Warning: Delegate certificate contains an unexpected amount: ${}", amount);
+    // Print the delegate certificate bytes for debugging
+    println!("\nDelegate Certificate Bytes:");
+    for (i, byte) in ghost_key_cert.delegate_certificate.iter().enumerate() {
+        print!("{:02x} ", byte);
+        if (i + 1) % 16 == 0 {
+            println!();
         }
-    } else {
-        println!("Warning: Couldn't find or parse the amount in the delegate certificate info");
+    }
+    println!();
+
+    // Attempt to deserialize the delegate certificate
+    match rmp_serde::from_slice::<serde_json::Value>(&ghost_key_cert.delegate_certificate) {
+        Ok(delegate_cert) => {
+            println!("\nDelegate Certificate (deserialized):");
+            println!("{}", serde_json::to_string_pretty(&delegate_cert)?);
+
+            // Verify that the delegate certificate contains the correct amount
+            if let Some(amount) = delegate_cert.get("amount").and_then(|v| v.as_u64()) {
+                if amount == 20 {
+                    println!("Delegate certificate contains the correct amount: $20");
+                } else {
+                    println!("Warning: Delegate certificate contains an unexpected amount: ${}", amount);
+                }
+            } else {
+                println!("Warning: Couldn't find or parse the amount in the delegate certificate info");
+            }
+        },
+        Err(e) => {
+            println!("\nFailed to deserialize delegate certificate: {:?}", e);
+        }
     }
 
     Ok(())
