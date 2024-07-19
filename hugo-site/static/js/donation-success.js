@@ -179,11 +179,8 @@ async function generateAndSignCertificate(paymentIntentId) {
 
     // Unblind the signature
     const unblindedSignature = new Uint8Array(64);
-    for (let i = 0; i < 32; i++) {
-      unblindedSignature[i] = blindSignature[i] ^ blindingFactor[i];
-    }
-    for (let i = 32; i < 64; i++) {
-      unblindedSignature[i] = blindSignature[i];
+    for (let i = 0; i < 64; i++) {
+      unblindedSignature[i] = blindSignature[i] ^ (i < 32 ? blindingFactor[i] : 0);
     }
     console.log("Signature unblinded");
     console.log("Blind signature:", bufferToBase64(blindSignature));
@@ -370,9 +367,18 @@ function wrapBase64(str, maxWidth) {
 
 function verifyCertificate(publicKey, signature) {
   try {
-    // In a real implementation, we would verify the signature against a known message
-    // For now, we'll just check if the signature is the correct length
-    return signature.length === 64;
+    // Create the GhostkeySigningData object
+    const ghostkeySigningData = {
+      version: 1,
+      delegate_certificate: Array.from(new Uint8Array(decodedDelegateCertificate)),
+      ghostkey_verifying_key: Array.from(new Uint8Array(publicKey))
+    };
+
+    // Serialize the GhostkeySigningData using MessagePack
+    const message = msgpack.encode(ghostkeySigningData);
+
+    // Verify the signature using TweetNaCl
+    return nacl.sign.detached.verify(message, signature, publicKey);
   } catch (error) {
     console.error("Verification error:", error);
     return false;
