@@ -703,7 +703,17 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
 
     // Now deserialize the delegate certificate content
     let mut deserializer = Deserializer::new(&ghost_key_cert.delegate_certificate[..]);
-    let delegate_cert: Vec<Value> = Deserialize::deserialize(&mut deserializer)?;
+    let delegate_cert: Vec<Value> = match Deserialize::deserialize(&mut deserializer) {
+        Ok(cert) => {
+            println!("Successfully deserialized delegate certificate");
+            cert
+        },
+        Err(e) => {
+            println!("Error deserializing delegate certificate: {:?}", e);
+            println!("Delegate certificate content (first 100 bytes): {:?}", &ghost_key_cert.delegate_certificate[..100.min(ghost_key_cert.delegate_certificate.len())]);
+            return Err(anyhow::anyhow!("Failed to deserialize delegate certificate: {:?}", e));
+        }
+    };
 
     println!("\nDelegate Certificate (deserialized):");
     for (i, value) in delegate_cert.iter().enumerate() {
