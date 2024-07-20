@@ -491,7 +491,13 @@ async fn run_browser_test(headless: bool) -> Result<()> {
         println!("Ghost key certificate validation succeeded");
     }
 
-    // Close the browser
+    // Keep the browser open for debugging
+    println!("Test completed. Browser window left open for debugging.");
+    println!("Press Enter to close the browser and end the test.");
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input)?;
+    
+    // Close the browser after user input
     c.close().await?;
 
     // Generate a ghost key using the CLI
