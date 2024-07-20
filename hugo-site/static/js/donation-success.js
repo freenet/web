@@ -177,7 +177,7 @@ async function generateAndSignCertificate(paymentIntentId) {
     const blindSignature = base64ToBuffer(data.blind_signature);
 
     // Unblind the signature
-    const blindingFactorInverse = nacl.scalarMult.base(blindingFactor);
+    const blindingFactorInverse = nacl.scalarMult.scalarMultBase(blindingFactor);
     console.log("Blinding factor:", bufferToBase64(blindingFactor));
     console.log("Blinding factor inverse:", bufferToBase64(blindingFactorInverse));
     console.log("Blinding factor inverse length:", blindingFactorInverse.length);
@@ -186,15 +186,21 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.log("Blinding factor inverse length:", blindingFactorInverse.length);
     console.log("Blind signature length:", blindSignature.length);
 
-    // Split the combined signature into its components
-    const signature = blindSignature.slice(0, 64);
-    const nonce = blindSignature.slice(64);
+    // The blind signature is already the full 64-byte signature
+    const signature = blindSignature;
 
     // Unblind the signature
-    if (blindingFactorInverse.length !== 32 || signature.length !== 32) {
-        throw new Error(`Invalid sizes for scalar multiplication: blindingFactorInverse length = ${blindingFactorInverse.length}, signature length = ${signature.length}`);
+    if (blindingFactorInverse.length !== 32 || signature.length !== 64) {
+        throw new Error(`Invalid sizes for unblinding: blindingFactorInverse length = ${blindingFactorInverse.length}, signature length = ${signature.length}`);
     }
-    const unblindedSignature = nacl.scalarMult(blindingFactorInverse, signature);
+    
+    // Unblind the signature using scalar multiplication
+    const unblindedSignature = new Uint8Array(64);
+    for (let i = 0; i < 64; i += 32) {
+        const partialSignature = signature.slice(i, i + 32);
+        const unblindedPart = nacl.scalarMult(blindingFactorInverse, partialSignature);
+        unblindedSignature.set(unblindedPart, i);
+    }
     console.log("Signature unblinded");
     console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
 
