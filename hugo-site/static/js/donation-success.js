@@ -224,7 +224,7 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
     console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
     console.log("Delegate info:", delegateInfo);
 
-    let ghostKeyCertificate, serializedCertificate, base64Certificate;
+    let ghostKeyCertificate, serializedCertificate, base64Certificate, formattedOutput;
 
     try {
       // Create a ghost key certificate object matching the Rust structure
@@ -248,7 +248,7 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       }
 
       // Create the GhostkeyCertificate object
-      const ghostKeyCertificate = {
+      ghostKeyCertificate = {
         version: 1,
         delegate_certificate: Array.from(new Uint8Array(decodedDelegateCertificate)),
         ghostkey_verifying_key: Array.from(new Uint8Array(publicKey)),
@@ -266,11 +266,11 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       console.log("Ghost key signing data object created:", ghostkeySigningData);
 
       // Serialize the GhostkeyCertificate using MessagePack
-      const serializedCertificate = msgpack.encode(ghostKeyCertificate);
+      serializedCertificate = msgpack.encode(ghostKeyCertificate);
       console.log("GhostkeyCertificate serialized:", serializedCertificate);
 
       // Convert the serialized certificate to base64
-      const base64Certificate = bufferToBase64(serializedCertificate);
+      base64Certificate = bufferToBase64(serializedCertificate);
       console.log("Serialized certificate converted to base64:", base64Certificate);
 
       // Format the certificate output
@@ -287,29 +287,18 @@ ${wrapBase64(base64SigningKey, 64)}
 -----END GHOST KEY-----`;
 
       // Combine the certificate and signing key
-      const formattedOutput = `${formattedCertificate}\n\n${formattedSigningKey}`;
+      formattedOutput = `${formattedCertificate}\n\n${formattedSigningKey}`;
 
       console.log("Ghost Key Certificate and Signing Key created successfully");
-
-      const certificateSection = document.getElementById('certificateSection');
-      const certificateInfo = document.getElementById('certificate-info');
-      const combinedKeyTextarea = document.getElementById('combinedKey');
-      
-      if (!certificateSection || !certificateInfo || !combinedKeyTextarea) {
-        console.error("Required elements not found");
-        throw new Error("Required elements not found");
-      }
-      
-      certificateSection.style.display = 'block';
-      certificateInfo.style.display = 'none';
-      
-      combinedKeyTextarea.value = formattedOutput;
-      console.log("Ghost Key populated in textarea");
 
     } catch (encodingError) {
       console.error("Error in GhostKey encoding:", encodingError);
       throw new Error(`GhostKey encoding failed: ${encodingError.message}`);
     }
+    
+    const certificateSection = document.getElementById('certificateSection');
+    const certificateInfo = document.getElementById('certificate-info');
+    const combinedKeyTextarea = document.getElementById('combinedKey');
     
     if (!certificateSection || !certificateInfo || !combinedKeyTextarea) {
       console.error("Required elements not found");
@@ -336,7 +325,7 @@ ${wrapBase64(base64SigningKey, 64)}
     const downloadButton = document.getElementById('downloadCertificate');
     if (downloadButton) {
       downloadButton.addEventListener('click', function() {
-        const blob = new Blob([combinedKey], { type: 'text/plain' });
+        const blob = new Blob([formattedOutput], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
