@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
     println!("Hugo started successfully");
 
     // Start API
-    let delegate_dir = temp_dir.join("delegates").to_str().unwrap().to_string();
+    let delegate_dir = env::temp_dir().join("ghostkey_test").join("delegates").to_str().unwrap().to_string();
     let mut api_handle = start_api(&delegate_dir)?;
 
     // Setup delegate keys

@@ -161,10 +161,10 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
 }
 
 fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<(String, DelegateInfo), CertificateError> {
-    let delegate_dir = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/root".to_string()))
-        .join(".config")
-        .join("ghostkey")
-        .join("delegates");
+    let delegate_dir = PathBuf::from(std::env::var("DELEGATE_DIR").map_err(|e| {
+        log::error!("DELEGATE_DIR environment variable not set: {}", e);
+        CertificateError::KeyError("DELEGATE_DIR environment variable not set".to_string())
+    })?);
 
     let delegate_amount = (amount / 100) as u64; // Convert cents to dollars
     let delegate_cert_path = delegate_dir.join(format!("delegate_certificate_{}.pem", delegate_amount));
