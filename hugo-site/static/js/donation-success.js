@@ -178,9 +178,15 @@ async function generateAndSignCertificate(paymentIntentId) {
 
     // Unblind the signature
     const blindingFactorInverse = nacl.scalarMult.base(nacl.scalarMult.base(blindingFactor));
+    console.log("Blinding factor:", bufferToBase64(blindingFactor));
+    console.log("Blinding factor inverse:", bufferToBase64(blindingFactorInverse));
+    console.log("Blind signature:", bufferToBase64(blindSignature));
+    console.log("Blinding factor length:", blindingFactor.length);
+    console.log("Blinding factor inverse length:", blindingFactorInverse.length);
+    console.log("Blind signature length:", blindSignature.length);
+
     const unblindedSignature = nacl.scalarMult(blindingFactorInverse, blindSignature);
     console.log("Signature unblinded");
-    console.log("Blind signature:", bufferToBase64(blindSignature));
     console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
 
     console.log("Calling displayCertificate");
