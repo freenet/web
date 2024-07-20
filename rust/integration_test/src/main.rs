@@ -364,6 +364,9 @@ async fn run_browser_test(headless: bool) -> Result<()> {
         .connect("http://localhost:9515")
         .await?;
 
+    // Wrap the entire test in a closure
+    let test_result = (|| async {
+
     // Navigate to the donation page
     c.goto("http://localhost:1313/donate/ghostkey/").await?;
 
@@ -573,6 +576,19 @@ async fn run_browser_test(headless: bool) -> Result<()> {
     validate_ghost_key_certificate(&output_file, &master_verifying_key_file)?;
 
     Ok(())
+    })().await;
+
+    // Print the message and wait for user input regardless of the test result
+    println!("Test completed. Browser window left open for debugging.");
+    println!("Press Enter to close the browser and end the test.");
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input)?;
+
+    // Close the browser
+    c.close().await?;
+
+    // Return the test result
+    test_result
 }
 
 #[derive(Debug)]
