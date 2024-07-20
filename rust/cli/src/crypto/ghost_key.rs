@@ -87,7 +87,7 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
         version: 1,
         delegate_certificate: delegate_certificate_bytes,
         ghostkey_verifying_key: ghostkey_signing_data.ghostkey_verifying_key,
-        signature: signature.to_der().as_bytes().to_vec(),
+        signature: signature.to_bytes().to_vec(),
     };
 
     // Serialize the final certificate to MessagePack
