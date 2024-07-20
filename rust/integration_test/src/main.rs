@@ -238,8 +238,7 @@ fn start_hugo() -> Result<Child> {
 
 fn start_api(delegate_dir: &str) -> Result<Child> {
     let mut child = Command::new("cargo")
-        .args(&["run", "--", "--delegate-dir", delegate_dir])
-        .current_dir("../api")
+        .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", delegate_dir])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
