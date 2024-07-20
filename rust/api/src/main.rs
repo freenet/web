@@ -6,7 +6,7 @@ use dotenv::dotenv;
 use log::{LevelFilter, info, error};
 
 mod routes;
-use clap::{App, Arg};
+use clap::{Command, Arg};
 use std::env;
 mod stripe_handler;
 
@@ -24,13 +24,12 @@ fn internal_error() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
-    let matches = App::new("Freenet Certified Donation API")
+    let matches = Command::new("Freenet Certified Donation API")
         .arg(Arg::new("delegate-dir")
             .long("delegate-dir")
             .value_name("DIR")
             .help("Sets the delegate directory")
-            .required(true)
-            .takes_value(true))
+            .required(true))
         .get_matches();
 
     let delegate_dir = matches.value_of("delegate-dir").unwrap();
