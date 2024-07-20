@@ -9,6 +9,8 @@ use std::env;
 use std::fs;
 // use std::path::PathBuf;
 
+const API_PORT: u16 = 8000;
+
 #[tokio::main]
 async fn main() -> Result<()> {
     // Parse command line arguments
@@ -34,6 +36,13 @@ async fn main() -> Result<()> {
     // Start Hugo
     let mut hugo_handle = start_hugo()?;
     println!("Hugo started successfully");
+
+    // Check if API is already running
+    if is_port_in_use(8000) {
+        println!("API is already running on port 8000. Attempting to kill the process...");
+        kill_process_on_port(8000)?;
+        thread::sleep(Duration::from_secs(2)); // Give some time for the process to be killed
+    }
 
     // Start API
     let delegate_dir = env::temp_dir().join("ghostkey_test").join("delegates").to_str().unwrap().to_string();
@@ -181,7 +190,7 @@ fn start_hugo() -> Result<Child> {
 
 fn start_api(delegate_dir: &str) -> Result<Child> {
     Command::new("cargo")
-        .args(&["run", "--", "--delegate-dir", delegate_dir])
+        .args(&["run", "--", "--delegate-dir", delegate_dir, "--port", &API_PORT.to_string()])
         .current_dir("../api")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
