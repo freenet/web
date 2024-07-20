@@ -650,12 +650,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
 
     // Deserialize the ghost key certificate
     #[derive(Debug, Deserialize)]
-    struct GhostkeyCertificate {
-        version: u8,
-        delegate_certificate: Vec<u8>,
-        ghostkey_verifying_key: Vec<u8>,
-        signature: Vec<u8>,
-    }
+    struct GhostkeyCertificate(u8, Vec<u8>, Vec<u8>, Vec<u8>);
 
     let mut deserializer = Deserializer::new(&ghost_key_cert_bytes[..]);
     let ghost_key_cert: GhostkeyCertificate = match Deserialize::deserialize(&mut deserializer) {
@@ -671,10 +666,10 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     };
 
     println!("Ghost Key Certificate:");
-    println!("Version: {}", ghost_key_cert.version);
-    println!("Delegate Certificate Length: {}", ghost_key_cert.delegate_certificate.len());
-    println!("Ghostkey Verifying Key Length: {}", ghost_key_cert.ghostkey_verifying_key.len());
-    println!("Signature Length: {}", ghost_key_cert.signature.len());
+    println!("Version: {}", ghost_key_cert.0);
+    println!("Delegate Certificate Length: {}", ghost_key_cert.1.len());
+    println!("Ghostkey Verifying Key Length: {}", ghost_key_cert.2.len());
+    println!("Signature Length: {}", ghost_key_cert.3.len());
 
     // Load the delegate key from file
     let delegate_key_path = Path::new("/tmp/ghostkey_test/delegates/delegate_certificate_20.pem");
