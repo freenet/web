@@ -51,7 +51,7 @@ async fn run() -> Result<()> {
 
     // Start API
     let delegate_dir = env::temp_dir().join("ghostkey_test").join("delegates").to_str().unwrap().to_string();
-    let api_handle = match start_api(&delegate_dir) {
+    let mut api_handle = match start_api(&delegate_dir) {
         Ok(handle) => {
             println!("API process started successfully");
             handle
