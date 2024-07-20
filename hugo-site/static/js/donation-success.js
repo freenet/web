@@ -227,12 +227,7 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
     let ghostKeyCertificate, serializedCertificate, base64Certificate, formattedOutput;
 
     try {
-      // Extract the base64 content from the armored format
-      const base64Content = delegateInfo.certificate
-        .replace(/-----BEGIN DELEGATE CERTIFICATE-----/, '')
-        .replace(/-----END DELEGATE CERTIFICATE-----/, '')
-        .replace(/\s/g, '');
-      const decodedDelegateCertificate = base64ToBuffer(base64Content);
+      const decodedDelegateCertificate = base64ToBuffer(delegateInfo.certificate);
       console.log("Decoded delegate certificate:", decodedDelegateCertificate);
 
       // Create the GhostkeyCertificate object

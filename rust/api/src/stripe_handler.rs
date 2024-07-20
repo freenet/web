@@ -173,11 +173,12 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
     log::info!("Reading delegate certificate from: {:?}", delegate_cert_path);
     log::info!("Reading delegate key from: {:?}", delegate_key_path);
 
-    let delegate_cert = std::fs::read_to_string(&delegate_cert_path)
+    let delegate_cert = std::fs::read(&delegate_cert_path)
         .map_err(|e| {
             log::error!("Failed to read delegate certificate from {:?}: {}", delegate_cert_path, e);
             CertificateError::KeyError(format!("Failed to read delegate certificate: {}", e))
         })?;
+    let delegate_cert_base64 = general_purpose::STANDARD.encode(&delegate_cert);
 
     let delegate_key = std::fs::read_to_string(&delegate_key_path)
         .map_err(|e| {
@@ -244,7 +245,7 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
     combined.extend_from_slice(&nonce_bytes);
 
     let delegate_info = DelegateInfo {
-        certificate: delegate_cert,
+        certificate: delegate_cert_base64,
         amount: delegate_amount,
     };
 
