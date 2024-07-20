@@ -350,7 +350,11 @@ async fn run_browser_test(headless: bool) -> Result<()> {
             println!("Failed to read ghost certificate file for base64 representation");
         }
         
-        return Err(anyhow::anyhow!("Ghost key validation failed. Aborting test."));
+        // Analyze the error message for more detailed explanation
+        let error_details = analyze_validation_error(&stderr, &stdout);
+        println!("Detailed error analysis: {}", error_details);
+        
+        return Err(anyhow::anyhow!("Ghost key validation failed: {}. Aborting test.", error_details));
     } else {
         println!("Ghost key certificate validation succeeded");
     }
@@ -517,4 +521,19 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     }
 
     Ok(cert_info)
+}
+fn analyze_validation_error(stderr: &str, stdout: &str) -> String {
+    if stderr.contains("Signature verification failed") {
+        "The ghost key certificate signature is invalid. This could be due to tampering, use of an incorrect master key, or a mismatch between the certificate data and the signature."
+    } else if stderr.contains("Invalid certificate format") {
+        "The ghost key certificate has an invalid format. It may be corrupted or not properly encoded."
+    } else if stderr.contains("Delegate certificate validation failed") {
+        "The delegate certificate within the ghost key certificate is invalid. This could indicate an issue with the delegate key generation or signing process."
+    } else if stderr.contains("Invalid ghostkey verifying key") {
+        "The ghost key verifying key in the certificate is invalid. This could be due to incorrect key generation or corruption of the certificate."
+    } else if stdout.contains("amount mismatch") {
+        "The amount in the ghost key certificate does not match the expected value. This could indicate tampering or an error in the certificate generation process."
+    } else {
+        "An unknown error occurred during ghost key validation. Please check the full error message for more details."
+    }.to_string()
 }

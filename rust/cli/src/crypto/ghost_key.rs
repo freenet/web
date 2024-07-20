@@ -133,22 +133,25 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     info!("Starting validate_ghost_key function");
     
     // Extract the base64 encoded ghostkey certificate
-    let ghostkey_certificate_bytes = extract_bytes_from_armor(ghostkey_certificate_armored, "GHOSTKEY CERTIFICATE")?;
+    let ghostkey_certificate_bytes = extract_bytes_from_armor(ghostkey_certificate_armored, "GHOSTKEY CERTIFICATE")
+        .map_err(|e| CryptoError::ValidationError(format!("Failed to extract ghostkey certificate: {}", e)))?;
 
     debug!("Extracted ghostkey certificate bytes: {:?}", ghostkey_certificate_bytes);
     info!("Extracted ghostkey certificate length: {}", ghostkey_certificate_bytes.len());
 
     // Deserialize the ghostkey certificate
     let ghostkey_certificate: GhostkeyCertificate = rmp_serde::from_slice(&ghostkey_certificate_bytes)
-        .map_err(|e| CryptoError::DeserializationError(format!("Failed to deserialize ghost certificate file '{}': {}", ghost_certificate_file, e)))?;
+        .map_err(|e| CryptoError::DeserializationError(format!("Failed to deserialize ghost certificate file '{}': {}. This could indicate a corrupted or improperly formatted certificate.", ghost_certificate_file, e)))?;
 
     debug!("Deserialized ghostkey certificate: {:?}", ghostkey_certificate);
 
     // Validate the delegate certificate within the ghostkey certificate
-    let delegate_info = validate_delegate_certificate(master_verifying_key_pem, &ghostkey_certificate.delegate_certificate)?;
+    let delegate_info = validate_delegate_certificate(master_verifying_key_pem, &ghostkey_certificate.delegate_certificate)
+        .map_err(|e| CryptoError::ValidationError(format!("Delegate certificate validation failed: {}. This could indicate an issue with the delegate key or its signing process.", e)))?;
 
     // Verify the ghostkey signature
-    verify_ghostkey_signature(&ghostkey_certificate)?;
+    verify_ghostkey_signature(&ghostkey_certificate)
+        .map_err(|e| CryptoError::ValidationError(format!("Ghost key signature verification failed: {}. This may indicate tampering or use of an incorrect master key.", e)))?;
 
     info!("{}", "Ghost key certificate is valid.".green().bold());
 
