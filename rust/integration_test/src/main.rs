@@ -683,23 +683,23 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     println!("\nLoaded delegate key from file. Byte length: {}", delegate_key_bytes.len());
 
     // Compare the loaded delegate key with the one in the ghost key certificate
-    if delegate_key_bytes == ghost_key_cert.delegate_certificate {
+    if delegate_key_bytes == ghost_key_cert.1 {
         println!("Delegate key in ghost key certificate matches the one from file");
     } else {
         println!("Warning: Delegate key in ghost key certificate does not match the one from file");
         println!("File delegate key (first 100 bytes): {:?}", &delegate_key_bytes[..100.min(delegate_key_bytes.len())]);
-        println!("Certificate delegate key (first 100 bytes): {:?}", &ghost_key_cert.delegate_certificate[..100.min(ghost_key_cert.delegate_certificate.len())]);
+        println!("Certificate delegate key (first 100 bytes): {:?}", &ghost_key_cert.1[..100.min(ghost_key_cert.1.len())]);
     }
 
     // Attempt to deserialize the delegate certificate
-    let delegate_cert: Vec<Value> = match rmp_serde::from_slice(&ghost_key_cert.delegate_certificate) {
+    let delegate_cert: Vec<Value> = match rmp_serde::from_slice(&ghost_key_cert.1) {
         Ok(cert) => {
             println!("Successfully deserialized delegate certificate");
             cert
         },
         Err(e) => {
             println!("Error deserializing delegate certificate: {:?}", e);
-            println!("Delegate certificate content (first 100 bytes): {:?}", &ghost_key_cert.delegate_certificate[..100.min(ghost_key_cert.delegate_certificate.len())]);
+            println!("Delegate certificate content (first 100 bytes): {:?}", &ghost_key_cert.1[..100.min(ghost_key_cert.1.len())]);
             return Err(anyhow::anyhow!("Failed to deserialize delegate certificate: {:?}", e));
         }
     };
@@ -711,7 +711,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
 
     // Extract and parse the JSON string containing the certificate info
     let mut cert_info = CertificateInfo {
-        version: ghost_key_cert.version,
+        version: ghost_key_cert.0,
         amount: 0,
         currency: String::new(),
     };
