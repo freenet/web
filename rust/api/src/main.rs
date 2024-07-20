@@ -32,7 +32,7 @@ fn rocket() -> _ {
             .required(true))
         .get_matches();
 
-    let delegate_dir = matches.value_of("delegate-dir").unwrap();
+    let delegate_dir = matches.get_one::<String>("delegate-dir").unwrap();
     env::set_var("DELEGATE_DIR", delegate_dir);
 
     env_logger::builder()
