@@ -350,7 +350,7 @@ async fn run_browser_test(headless: bool) -> Result<()> {
             println!("Failed to read ghost certificate file for base64 representation");
         }
         
-        println!("Ghost key validation failed, but continuing with the test...");
+        return Err(anyhow::anyhow!("Ghost key validation failed. Aborting test."));
     } else {
         println!("Ghost key certificate validation succeeded");
     }
