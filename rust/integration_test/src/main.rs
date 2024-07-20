@@ -17,23 +17,21 @@ fn main() -> Result<()> {
     let runtime = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
     
     // Use the runtime to run our async function
-    let result = runtime.block_on(async {
-        match run().await {
-            Ok(_) => {
-                println!("Integration test completed successfully");
-                Ok(())
-            },
-            Err(e) => {
-                eprintln!("Integration test failed: {}", e);
-                Err(e)
-            }
+    let result = runtime.block_on(run());
+
+    // The runtime will be automatically dropped when it goes out of scope
+    // We don't need to explicitly drop it
+
+    match result {
+        Ok(_) => {
+            println!("Integration test completed successfully");
+            Ok(())
+        },
+        Err(e) => {
+            eprintln!("Integration test failed: {}", e);
+            Err(e)
         }
-    });
-
-    // Explicitly drop the runtime before exiting
-    drop(runtime);
-
-    result
+    }
 }
 
 async fn run() -> Result<()> {
