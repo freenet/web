@@ -696,49 +696,22 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
         println!("Certificate delegate key (first 100 bytes): {:?}", &ghost_key_cert.delegate_certificate[..100.min(ghost_key_cert.delegate_certificate.len())]);
     }
 
-    // Attempt to deserialize the delegate certificate from the file
-    let mut file_deserializer = Deserializer::new(&delegate_key_bytes[..]);
-    let file_delegate_cert: Vec<Value> = match Deserialize::deserialize(&mut file_deserializer) {
+    // Attempt to deserialize the delegate certificate
+    let delegate_cert: Vec<Value> = match rmp_serde::from_slice(&ghost_key_cert.delegate_certificate) {
         Ok(cert) => {
-            println!("Successfully deserialized file delegate certificate");
+            println!("Successfully deserialized delegate certificate");
             cert
         },
         Err(e) => {
-            println!("Error deserializing file delegate certificate: {:?}", e);
-            println!("File delegate certificate content (first 100 bytes): {:?}", &delegate_key_bytes[..100.min(delegate_key_bytes.len())]);
-            return Err(anyhow::anyhow!("Failed to deserialize file delegate certificate: {:?}", e));
+            println!("Error deserializing delegate certificate: {:?}", e);
+            println!("Delegate certificate content (first 100 bytes): {:?}", &ghost_key_cert.delegate_certificate[..100.min(ghost_key_cert.delegate_certificate.len())]);
+            return Err(anyhow::anyhow!("Failed to deserialize delegate certificate: {:?}", e));
         }
     };
 
-    // Attempt to deserialize the delegate certificate from the ghost key certificate
-    let mut cert_deserializer = Deserializer::new(&ghost_key_cert.delegate_certificate[..]);
-    let cert_delegate_cert: Vec<Value> = match Deserialize::deserialize(&mut cert_deserializer) {
-        Ok(cert) => {
-            println!("Successfully deserialized certificate delegate certificate");
-            cert
-        },
-        Err(e) => {
-            println!("Error deserializing certificate delegate certificate: {:?}", e);
-            println!("Certificate delegate certificate content (first 100 bytes): {:?}", &ghost_key_cert.delegate_certificate[..100.min(ghost_key_cert.delegate_certificate.len())]);
-            return Err(anyhow::anyhow!("Failed to deserialize certificate delegate certificate: {:?}", e));
-        }
-    };
-
-    println!("\nFile Delegate Certificate (deserialized):");
-    for (i, value) in file_delegate_cert.iter().enumerate() {
+    println!("\nDelegate Certificate (deserialized):");
+    for (i, value) in delegate_cert.iter().enumerate() {
         println!("Item {}: {:?}", i, value);
-    }
-
-    println!("\nCertificate Delegate Certificate (deserialized):");
-    for (i, value) in cert_delegate_cert.iter().enumerate() {
-        println!("Item {}: {:?}", i, value);
-    }
-
-    // Compare the deserialized delegate certificates
-    if file_delegate_cert == cert_delegate_cert {
-        println!("Deserialized delegate certificates match");
-    } else {
-        println!("Warning: Deserialized delegate certificates do not match");
     }
 
     // Extract and parse the JSON string containing the certificate info
@@ -748,7 +721,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
         currency: String::new(),
     };
 
-    if let Some(Value::String(info_str)) = cert_delegate_cert.get(1) {
+    if let Some(Value::String(info_str)) = delegate_cert.get(1) {
         println!("Certificate info string: {}", info_str);
         let info: serde_json::Value = serde_json::from_str(info_str)?;
         println!("\nCertificate Info:");
@@ -766,7 +739,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
         }
     } else {
         println!("Warning: Couldn't find the certificate info string in the delegate certificate");
-        println!("Delegate certificate content: {:?}", cert_delegate_cert);
+        println!("Delegate certificate content: {:?}", delegate_cert);
     }
 
     println!("Ghost key certificate inspection completed");
