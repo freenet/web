@@ -274,21 +274,27 @@ async fn start_api(delegate_dir: &str) -> Result<Child> {
     let stdout_reader = BufReader::new(stdout);
     let stderr_reader = BufReader::new(stderr);
 
+    // Collect stdout and stderr
+    let mut stdout_lines = Vec::new();
+    let mut stderr_lines = Vec::new();
+
     // Spawn threads to read stdout and stderr
-    thread::spawn(move || {
+    let stdout_thread = thread::spawn(move || {
         stdout_reader.lines().for_each(|line| {
             if let Ok(line) = line {
-                println!("API stdout: {}", line);
+                stdout_lines.push(line);
             }
         });
+        stdout_lines
     });
 
-    thread::spawn(move || {
+    let stderr_thread = thread::spawn(move || {
         stderr_reader.lines().for_each(|line| {
             if let Ok(line) = line {
-                eprintln!("API stderr: {}", line);
+                stderr_lines.push(line);
             }
         });
+        stderr_lines
     });
 
     // Wait for the API to start
@@ -296,6 +302,13 @@ async fn start_api(delegate_dir: &str) -> Result<Child> {
     while start_time.elapsed() < API_STARTUP_TIMEOUT {
         match child.try_wait() {
             Ok(Some(status)) => {
+                // Print collected stdout and stderr if API fails to start
+                let stdout = stdout_thread.join().unwrap();
+                let stderr = stderr_thread.join().unwrap();
+                println!("API stdout:");
+                stdout.iter().for_each(|line| println!("{}", line));
+                println!("API stderr:");
+                stderr.iter().for_each(|line| eprintln!("{}", line));
                 return Err(anyhow::anyhow!("API process exited unexpectedly with status: {}", status));
             }
             Ok(None) => {
@@ -306,12 +319,26 @@ async fn start_api(delegate_dir: &str) -> Result<Child> {
                 }
             }
             Err(e) => {
+                // Print collected stdout and stderr if API fails to start
+                let stdout = stdout_thread.join().unwrap();
+                let stderr = stderr_thread.join().unwrap();
+                println!("API stdout:");
+                stdout.iter().for_each(|line| println!("{}", line));
+                println!("API stderr:");
+                stderr.iter().for_each(|line| eprintln!("{}", line));
                 return Err(anyhow::anyhow!("Error checking API process status: {}", e));
             }
         }
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
 
+    // Print collected stdout and stderr if API fails to start
+    let stdout = stdout_thread.join().unwrap();
+    let stderr = stderr_thread.join().unwrap();
+    println!("API stdout:");
+    stdout.iter().for_each(|line| println!("{}", line));
+    println!("API stderr:");
+    stderr.iter().for_each(|line| eprintln!("{}", line));
     Err(anyhow::anyhow!("API failed to start within the timeout period"))
 }
 
