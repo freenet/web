@@ -68,10 +68,10 @@ async fn run() -> Result<()> {
 
     // Wait for the API to be ready
     println!("Waiting for API to become ready...");
-    if !wait_for_api_ready(Duration::from_secs(60)).await {
-        eprintln!("API failed to become ready within the timeout period");
+    if !wait_for_api_ready(Duration::from_secs(5)).await {
+        eprintln!("API failed to become ready within the 5-second timeout period");
         api_handle.kill().expect("Failed to kill API process");
-        return Err(anyhow::anyhow!("API failed to start"));
+        return Err(anyhow::anyhow!("API failed to start within 5 seconds"));
     }
     println!("API is ready");
 
