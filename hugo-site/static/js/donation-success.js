@@ -227,25 +227,13 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
     let ghostKeyCertificate, serializedCertificate, base64Certificate, formattedOutput;
 
     try {
-      // Create a ghost key certificate object matching the Rust structure
-      let decodedDelegateCertificate;
-      try {
-        // Extract the base64 content from the armored format
-        const base64Content = delegateInfo.certificate
-          .replace(/-----BEGIN DELEGATE CERTIFICATE-----/, '')
-          .replace(/-----END DELEGATE CERTIFICATE-----/, '')
-          .replace(/\s/g, '');
-        decodedDelegateCertificate = base64ToBuffer(base64Content);
-        console.log("Decoded delegate certificate:", decodedDelegateCertificate);
-        
-        // Ensure decodedDelegateCertificate is a Uint8Array
-        if (!(decodedDelegateCertificate instanceof Uint8Array)) {
-          decodedDelegateCertificate = new Uint8Array(decodedDelegateCertificate);
-        }
-      } catch (decodeError) {
-        console.error("Error decoding armored delegate certificate:", decodeError);
-        throw new Error(`Failed to decode armored delegate certificate: ${decodeError.message}`);
-      }
+      // Extract the base64 content from the armored format
+      const base64Content = delegateInfo.certificate
+        .replace(/-----BEGIN DELEGATE CERTIFICATE-----/, '')
+        .replace(/-----END DELEGATE CERTIFICATE-----/, '')
+        .replace(/\s/g, '');
+      const decodedDelegateCertificate = base64ToBuffer(base64Content);
+      console.log("Decoded delegate certificate:", decodedDelegateCertificate);
 
       // Create the GhostkeyCertificate object
       ghostKeyCertificate = {
@@ -254,16 +242,7 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
         ghostkey_verifying_key: Array.from(new Uint8Array(publicKey)),
         signature: Array.from(new Uint8Array(unblindedSignature))
       };
-      console.log("Ghost key certificate:", ghostKeyCertificate);
       console.log("Ghost key certificate object created:", ghostKeyCertificate);
-
-      // Create the GhostkeySigningData object
-      const ghostkeySigningData = {
-        version: 1,
-        delegate_certificate: Array.from(new Uint8Array(decodedDelegateCertificate)),
-        ghostkey_verifying_key: Array.from(new Uint8Array(publicKey))
-      };
-      console.log("Ghost key signing data object created:", ghostkeySigningData);
 
       // Serialize the GhostkeyCertificate using MessagePack
       serializedCertificate = msgpack.encode(ghostKeyCertificate);
@@ -290,7 +269,6 @@ ${wrapBase64(base64SigningKey, 64)}
       formattedOutput = `${formattedCertificate}\n\n${formattedSigningKey}`;
 
       console.log("Ghost Key Certificate and Signing Key created successfully");
-
     } catch (encodingError) {
       console.error("Error in GhostKey encoding:", encodingError);
       throw new Error(`GhostKey encoding failed: ${encodingError.message}`);
@@ -306,7 +284,7 @@ ${wrapBase64(base64SigningKey, 64)}
     }
     
     certificateSection.style.display = 'block';
-    certificateInfo.style.display = 'none';
+    certificateInfo.style.display = 'block';
     
     combinedKeyTextarea.value = formattedOutput;
     console.log("Ghost Key populated in textarea");
@@ -338,10 +316,8 @@ ${wrapBase64(base64SigningKey, 64)}
     }
 
     // Display delegate info
-    const delegateInfoElement = document.getElementById('certificate-info');
-    if (delegateInfoElement && delegateInfo) {
-      delegateInfoElement.innerHTML = `<p>Your donation certificate is ready. Donation amount: $${delegateInfo.amount}</p>`;
-      delegateInfoElement.style.display = 'block';
+    if (certificateInfo && delegateInfo) {
+      certificateInfo.innerHTML = `<p>Your donation certificate is ready. Donation amount: $${delegateInfo.amount}</p>`;
     }
 
     // Verify the certificate
