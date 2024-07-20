@@ -22,6 +22,11 @@ fn internal_error() -> &'static str {
     "Internal server error. Please try again later."
 }
 
+#[get("/health")]
+fn health() -> &'static str {
+    "OK"
+}
+
 #[launch]
 fn rocket() -> _ {
     let matches = Command::new("Freenet Certified Donation API")
@@ -59,5 +64,6 @@ fn rocket() -> _ {
             res.set_header(Header::new("Referrer-Policy", "strict-origin-when-cross-origin"));
         })))
         .mount("/", routes::get_routes())
+        .mount("/", routes![health])
         .register("/", catchers![not_found, internal_error])
 }
