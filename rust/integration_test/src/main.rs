@@ -51,7 +51,7 @@ async fn run() -> Result<()> {
 
     // Start API
     let delegate_dir = env::temp_dir().join("ghostkey_test").join("delegates").to_str().unwrap().to_string();
-    let mut api_handle = match start_api(&delegate_dir) {
+    let api_handle = match start_api(&delegate_dir) {
         Ok(handle) => {
             println!("API process started successfully");
             handle
@@ -75,9 +75,10 @@ async fn run() -> Result<()> {
     setup_delegate_keys().context("Failed to setup delegate keys")?;
 
     // Run the browser test
-    run_browser_test(headless).await?;
+    let result = run_browser_test(headless).await;
 
     // Clean up
+    println!("Cleaning up processes...");
     hugo_handle.kill()?;
     api_handle.kill()?;
 
@@ -86,7 +87,8 @@ async fn run() -> Result<()> {
         handle.kill()?;
     }
 
-    Ok(())
+    // Return the result of the browser test
+    result
 }
 
 async fn wait_for_api_ready(timeout: Duration) -> bool {
