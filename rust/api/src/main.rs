@@ -10,7 +10,7 @@ use clap::{Command, Arg};
 use std::env;
 mod stripe_handler;
 
-pub static DELEGATE_DIR: &str = "GHOSTKEY_DELEGATE_DIR";
+pub static DELEGATE_DIR: &str = "DELEGATE_DIR";
 
 #[catch(404)]
 fn not_found(req: &Request) -> String {
@@ -38,7 +38,7 @@ fn rocket() -> _ {
         .get_matches();
 
     let delegate_dir = matches.get_one::<String>("delegate-dir").unwrap();
-    env::set_var("DELEGATE_DIR", delegate_dir);
+    env::set_var(DELEGATE_DIR, delegate_dir);
 
     env_logger::builder()
         .format_timestamp(Some(env_logger::TimestampPrecision::Millis))
