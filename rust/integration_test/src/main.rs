@@ -57,20 +57,23 @@ async fn run() -> Result<()> {
     let delegate_dir = env::temp_dir().join("ghostkey_test").join("delegates").to_str().unwrap().to_string();
     let mut api_handle = match start_api(&delegate_dir) {
         Ok(handle) => {
-            println!("API started successfully");
+            println!("API process started successfully");
             handle
         },
         Err(e) => {
-            eprintln!("Failed to start API: {}", e);
+            eprintln!("Failed to start API process: {}", e);
             return Err(e.into());
         }
     };
 
     // Wait for the API to be ready
-    if !wait_for_api_ready(Duration::from_secs(30)).await {
+    println!("Waiting for API to become ready...");
+    if !wait_for_api_ready(Duration::from_secs(60)).await {
         eprintln!("API failed to become ready within the timeout period");
+        api_handle.kill().expect("Failed to kill API process");
         return Err(anyhow::anyhow!("API failed to start"));
     }
+    println!("API is ready");
 
     // Setup delegate keys
     setup_delegate_keys().context("Failed to setup delegate keys")?;
@@ -93,13 +96,21 @@ async fn run() -> Result<()> {
 async fn wait_for_api_ready(timeout: Duration) -> bool {
     let start_time = Instant::now();
     while start_time.elapsed() < timeout {
-        if let Ok(response) = reqwest::get("http://localhost:8000/health").await {
-            if response.status().is_success() {
-                return true;
+        match reqwest::get("http://localhost:8000/health").await {
+            Ok(response) => {
+                if response.status().is_success() {
+                    println!("API is ready");
+                    return true;
+                }
+            }
+            Err(e) => {
+                println!("Error connecting to API: {}", e);
             }
         }
+        println!("API not ready, retrying...");
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
+    println!("API failed to become ready within the timeout period");
     false
 }
 
