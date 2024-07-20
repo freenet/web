@@ -6,6 +6,8 @@ use dotenv::dotenv;
 use log::{LevelFilter, info, error};
 
 mod routes;
+use clap::{App, Arg};
+use std::env;
 mod stripe_handler;
 
 pub static DELEGATE_DIR: &str = "GHOSTKEY_DELEGATE_DIR";
