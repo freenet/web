@@ -36,7 +36,8 @@ pub struct GhostkeyCertificate {
     pub version: u8,
     pub delegate_certificate: Vec<u8>,
     pub ghostkey_verifying_key: Vec<u8>,
-    pub signature: Vec<u8>,
+    #[serde(with = "serde_bytes")]
+    pub signature: [u8; 64],
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -268,26 +269,12 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
     debug!("Serialized ghostkey signing data (hex): {:?}", hex::encode(&buf));
 
     // Create the signature from the stored bytes
-    let signature = ecdsa::Signature::from_der(&ghostkey_certificate.signature)
-        .or_else(|e| {
-            warn!("Failed to create signature from DER: {:?}", e);
-            if ghostkey_certificate.signature.len() != 64 {
-                error!("Invalid signature length: {}", ghostkey_certificate.signature.len());
-                return Err(CryptoError::SignatureError("Invalid signature length".to_string()));
-            }
-            let bytes: [u8; 64] = ghostkey_certificate.signature[..64].try_into()
-                .map_err(|_| CryptoError::SignatureError("Failed to convert signature to array".to_string()))?;
-            ecdsa::Signature::from_slice(&bytes)
-                .map_err(|e| {
-                    error!("Failed to create signature from bytes: {:?}", e);
-                    CryptoError::SignatureError(format!("Failed to create signature from bytes: {}", e))
-                })
-        })
+    let signature = ecdsa::Signature::from_slice(&ghostkey_certificate.signature)
         .map_err(|e| {
-            error!("Failed to create signature: {:?}", e);
-            e
+            error!("Failed to create signature from bytes: {:?}", e);
+            CryptoError::SignatureError(format!("Failed to create signature from bytes: {}", e))
         })?;
-    debug!("Created signature (hex): {:?}", hex::encode(signature.to_bytes()));
+    debug!("Created signature (hex): {:?}", hex::encode(&ghostkey_certificate.signature));
 
     // Verify the signature using the delegate verifying key
     let verification_result = delegate_verifying_key.verify(&buf, &signature);
