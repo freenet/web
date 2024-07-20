@@ -630,6 +630,8 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     use rmp_serde::Deserializer;
     use serde::Deserialize;
     use serde_json::Value;
+    use std::fs;
+    use std::path::Path;
 
     println!("Starting ghost key certificate inspection");
 
@@ -674,9 +676,25 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     println!("Ghostkey Verifying Key Length: {}", ghost_key_cert.ghostkey_verifying_key.len());
     println!("Signature Length: {}", ghost_key_cert.signature.len());
 
-    // Print the delegate certificate bytes for debugging
-    println!("\nDelegate Certificate Bytes (Base64):");
-    println!("{}", STANDARD.encode(&ghost_key_cert.delegate_certificate));
+    // Load the delegate key from file
+    let delegate_key_path = Path::new("/tmp/ghostkey_test/delegates/delegate_certificate_20.pem");
+    let delegate_key_pem = fs::read_to_string(delegate_key_path)?;
+    let delegate_key_base64 = delegate_key_pem.lines()
+        .filter(|line| !line.starts_with("-----"))
+        .collect::<Vec<&str>>()
+        .join("");
+    let delegate_key_bytes = STANDARD.decode(delegate_key_base64)?;
+
+    println!("\nLoaded delegate key from file. Byte length: {}", delegate_key_bytes.len());
+
+    // Compare the loaded delegate key with the one in the ghost key certificate
+    if delegate_key_bytes == ghost_key_cert.delegate_certificate {
+        println!("Delegate key in ghost key certificate matches the one from file");
+    } else {
+        println!("Warning: Delegate key in ghost key certificate does not match the one from file");
+        println!("File delegate key (first 100 bytes): {:?}", &delegate_key_bytes[..100.min(delegate_key_bytes.len())]);
+        println!("Certificate delegate key (first 100 bytes): {:?}", &ghost_key_cert.delegate_certificate[..100.min(ghost_key_cert.delegate_certificate.len())]);
+    }
 
     // Attempt to deserialize the delegate certificate
     let mut deserializer = Deserializer::new(&ghost_key_cert.delegate_certificate[..]);
