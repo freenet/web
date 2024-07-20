@@ -237,13 +237,34 @@ fn start_hugo() -> Result<Child> {
 }
 
 fn start_api(delegate_dir: &str) -> Result<Child> {
-    Command::new("cargo")
+    let mut child = Command::new("cargo")
         .args(&["run", "--", "--delegate-dir", delegate_dir])
         .current_dir("../api")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .context("Failed to start API")
+        .context("Failed to start API")?;
+
+    // Give the API a moment to start up
+    std::thread::sleep(std::time::Duration::from_secs(2));
+
+    // Check if the process is still running
+    match child.try_wait() {
+        Ok(Some(status)) => {
+            // Process has exited
+            let stderr = child.stderr.take().unwrap();
+            let error_output = std::io::read_to_string(stderr).unwrap_or_else(|_| "Unable to read stderr".to_string());
+            println!("API failed to start. Exit status: {}", status);
+            println!("Error output:\n{}", error_output);
+            Err(anyhow::anyhow!("API failed to start"))
+        },
+        Ok(None) => {
+            // Process is still running
+            println!("API process started successfully");
+            Ok(child)
+        },
+        Err(e) => Err(anyhow::anyhow!("Error checking API process status: {}", e)),
+    }
 }
 
 fn start_chromedriver() -> Result<Child> {
