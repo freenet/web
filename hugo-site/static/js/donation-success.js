@@ -177,9 +177,10 @@ async function generateAndSignCertificate(paymentIntentId) {
     const blindSignature = base64ToBuffer(data.blind_signature);
 
     // Unblind the signature
-    const blindingFactorInverse = nacl.scalarMult.base(nacl.scalarMult.base(blindingFactor));
+    const blindingFactorInverse = nacl.scalarMult.base(blindingFactor);
     console.log("Blinding factor:", bufferToBase64(blindingFactor));
     console.log("Blinding factor inverse:", bufferToBase64(blindingFactorInverse));
+    console.log("Blinding factor inverse length:", blindingFactorInverse.length);
     console.log("Blind signature:", bufferToBase64(blindSignature));
     console.log("Blinding factor length:", blindingFactor.length);
     console.log("Blinding factor inverse length:", blindingFactorInverse.length);
@@ -190,6 +191,9 @@ async function generateAndSignCertificate(paymentIntentId) {
     const nonce = blindSignature.slice(64);
 
     // Unblind the signature
+    if (blindingFactorInverse.length !== 32 || signature.length !== 32) {
+        throw new Error(`Invalid sizes for scalar multiplication: blindingFactorInverse length = ${blindingFactorInverse.length}, signature length = ${signature.length}`);
+    }
     const unblindedSignature = nacl.scalarMult(blindingFactorInverse, signature);
     console.log("Signature unblinded");
     console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
