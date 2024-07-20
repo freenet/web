@@ -190,19 +190,19 @@ async function generateAndSignCertificate(paymentIntentId) {
     const signature = blindSignature;
 
     // Unblind the signature
-    if (blindingFactorInverse.length !== 32 || signature.length !== 96) {
+    if (blindingFactorInverse.length !== 32 || signature.length !== 64) {
         throw new Error(`Invalid sizes for unblinding: blindingFactorInverse length = ${blindingFactorInverse.length}, signature length = ${signature.length}`);
     }
     
     // Unblind the signature using scalar multiplication
-    const unblindedSignature = new Uint8Array(96);
-    for (let i = 0; i < 96; i += 32) {
-        const partialSignature = signature.slice(i, i + 32);
-        const unblindedPart = nacl.scalarMult(blindingFactorInverse, partialSignature);
-        unblindedSignature.set(unblindedPart, i);
-    }
+    const unblindedSignature = nacl.scalarMult(blindingFactorInverse, signature);
     console.log("Signature unblinded");
     console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
+
+    // Ensure the unblinded signature is 64 bytes long
+    if (unblindedSignature.length !== 64) {
+        throw new Error(`Invalid unblinded signature length: ${unblindedSignature.length}`);
+    }
 
     console.log("Calling displayCertificate");
     displayCertificate(publicKey, privateKey, unblindedSignature, data.delegate_info);
