@@ -349,14 +349,10 @@ ${wrapBase64(base64SigningKey, 64)}
     }
 
     // Display delegate info
-    if (delegateInfo) {
-      const delegateInfoElement = document.getElementById('certificate-info');
-      if (delegateInfoElement) {
-        delegateInfoElement.innerHTML = `<p>Your donation certificate is ready. Donation amount: $${delegateInfo.amount}</p>`;
-        delegateInfoElement.style.display = 'block';
-      }
-    } else {
-      throw new Error("Delegate information is missing");
+    const delegateInfoElement = document.getElementById('certificate-info');
+    if (delegateInfoElement && delegateInfo) {
+      delegateInfoElement.innerHTML = `<p>Your donation certificate is ready. Donation amount: $${delegateInfo.amount}</p>`;
+      delegateInfoElement.style.display = 'block';
     }
 
     // Verify the certificate
@@ -412,11 +408,5 @@ function showError(message) {
     errorElement.style.display = 'block';
   } else {
     console.error("Error element not found. Error message:", message);
-  }
-  const certificateInfo = document.getElementById('certificate-info');
-  if (certificateInfo) {
-    certificateInfo.style.display = 'none';
-  } else {
-    console.error("Certificate info element not found");
   }
 }
