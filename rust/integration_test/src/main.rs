@@ -8,7 +8,6 @@ use std::time::Instant;
 use std::env;
 use std::fs;
 use std::io::{BufRead, BufReader};
-use tokio::time::sleep;
 
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
