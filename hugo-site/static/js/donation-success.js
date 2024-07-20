@@ -186,17 +186,17 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.log("Blinding factor inverse length:", blindingFactorInverse.length);
     console.log("Blind signature length:", blindSignature.length);
 
-    // The blind signature is already the full 64-byte signature
+    // The blind signature is now a 96-byte signature
     const signature = blindSignature;
 
     // Unblind the signature
-    if (blindingFactorInverse.length !== 32 || signature.length !== 64) {
+    if (blindingFactorInverse.length !== 32 || signature.length !== 96) {
         throw new Error(`Invalid sizes for unblinding: blindingFactorInverse length = ${blindingFactorInverse.length}, signature length = ${signature.length}`);
     }
     
     // Unblind the signature using scalar multiplication
-    const unblindedSignature = new Uint8Array(64);
-    for (let i = 0; i < 64; i += 32) {
+    const unblindedSignature = new Uint8Array(96);
+    for (let i = 0; i < 96; i += 32) {
         const partialSignature = signature.slice(i, i + 32);
         const unblindedPart = nacl.scalarMult(blindingFactorInverse, partialSignature);
         unblindedSignature.set(unblindedPart, i);
