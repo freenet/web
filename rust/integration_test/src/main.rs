@@ -11,8 +11,17 @@ use std::fs;
 
 const API_PORT: u16 = 8000;
 
-#[tokio::main]
-async fn main() -> Result<()> {
+fn main() -> Result<()> {
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(async {
+            run().await
+        })
+}
+
+async fn run() -> Result<()> {
     // Parse command line arguments
     let matches = App::new("Integration Test")
         .arg(Arg::with_name("headless")
@@ -58,7 +67,7 @@ async fn main() -> Result<()> {
     };
 
     // Wait for the API to be ready
-    if !wait_for_api_ready(Duration::from_secs(30)) {
+    if !wait_for_api_ready(Duration::from_secs(30)).await {
         eprintln!("API failed to become ready within the timeout period");
         return Err(anyhow::anyhow!("API failed to start"));
     }
@@ -81,15 +90,15 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn wait_for_api_ready(timeout: Duration) -> bool {
+async fn wait_for_api_ready(timeout: Duration) -> bool {
     let start_time = Instant::now();
     while start_time.elapsed() < timeout {
-        if let Ok(response) = reqwest::blocking::get("http://localhost:8000/health") {
+        if let Ok(response) = reqwest::get("http://localhost:8000/health").await {
             if response.status().is_success() {
                 return true;
             }
         }
-        std::thread::sleep(Duration::from_millis(500));
+        tokio::time::sleep(Duration::from_millis(500)).await;
     }
     false
 }
