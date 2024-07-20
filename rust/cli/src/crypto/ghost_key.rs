@@ -37,7 +37,7 @@ pub struct GhostkeyCertificate {
     pub delegate_certificate: Vec<u8>,
     pub ghostkey_verifying_key: Vec<u8>,
     #[serde(with = "serde_bytes")]
-    pub signature: [u8; 64],
+    pub signature: Vec<u8>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
