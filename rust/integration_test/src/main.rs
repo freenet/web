@@ -66,7 +66,7 @@ async fn run() -> Result<()> {
 
     // Start API
     let delegate_dir = env::temp_dir().join("ghostkey_test").join("delegates").to_str().unwrap().to_string();
-    let mut api_handle = match start_api(&delegate_dir) {
+    let mut api_handle = match start_api(&delegate_dir).await {
         Ok(handle) => {
             println!("API process started successfully");
             handle
@@ -258,7 +258,7 @@ fn start_hugo() -> Result<Child> {
         .context("Failed to start Hugo")
 }
 
-fn start_api(delegate_dir: &str) -> Result<Child> {
+async fn start_api(delegate_dir: &str) -> Result<Child> {
     println!("Starting API with delegate_dir: {}", delegate_dir);
     let mut child = Command::new("cargo")
         .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", delegate_dir])
@@ -299,7 +299,7 @@ fn start_api(delegate_dir: &str) -> Result<Child> {
             }
             Ok(None) => {
                 // Check if the API is responding
-                if is_api_ready().is_ok() {
+                if is_api_ready().await.is_ok() {
                     println!("API started successfully");
                     return Ok(child);
                 }
@@ -314,10 +314,11 @@ fn start_api(delegate_dir: &str) -> Result<Child> {
     Err(anyhow::anyhow!("API failed to start within the timeout period"))
 }
 
-fn is_api_ready() -> Result<()> {
-    let client = reqwest::blocking::Client::new();
+async fn is_api_ready() -> Result<()> {
+    let client = reqwest::Client::new();
     client.get(&format!("http://localhost:{}/health", API_PORT))
         .send()
+        .await
         .context("Failed to connect to API health endpoint")?
         .error_for_status()
         .context("API health check failed")?;
