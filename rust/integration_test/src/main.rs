@@ -44,7 +44,7 @@ async fn run() -> Result<()> {
     let mut chromedriver_handle = None;
     if !is_port_in_use(9515) {
         chromedriver_handle = Some(start_chromedriver()?);
-        thread::sleep(Duration::from_secs(2)); // Give ChromeDriver time to start
+        tokio::time::sleep(Duration::from_secs(2)).await; // Give ChromeDriver time to start
     }
 
     // Always attempt to kill Hugo if it's running
@@ -61,7 +61,7 @@ async fn run() -> Result<()> {
     if is_port_in_use(8000) {
         println!("API is already running on port 8000. Attempting to kill the process...");
         kill_process_on_port(8000)?;
-        thread::sleep(Duration::from_secs(2)); // Give some time for the process to be killed
+        tokio::time::sleep(Duration::from_secs(2)).await; // Give some time for the process to be killed
     }
 
     // Start API
@@ -308,7 +308,7 @@ fn start_api(delegate_dir: &str) -> Result<Child> {
                 return Err(anyhow::anyhow!("Error checking API process status: {}", e));
             }
         }
-        thread::sleep(Duration::from_millis(500));
+        tokio::time::sleep(Duration::from_millis(500)).await;
     }
 
     Err(anyhow::anyhow!("API failed to start within the timeout period"))
