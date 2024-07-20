@@ -9,7 +9,6 @@ fantoccini = "0.19"
 reqwest = { version = "0.11", features = ["blocking"] }
 clap = "3.0"
 anyhow = "1.0"
-reqwest = "0.11"
 base64 = "0.21"
 rmp-serde = "1.1"
 serde = { version = "1.0", features = ["derive"] }

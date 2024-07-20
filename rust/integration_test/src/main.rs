@@ -46,7 +46,22 @@ async fn main() -> Result<()> {
 
     // Start API
     let delegate_dir = env::temp_dir().join("ghostkey_test").join("delegates").to_str().unwrap().to_string();
-    let mut api_handle = start_api(&delegate_dir)?;
+    let mut api_handle = match start_api(&delegate_dir) {
+        Ok(handle) => {
+            println!("API started successfully");
+            handle
+        },
+        Err(e) => {
+            eprintln!("Failed to start API: {}", e);
+            return Err(e.into());
+        }
+    };
+
+    // Wait for the API to be ready
+    if !wait_for_api_ready(Duration::from_secs(30)) {
+        eprintln!("API failed to become ready within the timeout period");
+        return Err(anyhow::anyhow!("API failed to start"));
+    }
 
     // Setup delegate keys
     setup_delegate_keys().context("Failed to setup delegate keys")?;
@@ -64,6 +79,19 @@ async fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn wait_for_api_ready(timeout: Duration) -> bool {
+    let start_time = Instant::now();
+    while start_time.elapsed() < timeout {
+        if let Ok(response) = reqwest::blocking::get("http://localhost:8000/health") {
+            if response.status().is_success() {
+                return true;
+            }
+        }
+        std::thread::sleep(Duration::from_millis(500));
+    }
+    false
 }
 
 fn validate_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: &std::path::Path) -> Result<()> {
