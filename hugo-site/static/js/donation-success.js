@@ -252,7 +252,7 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
         version: 1,
         delegate_certificate: Array.from(new Uint8Array(decodedDelegateCertificate)),
         ghostkey_verifying_key: Array.from(new Uint8Array(publicKey)),
-        signature: Array.from(new Uint8Array(unblindedSignature.buffer))
+        signature: Array.from(new Uint8Array(unblindedSignature))
       };
       console.log("Ghost key certificate:", ghostKeyCertificate);
       console.log("Ghost key certificate object created:", ghostKeyCertificate);
