@@ -12,14 +12,9 @@ use std::io::{BufRead, BufReader};
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
 
-fn main() -> Result<()> {
-    tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()
-        .unwrap()
-        .block_on(async {
-            run().await
-        })
+#[tokio::main]
+async fn main() -> Result<()> {
+    run().await
 }
 
 async fn run() -> Result<()> {
