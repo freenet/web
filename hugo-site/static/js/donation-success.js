@@ -187,12 +187,12 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.log("Blind signature length:", blindSignature.length);
 
     // The blind signature is now a 96-byte combined signature
-    const combinedSignature = blindSignature;
+    const receivedCombinedSignature = blindSignature;
 
     // Extract the signature and nonce from the combined data
-    const signatureLength = combinedSignature.length - 32;
-    const extractedSignature = combinedSignature.slice(0, signatureLength);
-    const nonce = combinedSignature.slice(signatureLength);
+    const signatureLength = receivedCombinedSignature.length - 32;
+    const extractedSignature = receivedCombinedSignature.slice(0, signatureLength);
+    const nonce = receivedCombinedSignature.slice(signatureLength);
 
     console.log("Extracted signature length:", extractedSignature.length);
     console.log("Nonce length:", nonce.length);
@@ -203,12 +203,12 @@ async function generateAndSignCertificate(paymentIntentId) {
     }
     
     // Unblind the signature using scalar multiplication
-    const unblindedSignature = nacl.scalarMult(blindingFactorInverse, signature);
+    const unblindedSignature = nacl.scalarMult(blindingFactorInverse, extractedSignature);
 
     // Combine the unblinded signature and nonce
-    const combinedSignature = new Uint8Array(unblindedSignature.length + nonce.length);
-    combinedSignature.set(unblindedSignature);
-    combinedSignature.set(nonce, unblindedSignature.length);
+    const finalCombinedSignature = new Uint8Array(unblindedSignature.length + nonce.length);
+    finalCombinedSignature.set(unblindedSignature);
+    finalCombinedSignature.set(nonce, unblindedSignature.length);
     console.log("Signature unblinded");
     console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
 
