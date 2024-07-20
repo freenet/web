@@ -680,23 +680,11 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
 
     // Attempt to deserialize the delegate certificate
     let mut deserializer = Deserializer::new(&ghost_key_cert.delegate_certificate[..]);
-    // The delegate certificate is a PEM-encoded string, so we need to decode it first
-    let delegate_cert_str = String::from_utf8_lossy(&ghost_key_cert.delegate_certificate);
-    println!("\nDelegate Certificate (PEM):");
-    println!("{}", delegate_cert_str);
+    println!("\nDelegate Certificate Content (first 100 bytes):");
+    println!("{:?}", &ghost_key_cert.delegate_certificate[..100.min(ghost_key_cert.delegate_certificate.len())]);
 
-    // Extract the base64-encoded part of the PEM
-    let base64_content = delegate_cert_str.lines()
-        .filter(|line| !line.starts_with("-----"))
-        .collect::<Vec<&str>>()
-        .join("");
-
-    // Decode the base64 content
-    let decoded_content = STANDARD.decode(base64_content)?;
-    println!("\nDecoded delegate certificate content (first 100 bytes): {:?}", &decoded_content[..100.min(decoded_content.len())]);
-
-    // Now deserialize the decoded content
-    let mut deserializer = Deserializer::new(&decoded_content[..]);
+    // Now deserialize the delegate certificate content
+    let mut deserializer = Deserializer::new(&ghost_key_cert.delegate_certificate[..]);
     let delegate_cert: Vec<Value> = Deserialize::deserialize(&mut deserializer)?;
 
     println!("\nDelegate Certificate (deserialized):");
