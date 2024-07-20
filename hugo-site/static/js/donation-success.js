@@ -177,7 +177,7 @@ async function generateAndSignCertificate(paymentIntentId) {
     const blindSignature = base64ToBuffer(data.blind_signature);
 
     // Calculate the modular multiplicative inverse of the blinding factor
-    const blindingFactorInverse = nacl.scalarMult.scalarMultBase(blindingFactor);
+    const blindingFactorInverse = nacl.scalarMult.base(blindingFactor);
     console.log("Blinding factor:", bufferToBase64(blindingFactor));
     console.log("Blinding factor inverse:", bufferToBase64(blindingFactorInverse));
     console.log("Blinding factor inverse length:", blindingFactorInverse.length);
@@ -202,7 +202,10 @@ async function generateAndSignCertificate(paymentIntentId) {
     }
     
     // Unblind the signature using scalar multiplication
-    const unblindedSignature = nacl.scalarMult(extractedSignature, blindingFactorInverse);
+    const unblindedSignature = new Uint8Array(64);
+    for (let i = 0; i < 64; i++) {
+        unblindedSignature[i] = extractedSignature[i] ^ blindingFactorInverse[i % 32];
+    }
 
     // Combine the unblinded signature and nonce
     const finalCombinedSignature = new Uint8Array(unblindedSignature.length + nonce.length);
