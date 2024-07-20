@@ -7,9 +7,11 @@ use std::thread;
 use std::time::Instant;
 use std::env;
 use std::fs;
-// use std::path::PathBuf;
+use std::io::{BufRead, BufReader};
+use tokio::time::sleep;
 
 const API_PORT: u16 = 8000;
+const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
 
 fn main() -> Result<()> {
     tokio::runtime::Builder::new_multi_thread()
@@ -237,33 +239,69 @@ fn start_hugo() -> Result<Child> {
 }
 
 fn start_api(delegate_dir: &str) -> Result<Child> {
+    println!("Starting API with delegate_dir: {}", delegate_dir);
     let mut child = Command::new("cargo")
         .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", delegate_dir])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .context("Failed to start API")?;
+        .context("Failed to spawn API process")?;
 
-    // Give the API a moment to start up
-    std::thread::sleep(std::time::Duration::from_secs(2));
+    let stdout = child.stdout.take().expect("Failed to capture stdout");
+    let stderr = child.stderr.take().expect("Failed to capture stderr");
 
-    // Check if the process is still running
-    match child.try_wait() {
-        Ok(Some(status)) => {
-            // Process has exited
-            let stderr = child.stderr.take().unwrap();
-            let error_output = std::io::read_to_string(stderr).unwrap_or_else(|_| "Unable to read stderr".to_string());
-            println!("API failed to start. Exit status: {}", status);
-            println!("Error output:\n{}", error_output);
-            Err(anyhow::anyhow!("API failed to start"))
-        },
-        Ok(None) => {
-            // Process is still running
-            println!("API process started successfully");
-            Ok(child)
-        },
-        Err(e) => Err(anyhow::anyhow!("Error checking API process status: {}", e)),
+    let stdout_reader = BufReader::new(stdout);
+    let stderr_reader = BufReader::new(stderr);
+
+    // Spawn threads to read stdout and stderr
+    thread::spawn(move || {
+        stdout_reader.lines().for_each(|line| {
+            if let Ok(line) = line {
+                println!("API stdout: {}", line);
+            }
+        });
+    });
+
+    thread::spawn(move || {
+        stderr_reader.lines().for_each(|line| {
+            if let Ok(line) = line {
+                eprintln!("API stderr: {}", line);
+            }
+        });
+    });
+
+    // Wait for the API to start
+    let start_time = Instant::now();
+    while start_time.elapsed() < API_STARTUP_TIMEOUT {
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                return Err(anyhow::anyhow!("API process exited unexpectedly with status: {}", status));
+            }
+            Ok(None) => {
+                // Check if the API is responding
+                if is_api_ready().is_ok() {
+                    println!("API started successfully");
+                    return Ok(child);
+                }
+            }
+            Err(e) => {
+                return Err(anyhow::anyhow!("Error checking API process status: {}", e));
+            }
+        }
+        thread::sleep(Duration::from_millis(500));
     }
+
+    Err(anyhow::anyhow!("API failed to start within the timeout period"))
+}
+
+fn is_api_ready() -> Result<()> {
+    let client = reqwest::blocking::Client::new();
+    client.get(&format!("http://localhost:{}/health", API_PORT))
+        .send()
+        .context("Failed to connect to API health endpoint")?
+        .error_for_status()
+        .context("API health check failed")?;
+    Ok(())
 }
 
 fn start_chromedriver() -> Result<Child> {
