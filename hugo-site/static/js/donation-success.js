@@ -189,13 +189,26 @@ async function generateAndSignCertificate(paymentIntentId) {
     // The blind signature is now a 96-byte signature
     const signature = blindSignature;
 
+    // Extract the signature and nonce from the combined data
+    const signatureLength = blindSignature.length - 32;
+    const signature = blindSignature.slice(0, signatureLength);
+    const nonce = blindSignature.slice(signatureLength);
+
+    log.debug("Signature length:", signature.length);
+    log.debug("Nonce length:", nonce.length);
+
     // Unblind the signature
-    if (blindingFactorInverse.length !== 32 || signature.length !== 64) {
-        throw new Error(`Invalid sizes for unblinding: blindingFactorInverse length = ${blindingFactorInverse.length}, signature length = ${signature.length}`);
+    if (blindingFactorInverse.length !== 32) {
+        throw new Error(`Invalid size for unblinding: blindingFactorInverse length = ${blindingFactorInverse.length}`);
     }
     
     // Unblind the signature using scalar multiplication
     const unblindedSignature = nacl.scalarMult(blindingFactorInverse, signature);
+
+    // Combine the unblinded signature and nonce
+    const combinedSignature = new Uint8Array(unblindedSignature.length + nonce.length);
+    combinedSignature.set(unblindedSignature);
+    combinedSignature.set(nonce, unblindedSignature.length);
     console.log("Signature unblinded");
     console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
 

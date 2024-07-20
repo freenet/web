@@ -235,14 +235,15 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
     let blind_signature: ecdsa::Signature = signing_key.try_sign(&message)
         .map_err(|e| CertificateError::KeyError(format!("Failed to sign message: {}", e)))?;
 
-    // Convert the signature to fixed-size bytes
-    let signature_bytes: [u8; 64] = blind_signature.to_bytes().as_slice().try_into()
-        .map_err(|_| CertificateError::KeyError("Failed to convert signature to fixed-size array".to_string()))?;
+    // Convert the signature to bytes
+    let signature_bytes = blind_signature.to_bytes();
 
     // Combine the signature and nonce
-    let mut combined = Vec::with_capacity(96);
+    let mut combined = Vec::with_capacity(signature_bytes.len() + 32);
     combined.extend_from_slice(&signature_bytes);
     combined.extend_from_slice(&nonce_bytes);
+
+    log::debug!("Combined signature and nonce length: {}", combined.len());
 
     let delegate_info = DelegateInfo {
         certificate: delegate_cert_base64,
