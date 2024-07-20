@@ -186,16 +186,16 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.log("Blinding factor inverse length:", blindingFactorInverse.length);
     console.log("Blind signature length:", blindSignature.length);
 
-    // The blind signature is now a 96-byte signature
-    const signature = blindSignature;
+    // The blind signature is now a 96-byte combined signature
+    const combinedSignature = blindSignature;
 
     // Extract the signature and nonce from the combined data
-    const signatureLength = blindSignature.length - 32;
-    const signature = blindSignature.slice(0, signatureLength);
-    const nonce = blindSignature.slice(signatureLength);
+    const signatureLength = combinedSignature.length - 32;
+    const extractedSignature = combinedSignature.slice(0, signatureLength);
+    const nonce = combinedSignature.slice(signatureLength);
 
-    log.debug("Signature length:", signature.length);
-    log.debug("Nonce length:", nonce.length);
+    console.log("Extracted signature length:", extractedSignature.length);
+    console.log("Nonce length:", nonce.length);
 
     // Unblind the signature
     if (blindingFactorInverse.length !== 32) {
