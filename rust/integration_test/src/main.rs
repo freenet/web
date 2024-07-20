@@ -17,7 +17,7 @@ async fn main() -> Result<()> {
     run().await
 }
 
-async fn run() -> Result<()> {
+fn run() -> Result<()> {
     // Parse command line arguments
     let matches = App::new("Integration Test")
         .arg(Arg::with_name("headless")
@@ -64,7 +64,7 @@ async fn run() -> Result<()> {
 
     // Wait for the API to be ready
     println!("Waiting for API to become ready...");
-    if !wait_for_api_ready(Duration::from_secs(5)).await {
+    if !tokio::runtime::Runtime::new()?.block_on(wait_for_api_ready(Duration::from_secs(5))) {
         eprintln!("API failed to become ready within the 5-second timeout period");
         api_handle.kill().expect("Failed to kill API process");
         return Err(anyhow::anyhow!("API failed to start within 5 seconds"));
@@ -75,7 +75,7 @@ async fn run() -> Result<()> {
     setup_delegate_keys().context("Failed to setup delegate keys")?;
 
     // Run the browser test
-    let result = run_browser_test(headless).await;
+    let result = tokio::runtime::Runtime::new()?.block_on(run_browser_test(headless));
 
     // Clean up
     println!("Cleaning up processes...");
