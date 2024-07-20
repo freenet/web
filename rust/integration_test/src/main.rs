@@ -680,17 +680,24 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
 
     // Attempt to deserialize the delegate certificate
     let mut deserializer = Deserializer::new(&ghost_key_cert.delegate_certificate[..]);
-    let delegate_cert: Vec<Value> = match Deserialize::deserialize(&mut deserializer) {
-        Ok(cert) => {
-            println!("Successfully deserialized delegate certificate");
-            cert
-        },
-        Err(e) => {
-            println!("Error deserializing delegate certificate: {:?}", e);
-            println!("First 100 bytes of delegate_certificate: {:?}", &ghost_key_cert.delegate_certificate[..100]);
-            return Err(anyhow::anyhow!("Failed to deserialize delegate certificate: {:?}", e));
-        }
-    };
+    // The delegate certificate is a PEM-encoded string, so we need to decode it first
+    let delegate_cert_str = String::from_utf8_lossy(&ghost_key_cert.delegate_certificate);
+    println!("\nDelegate Certificate (PEM):");
+    println!("{}", delegate_cert_str);
+
+    // Extract the base64-encoded part of the PEM
+    let base64_content = delegate_cert_str.lines()
+        .filter(|line| !line.starts_with("-----"))
+        .collect::<Vec<&str>>()
+        .join("");
+
+    // Decode the base64 content
+    let decoded_content = STANDARD.decode(base64_content)?;
+    println!("\nDecoded delegate certificate content (first 100 bytes): {:?}", &decoded_content[..100.min(decoded_content.len())]);
+
+    // Now deserialize the decoded content
+    let mut deserializer = Deserializer::new(&decoded_content[..]);
+    let delegate_cert: Vec<Value> = Deserialize::deserialize(&mut deserializer)?;
 
     println!("\nDelegate Certificate (deserialized):");
     for (i, value) in delegate_cert.iter().enumerate() {
@@ -704,18 +711,9 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
         currency: String::new(),
     };
 
-    if let Value::String(info_str) = &delegate_cert[1] {
+    if let Some(Value::String(info_str)) = delegate_cert.get(1) {
         println!("Certificate info string: {}", info_str);
-        let info: serde_json::Value = match serde_json::from_str(info_str) {
-            Ok(parsed) => {
-                println!("Successfully parsed certificate info JSON");
-                parsed
-            },
-            Err(e) => {
-                println!("Error parsing certificate info JSON: {:?}", e);
-                return Err(anyhow::anyhow!("Failed to parse certificate info JSON: {:?}", e));
-            }
-        };
+        let info: serde_json::Value = serde_json::from_str(info_str)?;
         println!("\nCertificate Info:");
         println!("{}", serde_json::to_string_pretty(&info)?);
 

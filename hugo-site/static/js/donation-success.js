@@ -244,11 +244,13 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
     try {
       const decodedDelegateCertificate = base64ToBuffer(delegateInfo.certificate);
       console.log("Decoded delegate certificate:", decodedDelegateCertificate);
+      console.log("Decoded delegate certificate type:", Object.prototype.toString.call(decodedDelegateCertificate));
+      console.log("Decoded delegate certificate length:", decodedDelegateCertificate.length);
 
       // Create the GhostkeyCertificate object
       ghostKeyCertificate = {
         version: 1,
-        delegate_certificate: Array.from(new Uint8Array(decodedDelegateCertificate)),
+        delegate_certificate: decodedDelegateCertificate,
         ghostkey_verifying_key: Array.from(new Uint8Array(publicKey)),
         signature: Array.from(new Uint8Array(unblindedSignature))
       };
