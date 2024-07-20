@@ -36,7 +36,8 @@ async fn main() -> Result<()> {
     println!("Hugo started successfully");
 
     // Start API
-    let mut api_handle = start_api()?;
+    let delegate_dir = temp_dir.join("delegates").to_str().unwrap().to_string();
+    let mut api_handle = start_api(&delegate_dir)?;
 
     // Setup delegate keys
     setup_delegate_keys().context("Failed to setup delegate keys")?;
@@ -178,9 +179,9 @@ fn start_hugo() -> Result<Child> {
         .context("Failed to start Hugo")
 }
 
-fn start_api() -> Result<Child> {
+fn start_api(delegate_dir: &str) -> Result<Child> {
     Command::new("cargo")
-        .args(&["run"])
+        .args(&["run", "--", "--delegate-dir", delegate_dir])
         .current_dir("../api")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

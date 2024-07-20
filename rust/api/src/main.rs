@@ -24,6 +24,18 @@ fn internal_error() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
+    let matches = App::new("Freenet Certified Donation API")
+        .arg(Arg::new("delegate-dir")
+            .long("delegate-dir")
+            .value_name("DIR")
+            .help("Sets the delegate directory")
+            .required(true)
+            .takes_value(true))
+        .get_matches();
+
+    let delegate_dir = matches.value_of("delegate-dir").unwrap();
+    env::set_var("DELEGATE_DIR", delegate_dir);
+
     env_logger::builder()
         .format_timestamp(Some(env_logger::TimestampPrecision::Millis))
         .format_module_path(false)
