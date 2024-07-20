@@ -631,6 +631,8 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     use serde::Deserialize;
     use serde_json::Value;
 
+    println!("Starting ghost key certificate inspection");
+
     // Extract the ghost key certificate from the combined key
     let ghost_key_cert_base64 = combined_key_text.lines()
         .skip_while(|line| !line.starts_with("-----BEGIN GHOSTKEY CERTIFICATE-----"))
@@ -639,7 +641,10 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
         .collect::<Vec<&str>>()
         .join("");
 
+    println!("Extracted base64 ghost key certificate. Length: {}", ghost_key_cert_base64.len());
+
     let ghost_key_cert_bytes = STANDARD.decode(ghost_key_cert_base64)?;
+    println!("Decoded ghost key certificate. Byte length: {}", ghost_key_cert_bytes.len());
 
     // Deserialize the ghost key certificate
     #[derive(Debug, Deserialize)]
@@ -651,7 +656,16 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     }
 
     let mut deserializer = Deserializer::new(&ghost_key_cert_bytes[..]);
-    let ghost_key_cert: GhostkeyCertificate = Deserialize::deserialize(&mut deserializer)?;
+    let ghost_key_cert: GhostkeyCertificate = match Deserialize::deserialize(&mut deserializer) {
+        Ok(cert) => {
+            println!("Successfully deserialized GhostkeyCertificate");
+            cert
+        },
+        Err(e) => {
+            println!("Error deserializing GhostkeyCertificate: {:?}", e);
+            return Err(anyhow::anyhow!("Failed to deserialize GhostkeyCertificate: {:?}", e));
+        }
+    };
 
     println!("Ghost Key Certificate:");
     println!("Version: {}", ghost_key_cert.version);
@@ -665,7 +679,16 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
 
     // Attempt to deserialize the delegate certificate
     let mut deserializer = Deserializer::new(&ghost_key_cert.delegate_certificate[..]);
-    let delegate_cert: Vec<Value> = Deserialize::deserialize(&mut deserializer)?;
+    let delegate_cert: Vec<Value> = match Deserialize::deserialize(&mut deserializer) {
+        Ok(cert) => {
+            println!("Successfully deserialized delegate certificate");
+            cert
+        },
+        Err(e) => {
+            println!("Error deserializing delegate certificate: {:?}", e);
+            return Err(anyhow::anyhow!("Failed to deserialize delegate certificate: {:?}", e));
+        }
+    };
 
     println!("\nDelegate Certificate (deserialized):");
     for (i, value) in delegate_cert.iter().enumerate() {
@@ -680,7 +703,16 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     };
 
     if let Value::String(info_str) = &delegate_cert[1] {
-        let info: serde_json::Value = serde_json::from_str(info_str)?;
+        let info: serde_json::Value = match serde_json::from_str(info_str) {
+            Ok(parsed) => {
+                println!("Successfully parsed certificate info JSON");
+                parsed
+            },
+            Err(e) => {
+                println!("Error parsing certificate info JSON: {:?}", e);
+                return Err(anyhow::anyhow!("Failed to parse certificate info JSON: {:?}", e));
+            }
+        };
         println!("\nCertificate Info:");
         println!("{}", serde_json::to_string_pretty(&info)?);
 
@@ -698,6 +730,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
         println!("Warning: Couldn't find the certificate info string in the delegate certificate");
     }
 
+    println!("Ghost key certificate inspection completed");
     Ok(cert_info)
 }
 fn analyze_validation_error(stderr: &str, stdout: &str) -> String {
