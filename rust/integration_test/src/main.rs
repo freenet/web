@@ -12,23 +12,18 @@ use std::io::{BufRead, BufReader};
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
 
-fn main() -> Result<()> {
-    // Create a new runtime
-    let runtime = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
-
-    // Use the runtime to run our async function
-    runtime.block_on(async {
-        match run().await {
-            Ok(_) => {
-                println!("Integration test completed successfully");
-                Ok(())
-            },
-            Err(e) => {
-                eprintln!("Integration test failed: {}", e);
-                Err(e)
-            }
+#[tokio::main]
+async fn main() -> Result<()> {
+    match run().await {
+        Ok(_) => {
+            println!("Integration test completed successfully");
+            Ok(())
+        },
+        Err(e) => {
+            eprintln!("Integration test failed: {}", e);
+            Err(e)
         }
-    })
+    }
 }
 
 async fn run() -> Result<()> {
