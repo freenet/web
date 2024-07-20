@@ -87,6 +87,12 @@ async fn run() -> Result<()> {
     // Run the browser test
     let result = run_browser_test(headless).await;
 
+    // Keep the browser open for debugging, regardless of the test result
+    println!("Test completed. Browser window left open for debugging.");
+    println!("Press Enter to close the browser and end the test.");
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input)?;
+
     // Clean up
     println!("Cleaning up processes...");
     
@@ -490,15 +496,6 @@ async fn run_browser_test(headless: bool) -> Result<()> {
     } else {
         println!("Ghost key certificate validation succeeded");
     }
-
-    // Keep the browser open for debugging
-    println!("Test completed. Browser window left open for debugging.");
-    println!("Press Enter to close the browser and end the test.");
-    let mut input = String::new();
-    std::io::stdin().read_line(&mut input)?;
-    
-    // Close the browser after user input
-    c.close().await?;
 
     // Generate a ghost key using the CLI
     println!("Generating ghost key using CLI...");
