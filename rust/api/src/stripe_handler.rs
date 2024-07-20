@@ -234,8 +234,12 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
     let blind_signature: ecdsa::Signature = signing_key.try_sign(&message)
         .map_err(|e| CertificateError::KeyError(format!("Failed to sign message: {}", e)))?;
 
+    // Convert the signature to fixed-size bytes
+    let signature_bytes: [u8; 64] = blind_signature.to_bytes();
+
     // Combine the signature and nonce
-    let mut combined = blind_signature.to_vec();
+    let mut combined = Vec::with_capacity(96);
+    combined.extend_from_slice(&signature_bytes);
     combined.extend_from_slice(&nonce_bytes);
 
     let delegate_info = DelegateInfo {
@@ -243,7 +247,7 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
         amount: delegate_amount,
     };
 
-    Ok((general_purpose::STANDARD.encode(combined), delegate_info))
+    Ok((general_purpose::STANDARD.encode(&combined), delegate_info))
 }
 
 // The create_payment_intent function and associated structs have been removed

@@ -238,7 +238,7 @@ fn start_hugo() -> Result<Child> {
 
 fn start_api(delegate_dir: &str) -> Result<Child> {
     Command::new("cargo")
-        .args(&["run", "--", "--delegate-dir", delegate_dir, "--port", &API_PORT.to_string()])
+        .args(&["run", "--", "--delegate-dir", delegate_dir])
         .current_dir("../api")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
