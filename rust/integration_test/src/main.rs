@@ -12,12 +12,23 @@ use std::io::{BufRead, BufReader};
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
 
-#[tokio::main]
-async fn main() -> Result<()> {
-    run().await
+fn main() -> Result<()> {
+    // Create a runtime outside of any async context
+    let runtime = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
+    
+    // Use the runtime to run our async function
+    runtime.block_on(async {
+        match run().await {
+            Ok(_) => println!("Integration test completed successfully"),
+            Err(e) => eprintln!("Integration test failed: {}", e),
+        }
+    });
+
+    Ok(())
 }
 
 async fn run() -> Result<()> {
+    println!("Starting integration test...");
     // Parse command line arguments
     let matches = App::new("Integration Test")
         .arg(Arg::with_name("headless")
@@ -79,15 +90,24 @@ async fn run() -> Result<()> {
 
     // Clean up
     println!("Cleaning up processes...");
-    hugo_handle.kill()?;
-    api_handle.kill()?;
+    
+    if let Err(e) = hugo_handle.kill() {
+        eprintln!("Failed to kill Hugo process: {}", e);
+    }
+    
+    if let Err(e) = api_handle.kill() {
+        eprintln!("Failed to kill API process: {}", e);
+    }
 
     // Stop ChromeDriver if we started it
     if let Some(mut handle) = chromedriver_handle {
-        handle.kill()?;
+        if let Err(e) = handle.kill() {
+            eprintln!("Failed to kill ChromeDriver process: {}", e);
+        }
     }
 
     // Return the result of the browser test
+    println!("Integration test finished. Result: {:?}", result);
     result
 }
 
