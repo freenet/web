@@ -256,12 +256,12 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       ];
       console.log("Ghost key certificate object created:", ghostKeyCertificate);
 
-      // Serialize the GhostkeyCertificate using MessagePack
-      serializedCertificate = msgpack.encode(ghostKeyCertificate);
+      // Serialize the GhostkeyCertificate using CBOR
+      serializedCertificate = CBOR.encode(ghostKeyCertificate);
       console.log("GhostkeyCertificate serialized:", serializedCertificate);
 
       // Convert the serialized certificate to base64
-      base64Certificate = bufferToBase64(serializedCertificate);
+      base64Certificate = bufferToBase64(new Uint8Array(serializedCertificate));
       console.log("Serialized certificate converted to base64:", base64Certificate);
 
       // Format the certificate output
