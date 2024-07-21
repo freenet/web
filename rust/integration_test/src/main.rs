@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
-use std::process::{Command, Stdio, Child};
-use clap::{Command, Arg};
+use std::process::{Command as ProcessCommand, Stdio, Child};
+use clap::{Command as ClapCommand, Arg};
 use std::time::Duration;
 use fantoccini::{Client, ClientBuilder, Locator};
 use std::thread;
@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
 async fn run() -> Result<()> {
     println!("Starting integration test...");
     // Parse command line arguments
-    let matches = Command::new("Integration Test")
+    let matches = ClapCommand::new("Integration Test")
         .arg(Arg::new("headless")
             .long("headless")
             .help("Run browser in headless mode"))
@@ -250,7 +250,7 @@ fn kill_process_on_port(port: u16) -> Result<()> {
 }
 
 fn start_hugo() -> Result<Child> {
-    Command::new("hugo")
+    ProcessCommand::new("hugo")
         .args(&["server", "--disableFastRender"])
         .current_dir("../../hugo-site")
         .stdout(Stdio::piped())
