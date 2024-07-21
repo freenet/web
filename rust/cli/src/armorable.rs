@@ -1,8 +1,19 @@
 use serde::{Serialize, Deserialize};
 use base64::{engine::general_purpose, Engine as _};
 use std::fs;
-use std::io::{self, BufReader, BufRead, Write};
+use std::io::{self, BufReader, BufRead};
 use std::path::Path;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum ArmorableError {
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("CBOR serialization error: {0}")]
+    Cbor(#[from] serde_cbor::Error),
+    #[error("Base64 decode error: {0}")]
+    Base64(#[from] base64::DecodeError),
+}
 
 // Define the Armorable trait
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
@@ -10,7 +21,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     fn armor_label() -> &'static str;
 
     // Serialize the object to a base64 armored string
-    fn to_base64_armored(&self) -> io::Result<String> {
+    fn to_base64_armored(&self) -> Result<String, ArmorableError> {
         let cbor_data = serde_cbor::to_vec(self)?;
         let base64_data = general_purpose::STANDARD.encode(&cbor_data);
         let wrapped_base64 = wrap_at_64_chars(&base64_data);
@@ -23,10 +34,10 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     }
 
     // Deserialize the object from a base64 armored string
-    fn from_base64_armored(armored: &str) -> io::Result<Self> where Self: Sized {
+    fn from_base64_armored(armored: &str) -> Result<Self, ArmorableError> where Self: Sized {
         let label = extract_label(armored)?;
         if label != Self::armor_label() {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "Armor label does not match"));
+            return Err(ArmorableError::Io(io::Error::new(io::ErrorKind::InvalidData, "Armor label does not match")));
         }
         let base64_data = extract_base64(armored, &label)?;
         let cbor_data = general_purpose::STANDARD.decode(&base64_data)?;
@@ -35,20 +46,20 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     }
 
     // Serialize the object to a naked base64 string
-    fn to_naked_base64(&self) -> io::Result<String> {
+    fn to_naked_base64(&self) -> Result<String, ArmorableError> {
         let cbor_data = serde_cbor::to_vec(self)?;
         Ok(general_purpose::STANDARD.encode(&cbor_data))
     }
 
     // Deserialize the object from a naked base64 string
-    fn from_naked_base64(base64: &str) -> io::Result<Self> where Self: Sized {
+    fn from_naked_base64(base64: &str) -> Result<Self, ArmorableError> where Self: Sized {
         let cbor_data = general_purpose::STANDARD.decode(base64)?;
         let object = serde_cbor::from_slice(&cbor_data)?;
         Ok(object)
     }
 
     // Load the object from a file that may contain multiple armored blocks
-    fn from_file<P: AsRef<Path>>(path: P) -> io::Result<Self> where Self: Sized {
+    fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, ArmorableError> where Self: Sized {
         let file = fs::File::open(path)?;
         let reader = BufReader::new(file);
         let mut in_block = false;
