@@ -628,8 +628,7 @@ struct CertificateInfo {
 fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateInfo> {
     use base64::{engine::general_purpose::STANDARD, Engine as _};
     use serde::Deserialize;
-    use serde_json::Value;
-    use crate::crypto::ghost_key::DelegateKeyCertificate;
+    use crate::cli::crypto::ghost_key::DelegateKeyCertificate;
     use std::fs;
     use std::path::Path;
 
