@@ -71,7 +71,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
             let line = line?;
             if line.starts_with(&format!("-----BEGIN {}", label)) {
                 if found_block {
-                    return Err(io::Error::new(io::ErrorKind::InvalidData, "Multiple blocks with the same label found"));
+                    return Err(ArmorableError::Io(io::Error::new(io::ErrorKind::InvalidData, "Multiple blocks with the same label found")));
                 }
                 in_block = true;
                 found_block = true;
@@ -84,7 +84,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         }
 
         if !found_block {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "No block with the specified label found"));
+            return Err(ArmorableError::Io(io::Error::new(io::ErrorKind::InvalidData, "No block with the specified label found")));
         }
 
         Self::from_base64_armored(&armored)
