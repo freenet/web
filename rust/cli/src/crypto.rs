@@ -14,7 +14,7 @@ use p256::{SecretKey, FieldBytes};
 use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use crate::armor;
 use serde::Serialize;
-use rmp_serde::Serializer;
+use ciborium::ser::into_writer;
 use crate::crypto::crypto_error::CryptoError;
 use crate::crypto::generate_delegate::DelegateKeyCertificate;
 use log::{warn, debug};
@@ -71,7 +71,7 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
     let certificate_bytes = extract_bytes_from_armor(delegate_certificate, "DELEGATE CERTIFICATE")?;
     debug!("Extracted delegate certificate bytes: {:?}", certificate_bytes);
 
-    let certificate: DelegateKeyCertificate = match rmp_serde::from_slice(&certificate_bytes) {
+    let certificate: DelegateKeyCertificate = match ciborium::de::from_reader(&certificate_bytes[..]) {
         Ok(cert) => {
             debug!("Successfully deserialized certificate: {:?}", cert);
             cert
@@ -95,7 +95,7 @@ pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificat
         signature: vec![],
     };
     let mut buf = Vec::new();
-    certificate_data.serialize(&mut Serializer::new(&mut buf))
+    into_writer(&certificate_data, &mut buf)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
     let signature = ecdsa::Signature::from_slice(&certificate.signature)

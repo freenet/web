@@ -3,9 +3,8 @@ use rand_core::OsRng;
 use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use crate::armor;
 use serde::{Serialize, Deserialize};
-use rmp_serde::Serializer;
+use ciborium::ser::into_writer;
 use crate::crypto::{CryptoError, extract_bytes_from_armor};
-use rmp_serde;
 use log::{debug, info, warn, error};
 use colored::Colorize;
 // Removed unused imports
@@ -74,7 +73,7 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
 
     // Serialize the signing data to MessagePack
     let mut buf = Vec::new();
-    ghostkey_signing_data.serialize(&mut Serializer::new(&mut buf))
+    into_writer(&ghostkey_signing_data, &mut buf)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
     debug!("Serialized signing data: {:?}", buf);
 
@@ -92,7 +91,7 @@ pub fn generate_ghostkey(delegate_certificate: &str, delegate_signing_key: &str)
 
     // Serialize the final certificate to MessagePack
     let mut final_buf = Vec::new();
-    final_certificate.serialize(&mut Serializer::new(&mut final_buf))
+    into_writer(&final_certificate, &mut final_buf)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
     debug!("Serialized final certificate: {:?}", final_buf);
 
@@ -304,7 +303,7 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
 }
 
 pub fn extract_delegate_verifying_key(delegate_certificate: &[u8]) -> Result<VerifyingKey, CryptoError> {
-    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(delegate_certificate)
+    let delegate_cert: DelegateKeyCertificate = ciborium::de::from_reader(delegate_certificate)
         .map_err(|e| CryptoError::DeserializationError(e.to_string()))?;
 
     VerifyingKey::from_sec1_bytes(&delegate_cert.verifying_key)

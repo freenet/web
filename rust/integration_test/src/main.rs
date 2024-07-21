@@ -698,7 +698,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     }
 
     // Attempt to deserialize the delegate certificate
-    let delegate_cert: Vec<Value> = match rmp_serde::from_slice(&ghost_key_cert.delegate_certificate) {
+    let delegate_cert: Vec<Value> = match ciborium::de::from_reader(&ghost_key_cert.delegate_certificate[..]) {
         Ok(cert) => {
             println!("Successfully deserialized delegate certificate");
             cert
