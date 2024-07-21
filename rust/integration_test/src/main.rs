@@ -7,7 +7,7 @@ use std::thread;
 use std::time::Instant;
 use std::env;
 use std::fs;
-use std::io::{BufRead, BufReader};
+use std::io::BufReader;
 
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
@@ -35,7 +35,7 @@ async fn run() -> Result<()> {
             .help("Run browser in headless mode"))
         .get_matches();
 
-    let headless = matches.is_present("headless");
+    let headless = matches.contains_id("headless");
     let mut chromedriver_handle = None;
     if !is_port_in_use(9515) {
         chromedriver_handle = Some(start_chromedriver()?);
@@ -138,7 +138,7 @@ async fn wait_for_api_ready(timeout: Duration) -> bool {
 }
 
 fn validate_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: &std::path::Path) -> Result<()> {
-    let output = Command::new("cargo")
+    let output = ProcessCommand::new("cargo")
         .args(&[
             "run",
             "--manifest-path",
@@ -210,7 +210,7 @@ fn generate_master_key(temp_dir: &std::path::Path) -> Result<std::path::PathBuf>
 
 fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std::path::Path) -> Result<()> {
     println!("Generating delegate keys in: {:?}", delegate_dir);
-    let output = Command::new("bash")
+    let output = ProcessCommand::new("bash")
         .arg("../cli/generate_delegate_keys.sh")
         .args(&["--master-key", master_key_file.to_str().unwrap()])
         .arg("--delegate-dir")
@@ -239,12 +239,12 @@ fn is_port_in_use(port: u16) -> bool {
 }
 
 fn kill_process_on_port(port: u16) -> Result<()> {
-    let output = Command::new("lsof")
+    let output = ProcessCommand::new("lsof")
         .args(&["-t", "-i", &format!(":{}", port)])
         .output()?;
     let pid = String::from_utf8(output.stdout)?.trim().to_string();
     if !pid.is_empty() {
-        Command::new("kill").arg(&pid).output()?;
+        ProcessCommand::new("kill").arg(&pid).output()?;
     }
     Ok(())
 }
@@ -261,7 +261,7 @@ fn start_hugo() -> Result<Child> {
 
 async fn start_api(delegate_dir: &str) -> Result<Child> {
     println!("Starting API with delegate_dir: {}", delegate_dir);
-    let mut child = Command::new("cargo")
+    let mut child = ProcessCommand::new("cargo")
         .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", delegate_dir])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -354,7 +354,7 @@ async fn is_api_ready() -> Result<()> {
 }
 
 fn start_chromedriver() -> Result<Child> {
-    Command::new("chromedriver")
+    ProcessCommand::new("chromedriver")
         .arg("--port=9515")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
