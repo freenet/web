@@ -55,17 +55,64 @@ impl TryFrom<ArmorableSigningKey> for SigningKey {
     }
 }
 
-use p256::ecdsa::{SigningKey, VerifyingKey};
+use p256::ecdsa::{SigningKey, VerifyingKey, Signature};
 use rand_core::OsRng;
 use serde_json::Value;
 use sha2::{Sha256, Digest};
-use p256::{SecretKey, FieldBytes};
+use p256::SecretKey;
 use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use crate::armorable::Armorable;
 use ciborium::ser::into_writer;
 use crate::crypto::crypto_error::CryptoError;
 use crate::crypto::ghost_key::DelegateKeyCertificate;
 use log::debug;
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize)]
+struct ArmorableSigningKey(#[serde(with = "serde_bytes")] Vec<u8>);
+
+impl From<&SigningKey> for ArmorableSigningKey {
+    fn from(sk: &SigningKey) -> Self {
+        ArmorableSigningKey(sk.to_bytes().to_vec())
+    }
+}
+
+impl TryFrom<ArmorableSigningKey> for SigningKey {
+    type Error = p256::elliptic_curve::Error;
+
+    fn try_from(ask: ArmorableSigningKey) -> Result<Self, Self::Error> {
+        SigningKey::from_bytes(ask.0.as_slice().into())
+    }
+}
+
+impl Armorable for SigningKey {
+    fn armor_label() -> &'static str {
+        "SERVER SIGNING KEY"
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+struct ArmorableVerifyingKey(#[serde(with = "serde_bytes")] Vec<u8>);
+
+impl From<&VerifyingKey> for ArmorableVerifyingKey {
+    fn from(vk: &VerifyingKey) -> Self {
+        ArmorableVerifyingKey(vk.to_sec1_bytes().to_vec())
+    }
+}
+
+impl TryFrom<ArmorableVerifyingKey> for VerifyingKey {
+    type Error = p256::elliptic_curve::Error;
+
+    fn try_from(avk: ArmorableVerifyingKey) -> Result<Self, Self::Error> {
+        VerifyingKey::from_sec1_bytes(&avk.0)
+    }
+}
+
+impl Armorable for VerifyingKey {
+    fn armor_label() -> &'static str {
+        "SERVER VERIFYING KEY"
+    }
+}
 
 pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
     // Generate the signing key
