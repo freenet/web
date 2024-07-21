@@ -4,7 +4,8 @@ use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use crate::armor;
 use serde::{Serialize, Deserialize};
 use ciborium::ser::into_writer;
-use crate::crypto::{CryptoError, extract_bytes_from_armor};
+use crate::crypto::CryptoError;
+use crate::armorable::Armorable;
 use log::{debug, info, warn, error};
 use colored::Colorize;
 // Removed unused imports
@@ -336,5 +337,10 @@ pub fn validate_armored_ghost_key_command(master_verifying_key_pem: &str, ghostk
             eprintln!("{} {}", "Error:".red().bold(), error_message.red());
             Err(CryptoError::ValidationError(error_message))
         }
+    }
+}
+impl Armorable for DelegateKeyCertificate {
+    fn armor_label() -> &'static str {
+        "DELEGATE CERTIFICATE"
     }
 }
