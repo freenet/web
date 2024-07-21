@@ -1,4 +1,5 @@
 pub mod crypto;
+pub mod armorable;
 
 use base64::{engine::general_purpose, Engine as _};
 
