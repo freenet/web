@@ -3,7 +3,7 @@ use rand_core::OsRng;
 use p256::ecdsa::{self, signature::Signer};
 use crate::armor;
 use serde::{Serialize, Deserialize};
-use rmp_serde;
+use ciborium;
 use crate::crypto::{CryptoError, extract_bytes_from_armor};
 use log::debug;
 

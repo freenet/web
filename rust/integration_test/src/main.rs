@@ -627,7 +627,7 @@ struct CertificateInfo {
 
 fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateInfo> {
     use base64::{engine::general_purpose::STANDARD, Engine as _};
-    use rmp_serde::{Deserializer, config::StructMapConfig};
+    use ciborium::de::from_reader;
     use serde::Deserialize;
     use serde_json::Value;
     use std::fs;
@@ -658,7 +658,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     }
 
     let mut deserializer = Deserializer::new(&ghost_key_cert_bytes[..]);
-    let ghost_key_cert: GhostkeyCertificate = match Deserialize::deserialize(&mut deserializer) {
+    let ghost_key_cert: GhostkeyCertificate = match from_reader(&ghost_key_cert_bytes[..]) {
         Ok(cert) => {
             println!("Successfully deserialized GhostkeyCertificate");
             cert

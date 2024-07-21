@@ -140,7 +140,7 @@ pub fn validate_ghost_key(master_verifying_key_pem: &str, ghostkey_certificate_a
     info!("Extracted ghostkey certificate length: {}", ghostkey_certificate_bytes.len());
 
     // Deserialize the ghostkey certificate
-    let ghostkey_certificate: GhostkeyCertificate = rmp_serde::from_slice(&ghostkey_certificate_bytes)
+    let ghostkey_certificate: GhostkeyCertificate = ciborium::de::from_reader(&ghostkey_certificate_bytes[..])
         .map_err(|e| CryptoError::DeserializationError(format!("Failed to deserialize ghost certificate file '{}': {}. This could indicate a corrupted or improperly formatted certificate.", ghost_certificate_file, e)))?;
 
     debug!("Deserialized ghostkey certificate: {:?}", ghostkey_certificate);
@@ -189,7 +189,8 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
     };
 
     // Serialize the certificate data
-    let buf = rmp_serde::to_vec(&certificate_data)
+    let mut buf = Vec::new();
+    ciborium::ser::into_writer(&certificate_data, &mut buf)
         .map_err(|e| {
             error!("Failed to serialize certificate data: {:?}", e);
             CryptoError::SerializationError(e.to_string())
@@ -260,7 +261,8 @@ pub fn verify_ghostkey_signature(ghostkey_certificate: &GhostkeyCertificate) -> 
     debug!("Recreated ghostkey signing data: {:?}", ghostkey_signing_data);
 
     // Serialize the ghostkey signing data
-    let buf = rmp_serde::to_vec(&ghostkey_signing_data)
+    let mut buf = Vec::new();
+    ciborium::ser::into_writer(&ghostkey_signing_data, &mut buf)
         .map_err(|e| {
             error!("Failed to serialize ghostkey signing data: {:?}", e);
             CryptoError::SerializationError(e.to_string())
