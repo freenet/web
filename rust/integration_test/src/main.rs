@@ -627,7 +627,6 @@ struct CertificateInfo {
 
 fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateInfo> {
     use base64::{engine::general_purpose::STANDARD, Engine as _};
-    use ciborium::de::from_reader;
     use serde::Deserialize;
     use serde_json::Value;
     use std::fs;
