@@ -657,8 +657,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
         signature: Vec<u8>,
     }
 
-    let mut deserializer = Deserializer::new(&ghost_key_cert_bytes[..]);
-    let ghost_key_cert: GhostkeyCertificate = match from_reader(&ghost_key_cert_bytes[..]) {
+    let ghost_key_cert: GhostkeyCertificate = match ciborium::de::from_reader(&ghost_key_cert_bytes[..]) {
         Ok(cert) => {
             println!("Successfully deserialized GhostkeyCertificate");
             cert
