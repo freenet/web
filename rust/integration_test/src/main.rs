@@ -650,7 +650,12 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
 
     // Deserialize the ghost key certificate
     #[derive(Debug, Deserialize)]
-    struct GhostkeyCertificate(u8, Vec<u8>, Vec<u8>, Vec<u8>);
+    struct GhostkeyCertificate {
+        version: u8,
+        delegate_certificate: Vec<u8>,
+        ghostkey_verifying_key: Vec<u8>,
+        signature: Vec<u8>,
+    }
 
     let mut deserializer = Deserializer::new(&ghost_key_cert_bytes[..]);
     let ghost_key_cert: GhostkeyCertificate = match Deserialize::deserialize(&mut deserializer) {
@@ -666,13 +671,14 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     };
 
     println!("Ghost Key Certificate:");
-    println!("Version: {}", ghost_key_cert.0);
-    println!("Delegate Certificate Length: {}", ghost_key_cert.1.len());
-    println!("Ghostkey Verifying Key Length: {}", ghost_key_cert.2.len());
-    println!("Signature Length: {}", ghost_key_cert.3.len());
+    println!("Version: {}", ghost_key_cert.version);
+    println!("Delegate Certificate Length: {}", ghost_key_cert.delegate_certificate.len());
+    println!("Ghostkey Verifying Key Length: {}", ghost_key_cert.ghostkey_verifying_key.len());
+    println!("Signature Length: {}", ghost_key_cert.signature.len());
 
     // Load the delegate key from file
     let delegate_key_path = Path::new("/tmp/ghostkey_test/delegates/delegate_certificate_20.pem");
+    println!("Loading delegate key from file: {:?}", delegate_key_path);
     let delegate_key_pem = fs::read_to_string(delegate_key_path)?;
     let delegate_key_base64 = delegate_key_pem.lines()
         .filter(|line| !line.starts_with("-----"))
@@ -680,26 +686,26 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
         .join("");
     let delegate_key_bytes = STANDARD.decode(delegate_key_base64)?;
 
-    println!("\nLoaded delegate key from file. Byte length: {}", delegate_key_bytes.len());
+    println!("Loaded delegate key from file. Byte length: {}", delegate_key_bytes.len());
 
     // Compare the loaded delegate key with the one in the ghost key certificate
-    if delegate_key_bytes == ghost_key_cert.1 {
+    if delegate_key_bytes == ghost_key_cert.delegate_certificate {
         println!("Delegate key in ghost key certificate matches the one from file");
     } else {
         println!("Warning: Delegate key in ghost key certificate does not match the one from file");
         println!("File delegate key (first 100 bytes): {:?}", &delegate_key_bytes[..100.min(delegate_key_bytes.len())]);
-        println!("Certificate delegate key (first 100 bytes): {:?}", &ghost_key_cert.1[..100.min(ghost_key_cert.1.len())]);
+        println!("Certificate delegate key (first 100 bytes): {:?}", &ghost_key_cert.delegate_certificate[..100.min(ghost_key_cert.delegate_certificate.len())]);
     }
 
     // Attempt to deserialize the delegate certificate
-    let delegate_cert: Vec<Value> = match rmp_serde::from_slice(&ghost_key_cert.1) {
+    let delegate_cert: Vec<Value> = match rmp_serde::from_slice(&ghost_key_cert.delegate_certificate) {
         Ok(cert) => {
             println!("Successfully deserialized delegate certificate");
             cert
         },
         Err(e) => {
             println!("Error deserializing delegate certificate: {:?}", e);
-            println!("Delegate certificate content (first 100 bytes): {:?}", &ghost_key_cert.1[..100.min(ghost_key_cert.1.len())]);
+            println!("Delegate certificate content (first 100 bytes): {:?}", &ghost_key_cert.delegate_certificate[..100.min(ghost_key_cert.delegate_certificate.len())]);
             return Err(anyhow::anyhow!("Failed to deserialize delegate certificate: {:?}", e));
         }
     };
@@ -711,7 +717,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
 
     // Extract and parse the JSON string containing the certificate info
     let mut cert_info = CertificateInfo {
-        version: ghost_key_cert.0,
+        version: ghost_key_cert.version,
         amount: 0,
         currency: String::new(),
     };
