@@ -2,7 +2,6 @@ use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand_core::OsRng;
 use p256::ecdsa::{self, signature::Signer};
 use crate::armor;
-use serde::Serialize;
 use ciborium::ser::into_writer;
 use crate::crypto::{CryptoError, extract_bytes_from_armor};
 use log::debug;

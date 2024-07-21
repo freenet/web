@@ -10,12 +10,6 @@ use colored::Colorize;
 // Removed unused imports
 
 #[derive(Serialize, Deserialize, Debug)]
-struct DelegateCertificate {
-    delegate_verifying_key: String,
-    // Add other fields as needed
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 pub struct GhostKey {
     pub version: u8,
     pub certificate: GhostkeyCertificate,
