@@ -1,6 +1,5 @@
 use serde::{Serialize, Deserialize};
-use base64::{encode_config, decode_config, Config};
-use base64::STANDARD;
+use base64::{engine::general_purpose, Engine as _};
 use std::fs;
 use std::io::{self, BufReader, BufRead, Write};
 use std::path::Path;
@@ -13,7 +12,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     // Serialize the object to a base64 armored string
     fn to_base64_armored(&self) -> io::Result<String> {
         let cbor_data = serde_cbor::to_vec(self)?;
-        let base64_data = encode_config(&cbor_data, STANDARD);
+        let base64_data = general_purpose::STANDARD.encode(&cbor_data);
         let wrapped_base64 = wrap_at_64_chars(&base64_data);
         Ok(format!(
             "-----BEGIN {}-----\n{}\n-----END {}-----",
@@ -30,7 +29,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
             return Err(io::Error::new(io::ErrorKind::InvalidData, "Armor label does not match"));
         }
         let base64_data = extract_base64(armored, &label)?;
-        let cbor_data = decode_config(&base64_data, STANDARD)?;
+        let cbor_data = general_purpose::STANDARD.decode(&base64_data)?;
         let object = serde_cbor::from_slice(&cbor_data)?;
         Ok(object)
     }
@@ -38,12 +37,12 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     // Serialize the object to a naked base64 string
     fn to_naked_base64(&self) -> io::Result<String> {
         let cbor_data = serde_cbor::to_vec(self)?;
-        Ok(encode_config(&cbor_data, STANDARD))
+        Ok(general_purpose::STANDARD.encode(&cbor_data))
     }
 
     // Deserialize the object from a naked base64 string
     fn from_naked_base64(base64: &str) -> io::Result<Self> where Self: Sized {
-        let cbor_data = decode_config(base64, STANDARD)?;
+        let cbor_data = general_purpose::STANDARD.decode(base64)?;
         let object = serde_cbor::from_slice(&cbor_data)?;
         Ok(object)
     }
