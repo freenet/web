@@ -15,7 +15,7 @@ use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use crate::armor;
 use ciborium::ser::into_writer;
 use crate::crypto::crypto_error::CryptoError;
-use crate::crypto::generate_delegate::DelegateKeyCertificate;
+use crate::crypto::ghost_key::DelegateKeyCertificate;
 use log::{warn, debug};
 
 pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
