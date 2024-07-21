@@ -3,16 +3,10 @@ use rand_core::OsRng;
 use p256::ecdsa::{self, signature::Signer};
 use crate::armor;
 use serde::{Serialize, Deserialize};
-use ciborium;
+use ciborium::ser::into_writer;
 use crate::crypto::{CryptoError, extract_bytes_from_armor};
 use log::debug;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct DelegateKeyCertificate {
-    pub verifying_key: Vec<u8>,
-    pub info: String,
-    pub signature: Vec<u8>,
-}
+use crate::crypto::ghost_key::DelegateKeyCertificate;
 
 pub fn generate_delegate_key(master_signing_key_pem: &str, info: &str) -> Result<(String, String), CryptoError> {
     debug!("Generating delegate key with info: {}", info);
@@ -36,7 +30,8 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, info: &str) -> Result
         info: info.to_string(),
         signature: vec![],
     };
-    let certificate_data_bytes = rmp_serde::to_vec(&certificate_data)
+    let mut certificate_data_bytes = Vec::new();
+    into_writer(&certificate_data, &mut certificate_data_bytes)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
     // Sign the certificate data
@@ -48,7 +43,8 @@ pub fn generate_delegate_key(master_signing_key_pem: &str, info: &str) -> Result
     };
 
     // Serialize the signed certificate data using bincode
-    let signed_certificate_bytes = rmp_serde::to_vec(&signed_certificate_data)
+    let mut signed_certificate_bytes = Vec::new();
+    into_writer(&signed_certificate_data, &mut signed_certificate_bytes)
         .map_err(|e| CryptoError::SerializationError(e.to_string()))?;
 
     debug!("Serialized certificate: {:?}", signed_certificate_bytes);

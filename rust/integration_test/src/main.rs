@@ -629,6 +629,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     use base64::{engine::general_purpose::STANDARD, Engine as _};
     use serde::Deserialize;
     use serde_json::Value;
+    use crate::crypto::ghost_key::DelegateKeyCertificate;
     use std::fs;
     use std::path::Path;
 
@@ -696,7 +697,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     }
 
     // Attempt to deserialize the delegate certificate
-    let delegate_cert: Vec<Value> = match ciborium::de::from_reader(&ghost_key_cert.delegate_certificate[..]) {
+    let delegate_cert: DelegateKeyCertificate = match ciborium::de::from_reader(&ghost_key_cert.delegate_certificate[..]) {
         Ok(cert) => {
             println!("Successfully deserialized delegate certificate");
             cert
@@ -709,36 +710,27 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     };
 
     println!("\nDelegate Certificate (deserialized):");
-    for (i, value) in delegate_cert.iter().enumerate() {
-        println!("Item {}: {:?}", i, value);
-    }
+    println!("Verifying Key: {:?}", delegate_cert.verifying_key);
+    println!("Info: {}", delegate_cert.info);
+    println!("Signature: {:?}", delegate_cert.signature);
 
-    // Extract and parse the JSON string containing the certificate info
+    // Parse the JSON string containing the certificate info
+    let info: serde_json::Value = serde_json::from_str(&delegate_cert.info)?;
+    println!("\nCertificate Info:");
+    println!("{}", serde_json::to_string_pretty(&info)?);
+
+    // Extract amount and currency
     let mut cert_info = CertificateInfo {
         version: ghost_key_cert.version,
-        amount: 0,
-        currency: String::new(),
+        amount: info.get("amount").and_then(|v| v.as_u64()).unwrap_or(0),
+        currency: info.get("currency").and_then(|v| v.as_str()).unwrap_or("").to_string(),
     };
 
-    if let Some(Value::String(info_str)) = delegate_cert.get(1) {
-        println!("Certificate info string: {}", info_str);
-        let info: serde_json::Value = serde_json::from_str(info_str)?;
-        println!("\nCertificate Info:");
-        println!("{}", serde_json::to_string_pretty(&info)?);
-
-        // Extract amount and currency
-        cert_info.amount = info.get("amount").and_then(|v| v.as_u64()).unwrap_or(0);
-        cert_info.currency = info.get("currency").and_then(|v| v.as_str()).unwrap_or("").to_string();
-
-        // Verify that the delegate certificate contains the correct amount
-        if cert_info.amount == 20 {
-            println!("Delegate certificate contains the correct amount: $20");
-        } else {
-            println!("Warning: Delegate certificate contains an unexpected amount: ${}", cert_info.amount);
-        }
+    // Verify that the delegate certificate contains the correct amount
+    if cert_info.amount == 20 {
+        println!("Delegate certificate contains the correct amount: $20");
     } else {
-        println!("Warning: Couldn't find the certificate info string in the delegate certificate");
-        println!("Delegate certificate content: {:?}", delegate_cert);
+        println!("Warning: Delegate certificate contains an unexpected amount: ${}", cert_info.amount);
     }
 
     println!("Ghost key certificate inspection completed");

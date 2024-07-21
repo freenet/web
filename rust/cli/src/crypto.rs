@@ -13,7 +13,6 @@ use sha2::{Sha256, Digest};
 use p256::{SecretKey, FieldBytes};
 use p256::ecdsa::{self, signature::{Signer, Verifier}};
 use crate::armor;
-use serde::Serialize;
 use ciborium::ser::into_writer;
 use crate::crypto::crypto_error::CryptoError;
 use crate::crypto::generate_delegate::DelegateKeyCertificate;
