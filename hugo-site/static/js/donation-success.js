@@ -247,13 +247,13 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       console.log("Decoded delegate certificate type:", Object.prototype.toString.call(decodedDelegateCertificate));
       console.log("Decoded delegate certificate length:", decodedDelegateCertificate.length);
 
-      // Create the GhostkeyCertificate object as an array
-      ghostKeyCertificate = [
-        1, // version
-        decodedDelegateCertificate,
-        Array.from(new Uint8Array(publicKey)),
-        Array.from(new Uint8Array(unblindedSignature))
-      ];
+      // Create the GhostkeyCertificate object as a struct
+      ghostKeyCertificate = {
+        version: 1,
+        delegate_certificate: decodedDelegateCertificate,
+        ghostkey_verifying_key: Array.from(new Uint8Array(publicKey)),
+        signature: Array.from(new Uint8Array(unblindedSignature))
+      };
       console.log("Ghost key certificate object created:", ghostKeyCertificate);
 
       // Serialize the GhostkeyCertificate using MessagePack
