@@ -172,7 +172,7 @@ pub fn validate_delegate_certificate(master_verifying_key_pem: &str, delegate_ce
         })?;
 
     // Deserialize the delegate certificate
-    let delegate_cert: DelegateKeyCertificate = rmp_serde::from_slice(delegate_certificate)
+    let delegate_cert: DelegateKeyCertificate = ciborium::de::from_reader(delegate_certificate)
         .map_err(|e| {
             error!("Deserialization error: {:?}", e);
             debug!("Delegate certificate bytes: {:?}", delegate_certificate);
