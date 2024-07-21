@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use base64::{engine::general_purpose, Engine as _};
 use std::fs;
-use std::io::{self, BufReader, BufRead};
+use std::io::{self, BufReader, BufRead, Write};
 use std::path::Path;
 use thiserror::Error;
 
@@ -169,7 +169,7 @@ mod tests {
             file.write_all(b"\n").unwrap();
             file.write_all(armored.as_bytes()).unwrap();
         }
-        let result: io::Result<TestStruct> = TestStruct::from_file(path);
+        let result: Result<TestStruct, ArmorableError> = TestStruct::from_file(path);
         assert!(result.is_err());
     }
 }
