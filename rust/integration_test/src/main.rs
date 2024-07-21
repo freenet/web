@@ -7,7 +7,7 @@ use std::thread;
 use std::time::Instant;
 use std::env;
 use std::fs;
-use std::io::BufReader;
+use std::io::{BufRead, BufReader};
 
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
@@ -191,7 +191,7 @@ fn generate_master_key(temp_dir: &std::path::Path) -> Result<std::path::PathBuf>
     let master_key_file = temp_dir.join("master_signing_key.pem");
     println!("Generating master key in directory: {:?}", temp_dir);
     let cli_dir = std::env::current_dir()?.join("../cli");
-    let output = Command::new("cargo")
+    let output = ProcessCommand::new("cargo")
         .args(&["run", "--quiet", "--manifest-path", cli_dir.join("Cargo.toml").to_str().unwrap(), "--", "generate-master-key", "--output-dir"])
         .arg(temp_dir)
         .current_dir(&cli_dir)
@@ -478,7 +478,7 @@ async fn run_browser_test(headless: bool) -> Result<()> {
         println!("Failed to read master verifying key file");
     }
 
-    let output = Command::new("cargo")
+    let output = ProcessCommand::new("cargo")
         .args(&[
             "run",
             "--manifest-path",
@@ -529,7 +529,7 @@ async fn run_browser_test(headless: bool) -> Result<()> {
 
     // Generate a ghost key using the CLI
     println!("Generating ghost key using CLI...");
-    let cli_output = Command::new("cargo")
+    let cli_output = ProcessCommand::new("cargo")
         .args(&[
             "run",
             "--manifest-path",
@@ -552,7 +552,7 @@ async fn run_browser_test(headless: bool) -> Result<()> {
     println!("Ghost key generated successfully using CLI");
 
     // Validate the CLI-generated ghost key
-    let cli_validation_output = Command::new("cargo")
+    let cli_validation_output = ProcessCommand::new("cargo")
         .args(&[
             "run",
             "--manifest-path",
