@@ -5,9 +5,58 @@ pub mod crypto_error;
 pub mod master_key;
 pub mod sign_with_key;
 
+use crate::armorable::Armorable;
+use p256::ecdsa::{SigningKey, VerifyingKey};
+use serde::{Serialize, Deserialize};
+
+impl Armorable for SigningKey {
+    fn armor_label() -> &'static str {
+        "SERVER SIGNING KEY"
+    }
+}
+
+impl Armorable for VerifyingKey {
+    fn armor_label() -> &'static str {
+        "SERVER VERIFYING KEY"
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+struct ArmorableVerifyingKey(#[serde(with = "serde_bytes")] Vec<u8>);
+
+impl From<&VerifyingKey> for ArmorableVerifyingKey {
+    fn from(vk: &VerifyingKey) -> Self {
+        ArmorableVerifyingKey(vk.to_sec1_bytes().to_vec())
+    }
+}
+
+impl TryFrom<ArmorableVerifyingKey> for VerifyingKey {
+    type Error = p256::Error;
+
+    fn try_from(avk: ArmorableVerifyingKey) -> Result<Self, Self::Error> {
+        VerifyingKey::from_sec1_bytes(&avk.0)
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+struct ArmorableSigningKey(#[serde(with = "serde_bytes")] Vec<u8>);
+
+impl From<&SigningKey> for ArmorableSigningKey {
+    fn from(sk: &SigningKey) -> Self {
+        ArmorableSigningKey(sk.to_bytes().to_vec())
+    }
+}
+
+impl TryFrom<ArmorableSigningKey> for SigningKey {
+    type Error = p256::Error;
+
+    fn try_from(ask: ArmorableSigningKey) -> Result<Self, Self::Error> {
+        SigningKey::from_bytes(&ask.0)
+    }
+}
+
 use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand_core::OsRng;
-use base64::{engine::general_purpose, Engine as _};
 use serde_json::Value;
 use sha2::{Sha256, Digest};
 use p256::{SecretKey, FieldBytes};
@@ -16,7 +65,7 @@ use crate::armorable::Armorable;
 use ciborium::ser::into_writer;
 use crate::crypto::crypto_error::CryptoError;
 use crate::crypto::ghost_key::DelegateKeyCertificate;
-use log::{warn, debug};
+use log::debug;
 
 pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
     // Generate the signing key
@@ -31,7 +80,6 @@ pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
 
     Ok((armored_signing_key, armored_verifying_key))
 }
-
 
 pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
     debug!("Master verifying key PEM: {}", master_verifying_key_pem);

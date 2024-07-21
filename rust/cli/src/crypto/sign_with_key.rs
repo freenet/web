@@ -7,10 +7,7 @@ pub fn sign_with_key(blinded_verifying_key: &Value, server_master_signing_key: &
     debug!("Server master signing key: {}", server_master_signing_key);
     debug!("Blinded verifying key: {:?}", blinded_verifying_key);
 
-    let decoded_key = extract_bytes_from_armor(server_master_signing_key, "MASTER SIGNING KEY")?;
-    debug!("Extracted bytes from armor: {:?}", decoded_key);
-
-    let master_signing_key = SigningKey::from_slice(&decoded_key)
+    let master_signing_key = SigningKey::from_base64_armored(server_master_signing_key)
         .map_err(|e| {
             error!("Failed to create SigningKey: {}", e);
             CryptoError::KeyCreationError(e.to_string())

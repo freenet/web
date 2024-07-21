@@ -3,7 +3,8 @@ use rand_core::OsRng;
 use p256::ecdsa::{self, signature::Signer};
 use crate::armor;
 use ciborium::ser::into_writer;
-use crate::crypto::{CryptoError, extract_bytes_from_armor};
+use crate::crypto::CryptoError;
+use crate::armorable::Armorable;
 use log::debug;
 use crate::crypto::ghost_key::DelegateKeyCertificate;
 

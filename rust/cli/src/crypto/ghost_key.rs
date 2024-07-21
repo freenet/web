@@ -1,14 +1,12 @@
 use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand_core::OsRng;
 use p256::ecdsa::{self, signature::{Signer, Verifier}};
-use crate::armor;
 use serde::{Serialize, Deserialize};
 use ciborium::ser::into_writer;
 use crate::crypto::CryptoError;
 use crate::armorable::Armorable;
 use log::{debug, info, warn, error};
 use colored::Colorize;
-// Removed unused imports
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GhostKey {
