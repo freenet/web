@@ -7,7 +7,7 @@ use crate::wrappers::signing_key::SerializableSigningKey;
 use crate::wrappers::verifying_key::SerializableVerifyingKey;
 use crate::armorable::*;
 
-pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> Result<(), Box<dyn std::error::Error>> {
+pub(crate) fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> Result<(), Box<dyn std::error::Error>> {
     let (signing_key, verifying_key) = create_master_keypair()?;
     let signing_key : SerializableSigningKey = signing_key.into();
     let verifying_key : SerializableVerifyingKey = verifying_key.into();
