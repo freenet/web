@@ -4,12 +4,9 @@ use serde::de;
 use std::convert::TryFrom;
 use base64::engine::general_purpose;
 use base64::Engine;
-use crate::armorable::Armorable;
 
 #[derive(Clone)]
 pub struct SerializableVerifyingKey(pub VerifyingKey);
-
-impl Armorable for SerializableVerifyingKey {}
 
 impl From<VerifyingKey> for SerializableVerifyingKey {
     fn from(key: VerifyingKey) -> Self {

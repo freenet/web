@@ -120,15 +120,15 @@ impl GhostkeyCertificate {
     
     pub fn verify(&self, master_verifying_key: &Option<VerifyingKey>) -> Result<String, Box<GhostkeyError>> {
         // Verify delegate certificate
-        let delegate_verifying_key = self.delegate.verify(master_verifying_key.as_ref().unwrap())
+        let info = self.delegate.verify(master_verifying_key.as_ref().unwrap())
             .map_err(|e| SignatureVerificationError(format!("Failed to verify delegate: {}", e)))?;
         
         // Verify ghostkey certificate
-        let verification = verify_with_hash(delegate_verifying_key, self.verifying_key.to_bytes()?, self.signature.as_ref())
+        let verification = verify_with_hash(self.delegate.payload.delegate_verifying_key.as_ref(), &self.verifying_key, self.signature.as_ref())
             .map_err(|e| SignatureVerificationError(format!("Failed to verify ghostkey: {}", e)))?;
         
         if verification {
-            Ok(self.delegate.payload.info.clone())
+            Ok(info)
         } else {
             Err(Box::new(SignatureVerificationError("Failed to verify ghostkey certificate".to_string())))
         }

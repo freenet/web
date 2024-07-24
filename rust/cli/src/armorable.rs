@@ -6,19 +6,21 @@ use std::any::type_name;
 use std::path::Path;
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
+use crate::errors::GhostkeyError;
+use crate::errors::GhostkeyError::Base64DecodeError;
 
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
-    fn to_bytes(&self) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn to_bytes(&self) -> Result<Vec<u8>, GhostkeyError> {
         let mut buf = Vec::new();
-        into_writer(self, &mut buf)?;
+        into_writer(self, &mut buf).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
         Ok(buf)
     }
 
-    fn from_bytes(bytes: &[u8]) -> Result<Self, Box<dyn std::error::Error>>
+    fn from_bytes(bytes: &[u8]) -> Result<Self, GhostkeyError>
     where
         Self: Sized,
     {
-        let object: Self = from_reader(bytes)?;
+        let object: Self = from_reader(bytes).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
         Ok(object)
     }
     fn struct_name() -> String {
@@ -39,14 +41,14 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         result.to_uppercase()
     }
 
-    fn to_file(&self, file_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
-        let buf = self.to_bytes()?;
+    fn to_file(&self, file_path: &Path) -> Result<(), GhostkeyError> {
+        let buf = self.to_bytes().map_err(|e| GhostkeyError::IOError(e.to_string()))?;
         let base64_encoded = BASE64_STANDARD.encode(&buf);
         let wrapped = base64_encoded
             .as_bytes()
             .chunks(64)
             .map(std::str::from_utf8)
-            .collect::<Result<Vec<&str>, _>>()?
+            .collect::<Result<Vec<&str>, _>>().map_err(|e| GhostkeyError::DecodingError("UTF8 decoding error".to_string()))?
             .join("\n");
 
         let struct_name = Self::struct_name();
@@ -55,19 +57,19 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
             struct_name, wrapped, struct_name
         );
 
-        let mut file = File::create(file_path)?;
-        file.write_all(pem_content.as_bytes())?;
+        let mut file = File::create(file_path).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
+        file.write_all(pem_content.as_bytes()).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
         Ok(())
     }
 
-    fn from_file(file_path: &Path) -> Result<Self, Box<dyn std::error::Error>>
+    fn from_file(file_path: &Path) -> Result<Self, GhostkeyError>
     where
         Self: Sized,
     {
-        let file = File::open(file_path)?;
+        let file = File::open(file_path).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
         let mut reader = BufReader::new(file);
         let mut pem_content = String::new();
-        reader.read_to_string(&mut pem_content)?;
+        reader.read_to_string(&mut pem_content).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
 
         let struct_name = Self::struct_name();
         let _begin_label = format!("-----BEGIN {}-----", struct_name);
@@ -79,7 +81,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
             .collect::<Vec<&str>>()
             .join("");
 
-        let decoded = BASE64_STANDARD.decode(&base64_encoded)?;
+        let decoded = BASE64_STANDARD.decode(&base64_encoded).map_err(|e| GhostkeyError::Base64DecodeError(e.to_string()))?;
         Self::from_bytes(&decoded)
     }
 
@@ -88,14 +90,16 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         Ok(BASE64_STANDARD.encode(&buf))
     }
 
-    fn from_base64(encoded: &str) -> Result<Self, Box<dyn std::error::Error>>
+    fn from_base64(encoded: &str) -> Result<Self, GhostkeyError>
     where
         Self: Sized,
     {
-        let decoded = BASE64_STANDARD.decode(encoded)?;
+        let decoded = BASE64_STANDARD.decode(encoded).map_err(|e| Base64DecodeError(e.to_string()))?;
         Self::from_bytes(&decoded)
     }
 }
+
+impl<T: Serialize + for<'de> Deserialize<'de>> Armorable for T {}
 
 #[cfg(test)]
 mod tests {
@@ -107,8 +111,6 @@ mod tests {
         field1: String,
         field2: i32,
     }
-
-    impl Armorable for TestStruct {}
 
     #[test]
     fn test_to_base64() {

@@ -3,7 +3,10 @@ use clap::{Command, Arg, ArgAction};
 use std::path::Path;
 use colored::Colorize;
 use log::{info};
-use ghostkey::commands::generate_master_key_cmd;
+use p256::ecdsa::SigningKey;
+use ghostkey::armorable::Armorable;
+use ghostkey::commands::{generate_delegate_cmd, generate_master_key_cmd};
+use ghostkey::wrappers::signing_key::SerializableSigningKey;
 
 fn main() {
     let result = run();
@@ -108,10 +111,13 @@ fn run() -> Result<(), Box<dyn Error>> {
             generate_master_key_cmd(output_dir, ignore_permissions)?;
         }
         Some(("generate-delegate", sub_matches)) => {
-            let _master_signing_key_file = sub_matches.get_one::<String>("master-signing-key").unwrap();
-            let _info = sub_matches.get_one::<String>("info").unwrap();
-            let _output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
-            //generate_and_save_delegate_key(master_signing_key_file, info, output_dir)?;
+            let master_signing_key_file = Path::new(sub_matches.get_one::<String>("master-signing-key").unwrap());
+            let serializable_signing_key = SerializableSigningKey::from_file(master_signing_key_file)?;
+            let master_signing_key: &SigningKey = serializable_signing_key.as_signing_key();            
+            let info = sub_matches.get_one::<String>("info").unwrap();
+            let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
+            let ignore_permissions = sub_matches.get_flag("ignore-permissions");
+            generate_delegate_cmd(master_signing_key, info, output_dir, ignore_permissions).unwrap();
         }
         Some(("verify-delegate-key", sub_matches)) => {
             let _master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();

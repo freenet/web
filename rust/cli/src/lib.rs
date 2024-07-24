@@ -1,6 +1,7 @@
 pub mod armorable;
-pub mod master;
-pub mod crypto_error;
+pub mod util;
+pub mod errors;
 pub mod wrappers;
 pub mod delegate_certificate;
+pub mod ghostkey_certificate;
 pub mod commands;

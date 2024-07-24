@@ -2,13 +2,16 @@ use std::path::Path;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use log::info;
-use crate::master::create_master_keypair;
+use p256::ecdsa::SigningKey;
+use crate::util::create_keypair;
 use crate::wrappers::signing_key::SerializableSigningKey;
 use crate::wrappers::verifying_key::SerializableVerifyingKey;
 use crate::armorable::*;
+use crate::delegate_certificate::DelegateCertificate;
+use crate::errors::GhostkeyError;
 
-pub(crate) fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> Result<(), Box<dyn std::error::Error>> {
-    let (signing_key, verifying_key) = create_master_keypair()?;
+pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let (signing_key, verifying_key) = create_keypair()?;
     let signing_key : SerializableSigningKey = signing_key.into();
     let verifying_key : SerializableVerifyingKey = verifying_key.into();
     let signing_key_file = output_dir.join("master_signing_key.pem");
@@ -25,9 +28,31 @@ pub(crate) fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: boo
     Ok(())
 }
 
+pub fn generate_delegate_cmd(
+    master_signing_key : &SigningKey,
+    info : &String,
+    output_dir : &Path,
+    ignore_permissions : bool
+) -> Result<(), GhostkeyError> {
+    let (delegate_certificate, delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
+    let delegate_signing_key : SerializableSigningKey = delegate_signing_key.into();
+    let delegate_certificate_file = output_dir.join("delegate_certificate.pem");
+    let delegate_signing_key_file = output_dir.join("delegate_signing_key.pem");
+    info!("Writing delegate certificate to {}", delegate_certificate_file.display());
+    delegate_certificate.to_file(&delegate_certificate_file)?;
+    info!("Writing delegate signing key to {}", delegate_signing_key_file.display());
+    delegate_signing_key.to_file(&delegate_signing_key_file).unwrap();
+    if !ignore_permissions {
+        require_strict_permissions(&delegate_signing_key_file)?;
+    } else {
+        info!("Ignoring permission checks for {}", delegate_certificate_file.display());
+        info!("Ignoring permission checks for {}", delegate_signing_key_file.display());
+    }
+    Ok(())
+}
 
-fn require_strict_permissions(file_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
-    let metadata = fs::metadata(file_path)?;
+fn require_strict_permissions(file_path: &Path) -> Result<(), GhostkeyError> {
+    let metadata = fs::metadata(file_path).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
     let permissions = metadata.permissions();
     let mode = permissions.mode();
 

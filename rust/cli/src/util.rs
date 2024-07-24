@@ -3,6 +3,7 @@ use rand_core::OsRng;
 
 use serde::{Serialize, Deserialize};
 use crate::errors::GhostkeyError;
+use crate::armorable::*;
 
 /// Creates a new ECDSA keypair for signing and verification.
 ///
@@ -30,8 +31,8 @@ pub fn create_keypair() -> Result<(SigningKey, VerifyingKey), GhostkeyError> {
 /// # Note
 ///
 /// This function uses blake3 to hash the data before signing.
-pub fn sign<T: Serialize>(signing_key: &SigningKey, data: &T) -> Result<Signature, GhostkeyError> {
-    let bytes = ciborium::ser::into_vec(data).map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
+pub fn sign_with_hash<T: Serialize + for<'de> Deserialize<'de>>(signing_key: &SigningKey, data: &T) -> Result<Signature, Box<GhostkeyError>> {
+    let bytes = data.to_bytes().map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
     let hash = blake3::hash(&bytes);
     Ok(signing_key.sign(hash.as_bytes()))
 }
@@ -52,8 +53,8 @@ pub fn sign<T: Serialize>(signing_key: &SigningKey, data: &T) -> Result<Signatur
 /// # Note
 ///
 /// This function uses blake3 to hash the data before verification.
-pub fn verify<T: Serialize>(verifying_key: &VerifyingKey, data: &T, signature: &Signature) -> Result<bool, GhostkeyError> {
-    let bytes = ciborium::ser::into_vec(data).map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
+pub fn verify_with_hash<T: Serialize + for<'de> Deserialize<'de>>(verifying_key: &VerifyingKey, data: &T, signature: &Signature) -> Result<bool, Box<GhostkeyError>> {
+    let bytes = data.to_bytes().map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
     let hash = blake3::hash(&bytes);
     Ok(verifying_key.verify(hash.as_bytes(), signature).is_ok())
 }
@@ -87,10 +88,10 @@ mod tests {
         };
 
         // Sign the data
-        let signature = sign(&signing_key, &test_data).unwrap();
+        let signature = sign_with_hash(&signing_key, &test_data).unwrap();
 
         // Verify the signature
-        let is_valid = verify(&verifying_key, &test_data, &signature).unwrap();
+        let is_valid = verify_with_hash(&verifying_key, &test_data, &signature).unwrap();
         assert!(is_valid);
 
         // Modify the data and verify again (should fail)
@@ -98,7 +99,7 @@ mod tests {
             field1: "Hello".to_string(),
             field2: 43,
         };
-        let is_valid = verify(&verifying_key, &modified_data, &signature).unwrap();
+        let is_valid = verify_with_hash(&verifying_key, &modified_data, &signature).unwrap();
         assert!(!is_valid);
     }
 }
