@@ -12,6 +12,65 @@ pub struct DelegateCertificate {
     pub signature : SerializableSignature,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::util::create_keypair;
+
+    #[test]
+    fn test_delegate_certificate_creation_and_verification() {
+        // Create a master key pair
+        let (master_signing_key, master_verifying_key) = create_keypair().unwrap();
+
+        // Create a delegate certificate
+        let info = "Test Delegate".to_string();
+        let (certificate, _delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
+
+        // Verify the certificate
+        let verified_info = certificate.verify(&master_verifying_key).unwrap();
+        assert_eq!(verified_info, info);
+    }
+
+    #[test]
+    fn test_delegate_certificate_invalid_signature() {
+        // Create two sets of key pairs
+        let (master_signing_key, _) = create_keypair().unwrap();
+        let (_, wrong_verifying_key) = create_keypair().unwrap();
+
+        // Create a delegate certificate
+        let info = "Test Delegate".to_string();
+        let (certificate, _delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
+
+        // Try to verify with the wrong key
+        let result = certificate.verify(&wrong_verifying_key);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err().downcast_ref::<GhostkeyError>(),
+                         Some(GhostkeyError::SignatureVerificationError(_))));
+    }
+
+    #[test]
+    fn test_delegate_certificate_payload_integrity() {
+        // Create a master key pair
+        let (master_signing_key, master_verifying_key) = create_keypair().unwrap();
+
+        // Create a delegate certificate
+        let info = "Test Delegate".to_string();
+        let (mut certificate, _delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
+
+        // Verify the original certificate
+        assert!(certificate.verify(&master_verifying_key).is_ok());
+
+        // Tamper with the payload
+        certificate.payload.info = "Tampered Info".to_string();
+
+        // Verify the tampered certificate
+        let result = certificate.verify(&master_verifying_key);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err().downcast_ref::<GhostkeyError>(),
+                         Some(GhostkeyError::SignatureVerificationError(_))));
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct DelegatePayload {
     pub delegate_verifying_key : SerializableVerifyingKey,
