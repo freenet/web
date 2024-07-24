@@ -10,7 +10,7 @@ use crate::armorable::*;
 use crate::delegate_certificate::DelegateCertificate;
 use crate::errors::GhostkeyError;
 
-pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> Result<(), Box<dyn std::error::Error>> {
+pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> u32 {
     let (signing_key, verifying_key) = create_keypair()?;
     let signing_key : SerializableSigningKey = signing_key.into();
     let verifying_key : SerializableVerifyingKey = verifying_key.into();
@@ -25,7 +25,7 @@ pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> R
     } else {
         info!("Ignoring permission checks for {}", signing_key_file.display());
     }
-    Ok(())
+    0
 }
 
 pub fn generate_delegate_cmd(
@@ -33,7 +33,7 @@ pub fn generate_delegate_cmd(
     info : &String,
     output_dir : &Path,
     ignore_permissions : bool
-) -> Result<(), GhostkeyError> {
+) -> u32 {
     let (delegate_certificate, delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
     let delegate_signing_key : SerializableSigningKey = delegate_signing_key.into();
     let delegate_certificate_file = output_dir.join("delegate_certificate.pem");
@@ -48,7 +48,7 @@ pub fn generate_delegate_cmd(
         info!("Ignoring permission checks for {}", delegate_certificate_file.display());
         info!("Ignoring permission checks for {}", delegate_signing_key_file.display());
     }
-    Ok(())
+    0
 }
 
 fn require_strict_permissions(file_path: &Path) -> Result<(), GhostkeyError> {
