@@ -1,7 +1,7 @@
 use p256::ecdsa::{Signature, signature::Signer, signature::Verifier, SigningKey, VerifyingKey};
 use rand_core::OsRng;
 
-use crate::armorable::Armorable;
+use serde::{Serialize, Deserialize};
 use crate::errors::GhostkeyError;
 
 /// Creates a new ECDSA keypair for signing and verification.
@@ -21,7 +21,7 @@ pub fn create_keypair() -> Result<(SigningKey, VerifyingKey), GhostkeyError> {
 /// # Arguments
 ///
 /// * `signing_key` - The `SigningKey` to use for signing.
-/// * `data` - The data to be signed, which must implement the `Armorable` trait.
+/// * `data` - The data to be signed, which must implement the `Serialize` trait.
 ///
 /// # Returns
 ///
@@ -30,8 +30,8 @@ pub fn create_keypair() -> Result<(SigningKey, VerifyingKey), GhostkeyError> {
 /// # Note
 ///
 /// This function uses blake3 to hash the data before signing.
-pub fn sign<T: Armorable>(signing_key: &SigningKey, data: &T) -> Result<Signature, GhostkeyError> {
-    let bytes = data.to_bytes().map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
+pub fn sign<T: Serialize>(signing_key: &SigningKey, data: &T) -> Result<Signature, GhostkeyError> {
+    let bytes = ciborium::ser::into_vec(data).map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
     let hash = blake3::hash(&bytes);
     Ok(signing_key.sign(hash.as_bytes()))
 }
@@ -41,7 +41,7 @@ pub fn sign<T: Armorable>(signing_key: &SigningKey, data: &T) -> Result<Signatur
 /// # Arguments
 ///
 /// * `verifying_key` - The `VerifyingKey` to use for verification.
-/// * `data` - The data to be verified, which must implement the `Armorable` trait.
+/// * `data` - The data to be verified, which must implement the `Serialize` trait.
 /// * `signature` - The `Signature` to verify.
 ///
 /// # Returns
@@ -52,8 +52,8 @@ pub fn sign<T: Armorable>(signing_key: &SigningKey, data: &T) -> Result<Signatur
 /// # Note
 ///
 /// This function uses blake3 to hash the data before verification.
-pub fn verify<T: Armorable>(verifying_key: &VerifyingKey, data: &T, signature: &Signature) -> Result<bool, GhostkeyError> {
-    let bytes = data.to_bytes().map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
+pub fn verify<T: Serialize>(verifying_key: &VerifyingKey, data: &T, signature: &Signature) -> Result<bool, GhostkeyError> {
+    let bytes = ciborium::ser::into_vec(data).map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
     let hash = blake3::hash(&bytes);
     Ok(verifying_key.verify(hash.as_bytes(), signature).is_ok())
 }
@@ -69,8 +69,6 @@ mod tests {
         field1: String,
         field2: i32,
     }
-
-    impl Armorable for TestData {}
 
     #[test]
     fn test_create_keypair() {
