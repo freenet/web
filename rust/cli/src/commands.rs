@@ -10,6 +10,7 @@ use crate::armorable::*;
 use crate::delegate_certificate::DelegateCertificate;
 use crate::errors::GhostkeyError;
 use colored::Colorize;
+use crate::ghostkey_certificate::GhostkeyCertificate;
 
 pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i32 {
     let (signing_key, verifying_key) = match create_keypair() {
@@ -93,6 +94,24 @@ pub fn verify_delegate_cmd(master_verifying_key: &VerifyingKey, delegate_certifi
             1
         }
     }
+}
+
+pub fn generate_ghostkey_cmd(delegate_certificate: &DelegateCertificate, delegate_signing_key : &SigningKey, output_dir: &Path) -> i32 {
+    let (ghostkey_certificate, ghostkey_signing_key) = GhostkeyCertificate::new(delegate_certificate, delegate_signing_key);
+    let ghostkey_signing_key : SerializableSigningKey = ghostkey_signing_key.into();
+    let ghostkey_certificate_file = output_dir.join("ghostkey_certificate.pem");
+    let ghostkey_signing_key_file = output_dir.join("ghostkey_signing_key.pem");
+    info!("Writing ghostkey certificate to {}", ghostkey_certificate_file.display());
+    if let Err(e) = ghostkey_certificate.to_file(&ghostkey_certificate_file) {
+        error!("{} {}", "Failed to write ghostkey certificate:".red(), e);
+        return 1;
+    }
+    info!("Writing ghostkey signing key to {}", ghostkey_signing_key_file.display());
+    if let Err(e) = ghostkey_signing_key.to_file(&ghostkey_signing_key_file) {
+        error!("{} {}", "Failed to write ghostkey signing key:".red(), e);
+        return 1;
+    }
+    0
 }
 
 fn require_strict_permissions(file_path: &Path) -> Result<(), GhostkeyError> {

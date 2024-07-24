@@ -5,7 +5,7 @@ use colored::Colorize;
 use log::{info, error};
 use p256::ecdsa::SigningKey;
 use ghostkey::armorable::Armorable;
-use ghostkey::commands::{generate_delegate_cmd, generate_master_key_cmd, verify_delegate_cmd};
+use ghostkey::commands::{generate_delegate_cmd, generate_ghostkey_cmd, generate_master_key_cmd, verify_delegate_cmd};
 use ghostkey::delegate_certificate::DelegateCertificate;
 use ghostkey::wrappers::signing_key::SerializableSigningKey;
 use ghostkey::wrappers::verifying_key::SerializableVerifyingKey;
@@ -71,11 +71,7 @@ fn run() -> i32 {
                 .long("output-dir")
                 .help("The directory to output the ghost key files")
                 .required(true)
-                .value_name("DIR"))
-            .arg(Arg::new("overwrite")
-                .long("overwrite")
-                .help("Overwrite existing ghost key file if it exists")
-                .action(ArgAction::SetTrue)))
+                .value_name("DIR")))
         .subcommand(Command::new("verify-ghost-key")
             .about("Verifies a ghost key certificate using the master verifying key")
             .arg(Arg::new("master-verifying-key")
@@ -93,6 +89,12 @@ fn run() -> i32 {
     match matches.subcommand() {
         Some(("generate-master-key", sub_matches)) => {
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
+            
+            if let Err(e) = std::fs::create_dir_all(output_dir) {
+                error!("{} {}", "Failed to create output directory:".red(), e);
+                return 1;
+            }
+            
             let ignore_permissions = sub_matches.get_flag("ignore-permissions");
 
             generate_master_key_cmd(output_dir, ignore_permissions)
@@ -106,12 +108,17 @@ fn run() -> i32 {
                     return 1;
                 }
             };
-            let master_signing_key: &SigningKey = serializable_signing_key.as_signing_key();            
+            let master_signing_key: SigningKey = serializable_signing_key.as_signing_key();            
             let info = sub_matches.get_one::<String>("info").unwrap();
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
+            if let Err(e) = std::fs::create_dir_all(output_dir) {
+                error!("{} {}", "Failed to create output directory:".red(), e);
+                return 1;
+            }
+            
             let ignore_permissions = sub_matches.get_flag("ignore-permissions");
             
-            generate_delegate_cmd(master_signing_key, info, output_dir, ignore_permissions)
+            generate_delegate_cmd(&master_signing_key, info, output_dir, ignore_permissions)
         }
         Some(("verify-delegate", sub_matches)) => {
             let master_verifying_key_file = Path::new(sub_matches.get_one::<String>("master-verifying-key").unwrap());
@@ -133,11 +140,31 @@ fn run() -> i32 {
             verify_delegate_cmd(master_verifying_key.as_verifying_key(), &delegate_certificate)
         }
         Some(("generate-ghost-key", sub_matches)) => {
-            let _delegate_dir = sub_matches.get_one::<String>("delegate-dir").unwrap();
-            let _output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
-            let _overwrite = sub_matches.get_flag("overwrite");
-            error!("generate-ghost-key command not implemented yet");
-            1
+            let delegate_dir = sub_matches.get_one::<String>("delegate-dir").unwrap();
+            let delegate_certificate_file = Path::new(delegate_dir).join("delegate_certificate.pem");
+            let delegate_certificate = match DelegateCertificate::from_file(&delegate_certificate_file) {
+                Ok(cert) => cert,
+                Err(e) => {
+                    error!("{} {}", "Failed to read delegate certificate:".red(), e);
+                    return 1;
+                }
+            };
+            let delegate_signing_key_file = Path::new(delegate_dir).join("delegate_signing_key.pem");
+            let delegate_signing_key : &SigningKey = match SerializableSigningKey::from_file(&delegate_signing_key_file) {
+                Ok(key) => &key.as_signing_key(),
+                Err(e) => {
+                    error!("{} {}", "Failed to read delegate signing key:".red(), e);
+                    return 1;
+                }
+            };
+            
+            let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
+            if let Err(e) = std::fs::create_dir_all(output_dir) {
+                error!("{} {}", "Failed to create output directory:".red(), e);
+                return 1;
+            }
+            
+            generate_ghostkey_cmd(&delegate_certificate, delegate_signing_key, &output_dir)
         }
         Some(("verify-ghost-key", sub_matches)) => {
             let _master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();
