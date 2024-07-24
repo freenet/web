@@ -49,7 +49,7 @@ mod tests {
         let (delegate_certificate, delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
 
         // Create a ghostkey certificate
-        let (ghostkey_certificate, _ghostkey_signing_key) = GhostkeyCertificate::new(delegate_certificate, &delegate_signing_key);
+        let (ghostkey_certificate, _ghostkey_signing_key) = GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
 
         // Try to verify with the wrong master key
         let result = ghostkey_certificate.verify(&Some(wrong_master_verifying_key));
@@ -68,7 +68,7 @@ mod tests {
         let (delegate_certificate, delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
 
         // Create a ghostkey certificate
-        let (mut ghostkey_certificate, _ghostkey_signing_key) = GhostkeyCertificate::new(delegate_certificate, &delegate_signing_key);
+        let (mut ghostkey_certificate, _ghostkey_signing_key) = GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
 
         // Tamper with the delegate certificate
         ghostkey_certificate.delegate.payload.info = "Tampered Info".to_string();
@@ -90,7 +90,7 @@ mod tests {
         let (delegate_certificate, delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
 
         // Create a ghostkey certificate
-        let (mut ghostkey_certificate, _ghostkey_signing_key) = GhostkeyCertificate::new(delegate_certificate, &delegate_signing_key);
+        let (mut ghostkey_certificate, _ghostkey_signing_key) = GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
 
         // Tamper with the ghostkey verifying key
         let (_, tampered_verifying_key) = create_keypair().unwrap();
