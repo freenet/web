@@ -10,10 +10,10 @@ use ghostkey::wrappers::signing_key::SerializableSigningKey;
 
 fn main() {
     let exit_code = run();
-    process::exit(exit_code.try_into().unwrap_or(i32::MAX));
+    process::exit(exit_code);
 }
 
-fn run() -> u32 {
+fn run() -> i32 {
     let matches = Command::new("Freenet Ghost Key Utility")
         .version("1.0")
         .author("Your Name <your.email@example.com>")

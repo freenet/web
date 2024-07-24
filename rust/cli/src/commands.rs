@@ -11,7 +11,7 @@ use crate::delegate_certificate::DelegateCertificate;
 use crate::errors::GhostkeyError;
 use colored::Colorize;
 
-pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> u32 {
+pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i32 {
     let (signing_key, verifying_key) = match create_keypair() {
         Ok(keypair) => keypair,
         Err(e) => {
@@ -49,7 +49,7 @@ pub fn generate_delegate_cmd(
     info : &String,
     output_dir : &Path,
     ignore_permissions : bool
-) -> u32 {
+) -> i32 {
     let (delegate_certificate, delegate_signing_key) = match DelegateCertificate::new(&master_signing_key, &info) {
         Ok(result) => result,
         Err(e) => {
