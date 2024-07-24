@@ -16,6 +16,94 @@ pub struct GhostkeyCertificate {
     pub signature : SerializableSignature,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::util::create_keypair;
+
+    #[test]
+    fn test_ghostkey_certificate_creation_and_verification() {
+        // Create a master key pair
+        let (master_signing_key, master_verifying_key) = create_keypair().unwrap();
+
+        // Create a delegate certificate
+        let info = "Test Delegate".to_string();
+        let (delegate_certificate, delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
+
+        // Create a ghostkey certificate
+        let (ghostkey_certificate, _ghostkey_signing_key) = GhostkeyCertificate::new(delegate_certificate, &delegate_signing_key);
+
+        // Verify the ghostkey certificate
+        let verified_info = ghostkey_certificate.verify(&Some(master_verifying_key)).unwrap();
+        assert_eq!(verified_info, info);
+    }
+
+    #[test]
+    fn test_ghostkey_certificate_invalid_master_key() {
+        // Create two sets of key pairs
+        let (master_signing_key, _) = create_keypair().unwrap();
+        let (_, wrong_master_verifying_key) = create_keypair().unwrap();
+
+        // Create a delegate certificate
+        let info = "Test Delegate".to_string();
+        let (delegate_certificate, delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
+
+        // Create a ghostkey certificate
+        let (ghostkey_certificate, _ghostkey_signing_key) = GhostkeyCertificate::new(delegate_certificate, &delegate_signing_key);
+
+        // Try to verify with the wrong master key
+        let result = ghostkey_certificate.verify(&Some(wrong_master_verifying_key));
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err().as_ref(),
+                         GhostkeyError::SignatureVerificationError(_)));
+    }
+
+    #[test]
+    fn test_ghostkey_certificate_tampered_delegate() {
+        // Create a master key pair
+        let (master_signing_key, master_verifying_key) = create_keypair().unwrap();
+
+        // Create a delegate certificate
+        let info = "Test Delegate".to_string();
+        let (delegate_certificate, delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
+
+        // Create a ghostkey certificate
+        let (mut ghostkey_certificate, _ghostkey_signing_key) = GhostkeyCertificate::new(delegate_certificate, &delegate_signing_key);
+
+        // Tamper with the delegate certificate
+        ghostkey_certificate.delegate.payload.info = "Tampered Info".to_string();
+
+        // Try to verify the tampered certificate
+        let result = ghostkey_certificate.verify(&Some(master_verifying_key));
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err().as_ref(),
+                         GhostkeyError::SignatureVerificationError(_)));
+    }
+
+    #[test]
+    fn test_ghostkey_certificate_tampered_ghostkey() {
+        // Create a master key pair
+        let (master_signing_key, master_verifying_key) = create_keypair().unwrap();
+
+        // Create a delegate certificate
+        let info = "Test Delegate".to_string();
+        let (delegate_certificate, delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
+
+        // Create a ghostkey certificate
+        let (mut ghostkey_certificate, _ghostkey_signing_key) = GhostkeyCertificate::new(delegate_certificate, &delegate_signing_key);
+
+        // Tamper with the ghostkey verifying key
+        let (_, tampered_verifying_key) = create_keypair().unwrap();
+        ghostkey_certificate.verifying_key = SerializableVerifyingKey::from(tampered_verifying_key);
+
+        // Try to verify the tampered certificate
+        let result = ghostkey_certificate.verify(&Some(master_verifying_key));
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err().as_ref(),
+                         GhostkeyError::SignatureVerificationError(_)));
+    }
+}
+
 impl GhostkeyCertificate {
     pub fn new(delegate_certificate: DelegateCertificate, delegate_signing_key: &SigningKey) -> (Self, SigningKey) {
         let (ghost_signing_key, ghost_verifying_key) = create_keypair().unwrap();
