@@ -5,7 +5,7 @@ use colored::Colorize;
 use log::{info, error};
 use p256::ecdsa::SigningKey;
 use ghostkey::armorable::Armorable;
-use ghostkey::commands::{generate_delegate_cmd, generate_master_key_cmd};
+use ghostkey::commands::{generate_delegate_cmd, generate_master_key_cmd, verify_delegate_cmd};
 use ghostkey::delegate_certificate::DelegateCertificate;
 use ghostkey::wrappers::signing_key::SerializableSigningKey;
 use ghostkey::wrappers::verifying_key::SerializableVerifyingKey;
@@ -58,18 +58,6 @@ fn run() -> i32 {
             .arg(Arg::new("delegate-certificate")
                 .long("delegate-certificate")
                 .help("The file containing the delegate certificate")
-                .required(true)
-                .value_name("FILE")))
-        .subcommand(Command::new("generate-verifying-key")
-            .about("Generates a verifying key from a master signing key")
-            .arg(Arg::new("master-signing-key")
-                .long("master-signing-key")
-                .help("The file containing the master signing key")
-                .required(true)
-                .value_name("FILE"))
-            .arg(Arg::new("output")
-                .long("output")
-                .help("The file to output the master verifying key")
                 .required(true)
                 .value_name("FILE")))
         .subcommand(Command::new("generate-ghost-key")
@@ -142,14 +130,7 @@ fn run() -> i32 {
                     return 1;
                 }
             };
-            error!("verify-delegate-key command not implemented yet");
-            1
-        }
-        Some(("generate-verifying-key", sub_matches)) => {
-            let _master_signing_key_file = sub_matches.get_one::<String>("master-signing-key").unwrap();
-            let _output_file = sub_matches.get_one::<String>("output").unwrap();
-            error!("generate-verifying-key command not implemented yet");
-            1
+            verify_delegate_cmd(master_verifying_key.as_verifying_key(), &delegate_certificate)
         }
         Some(("generate-ghost-key", sub_matches)) => {
             let _delegate_dir = sub_matches.get_one::<String>("delegate-dir").unwrap();

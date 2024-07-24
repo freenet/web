@@ -2,7 +2,7 @@ use std::path::Path;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use log::{info, error};
-use p256::ecdsa::SigningKey;
+use p256::ecdsa::{SigningKey, VerifyingKey};
 use crate::util::create_keypair;
 use crate::wrappers::signing_key::SerializableSigningKey;
 use crate::wrappers::verifying_key::SerializableVerifyingKey;
@@ -80,6 +80,19 @@ pub fn generate_delegate_cmd(
         info!("Ignoring permission checks for {}", delegate_signing_key_file.display());
     }
     0
+}
+
+pub fn verify_delegate_cmd(master_verifying_key: &VerifyingKey, delegate_certificate: &DelegateCertificate) -> i32 {
+    match delegate_certificate.verify(master_verifying_key) {
+        Ok(info) => {
+            info!("Delegate certificate verified. Info: {}", info);
+            0
+        },
+        Err(e) => {
+            error!("{} {}", "Failed to verify delegate certificate:".red(), e);
+            1
+        }
+    }
 }
 
 fn require_strict_permissions(file_path: &Path) -> Result<(), GhostkeyError> {
