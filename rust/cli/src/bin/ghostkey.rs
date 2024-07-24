@@ -108,7 +108,7 @@ fn run() -> Result<(), Box<dyn Error>> {
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
             let ignore_permissions = sub_matches.get_flag("ignore-permissions");
 
-            generate_master_key_cmd(output_dir, ignore_permissions)?;
+            generate_master_key_cmd(output_dir, ignore_permissions);
         }
         Some(("generate-delegate", sub_matches)) => {
             let master_signing_key_file = Path::new(sub_matches.get_one::<String>("master-signing-key").unwrap());
@@ -117,7 +117,7 @@ fn run() -> Result<(), Box<dyn Error>> {
             let info = sub_matches.get_one::<String>("info").unwrap();
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
             let ignore_permissions = sub_matches.get_flag("ignore-permissions");
-            generate_delegate_cmd(master_signing_key, info, output_dir, ignore_permissions).unwrap();
+            generate_delegate_cmd(master_signing_key, info, output_dir, ignore_permissions);
         }
         Some(("verify-delegate-key", sub_matches)) => {
             let _master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();
