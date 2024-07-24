@@ -1,7 +1,6 @@
 use p256::ecdsa::{VerifyingKey};
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
-use serde::de::{self, Visitor};
-use std::fmt;
+use serde::de;
 use std::convert::TryFrom;
 use base64::engine::general_purpose;
 use base64::Engine;
@@ -53,7 +52,7 @@ impl<'de> Deserialize<'de> for SerializableVerifyingKey {
         let base64 = String::deserialize(deserializer)?;
         let bytes = general_purpose::STANDARD.decode(base64.as_bytes())
             .map_err(de::Error::custom)?;
-        let verifying_key = bytes_to_verifying_key(&bytes).map_err(de::Error::custom)?;
+        let verifying_key = VerifyingKey::from_sec1_bytes(&bytes).map_err(de::Error::custom)?;
         Ok(SerializableVerifyingKey(verifying_key))
     }
 }
@@ -134,10 +133,3 @@ impl std::fmt::Display for SerializableVerifyingKey {
     }
 }
 
-use p256::elliptic_curve::generic_array::GenericArray;
-use p256::elliptic_curve::generic_array::typenum::U33;
-
-fn bytes_to_verifying_key(bytes: &[u8]) -> Result<VerifyingKey, p256::ecdsa::Error> {
-    let array: GenericArray<u8, U33> = GenericArray::clone_from_slice(bytes);
-    VerifyingKey::from_sec1_bytes(&array)
-}

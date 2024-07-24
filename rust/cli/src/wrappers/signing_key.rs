@@ -1,7 +1,6 @@
 use p256::ecdsa::SigningKey;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
-use serde::de::{self, Visitor};
-use std::fmt;
+use serde::de;
 use std::convert::TryFrom;
 use base64::engine::general_purpose;
 use base64::Engine;
