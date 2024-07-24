@@ -19,7 +19,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         let mut result = String::new();
         for (i, c) in s.chars().enumerate() {
             if c.is_uppercase() && i != 0 {
-                result.push(' ');
+                result.push('_');
             }
             result.push(c);
         }
@@ -89,4 +89,76 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     }
 }
 
-// Remove blanket implementation and example code
+#[cfg(test)]
+mod tests {
+    use tempfile::tempdir;
+    use super::*;
+
+    #[derive(Debug, Serialize, Deserialize, PartialEq)]
+    struct TestStruct {
+        field1: String,
+        field2: i32,
+    }
+
+    impl Armorable for TestStruct {}
+
+    #[test]
+    fn test_to_base64() {
+        let test_struct = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+
+        let base64_result = test_struct.to_base64().unwrap();
+        assert!(!base64_result.is_empty());
+    }
+
+    #[test]
+    fn test_from_base64() {
+        let test_struct = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+
+        let base64_string = test_struct.to_base64().unwrap();
+        let decoded_struct = TestStruct::from_base64(&base64_string).unwrap();
+
+        assert_eq!(test_struct, decoded_struct);
+    }
+
+    #[test]
+    fn test_to_file_and_from_file() {
+        let test_struct = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+
+        let temp_dir = tempdir().unwrap();
+        let file_path = temp_dir.path().join("test_struct.armored");
+
+        test_struct.to_file(&file_path).unwrap();
+
+        // dump file contents to stdout
+        std::process::Command::new("cat")
+            .arg(&file_path)
+            .status()
+            .expect("failed to execute process");
+        
+        let loaded_struct = TestStruct::from_file(&file_path).unwrap();
+
+        assert_eq!(test_struct, loaded_struct);
+    }
+
+    #[test]
+    fn test_struct_name() {
+        assert_eq!(TestStruct::struct_name(), "TEST_STRUCT");
+    }
+
+    #[test]
+    fn test_camel_case_to_upper() {
+        assert_eq!(
+            TestStruct::camel_case_to_upper("camelCaseString"),
+            "CAMEL_CASE_STRING"
+        );
+    }
+}

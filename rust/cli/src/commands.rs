@@ -5,6 +5,7 @@ use log::info;
 use crate::master::create_master_keypair;
 use crate::wrappers::signing_key::SerializableSigningKey;
 use crate::wrappers::verifying_key::SerializableVerifyingKey;
+use crate::armorable::*;
 
 pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> Result<(), Box<dyn std::error::Error>> {
     let (signing_key, verifying_key) = create_master_keypair()?;
