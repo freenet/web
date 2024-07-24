@@ -1,4 +1,4 @@
-use p256::ecdsa::{Signature, SigningKey};
+use p256::ecdsa::Signature;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de::{self, Visitor};
 use std::fmt;
@@ -6,7 +6,6 @@ use std::convert::TryFrom;
 use p256::elliptic_curve::generic_array::GenericArray;
 use base64::engine::general_purpose;
 use base64::Engine;
-use rand_core::OsRng;
 
 #[derive(Clone)]
 pub struct SerializableSignature(pub Signature);
@@ -93,6 +92,8 @@ impl std::fmt::Display for SerializableSignature {
 mod tests {
     use super::*;
     use serde_json;
+    use p256::ecdsa::{SigningKey, signature::Signer};
+    use rand_core::OsRng;
 
     #[test]
     fn test_serializable_signature_roundtrip() {
