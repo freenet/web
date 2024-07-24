@@ -13,7 +13,7 @@ fn main() {
     process::exit(exit_code);
 }
 
-fn run() -> i32 {
+fn run() -> u32 {
     let matches = Command::new("Freenet Ghost Key Utility")
         .version("1.0")
         .author("Your Name <your.email@example.com>")
@@ -125,23 +125,27 @@ fn run() -> i32 {
         Some(("verify-delegate-key", sub_matches)) => {
             let _master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();
             let _delegate_certificate_file = sub_matches.get_one::<String>("delegate-certificate").unwrap();
-            //verify_delegate_key_command(master_verifying_key_file, delegate_certificate_file)?;
+            error!("verify-delegate-key command not implemented yet");
+            1
         }
         Some(("generate-verifying-key", sub_matches)) => {
             let _master_signing_key_file = sub_matches.get_one::<String>("master-signing-key").unwrap();
             let _output_file = sub_matches.get_one::<String>("output").unwrap();
-            //generate_master_verifying_key_command(master_signing_key_file, output_file)?;
+            error!("generate-verifying-key command not implemented yet");
+            1
         }
         Some(("generate-ghost-key", sub_matches)) => {
             let _delegate_dir = sub_matches.get_one::<String>("delegate-dir").unwrap();
             let _output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
             let _overwrite = sub_matches.get_flag("overwrite");
-            // generate_ghostkey_command(delegate_dir, output_dir, overwrite)?;
+            error!("generate-ghost-key command not implemented yet");
+            1
         }
         Some(("verify-ghost-key", sub_matches)) => {
             let _master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();
             let _ghost_certificate_file = sub_matches.get_one::<String>("ghost-certificate").unwrap();
-            // verify_ghost_key_command(master_verifying_key_file, ghost_certificate_file)?;
+            error!("verify-ghost-key command not implemented yet");
+            1
         }
         _ => {
             info!("No valid subcommand provided. Use --help for usage information.");
