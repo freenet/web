@@ -26,6 +26,10 @@ pub fn create_keypair() -> Result<(SigningKey, VerifyingKey), GhostkeyError> {
 /// # Returns
 ///
 /// A `Signature` if signing is successful, or a `GhostkeyError` if it fails.
+///
+/// # Note
+///
+/// This function uses blake3 to hash the data before signing.
 pub fn sign<T: Armorable>(signing_key: &SigningKey, data: &T) -> Result<Signature, GhostkeyError> {
     let bytes = data.to_bytes().map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
     let hash = blake3::hash(&bytes);
@@ -44,6 +48,10 @@ pub fn sign<T: Armorable>(signing_key: &SigningKey, data: &T) -> Result<Signatur
 ///
 /// A boolean indicating whether the signature is valid (`true`) or not (`false`),
 /// or a `GhostkeyError` if verification fails.
+///
+/// # Note
+///
+/// This function uses blake3 to hash the data before verification.
 pub fn verify<T: Armorable>(verifying_key: &VerifyingKey, data: &T, signature: &Signature) -> Result<bool, GhostkeyError> {
     let bytes = data.to_bytes().map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
     let hash = blake3::hash(&bytes);
