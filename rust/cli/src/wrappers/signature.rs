@@ -4,8 +4,7 @@ use serde::de::{self, Visitor};
 use std::fmt;
 use std::convert::TryFrom;
 use p256::elliptic_curve::generic_array::GenericArray;
-use base64::engine::general_purpose;
-use base64::Engine;
+use base64::{engine::general_purpose, Engine as _};
 
 #[derive(Clone)]
 pub struct SerializableSignature(pub Signature);
@@ -37,7 +36,8 @@ impl Serialize for SerializableSignature {
         S: Serializer,
     {
         let bytes = self.0.to_bytes();
-        serializer.serialize_bytes(&bytes)
+        let base64 = general_purpose::STANDARD.encode(bytes);
+        serializer.serialize_str(&base64)
     }
 }
 
@@ -53,25 +53,25 @@ impl<'de> Deserialize<'de> for SerializableSignature {
             type Value = SerializableSignature;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("a valid ECDSA signature in byte array form")
+                formatter.write_str("a base64 encoded ECDSA signature")
             }
 
-            fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
             where
                 E: de::Error,
             {
-                // The length for a p256 signature is 64 bytes.
-                if v.len() != 64 {
-                    return Err(de::Error::invalid_length(v.len(), &self));
+                let bytes = general_purpose::STANDARD.decode(v).map_err(de::Error::custom)?;
+                if bytes.len() != 64 {
+                    return Err(de::Error::invalid_length(bytes.len(), &self));
                 }
 
-                let sig_bytes: GenericArray<u8, typenum::U64> = GenericArray::clone_from_slice(v);
+                let sig_bytes: GenericArray<u8, typenum::U64> = GenericArray::clone_from_slice(&bytes);
                 let sig = Signature::from_bytes(&sig_bytes).map_err(de::Error::custom)?;
                 Ok(SerializableSignature(sig))
             }
         }
 
-        deserializer.deserialize_bytes(SerializableSignatureVisitor)
+        deserializer.deserialize_str(SerializableSignatureVisitor)
     }
 }
 
