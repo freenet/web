@@ -24,7 +24,11 @@ fn run() -> Result<(), Box<dyn Error>> {
                 .long("output-dir")
                 .help("The directory to output the keys")
                 .required(true)
-                .value_name("DIR")))
+                .value_name("DIR"))
+            .arg(Arg::new("ignore-permissions")
+                .long("ignore-permissions")
+                .help("Ignore file permission checks")
+                .action(ArgAction::SetTrue)))
         .subcommand(Command::new("generate-delegate")
             .about("Generates a new delegate signing key and certificate")
             .arg(Arg::new("master-signing-key")
@@ -99,8 +103,9 @@ fn run() -> Result<(), Box<dyn Error>> {
     match matches.subcommand() {
         Some(("generate-master-key", sub_matches)) => {
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
+            let ignore_permissions = sub_matches.get_flag("ignore-permissions");
 
-            generate_master_key_cmd(output_dir)?;
+            generate_master_key_cmd(output_dir, ignore_permissions)?;
         }
         Some(("generate-delegate", sub_matches)) => {
             let master_signing_key_file = sub_matches.get_one::<String>("master-signing-key").unwrap();

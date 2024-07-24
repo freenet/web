@@ -7,7 +7,7 @@ use crate::master::create_master_keypair;
 use crate::wrappers::signing_key::SerializableSigningKey;
 use crate::wrappers::verifying_key::SerializableVerifyingKey;
 
-pub fn generate_master_key_cmd(output_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> Result<(), Box<dyn std::error::Error>> {
     let (signing_key, verifying_key) = create_master_keypair()?;
     let signing_key : SerializableSigningKey = signing_key.into();
     let verifying_key : SerializableVerifyingKey = verifying_key.into();
@@ -15,7 +15,13 @@ pub fn generate_master_key_cmd(output_dir: &Path) -> Result<(), Box<dyn std::err
     let verifying_key_file = output_dir.join("master_verifying_key.pem");
     info!("Writing master signing key to {}", signing_key_file.display());
     signing_key.to_file(&signing_key_file)?;
-    require_strict_permissions(&signing_key_file)?;
+    info!("Writing master verifying key to {}", verifying_key_file.display());
+    verifying_key.to_file(&verifying_key_file)?;
+    if !ignore_permissions {
+        require_strict_permissions(&signing_key_file)?;
+    } else {
+        info!("Ignoring permission checks for {}", signing_key_file.display());
+    }
     Ok(())
 }
 
