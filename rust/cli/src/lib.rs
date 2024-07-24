@@ -8,3 +8,6 @@ pub mod commands;
 #[cfg(test)]
 mod tests {
 }
+
+#[cfg(test)]
+mod armorable_tests;

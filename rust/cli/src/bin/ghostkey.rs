@@ -108,30 +108,30 @@ fn run() -> Result<(), Box<dyn Error>> {
             generate_master_key_cmd(output_dir, ignore_permissions)?;
         }
         Some(("generate-delegate", sub_matches)) => {
-            let master_signing_key_file = sub_matches.get_one::<String>("master-signing-key").unwrap();
-            let info = sub_matches.get_one::<String>("info").unwrap();
-            let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
+            let _master_signing_key_file = sub_matches.get_one::<String>("master-signing-key").unwrap();
+            let _info = sub_matches.get_one::<String>("info").unwrap();
+            let _output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
             //generate_and_save_delegate_key(master_signing_key_file, info, output_dir)?;
         }
         Some(("verify-delegate-key", sub_matches)) => {
-            let master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();
-            let delegate_certificate_file = sub_matches.get_one::<String>("delegate-certificate").unwrap();
+            let _master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();
+            let _delegate_certificate_file = sub_matches.get_one::<String>("delegate-certificate").unwrap();
             //verify_delegate_key_command(master_verifying_key_file, delegate_certificate_file)?;
         }
         Some(("generate-verifying-key", sub_matches)) => {
-            let master_signing_key_file = sub_matches.get_one::<String>("master-signing-key").unwrap();
-            let output_file = sub_matches.get_one::<String>("output").unwrap();
+            let _master_signing_key_file = sub_matches.get_one::<String>("master-signing-key").unwrap();
+            let _output_file = sub_matches.get_one::<String>("output").unwrap();
             //generate_master_verifying_key_command(master_signing_key_file, output_file)?;
         }
         Some(("generate-ghost-key", sub_matches)) => {
-            let delegate_dir = sub_matches.get_one::<String>("delegate-dir").unwrap();
-            let output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
-            let overwrite = sub_matches.get_flag("overwrite");
+            let _delegate_dir = sub_matches.get_one::<String>("delegate-dir").unwrap();
+            let _output_dir = sub_matches.get_one::<String>("output-dir").unwrap();
+            let _overwrite = sub_matches.get_flag("overwrite");
             // generate_ghostkey_command(delegate_dir, output_dir, overwrite)?;
         }
         Some(("verify-ghost-key", sub_matches)) => {
-            let master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();
-            let ghost_certificate_file = sub_matches.get_one::<String>("ghost-certificate").unwrap();
+            let _master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();
+            let _ghost_certificate_file = sub_matches.get_one::<String>("ghost-certificate").unwrap();
             // verify_ghost_key_command(master_verifying_key_file, ghost_certificate_file)?;
         }
         _ => {

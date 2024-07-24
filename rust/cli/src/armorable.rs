@@ -58,8 +58,8 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         reader.read_to_string(&mut pem_content)?;
 
         let struct_name = Self::struct_name();
-        let begin_label = format!("-----BEGIN {}-----", struct_name);
-        let end_label = format!("-----END {}-----", struct_name);
+        let _begin_label = format!("-----BEGIN {}-----", struct_name);
+        let _end_label = format!("-----END {}-----", struct_name);
 
         let base64_encoded = pem_content
             .lines()
@@ -89,34 +89,4 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     }
 }
 
-// Blanket implementation for all types that implement Serialize and Deserialize
-impl<T> Armorable for T where T: Serialize + for<'de> Deserialize<'de> {}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct FooBar {
-    foo: String,
-    bar: i32,
-}
-
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let foobar = FooBar {
-        foo: "example".to_string(),
-        bar: 42,
-    };
-
-    // Write to PEM file
-    foobar.to_file(Path::new("foobar.pem"))?;
-    // Read from PEM file
-    let foobar_from_pem = FooBar::from_file(Path::new("foobar.pem"))?;
-    println!("{:?}", foobar_from_pem);
-
-    // Write to base64 string
-    let base64_str = foobar.to_base64()?;
-    println!("{}", base64_str);
-
-    // Read from base64 string
-    let foobar_from_base64 = FooBar::from_base64(&base64_str)?;
-    println!("{:?}", foobar_from_base64);
-
-    Ok(())
-}
+// Remove blanket implementation and example code

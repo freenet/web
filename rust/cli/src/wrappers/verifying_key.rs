@@ -3,11 +3,14 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de::{self, Visitor};
 use std::fmt;
 use std::convert::TryFrom;
-use base64;
+use base64::engine::general_purpose;
+use base64::Engine;
 use crate::armorable::Armorable;
 
 #[derive(Clone)]
 pub struct SerializableVerifyingKey(pub VerifyingKey);
+
+impl Armorable for SerializableVerifyingKey {}
 
 impl From<VerifyingKey> for SerializableVerifyingKey {
     fn from(key: VerifyingKey) -> Self {
@@ -76,7 +79,7 @@ impl AsRef<VerifyingKey> for SerializableVerifyingKey {
 
 impl std::fmt::Display for SerializableVerifyingKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", base64::encode(self.0.to_sec1_bytes()))
+        write!(f, "{}", general_purpose::STANDARD.encode(self.0.to_sec1_bytes()))
     }
 }
 

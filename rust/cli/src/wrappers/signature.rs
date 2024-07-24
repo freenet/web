@@ -1,12 +1,11 @@
-use p256::ecdsa::{Signature, signature::Verifier};
+use p256::ecdsa::Signature;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de::{self, Visitor};
 use std::fmt;
 use std::convert::TryFrom;
 use p256::elliptic_curve::generic_array::GenericArray;
-use p256::elliptic_curve::FieldBytes;
-use base64;
-use p256::NistP256;
+use base64::engine::general_purpose;
+use base64::Engine;
 
 #[derive(Clone)]
 pub struct SerializableSignature(pub Signature);
@@ -85,6 +84,6 @@ impl AsRef<Signature> for SerializableSignature {
 impl std::fmt::Display for SerializableSignature {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let sig_bytes = self.0.to_bytes();
-        write!(f, "{}", base64::encode(sig_bytes))
+        write!(f, "{}", general_purpose::STANDARD.encode(sig_bytes))
     }
 }

@@ -1,17 +1,20 @@
-use p256::ecdsa::{SigningKey};
+use p256::ecdsa::SigningKey;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de::{self, Visitor};
 use std::fmt;
 use std::convert::TryFrom;
-use base64;
+use base64::engine::general_purpose;
+use base64::Engine;
 use crate::armorable::Armorable;
 
 #[derive(Clone)]
 pub struct SerializableSigningKey(pub SigningKey);
 
+impl Armorable for SerializableSigningKey {}
+
 impl From<SigningKey> for SerializableSigningKey {
     fn from(key: SigningKey) -> Self {
-        SerializableSigningKey(key)
+        Self(key)
     }
 }
 
@@ -29,7 +32,6 @@ impl SerializableSigningKey {
     }
 }
 
-// Implementing Serialize manually
 impl Serialize for SerializableSigningKey {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -40,7 +42,6 @@ impl Serialize for SerializableSigningKey {
     }
 }
 
-// Implementing Deserialize manually
 impl<'de> Deserialize<'de> for SerializableSigningKey {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -59,8 +60,9 @@ impl<'de> Deserialize<'de> for SerializableSigningKey {
             where
                 E: de::Error,
             {
-                let signing_key = bytes_to_signing_key(v).map_err(de::Error::custom)?;
-                Ok(SerializableSigningKey(signing_key))
+                SigningKey::from_bytes(v.into())
+                    .map(SerializableSigningKey)
+                    .map_err(de::Error::custom)
             }
         }
 
@@ -76,18 +78,6 @@ impl AsRef<SigningKey> for SerializableSigningKey {
 
 impl std::fmt::Display for SerializableSigningKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_base64().unwrap())
+        write!(f, "{}", general_purpose::STANDARD.encode(self.0.to_bytes()))
     }
-}
-
-fn signing_key_to_bytes(signing_key: &SigningKey) -> Vec<u8> {
-    signing_key.to_bytes().as_slice().to_vec()
-}
-
-use p256::elliptic_curve::generic_array::GenericArray;
-use p256::elliptic_curve::generic_array::typenum::U32;
-
-fn bytes_to_signing_key(bytes: &[u8]) -> Result<SigningKey, p256::ecdsa::Error> {
-    let array: GenericArray<u8, U32> = GenericArray::clone_from_slice(bytes);
-    SigningKey::from_bytes(&array)
 }

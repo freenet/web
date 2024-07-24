@@ -2,7 +2,6 @@ use std::path::Path;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use log::info;
-use crate::armorable::Armorable;
 use crate::master::create_master_keypair;
 use crate::wrappers::signing_key::SerializableSigningKey;
 use crate::wrappers::verifying_key::SerializableVerifyingKey;
