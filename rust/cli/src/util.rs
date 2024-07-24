@@ -4,18 +4,46 @@ use rand_core::OsRng;
 use crate::armorable::Armorable;
 use crate::errors::GhostkeyError;
 
+/// Creates a new ECDSA keypair for signing and verification.
+///
+/// # Returns
+///
+/// A tuple containing a `SigningKey` and its corresponding `VerifyingKey`,
+/// or a `GhostkeyError` if key creation fails.
 pub fn create_keypair() -> Result<(SigningKey, VerifyingKey), GhostkeyError> {
     let signing_key = SigningKey::random(&mut OsRng);
     let verifying_key = VerifyingKey::from(&signing_key);
     Ok((signing_key, verifying_key))
 }
 
+/// Signs the given data using the provided signing key.
+///
+/// # Arguments
+///
+/// * `signing_key` - The `SigningKey` to use for signing.
+/// * `data` - The data to be signed, which must implement the `Armorable` trait.
+///
+/// # Returns
+///
+/// A `Signature` if signing is successful, or a `GhostkeyError` if it fails.
 pub fn sign<T: Armorable>(signing_key: &SigningKey, data: &T) -> Result<Signature, GhostkeyError> {
     let bytes = data.to_bytes().map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
     let hash = blake3::hash(&bytes);
     Ok(signing_key.sign(hash.as_bytes()))
 }
 
+/// Verifies a signature for the given data using the provided verifying key.
+///
+/// # Arguments
+///
+/// * `verifying_key` - The `VerifyingKey` to use for verification.
+/// * `data` - The data to be verified, which must implement the `Armorable` trait.
+/// * `signature` - The `Signature` to verify.
+///
+/// # Returns
+///
+/// A boolean indicating whether the signature is valid (`true`) or not (`false`),
+/// or a `GhostkeyError` if verification fails.
 pub fn verify<T: Armorable>(verifying_key: &VerifyingKey, data: &T, signature: &Signature) -> Result<bool, GhostkeyError> {
     let bytes = data.to_bytes().map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
     let hash = blake3::hash(&bytes);
