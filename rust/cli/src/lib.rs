@@ -4,3 +4,4 @@ pub mod crypto_error;
 pub mod wrappers;
 pub mod delegate_certificate;
 pub mod commands;
+pub mod commands;
