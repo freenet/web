@@ -29,13 +29,13 @@ pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i
         error!("{} {}", "Failed to write master signing key:".red(), e);
         return 1;
     }
-    println!("{}", "Master signing key written successfully.".green());
+    println!("{} {}", "Master signing key written successfully:".green(), signing_key_file.display().to_string().yellow());
     info!("Writing master verifying key to {}", verifying_key_file.display());
     if let Err(e) = verifying_key.to_file(&verifying_key_file) {
         error!("{} {}", "Failed to write master verifying key:".red(), e);
         return 1;
     }
-    println!("{}", "Master verifying key written successfully.".green());
+    println!("{} {}", "Master verifying key written successfully:".green(), verifying_key_file.display().to_string().yellow());
     if !ignore_permissions {
         if let Err(e) = require_strict_permissions(&signing_key_file) {
             error!("{} {}", "Failed to set permissions on master signing key file:".red(), e);
@@ -68,13 +68,13 @@ pub fn generate_delegate_cmd(
         error!("{} {}", "Failed to write delegate certificate:".red(), e);
         return 1;
     }
-    println!("{}", "Delegate certificate written successfully.".green());
+    println!("{} {}", "Delegate certificate written successfully:".green(), delegate_certificate_file.display().to_string().yellow());
     info!("Writing delegate signing key to {}", delegate_signing_key_file.display());
     if let Err(e) = delegate_signing_key.to_file(&delegate_signing_key_file) {
         error!("{} {}", "Failed to write delegate signing key:".red(), e);
         return 1;
     }
-    println!("{}", "Delegate signing key written successfully.".green());
+    println!("{} {}", "Delegate signing key written successfully:".green(), delegate_signing_key_file.display().to_string().yellow());
     if !ignore_permissions {
         if let Err(e) = require_strict_permissions(&delegate_signing_key_file) {
             error!("{} {}", "Failed to set permissions on delegate signing key file:".red(), e);
@@ -111,13 +111,13 @@ pub fn generate_ghostkey_cmd(delegate_certificate: &DelegateCertificate, delegat
         error!("{} {}", "Failed to write ghostkey certificate:".red(), e);
         return 1;
     }
-    println!("{}", "Ghostkey certificate written successfully.".green());
+    println!("{} {}", "Ghostkey certificate written successfully:".green(), ghostkey_certificate_file.display().to_string().yellow());
     info!("Writing ghostkey signing key to {}", ghostkey_signing_key_file.display());
     if let Err(e) = ghostkey_signing_key.to_file(&ghostkey_signing_key_file) {
         error!("{} {}", "Failed to write ghostkey signing key:".red(), e);
         return 1;
     }
-    println!("{}", "Ghostkey signing key written successfully.".green());
+    println!("{} {}", "Ghostkey signing key written successfully:".green(), ghostkey_signing_key_file.display().to_string().yellow());
     0
 }
 
