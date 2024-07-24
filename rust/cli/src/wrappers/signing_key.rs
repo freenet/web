@@ -38,7 +38,8 @@ impl Serialize for SerializableSigningKey {
         S: Serializer,
     {
         let bytes = self.0.to_bytes();
-        serializer.serialize_bytes(&bytes)
+        let base64 = general_purpose::STANDARD.encode(bytes);
+        serializer.serialize_str(&base64)
     }
 }
 
@@ -47,26 +48,12 @@ impl<'de> Deserialize<'de> for SerializableSigningKey {
     where
         D: Deserializer<'de>,
     {
-        struct SerializableSigningKeyVisitor;
-
-        impl<'de> Visitor<'de> for SerializableSigningKeyVisitor {
-            type Value = SerializableSigningKey;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("a valid ECDSA signing key in byte array form")
-            }
-
-            fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                SigningKey::from_bytes(v.into())
-                    .map(SerializableSigningKey)
-                    .map_err(de::Error::custom)
-            }
-        }
-
-        deserializer.deserialize_bytes(SerializableSigningKeyVisitor)
+        let base64 = String::deserialize(deserializer)?;
+        let bytes = general_purpose::STANDARD.decode(base64.as_bytes())
+            .map_err(de::Error::custom)?;
+        SigningKey::from_bytes(bytes.as_slice().into())
+            .map(SerializableSigningKey)
+            .map_err(de::Error::custom)
     }
 }
 
