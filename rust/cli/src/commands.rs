@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
-use log::info;
+use log::{info, error};
 use p256::ecdsa::SigningKey;
 use crate::util::create_keypair;
 use crate::wrappers::signing_key::SerializableSigningKey;
@@ -9,19 +9,35 @@ use crate::wrappers::verifying_key::SerializableVerifyingKey;
 use crate::armorable::*;
 use crate::delegate_certificate::DelegateCertificate;
 use crate::errors::GhostkeyError;
+use colored::Colorize;
 
 pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> u32 {
-    let (signing_key, verifying_key) = create_keypair()?;
+    let (signing_key, verifying_key) = match create_keypair() {
+        Ok(keypair) => keypair,
+        Err(e) => {
+            error!("{} {}", "Failed to create keypair:".red(), e);
+            return 1;
+        }
+    };
     let signing_key : SerializableSigningKey = signing_key.into();
     let verifying_key : SerializableVerifyingKey = verifying_key.into();
     let signing_key_file = output_dir.join("master_signing_key.pem");
     let verifying_key_file = output_dir.join("master_verifying_key.pem");
     info!("Writing master signing key to {}", signing_key_file.display());
-    signing_key.to_file(&signing_key_file)?;
+    if let Err(e) = signing_key.to_file(&signing_key_file) {
+        error!("{} {}", "Failed to write master signing key:".red(), e);
+        return 1;
+    }
     info!("Writing master verifying key to {}", verifying_key_file.display());
-    verifying_key.to_file(&verifying_key_file)?;
+    if let Err(e) = verifying_key.to_file(&verifying_key_file) {
+        error!("{} {}", "Failed to write master verifying key:".red(), e);
+        return 1;
+    }
     if !ignore_permissions {
-        require_strict_permissions(&signing_key_file)?;
+        if let Err(e) = require_strict_permissions(&signing_key_file) {
+            error!("{} {}", "Failed to set permissions on master signing key file:".red(), e);
+            return 1;
+        }
     } else {
         info!("Ignoring permission checks for {}", signing_key_file.display());
     }
@@ -34,16 +50,31 @@ pub fn generate_delegate_cmd(
     output_dir : &Path,
     ignore_permissions : bool
 ) -> u32 {
-    let (delegate_certificate, delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &info).unwrap();
+    let (delegate_certificate, delegate_signing_key) = match DelegateCertificate::new(&master_signing_key, &info) {
+        Ok(result) => result,
+        Err(e) => {
+            error!("{} {}", "Failed to create delegate certificate:".red(), e);
+            return 1;
+        }
+    };
     let delegate_signing_key : SerializableSigningKey = delegate_signing_key.into();
     let delegate_certificate_file = output_dir.join("delegate_certificate.pem");
     let delegate_signing_key_file = output_dir.join("delegate_signing_key.pem");
     info!("Writing delegate certificate to {}", delegate_certificate_file.display());
-    delegate_certificate.to_file(&delegate_certificate_file)?;
+    if let Err(e) = delegate_certificate.to_file(&delegate_certificate_file) {
+        error!("{} {}", "Failed to write delegate certificate:".red(), e);
+        return 1;
+    }
     info!("Writing delegate signing key to {}", delegate_signing_key_file.display());
-    delegate_signing_key.to_file(&delegate_signing_key_file).unwrap();
+    if let Err(e) = delegate_signing_key.to_file(&delegate_signing_key_file) {
+        error!("{} {}", "Failed to write delegate signing key:".red(), e);
+        return 1;
+    }
     if !ignore_permissions {
-        require_strict_permissions(&delegate_signing_key_file)?;
+        if let Err(e) = require_strict_permissions(&delegate_signing_key_file) {
+            error!("{} {}", "Failed to set permissions on delegate signing key file:".red(), e);
+            return 1;
+        }
     } else {
         info!("Ignoring permission checks for {}", delegate_certificate_file.display());
         info!("Ignoring permission checks for {}", delegate_signing_key_file.display());
