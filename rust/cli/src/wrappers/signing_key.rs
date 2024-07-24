@@ -4,6 +4,7 @@ use serde::de::{self, Visitor};
 use std::fmt;
 use std::convert::TryFrom;
 use base64;
+use crate::armorable::Armorable;
 
 #[derive(Clone)]
 pub struct SerializableSigningKey(pub SigningKey);
@@ -34,8 +35,8 @@ impl Serialize for SerializableSigningKey {
     where
         S: Serializer,
     {
-        let bytes = self.0.to_bytes().map_err(serde::ser::Error::custom)?;
-        serializer.serialize_bytes(bytes.as_ref())
+        let bytes = self.0.to_bytes();
+        serializer.serialize_bytes(&bytes)
     }
 }
 
@@ -58,8 +59,8 @@ impl<'de> Deserialize<'de> for SerializableSigningKey {
             where
                 E: de::Error,
             {
-                let key = SigningKey::from_bytes(v.into()).map_err(de::Error::custom)?;
-                Ok(SerializableSigningKey(key))
+                let signing_key = bytes_to_signing_key(v).map_err(de::Error::custom)?;
+                Ok(SerializableSigningKey(signing_key))
             }
         }
 
@@ -75,7 +76,18 @@ impl AsRef<SigningKey> for SerializableSigningKey {
 
 impl std::fmt::Display for SerializableSigningKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let key_bytes = self.0.to_bytes(); // Assuming to_bytes() succeeds for Display purposes
-        write!(f, "{}", base64::encode(key_bytes.as_ref()))
+        write!(f, "{}", self.to_base64().unwrap())
     }
+}
+
+fn signing_key_to_bytes(signing_key: &SigningKey) -> Vec<u8> {
+    signing_key.to_bytes().as_slice().to_vec()
+}
+
+use p256::elliptic_curve::generic_array::GenericArray;
+use p256::elliptic_curve::generic_array::typenum::U32;
+
+fn bytes_to_signing_key(bytes: &[u8]) -> Result<SigningKey, p256::ecdsa::Error> {
+    let array: GenericArray<u8, U32> = GenericArray::clone_from_slice(bytes);
+    SigningKey::from_bytes(&array)
 }

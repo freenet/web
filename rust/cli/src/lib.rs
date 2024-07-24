@@ -1,9 +1,9 @@
 pub mod armorable;
-pub(crate) mod master;
+pub mod master;
 pub mod crypto_error;
 pub mod wrappers;
-mod commands;
-mod delegate_certificate;
+pub mod delegate_certificate;
+pub mod commands;
 
 #[cfg(test)]
 mod tests {

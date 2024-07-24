@@ -6,6 +6,7 @@ use std::path::Path;
 use std::os::unix::fs::PermissionsExt;
 use colored::Colorize;
 use log::{error, info};
+use ghostkey::commands::generate_master_key_cmd;
 
 fn main() {
     let result = run();
@@ -101,6 +102,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     match matches.subcommand() {
         Some(("generate-master-key", sub_matches)) => {
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
+
             generate_master_key_cmd(output_dir)?;
         }
         Some(("generate-delegate", sub_matches)) => {
@@ -129,7 +131,7 @@ fn run() -> Result<(), Box<dyn Error>> {
             let master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();
             let ghost_certificate_file = sub_matches.get_one::<String>("ghost-certificate").unwrap();
             // verify_ghost_key_command(master_verifying_key_file, ghost_certificate_file)?;
-        }nano
+        }
         _ => {
             info!("No valid subcommand provided. Use --help for usage information.");
         }
@@ -138,34 +140,3 @@ fn run() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-mod commands {
-    fn generate_master_key_cmd(output_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
-        let (signing_key, verifying_key) = create_master_keypair()?;
-        let signing_key_file = output_dir.join("master_signing_key.pem");
-        let verifying_key_file = output_dir.join("master_verifying_key.pem");
-
-        let mut signing_key_file = File::create(signing_key_file)?;
-        signing_key_file.write_all(signing_key.as_bytes())?;
-
-        let mut verifying_key_file = File::create(verifying_key_file)?;
-        verifying_key_file.write_all(verifying_key.as_bytes())?;
-
-        check_file_permissions(&signing_key_file.path().to_str().unwrap(), false)?;
-        check_file_permissions(&verifying_key_file.path().to_str().unwrap(), false)?;
-
-        Ok(())
-    
-}
-
-fn check_file_permissions(file_path: &str, ignore_permissions: bool) -> Result<(), Box<dyn std::error::Error>> {
-    if !ignore_permissions {
-        let metadata = std::fs::metadata(file_path)?;
-        let permissions = metadata.permissions();
-        let mode = permissions.mode();
-        
-        if mode & 0o077 != 0 {
-            return Err(format!("The signing key file '{}' has incorrect permissions. It should not be readable or writable by group or others. Use chmod 600 to set the correct permissions, or use --ignore-permissions to override this check.", file_path).into());
-        }
-    }
-    Ok(())
-}
