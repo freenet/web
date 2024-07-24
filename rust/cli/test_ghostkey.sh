@@ -19,6 +19,11 @@ run_test() {
 
     if [ $status -eq $expected_status ]; then
         echo -e "${GREEN}PASSED${NC}"
+        if [ $expected_status -ne 0 ]; then
+            echo "Command (expected to fail): $command"
+            echo "Output:"
+            echo "$output"
+        fi
     else
         echo -e "${RED}FAILED${NC}"
         echo "Command: $command"
