@@ -76,6 +76,63 @@ impl AsRef<SigningKey> for SerializableSigningKey {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json;
+    use rand_core::OsRng;
+
+    #[test]
+    fn test_serializable_signing_key_roundtrip() {
+        // Generate a random signing key
+        let signing_key = SigningKey::random(&mut OsRng);
+
+        // Create a SerializableSigningKey
+        let serializable_key = SerializableSigningKey::from(signing_key);
+
+        // Serialize to JSON
+        let serialized = serde_json::to_string(&serializable_key).expect("Failed to serialize");
+
+        // Deserialize from JSON
+        let deserialized: SerializableSigningKey = serde_json::from_str(&serialized).expect("Failed to deserialize");
+
+        // Compare the original and deserialized keys
+        assert_eq!(
+            signing_key.to_bytes().as_slice(),
+            deserialized.as_ref().to_bytes().as_slice()
+        );
+    }
+
+    #[test]
+    fn test_serializable_signing_key_display() {
+        // Generate a random signing key
+        let signing_key = SigningKey::random(&mut OsRng);
+
+        // Create a SerializableSigningKey
+        let serializable_key = SerializableSigningKey::from(signing_key);
+
+        // Get the display string
+        let display_string = format!("{}", serializable_key);
+
+        // Ensure the display string is not empty and is a valid base64 string
+        assert!(!display_string.is_empty());
+        assert!(base64::decode(&display_string).is_ok());
+    }
+
+    #[test]
+    fn test_serializable_signing_key_as_ref() {
+        // Generate a random signing key
+        let signing_key = SigningKey::random(&mut OsRng);
+
+        // Create a SerializableSigningKey
+        let serializable_key = SerializableSigningKey::from(signing_key);
+
+        // Test as_ref method
+        let key_ref: &SigningKey = serializable_key.as_ref();
+        assert_eq!(signing_key.to_bytes().as_slice(), key_ref.to_bytes().as_slice());
+    }
+}
+
 impl std::fmt::Display for SerializableSigningKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", general_purpose::STANDARD.encode(self.0.to_bytes()))

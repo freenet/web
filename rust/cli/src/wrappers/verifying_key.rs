@@ -77,6 +77,70 @@ impl AsRef<VerifyingKey> for SerializableVerifyingKey {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json;
+    use p256::ecdsa::SigningKey;
+    use rand_core::OsRng;
+
+    #[test]
+    fn test_serializable_verifying_key_roundtrip() {
+        // Generate a random signing key and get its verifying key
+        let signing_key = SigningKey::random(&mut OsRng);
+        let verifying_key = signing_key.verifying_key();
+
+        // Create a SerializableVerifyingKey
+        let serializable_key = SerializableVerifyingKey::from(*verifying_key);
+
+        // Serialize to JSON
+        let serialized = serde_json::to_string(&serializable_key).expect("Failed to serialize");
+
+        // Deserialize from JSON
+        let deserialized: SerializableVerifyingKey = serde_json::from_str(&serialized).expect("Failed to deserialize");
+
+        // Compare the original and deserialized keys
+        assert_eq!(
+            verifying_key.to_encoded_point(false).as_bytes(),
+            deserialized.as_ref().to_encoded_point(false).as_bytes()
+        );
+    }
+
+    #[test]
+    fn test_serializable_verifying_key_display() {
+        // Generate a random signing key and get its verifying key
+        let signing_key = SigningKey::random(&mut OsRng);
+        let verifying_key = signing_key.verifying_key();
+
+        // Create a SerializableVerifyingKey
+        let serializable_key = SerializableVerifyingKey::from(*verifying_key);
+
+        // Get the display string
+        let display_string = format!("{}", serializable_key);
+
+        // Ensure the display string is not empty and is a valid base64 string
+        assert!(!display_string.is_empty());
+        assert!(base64::decode(&display_string).is_ok());
+    }
+
+    #[test]
+    fn test_serializable_verifying_key_as_ref() {
+        // Generate a random signing key and get its verifying key
+        let signing_key = SigningKey::random(&mut OsRng);
+        let verifying_key = signing_key.verifying_key();
+
+        // Create a SerializableVerifyingKey
+        let serializable_key = SerializableVerifyingKey::from(*verifying_key);
+
+        // Test as_ref method
+        let key_ref: &VerifyingKey = serializable_key.as_ref();
+        assert_eq!(
+            verifying_key.to_encoded_point(false).as_bytes(),
+            key_ref.to_encoded_point(false).as_bytes()
+        );
+    }
+}
+
 impl std::fmt::Display for SerializableVerifyingKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", general_purpose::STANDARD.encode(self.0.to_sec1_bytes()))
