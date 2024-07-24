@@ -1,22 +1,19 @@
-use std::error::Error;
+use std::process;
 use clap::{Command, Arg, ArgAction};
 use std::path::Path;
 use colored::Colorize;
-use log::{info};
+use log::{info, error};
 use p256::ecdsa::SigningKey;
 use ghostkey::armorable::Armorable;
 use ghostkey::commands::{generate_delegate_cmd, generate_master_key_cmd};
 use ghostkey::wrappers::signing_key::SerializableSigningKey;
 
 fn main() {
-    let result = run();
-    if let Err(err) = result {
-        eprintln!("{} {}", "Error:".red(), err);
-        std::process::exit(1);
-    }
+    let exit_code = run();
+    process::exit(exit_code);
 }
 
-fn run() -> Result<(), Box<dyn Error>> {
+fn run() -> i32 {
     let matches = Command::new("Freenet Ghost Key Utility")
         .version("1.0")
         .author("Your Name <your.email@example.com>")
@@ -108,16 +105,22 @@ fn run() -> Result<(), Box<dyn Error>> {
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
             let ignore_permissions = sub_matches.get_flag("ignore-permissions");
 
-            generate_master_key_cmd(output_dir, ignore_permissions);
+            generate_master_key_cmd(output_dir, ignore_permissions)
         }
         Some(("generate-delegate", sub_matches)) => {
             let master_signing_key_file = Path::new(sub_matches.get_one::<String>("master-signing-key").unwrap());
-            let serializable_signing_key = SerializableSigningKey::from_file(master_signing_key_file)?;
+            let serializable_signing_key = match SerializableSigningKey::from_file(master_signing_key_file) {
+                Ok(key) => key,
+                Err(e) => {
+                    error!("{} {}", "Failed to read master signing key:".red(), e);
+                    return 1;
+                }
+            };
             let master_signing_key: &SigningKey = serializable_signing_key.as_signing_key();            
             let info = sub_matches.get_one::<String>("info").unwrap();
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
             let ignore_permissions = sub_matches.get_flag("ignore-permissions");
-            generate_delegate_cmd(master_signing_key, info, output_dir, ignore_permissions);
+            generate_delegate_cmd(master_signing_key, info, output_dir, ignore_permissions)
         }
         Some(("verify-delegate-key", sub_matches)) => {
             let _master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();
@@ -142,9 +145,8 @@ fn run() -> Result<(), Box<dyn Error>> {
         }
         _ => {
             info!("No valid subcommand provided. Use --help for usage information.");
+            0
         }
     }
-
-    Ok(())
 }
 
