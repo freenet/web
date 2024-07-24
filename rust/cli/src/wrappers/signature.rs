@@ -1,4 +1,4 @@
-use p256::ecdsa::Signature;
+use p256::ecdsa::{Signature, SigningKey};
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de::{self, Visitor};
 use std::fmt;
@@ -6,6 +6,7 @@ use std::convert::TryFrom;
 use p256::elliptic_curve::generic_array::GenericArray;
 use base64::engine::general_purpose;
 use base64::Engine;
+use rand_core::OsRng;
 
 #[derive(Clone)]
 pub struct SerializableSignature(pub Signature);
@@ -85,5 +86,64 @@ impl std::fmt::Display for SerializableSignature {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let sig_bytes = self.0.to_bytes();
         write!(f, "{}", general_purpose::STANDARD.encode(sig_bytes))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json;
+
+    #[test]
+    fn test_serializable_signature_roundtrip() {
+        // Generate a random signature
+        let signing_key = SigningKey::random(&mut OsRng);
+        let message = b"test message";
+        let signature: Signature = signing_key.sign(message);
+
+        // Create a SerializableSignature
+        let serializable_sig = SerializableSignature::from(signature);
+
+        // Serialize to JSON
+        let serialized = serde_json::to_string(&serializable_sig).expect("Failed to serialize");
+
+        // Deserialize from JSON
+        let deserialized: SerializableSignature = serde_json::from_str(&serialized).expect("Failed to deserialize");
+
+        // Compare the original and deserialized signatures
+        assert_eq!(signature, deserialized.as_signature().clone());
+    }
+
+    #[test]
+    fn test_serializable_signature_display() {
+        // Generate a random signature
+        let signing_key = SigningKey::random(&mut OsRng);
+        let message = b"test message";
+        let signature: Signature = signing_key.sign(message);
+
+        // Create a SerializableSignature
+        let serializable_sig = SerializableSignature::from(signature);
+
+        // Get the display string
+        let display_string = format!("{}", serializable_sig);
+
+        // Ensure the display string is not empty and is a valid base64 string
+        assert!(!display_string.is_empty());
+        assert!(general_purpose::STANDARD.decode(&display_string).is_ok());
+    }
+
+    #[test]
+    fn test_serializable_signature_as_ref() {
+        // Generate a random signature
+        let signing_key = SigningKey::random(&mut OsRng);
+        let message = b"test message";
+        let signature: Signature = signing_key.sign(message);
+
+        // Create a SerializableSignature
+        let serializable_sig = SerializableSignature::from(signature);
+
+        // Test as_ref method
+        let sig_ref: &Signature = serializable_sig.as_ref();
+        assert_eq!(&signature, sig_ref);
     }
 }
