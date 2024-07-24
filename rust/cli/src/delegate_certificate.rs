@@ -44,8 +44,8 @@ mod tests {
         // Try to verify with the wrong key
         let result = certificate.verify(&wrong_verifying_key);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err().downcast_ref::<GhostkeyError>(),
-                         Some(GhostkeyError::SignatureVerificationError(_))));
+        assert!(matches!(result.unwrap_err().as_ref(),
+                         GhostkeyError::SignatureVerificationError(_)));
     }
 
     #[test]
@@ -66,8 +66,8 @@ mod tests {
         // Verify the tampered certificate
         let result = certificate.verify(&master_verifying_key);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err().downcast_ref::<GhostkeyError>(),
-                         Some(GhostkeyError::SignatureVerificationError(_))));
+        assert!(matches!(result.unwrap_err().as_ref(),
+                         GhostkeyError::SignatureVerificationError(_)));
     }
 }
 
