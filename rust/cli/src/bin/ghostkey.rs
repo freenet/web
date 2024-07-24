@@ -10,7 +10,7 @@ use ghostkey::wrappers::signing_key::SerializableSigningKey;
 
 fn main() {
     let exit_code = run();
-    process::exit(exit_code);
+    process::exit(exit_code.try_into().unwrap());
 }
 
 fn run() -> u32 {
