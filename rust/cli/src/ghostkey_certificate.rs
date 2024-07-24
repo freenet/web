@@ -1,6 +1,5 @@
 use p256::ecdsa::{SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
-use crate::armorable::Armorable;
 use crate::delegate_certificate::DelegateCertificate;
 use crate::errors::GhostkeyError;
 use crate::errors::GhostkeyError::SignatureVerificationError;
@@ -101,18 +100,18 @@ mod tests {
         let result = ghostkey_certificate.verify(&Some(master_verifying_key));
         assert!(result.is_err());
         assert!(matches!(result.unwrap_err().as_ref(),
-                         GhostkeyError::SignatureVerificationError(_)));
+                         SignatureVerificationError(_)));
     }
 }
 
 impl GhostkeyCertificate {
-    pub fn new(delegate_certificate: DelegateCertificate, delegate_signing_key: &SigningKey) -> (Self, SigningKey) {
+    pub fn new(delegate_certificate: &DelegateCertificate, delegate_signing_key: &SigningKey) -> (Self, SigningKey) {
         let (ghost_signing_key, ghost_verifying_key) = create_keypair().unwrap();
         let ghost_signing_key = SerializableSigningKey::from(ghost_signing_key);
         let ghost_verifying_key = SerializableVerifyingKey::from(ghost_verifying_key);
         
         (Self {
-            delegate: delegate_certificate,
+            delegate: delegate_certificate.clone(),
             verifying_key: ghost_verifying_key.clone(),
             signature: SerializableSignature::from(sign_with_hash(&delegate_signing_key, &ghost_verifying_key).unwrap()),
         }, ghost_signing_key.as_ref().clone())
