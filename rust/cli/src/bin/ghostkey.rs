@@ -5,8 +5,9 @@ use colored::Colorize;
 use log::{info, error};
 use p256::ecdsa::SigningKey;
 use ghostkey::armorable::Armorable;
-use ghostkey::commands::{generate_delegate_cmd, generate_ghostkey_cmd, generate_master_key_cmd, verify_delegate_cmd};
+use ghostkey::commands::{generate_delegate_cmd, generate_ghostkey_cmd, generate_master_key_cmd, verify_delegate_cmd, verify_ghostkey_cmd};
 use ghostkey::delegate_certificate::DelegateCertificate;
+use ghostkey::ghostkey_certificate::GhostkeyCertificate;
 use ghostkey::wrappers::signing_key::SerializableSigningKey;
 use ghostkey::wrappers::verifying_key::SerializableVerifyingKey;
 
@@ -167,10 +168,23 @@ fn run() -> i32 {
             generate_ghostkey_cmd(&delegate_certificate, delegate_signing_key, &output_dir)
         }
         Some(("verify-ghost-key", sub_matches)) => {
-            let _master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();
-            let _ghost_certificate_file = sub_matches.get_one::<String>("ghost-certificate").unwrap();
-            error!("verify-ghost-key command not implemented yet");
-            1
+            let master_verifying_key_file = Path::new(sub_matches.get_one::<String>("master-verifying-key").unwrap());
+            let master_verifying_key = match SerializableVerifyingKey::from_file(master_verifying_key_file) {
+                Ok(key) => key,
+                Err(e) => {
+                    error!("{} {}", "Failed to read master verifying key:".red(), e);
+                    return 1;
+                }
+            };
+            let ghost_certificate_file = Path::new(sub_matches.get_one::<String>("ghost-certificate").unwrap());
+            let ghost_certificate = match GhostkeyCertificate::from_file(ghost_certificate_file) {
+                Ok(cert) => cert,
+                Err(e) => {
+                    error!("{} {}", "Failed to read ghost key certificate:".red(), e);
+                    return 1;
+                }
+            };
+            verify_ghostkey_cmd(&master_verifying_key.as_verifying_key(), &ghost_certificate)
         }
         _ => {
             info!("No valid subcommand provided. Use --help for usage information.");

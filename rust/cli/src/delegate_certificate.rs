@@ -5,14 +5,14 @@ use crate::util::{create_keypair, sign_with_hash, verify_with_hash};
 use crate::wrappers::signature::SerializableSignature;
 use crate::wrappers::verifying_key::SerializableVerifyingKey;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct DelegateCertificate {
     pub payload : DelegatePayload,
     /// The payload signed by the master signing key
     pub signature : SerializableSignature,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct DelegatePayload {
     pub delegate_verifying_key : SerializableVerifyingKey,
     pub info : String,

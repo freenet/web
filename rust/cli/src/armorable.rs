@@ -48,7 +48,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
             .as_bytes()
             .chunks(64)
             .map(std::str::from_utf8)
-            .collect::<Result<Vec<&str>, _>>().map_err(|e| GhostkeyError::DecodingError("UTF8 decoding error".to_string()))?
+            .collect::<Result<Vec<&str>, _>>().map_err(|e| GhostkeyError::DecodingError(format!("UTF decoding error: {}", e)))?
             .join("\n");
 
         let struct_name = Self::struct_name();

@@ -23,8 +23,8 @@ impl TryFrom<SerializableSigningKey> for SigningKey {
 }
 
 impl SerializableSigningKey {
-    pub fn as_signing_key(&self) -> &SigningKey {
-        &self.0
+    pub fn as_signing_key(&self) -> SigningKey {
+        self.0.clone()
     }
 }
 

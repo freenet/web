@@ -32,15 +32,29 @@ run_test() {
     echo "----------------------------------------"
 }
 
+# Function to check if files exist
+check_files() {
+    local dir="$1"
+    shift
+    for file in "$@"; do
+        if [ -f "$dir/$file" ]; then
+            echo "File $file exists in $dir"
+        else
+            echo "File $file does not exist in $dir"
+        fi
+    done
+}
+
 # Create a temporary directory
 temp_dir=$(mktemp -d)
 echo "Using temporary directory: $temp_dir"
 
 # Test generate-master-key
-run_test "generate-master-key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir" 0
+run_test "generate-master-key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master" 0
+check_files "$temp_dir" "SERVER_MASTER_KEY" "SERVER_MASTER_KEY.pub"
 
 # Test generate-delegate
-run_test "generate-delegate" "cargo run --bin ghostkey -- generate-delegate --master-signing-key $temp_dir/SERVER_MASTER_KEY --info 'Test Delegate' --output-dir $temp_dir" 0
+run_test "generate-delegate" "cargo run --bin ghostkey -- generate-delegate --master-signing-key $temp_dir/master/master_signing_key.pem --info 'Test Delegate' --output-dir $temp_dir/delegate" 0
 
 # Test verify-delegate (should succeed)
 run_test "verify-delegate (valid)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/SERVER_MASTER_KEY.pub --delegate-certificate $temp_dir/DELEGATE_CERTIFICATE" 0

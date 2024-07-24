@@ -12,19 +12,6 @@ use crate::errors::GhostkeyError;
 use colored::Colorize;
 use crate::ghostkey_certificate::GhostkeyCertificate;
 
-pub fn verify_ghostkey_cmd(master_verifying_key: &VerifyingKey, ghost_certificate: &GhostkeyCertificate) -> i32 {
-    match ghost_certificate.verify(&Some(master_verifying_key.clone())) {
-        Ok(info) => {
-            info!("Ghost key certificate verified. Info: {}", info);
-            0
-        },
-        Err(e) => {
-            error!("{} {}", "Failed to verify ghost key certificate:".red(), e);
-            1
-        }
-    }
-}
-
 pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i32 {
     let (signing_key, verifying_key) = match create_keypair() {
         Ok(keypair) => keypair,
@@ -125,6 +112,19 @@ pub fn generate_ghostkey_cmd(delegate_certificate: &DelegateCertificate, delegat
         return 1;
     }
     0
+}
+
+pub fn verify_ghostkey_cmd(master_verifying_key: &VerifyingKey, ghost_certificate: &GhostkeyCertificate) -> i32 {
+    match ghost_certificate.verify(&Some(master_verifying_key.clone())) {
+        Ok(info) => {
+            info!("Ghost key certificate verified. Info: {}", info);
+            0
+        },
+        Err(e) => {
+            error!("{} {}", "Failed to verify ghost key certificate:".red(), e);
+            1
+        }
+    }
 }
 
 fn require_strict_permissions(file_path: &Path) -> Result<(), GhostkeyError> {
