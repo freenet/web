@@ -1,9 +1,8 @@
-use p256::ecdsa::{SigningKey, VerifyingKey, Signature, signature::Signer, signature::Verifier};
+use p256::ecdsa::{Signature, signature::Signer, signature::Verifier, SigningKey, VerifyingKey};
 use rand_core::OsRng;
-use crate::errors::GhostkeyError;
+
 use crate::armorable::Armorable;
-use blake3::Hash;
-use serde::{Serialize, Deserialize};
+use crate::errors::GhostkeyError;
 
 pub fn create_keypair() -> Result<(SigningKey, VerifyingKey), GhostkeyError> {
     let signing_key = SigningKey::random(&mut OsRng);
@@ -25,8 +24,9 @@ pub fn verify<T: Armorable>(verifying_key: &VerifyingKey, data: &T, signature: &
 
 #[cfg(test)]
 mod tests {
+    use serde::{Deserialize, Serialize};
+
     use super::*;
-    use serde::{Serialize, Deserialize};
 
     #[derive(Serialize, Deserialize)]
     struct TestData {
