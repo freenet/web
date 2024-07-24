@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use std::any::type_name;
+use std::path::Path;
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 
@@ -25,7 +26,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         result.to_uppercase()
     }
 
-    fn to_pem(&self, file_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    fn to_file(&self, file_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
         let mut buf = Vec::new();
         into_writer(self, &mut buf)?;
         let base64_encoded = BASE64_STANDARD.encode(&buf);
@@ -47,7 +48,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         Ok(())
     }
 
-    fn from_pem(file_path: &str) -> Result<Self, Box<dyn std::error::Error>>
+    fn from_file(file_path: &Path) -> Result<Self, Box<dyn std::error::Error>>
     where
         Self: Sized,
     {
@@ -104,9 +105,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     // Write to PEM file
-    foobar.to_pem("foobar.pem")?;
+    foobar.to_file(Path::new("foobar.pem"))?;
     // Read from PEM file
-    let foobar_from_pem = FooBar::from_pem("foobar.pem")?;
+    let foobar_from_pem = FooBar::from_file(Path::new("foobar.pem"))?;
     println!("{:?}", foobar_from_pem);
 
     // Write to base64 string

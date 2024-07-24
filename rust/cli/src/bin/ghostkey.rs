@@ -1,11 +1,8 @@
 use std::error::Error;
 use clap::{Command, Arg, ArgAction};
-use std::fs::File;
-use std::io::Write;
 use std::path::Path;
-use std::os::unix::fs::PermissionsExt;
 use colored::Colorize;
-use log::{error, info};
+use log::{info};
 use ghostkey::commands::generate_master_key_cmd;
 
 fn main() {
