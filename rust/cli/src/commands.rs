@@ -29,11 +29,13 @@ pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i
         error!("{} {}", "Failed to write master signing key:".red(), e);
         return 1;
     }
+    println!("{}", "Master signing key written successfully.".green());
     info!("Writing master verifying key to {}", verifying_key_file.display());
     if let Err(e) = verifying_key.to_file(&verifying_key_file) {
         error!("{} {}", "Failed to write master verifying key:".red(), e);
         return 1;
     }
+    println!("{}", "Master verifying key written successfully.".green());
     if !ignore_permissions {
         if let Err(e) = require_strict_permissions(&signing_key_file) {
             error!("{} {}", "Failed to set permissions on master signing key file:".red(), e);
@@ -66,11 +68,13 @@ pub fn generate_delegate_cmd(
         error!("{} {}", "Failed to write delegate certificate:".red(), e);
         return 1;
     }
+    println!("{}", "Delegate certificate written successfully.".green());
     info!("Writing delegate signing key to {}", delegate_signing_key_file.display());
     if let Err(e) = delegate_signing_key.to_file(&delegate_signing_key_file) {
         error!("{} {}", "Failed to write delegate signing key:".red(), e);
         return 1;
     }
+    println!("{}", "Delegate signing key written successfully.".green());
     if !ignore_permissions {
         if let Err(e) = require_strict_permissions(&delegate_signing_key_file) {
             error!("{} {}", "Failed to set permissions on delegate signing key file:".red(), e);
@@ -86,7 +90,8 @@ pub fn generate_delegate_cmd(
 pub fn verify_delegate_cmd(master_verifying_key: &VerifyingKey, delegate_certificate: &DelegateCertificate) -> i32 {
     match delegate_certificate.verify(master_verifying_key) {
         Ok(info) => {
-            info!("Delegate certificate verified. Info: {}", info);
+            println!("{}", "Delegate certificate verified successfully.".green());
+            println!("Info: {}", info);
             0
         },
         Err(e) => {
@@ -106,18 +111,21 @@ pub fn generate_ghostkey_cmd(delegate_certificate: &DelegateCertificate, delegat
         error!("{} {}", "Failed to write ghostkey certificate:".red(), e);
         return 1;
     }
+    println!("{}", "Ghostkey certificate written successfully.".green());
     info!("Writing ghostkey signing key to {}", ghostkey_signing_key_file.display());
     if let Err(e) = ghostkey_signing_key.to_file(&ghostkey_signing_key_file) {
         error!("{} {}", "Failed to write ghostkey signing key:".red(), e);
         return 1;
     }
+    println!("{}", "Ghostkey signing key written successfully.".green());
     0
 }
 
 pub fn verify_ghostkey_cmd(master_verifying_key: &VerifyingKey, ghost_certificate: &GhostkeyCertificate) -> i32 {
     match ghost_certificate.verify(&Some(master_verifying_key.clone())) {
         Ok(info) => {
-            info!("Ghost key certificate verified. Info: {}", info);
+            println!("{}", "Ghost key certificate verified successfully.".green());
+            println!("Info: {}", info);
             0
         },
         Err(e) => {
