@@ -1,175 +1,121 @@
-use serde::{Serialize, Deserialize};
-use base64::{engine::general_purpose, Engine as _};
-use std::fs;
-use std::io::{self, BufReader, BufRead, Write};
-use std::path::Path;
-use thiserror::Error;
+use ciborium::{de::from_reader, ser::into_writer};
+use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::{BufReader, Read, Write};
+use std::any::type_name;
+use base64::Engine;
+use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 
-#[derive(Error, Debug)]
-pub enum ArmorableError {
-    #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
-    #[error("CBOR serialization error: {0}")]
-    Cbor(#[from] serde_cbor::Error),
-    #[error("Base64 decode error: {0}")]
-    Base64(#[from] base64::DecodeError),
-}
-
-// Define the Armorable trait
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
-    // Static method to get the armor label for the type
-    fn armor_label() -> &'static str;
-
-    // Serialize the object to a base64 armored string
-    fn to_base64_armored(&self) -> Result<String, ArmorableError> {
-        let cbor_data = serde_cbor::to_vec(self)?;
-        let base64_data = general_purpose::STANDARD.encode(&cbor_data);
-        let wrapped_base64 = wrap_at_64_chars(&base64_data);
-        Ok(format!(
-            "-----BEGIN {}-----\n{}\n-----END {}-----",
-            Self::armor_label(),
-            wrapped_base64,
-            Self::armor_label()
-        ))
+    fn struct_name() -> String {
+        let full_name = type_name::<Self>();
+        let parts: Vec<&str> = full_name.split("::").collect();
+        let struct_name = parts.last().unwrap_or(&full_name);
+        Self::camel_case_to_upper(struct_name)
     }
 
-    // Deserialize the object from a base64 armored string
-    fn from_base64_armored(armored: &str) -> Result<Self, ArmorableError> where Self: Sized {
-        let label = extract_label(armored)?;
-        if label != Self::armor_label() {
-            return Err(ArmorableError::Io(io::Error::new(io::ErrorKind::InvalidData, "Armor label does not match")));
-        }
-        let base64_data = extract_base64(armored, &label)?;
-        let cbor_data = general_purpose::STANDARD.decode(&base64_data)?;
-        let object = serde_cbor::from_slice(&cbor_data)?;
-        Ok(object)
-    }
-
-    // Serialize the object to a naked base64 string
-    fn to_naked_base64(&self) -> Result<String, ArmorableError> {
-        let cbor_data = serde_cbor::to_vec(self)?;
-        Ok(general_purpose::STANDARD.encode(&cbor_data))
-    }
-
-    // Deserialize the object from a naked base64 string
-    fn from_naked_base64(base64: &str) -> Result<Self, ArmorableError> where Self: Sized {
-        let cbor_data = general_purpose::STANDARD.decode(base64)?;
-        let object = serde_cbor::from_slice(&cbor_data)?;
-        Ok(object)
-    }
-
-    // Load the object from a file that may contain multiple armored blocks
-    fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, ArmorableError> where Self: Sized {
-        let file = fs::File::open(path)?;
-        let reader = BufReader::new(file);
-        let mut in_block = false;
-        let mut armored = String::new();
-        let mut found_block = false;
-        let label = Self::armor_label();
-
-        for line in reader.lines() {
-            let line = line?;
-            if line.starts_with(&format!("-----BEGIN {}", label)) {
-                if found_block {
-                    return Err(ArmorableError::Io(io::Error::new(io::ErrorKind::InvalidData, "Multiple blocks with the same label found")));
-                }
-                in_block = true;
-                found_block = true;
-            } else if line.starts_with(&format!("-----END {}", label)) {
-                in_block = false;
-            } else if in_block {
-                armored.push_str(&line);
-                armored.push('\n');
+    fn camel_case_to_upper(s: &str) -> String {
+        let mut result = String::new();
+        for (i, c) in s.chars().enumerate() {
+            if c.is_uppercase() && i != 0 {
+                result.push(' ');
             }
+            result.push(c);
         }
+        result.to_uppercase()
+    }
 
-        if !found_block {
-            return Err(ArmorableError::Io(io::Error::new(io::ErrorKind::InvalidData, "No block with the specified label found")));
-        }
+    fn to_pem(&self, file_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let mut buf = Vec::new();
+        into_writer(self, &mut buf)?;
+        let base64_encoded = BASE64_STANDARD.encode(&buf);
+        let wrapped = base64_encoded
+            .as_bytes()
+            .chunks(64)
+            .map(std::str::from_utf8)
+            .collect::<Result<Vec<&str>, _>>()?
+            .join("\n");
 
-        Self::from_base64_armored(&armored)
+        let struct_name = Self::struct_name();
+        let pem_content = format!(
+            "-----BEGIN {}-----\n{}\n-----END {}-----\n",
+            struct_name, wrapped, struct_name
+        );
+
+        let mut file = File::create(file_path)?;
+        file.write_all(pem_content.as_bytes())?;
+        Ok(())
+    }
+
+    fn from_pem(file_path: &str) -> Result<Self, Box<dyn std::error::Error>>
+    where
+        Self: Sized,
+    {
+        let file = File::open(file_path)?;
+        let mut reader = BufReader::new(file);
+        let mut pem_content = String::new();
+        reader.read_to_string(&mut pem_content)?;
+
+        let struct_name = Self::struct_name();
+        let begin_label = format!("-----BEGIN {}-----", struct_name);
+        let end_label = format!("-----END {}-----", struct_name);
+
+        let base64_encoded = pem_content
+            .lines()
+            .filter(|line| !line.starts_with("-----"))
+            .collect::<Vec<&str>>()
+            .join("");
+
+        let decoded = BASE64_STANDARD.decode(&base64_encoded)?;
+        let object: Self = from_reader(&decoded[..])?;
+        Ok(object)
+    }
+
+    fn to_base64(&self) -> Result<String, Box<dyn std::error::Error>> {
+        let mut buf = Vec::new();
+        into_writer(self, &mut buf)?;
+        let base64_encoded = BASE64_STANDARD.encode(&buf);
+        Ok(base64_encoded)
+    }
+
+    fn from_base64(encoded: &str) -> Result<Self, Box<dyn std::error::Error>>
+    where
+        Self: Sized,
+    {
+        let decoded = BASE64_STANDARD.decode(encoded)?;
+        let object: Self = from_reader(&decoded[..])?;
+        Ok(object)
     }
 }
 
-// Helper function to wrap a string at 64 characters
-fn wrap_at_64_chars(data: &str) -> String {
-    data.as_bytes()
-        .chunks(64)
-        .map(|chunk| std::str::from_utf8(chunk).unwrap())
-        .collect::<Vec<&str>>()
-        .join("\n")
+// Blanket implementation for all types that implement Serialize and Deserialize
+impl<T> Armorable for T where T: Serialize + for<'de> Deserialize<'de> {}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct FooBar {
+    foo: String,
+    bar: i32,
 }
 
-// Helper function to extract the armor label from an armored string
-fn extract_label(armored: &str) -> io::Result<String> {
-    if let Some(start) = armored.find("-----BEGIN ") {
-        if let Some(end) = armored[start..].find("-----") {
-            return Ok(armored[start + 11..start + end].trim().to_string());
-        }
-    }
-    Err(io::Error::new(io::ErrorKind::InvalidData, "Invalid armor label"))
-}
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let foobar = FooBar {
+        foo: "example".to_string(),
+        bar: 42,
+    };
 
-// Helper function to extract the base64 data from an armored string
-fn extract_base64(armored: &str, label: &str) -> io::Result<String> {
-    let begin_label = format!("-----BEGIN {}-----", label);
-    let end_label = format!("-----END {}-----", label);
+    // Write to PEM file
+    foobar.to_pem("foobar.pem")?;
+    // Read from PEM file
+    let foobar_from_pem = FooBar::from_pem("foobar.pem")?;
+    println!("{:?}", foobar_from_pem);
 
-    let start = armored.find(&begin_label)
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "BEGIN label not found"))? + begin_label.len();
-    let end = armored.find(&end_label)
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "END label not found"))?;
+    // Write to base64 string
+    let base64_str = foobar.to_base64()?;
+    println!("{}", base64_str);
 
-    Ok(armored[start..end].replace("\n", ""))
-}
+    // Read from base64 string
+    let foobar_from_base64 = FooBar::from_base64(&base64_str)?;
+    println!("{:?}", foobar_from_base64);
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use serde::{Serialize, Deserialize};
-
-    #[derive(Serialize, Deserialize)]
-    struct TestStruct {
-        data: String,
-    }
-
-    impl Armorable for TestStruct {
-        fn armor_label() -> &'static str {
-            "TEST_STRUCT"
-        }
-    }
-
-    #[test]
-    fn test_armor_serde() {
-        let test_obj = TestStruct { data: "Hello, world!".to_string() };
-
-        // Test base64 armored serialization and deserialization
-        let armored = test_obj.to_base64_armored().unwrap();
-        let deserialized: TestStruct = TestStruct::from_base64_armored(&armored).unwrap();
-        assert_eq!(test_obj.data, deserialized.data);
-
-        // Test naked base64 serialization and deserialization
-        let naked_base64 = test_obj.to_naked_base64().unwrap();
-        let deserialized: TestStruct = TestStruct::from_naked_base64(&naked_base64).unwrap();
-        assert_eq!(test_obj.data, deserialized.data);
-
-        // Test loading from file
-        let path = "test_file.txt";
-        {
-            let mut file = fs::File::create(path).unwrap();
-            file.write_all(armored.as_bytes()).unwrap();
-        }
-        let deserialized_from_file: TestStruct = TestStruct::from_file(path).unwrap();
-        assert_eq!(test_obj.data, deserialized_from_file.data);
-
-        // Test error when multiple blocks are present
-        {
-            let mut file = fs::File::create(path).unwrap();
-            file.write_all(armored.as_bytes()).unwrap();
-            file.write_all(b"\n").unwrap();
-            file.write_all(armored.as_bytes()).unwrap();
-        }
-        let result: Result<TestStruct, ArmorableError> = TestStruct::from_file(path);
-        assert!(result.is_err());
-    }
+    Ok(())
 }

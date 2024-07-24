@@ -128,7 +128,7 @@ pub fn generate_signing_key() -> Result<(String, String), CryptoError> {
     Ok((armored_signing_key, armored_verifying_key))
 }
 
-pub fn validate_delegate_key(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
+pub fn verify_delegate_key(master_verifying_key_pem: &str, delegate_certificate: &str) -> Result<String, CryptoError> {
     debug!("Master verifying key PEM: {}", master_verifying_key_pem);
     debug!("Delegate certificate: {}", delegate_certificate);
 

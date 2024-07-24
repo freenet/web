@@ -137,17 +137,17 @@ async fn wait_for_api_ready(timeout: Duration) -> bool {
     false
 }
 
-fn validate_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: &std::path::Path) -> Result<()> {
+fn verify_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: &std::path::Path) -> Result<()> {
     let output = ProcessCommand::new("cargo")
         .args(&[
             "run",
             "--manifest-path",
             "../cli/Cargo.toml",
             "--",
-            "validate-ghost-key",
-            "--master-verifying-key-file",
+            "verify-ghost-key",
+            "--master-verifying-key",
             master_key_file.to_str().unwrap(),
-            "--ghost-certificate-file",
+            "--ghost-certificate",
             cert_file.to_str().unwrap(),
         ])
         .output()?;
@@ -157,7 +157,7 @@ fn validate_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: 
         println!("Ghost key validation failed: {}", stderr);
         Err(anyhow::anyhow!("Ghost key validation failed"))
     } else {
-        println!("Ghost key validated successfully");
+        println!("Ghost key verifyd successfully");
         Ok(())
     }
 }
@@ -465,7 +465,7 @@ async fn run_browser_test(headless: bool) -> Result<()> {
     // Inspect the ghost key certificate
     inspect_ghost_key_certificate(&combined_key_content)?;
 
-    // Validate the ghost key certificate using the CLI
+    // Verify the ghost key certificate using the CLI
     let master_verifying_key_file = temp_dir.join("master_verifying_key.pem");
     println!("Master verifying key file: {:?}", master_verifying_key_file);
     println!("Ghost certificate file: {:?}", output_file);
@@ -484,10 +484,10 @@ async fn run_browser_test(headless: bool) -> Result<()> {
             "--manifest-path",
             "../cli/Cargo.toml",
             "--",
-            "validate-ghost-key",
-            "--master-verifying-key-file",
+            "verify-ghost-key",
+            "--master-verifying-key",
             master_verifying_key_file.to_str().unwrap(),
-            "--ghost-certificate-file",
+            "--ghost-certificate",
             output_file.to_str().unwrap(),
         ])
         .output()?;
@@ -538,7 +538,7 @@ async fn run_browser_test(headless: bool) -> Result<()> {
             "generate-ghostkey",
             "--delegate-dir",
             temp_dir.join("delegates").join("20").to_str().unwrap(),
-            "--output-file",
+            "--output",
             temp_dir.join("cli_ghostkey_certificate.pem").to_str().unwrap(),
         ])
         .output()?;
@@ -551,17 +551,17 @@ async fn run_browser_test(headless: bool) -> Result<()> {
 
     println!("Ghost key generated successfully using CLI");
 
-    // Validate the CLI-generated ghost key
+    // Verify the CLI-generated ghost key
     let cli_validation_output = ProcessCommand::new("cargo")
         .args(&[
             "run",
             "--manifest-path",
             "../cli/Cargo.toml",
             "--",
-            "validate-ghost-key",
-            "--master-verifying-key-file",
+            "verify-ghost-key",
+            "--master-verifying-key",
             master_verifying_key_file.to_str().unwrap(),
-            "--ghost-certificate-file",
+            "--ghost-certificate",
             temp_dir.join("cli_ghostkey_certificate.pem").to_str().unwrap(),
         ])
         .output()?;
@@ -570,10 +570,10 @@ async fn run_browser_test(headless: bool) -> Result<()> {
         let stderr = String::from_utf8_lossy(&cli_validation_output.stderr);
         println!("CLI-generated ghost key validation failed: {}", stderr);
     } else {
-        println!("CLI-generated ghost key validated successfully");
+        println!("CLI-generated ghost key verifyd successfully");
     }
 
-    // Compare and validate the CLI-generated ghost key with the browser-generated one
+    // Compare and verify the CLI-generated ghost key with the browser-generated one
     println!("Comparing and validating CLI-generated and browser-generated ghost keys...");
     let cli_ghost_key = std::fs::read_to_string(temp_dir.join("cli_ghostkey_certificate.pem"))?;
     let browser_ghost_key = std::fs::read_to_string(&output_file)?;
@@ -595,12 +595,12 @@ async fn run_browser_test(headless: bool) -> Result<()> {
         println!("Browser-generated: {:?}", browser_cert_info);
     }
 
-    // Validate both certificates
+    // Verify both certificates
     println!("\nValidating CLI-generated ghost key:");
-    validate_ghost_key_certificate(&temp_dir.join("cli_ghostkey_certificate.pem"), &master_verifying_key_file)?;
+    verify_ghost_key_certificate(&temp_dir.join("cli_ghostkey_certificate.pem"), &master_verifying_key_file)?;
 
     println!("\nValidating browser-generated ghost key:");
-    validate_ghost_key_certificate(&output_file, &master_verifying_key_file)?;
+    verify_ghost_key_certificate(&output_file, &master_verifying_key_file)?;
 
     Ok(())
     })().await;
