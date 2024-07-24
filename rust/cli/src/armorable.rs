@@ -8,6 +8,19 @@ use base64::Engine;
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
+    fn to_bytes(&self) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+        let mut buf = Vec::new();
+        into_writer(self, &mut buf)?;
+        Ok(buf)
+    }
+
+    fn from_bytes(bytes: &[u8]) -> Result<Self, Box<dyn std::error::Error>>
+    where
+        Self: Sized,
+    {
+        let object: Self = from_reader(bytes)?;
+        Ok(object)
+    }
     fn struct_name() -> String {
         let full_name = type_name::<Self>();
         let parts: Vec<&str> = full_name.split("::").collect();
@@ -27,8 +40,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     }
 
     fn to_file(&self, file_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
-        let mut buf = Vec::new();
-        into_writer(self, &mut buf)?;
+        let buf = self.to_bytes()?;
         let base64_encoded = BASE64_STANDARD.encode(&buf);
         let wrapped = base64_encoded
             .as_bytes()
@@ -68,15 +80,12 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
             .join("");
 
         let decoded = BASE64_STANDARD.decode(&base64_encoded)?;
-        let object: Self = from_reader(&decoded[..])?;
-        Ok(object)
+        Self::from_bytes(&decoded)
     }
 
     fn to_base64(&self) -> Result<String, Box<dyn std::error::Error>> {
-        let mut buf = Vec::new();
-        into_writer(self, &mut buf)?;
-        let base64_encoded = BASE64_STANDARD.encode(&buf);
-        Ok(base64_encoded)
+        let buf = self.to_bytes()?;
+        Ok(BASE64_STANDARD.encode(&buf))
     }
 
     fn from_base64(encoded: &str) -> Result<Self, Box<dyn std::error::Error>>
@@ -84,8 +93,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         Self: Sized,
     {
         let decoded = BASE64_STANDARD.decode(encoded)?;
-        let object: Self = from_reader(&decoded[..])?;
-        Ok(object)
+        Self::from_bytes(&decoded)
     }
 }
 
@@ -160,5 +168,18 @@ mod tests {
             TestStruct::camel_case_to_upper("camelCaseString"),
             "CAMEL_CASE_STRING"
         );
+    }
+
+    #[test]
+    fn test_to_bytes_and_from_bytes() {
+        let test_struct = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+
+        let bytes = test_struct.to_bytes().unwrap();
+        let decoded_struct = TestStruct::from_bytes(&bytes).unwrap();
+
+        assert_eq!(test_struct, decoded_struct);
     }
 }
