@@ -101,7 +101,7 @@ mod tests {
 
         // Compare the original and deserialized keys
         assert_eq!(
-            verifying_key.to_encoded_point(false).as_bytes(),
+            serializable_key.as_ref().to_encoded_point(false).as_bytes(),
             deserialized.as_ref().to_encoded_point(false).as_bytes()
         );
     }
@@ -120,7 +120,7 @@ mod tests {
 
         // Ensure the display string is not empty and is a valid base64 string
         assert!(!display_string.is_empty());
-        assert!(base64::decode(&display_string).is_ok());
+        assert!(general_purpose::STANDARD.decode(&display_string).is_ok());
     }
 
     #[test]
@@ -135,7 +135,7 @@ mod tests {
         // Test as_ref method
         let key_ref: &VerifyingKey = serializable_key.as_ref();
         assert_eq!(
-            verifying_key.to_encoded_point(false).as_bytes(),
+            serializable_key.as_ref().to_encoded_point(false).as_bytes(),
             key_ref.to_encoded_point(false).as_bytes()
         );
     }

@@ -98,7 +98,7 @@ mod tests {
 
         // Compare the original and deserialized keys
         assert_eq!(
-            signing_key.to_bytes().as_slice(),
+            serializable_key.as_ref().to_bytes().as_slice(),
             deserialized.as_ref().to_bytes().as_slice()
         );
     }
@@ -116,7 +116,7 @@ mod tests {
 
         // Ensure the display string is not empty and is a valid base64 string
         assert!(!display_string.is_empty());
-        assert!(base64::decode(&display_string).is_ok());
+        assert!(general_purpose::STANDARD.decode(&display_string).is_ok());
     }
 
     #[test]
@@ -129,7 +129,7 @@ mod tests {
 
         // Test as_ref method
         let key_ref: &SigningKey = serializable_key.as_ref();
-        assert_eq!(signing_key.to_bytes().as_slice(), key_ref.to_bytes().as_slice());
+        assert_eq!(serializable_key.as_ref().to_bytes().as_slice(), key_ref.to_bytes().as_slice());
     }
 }
 
