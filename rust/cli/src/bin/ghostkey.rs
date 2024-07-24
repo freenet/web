@@ -6,7 +6,9 @@ use log::{info, error};
 use p256::ecdsa::SigningKey;
 use ghostkey::armorable::Armorable;
 use ghostkey::commands::{generate_delegate_cmd, generate_master_key_cmd};
+use ghostkey::delegate_certificate::DelegateCertificate;
 use ghostkey::wrappers::signing_key::SerializableSigningKey;
+use ghostkey::wrappers::verifying_key::SerializableVerifyingKey;
 
 fn main() {
     let exit_code = run();
@@ -46,7 +48,7 @@ fn run() -> i32 {
                 .help("The directory to output the delegate keys and certificate")
                 .required(true)
                 .value_name("DIR")))
-        .subcommand(Command::new("verify-delegate-key")
+        .subcommand(Command::new("verify-delegate")
             .about("Verifies a delegate key certificate using the master verifying key")
             .arg(Arg::new("master-verifying-key")
                 .long("master-verifying-key")
@@ -120,11 +122,26 @@ fn run() -> i32 {
             let info = sub_matches.get_one::<String>("info").unwrap();
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
             let ignore_permissions = sub_matches.get_flag("ignore-permissions");
+            
             generate_delegate_cmd(master_signing_key, info, output_dir, ignore_permissions)
         }
-        Some(("verify-delegate-key", sub_matches)) => {
-            let _master_verifying_key_file = sub_matches.get_one::<String>("master-verifying-key").unwrap();
-            let _delegate_certificate_file = sub_matches.get_one::<String>("delegate-certificate").unwrap();
+        Some(("verify-delegate", sub_matches)) => {
+            let master_verifying_key_file = Path::new(sub_matches.get_one::<String>("master-verifying-key").unwrap());
+            let master_verifying_key = match SerializableVerifyingKey::from_file(master_verifying_key_file) {
+                Ok(key) => key,
+                Err(e) => {
+                    error!("{} {}", "Failed to read master verifying key:".red(), e);
+                    return 1;
+                }
+            };
+            let delegate_certificate_file = Path::new(sub_matches.get_one::<String>("delegate-certificate").unwrap());
+            let delegate_certificate = match DelegateCertificate::from_file(delegate_certificate_file) {
+                Ok(cert) => cert,
+                Err(e) => {
+                    error!("{} {}", "Failed to read delegate certificate:".red(), e);
+                    return 1;
+                }
+            };
             error!("verify-delegate-key command not implemented yet");
             1
         }
