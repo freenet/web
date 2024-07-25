@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
-use log::{info, error};
+use log::info;
 use p256::ecdsa::{SigningKey, VerifyingKey};
 use crate::util::create_keypair;
 use crate::wrappers::signing_key::SerializableSigningKey;
