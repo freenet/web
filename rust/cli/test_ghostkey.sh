@@ -74,6 +74,27 @@ check_files "$temp_dir/ghost-1" "ghostkey_certificate.pem" "ghostkey_signing_key
 # Test verify-ghost-key
 run_test "verify-ghost-key" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghostkey_certificate.pem" 0
 
+# Generate a second master key
+run_test "generate-second-master-key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master-2" 0
+check_files "$temp_dir/master-2" "master_signing_key.pem" "master_verifying_key.pem"
+
+# Test verify-delegate with wrong master key (should fail)
+run_test "verify-delegate (wrong master key)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --delegate-certificate $temp_dir/delegate-1/delegate_certificate.pem" 1
+
+# Test verify-ghost-key with wrong master key (should fail)
+run_test "verify-ghost-key (wrong master key)" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghostkey_certificate.pem" 1
+
+# Generate a second delegate
+run_test "generate-second-delegate" "cargo run --bin ghostkey -- generate-delegate --master-signing-key $temp_dir/master-1/master_signing_key.pem --info 'Test Delegate 2' --output-dir $temp_dir/delegate-2" 0
+check_files "$temp_dir/delegate-2" "delegate_certificate.pem" "delegate_signing_key.pem"
+
+# Generate a ghost key with the second delegate
+run_test "generate-ghost-key-2" "cargo run --bin ghostkey -- generate-ghost-key --delegate-dir $temp_dir/delegate-2 --output-dir $temp_dir/ghost-2" 0
+check_files "$temp_dir/ghost-2" "ghostkey_certificate.pem" "ghostkey_signing_key.pem"
+
+# Test verify-ghost-key with mismatched delegate (should fail)
+run_test "verify-ghost-key (mismatched delegate)" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-2/ghostkey_certificate.pem" 1
+
 # Clean up
 echo "Cleaning up temporary directory"
 rm -rf "$temp_dir"
