@@ -196,7 +196,7 @@ fn run() -> i32 {
                     return 1;
                 }
             };
-            verify_ghostkey_cmd(Some(&master_verifying_key.as_verifying_key()), &ghost_certificate)
+            verify_ghostkey_cmd(&master_verifying_key.as_verifying_key(), &ghost_certificate)
         }
         _ => {
             info!("No valid subcommand provided. Use --help for usage information.");
