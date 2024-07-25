@@ -33,8 +33,7 @@ pub fn create_keypair() -> Result<(SigningKey, VerifyingKey), GhostkeyError> {
 /// This function uses blake3 to hash the data before signing.
 pub fn sign_with_hash<T: Serialize + for<'de> Deserialize<'de>>(signing_key: &SigningKey, data: &T) -> Result<Signature, Box<GhostkeyError>> {
     let bytes = data.to_bytes().map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
-    let hash = blake3::hash(&bytes);
-    Ok(signing_key.sign(hash.as_bytes()))
+    Ok(signing_key.sign(bytes.as_slice()))
 }
 
 /// Verifies a signature for the given data using the provided verifying key.
@@ -55,8 +54,7 @@ pub fn sign_with_hash<T: Serialize + for<'de> Deserialize<'de>>(signing_key: &Si
 /// This function uses blake3 to hash the data before verification.
 pub fn verify_with_hash<T: Serialize + for<'de> Deserialize<'de>>(verifying_key: &VerifyingKey, data: &T, signature: &Signature) -> Result<bool, Box<GhostkeyError>> {
     let bytes = data.to_bytes().map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
-    let hash = blake3::hash(&bytes);
-    Ok(verifying_key.verify(hash.as_bytes(), signature).is_ok())
+    Ok(verifying_key.verify(bytes.as_slice(), signature).is_ok())
 }
 
 #[cfg(test)]
