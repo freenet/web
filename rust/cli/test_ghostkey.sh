@@ -50,7 +50,7 @@ temp_dir=$(mktemp -d)
 echo "Using temporary directory: $temp_dir"
 
 # Test generate-master-key
-run_test "generate-master-key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master" 0
+run_test "generate-master-key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master1" 0
 check_files "$temp_dir" "SERVER_MASTER_KEY" "SERVER_MASTER_KEY.pub"
 
 # Test generate-delegate
