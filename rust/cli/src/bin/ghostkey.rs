@@ -11,6 +11,21 @@ use ghostkey::ghostkey_certificate::GhostkeyCertificate;
 use ghostkey::wrappers::signing_key::SerializableSigningKey;
 use ghostkey::wrappers::verifying_key::SerializableVerifyingKey;
 
+const CMD_GENERATE_MASTER_KEY: &str = "generate-master-key";
+const CMD_GENERATE_DELEGATE: &str = "generate-delegate";
+const CMD_VERIFY_DELEGATE: &str = "verify-delegate";
+const CMD_GENERATE_GHOST_KEY: &str = "generate-ghost-key";
+const CMD_VERIFY_GHOST_KEY: &str = "verify-ghost-key";
+
+const ARG_OUTPUT_DIR: &str = "output-dir";
+const ARG_IGNORE_PERMISSIONS: &str = "ignore-permissions";
+const ARG_MASTER_SIGNING_KEY: &str = "master-signing-key";
+const ARG_INFO: &str = "info";
+const ARG_MASTER_VERIFYING_KEY: &str = "master-verifying-key";
+const ARG_DELEGATE_CERTIFICATE: &str = "delegate-certificate";
+const ARG_DELEGATE_DIR: &str = "delegate-dir";
+const ARG_GHOST_CERTIFICATE: &str = "ghost-certificate";
+
 fn main() {
     let exit_code = run();
     process::exit(exit_code);
@@ -21,86 +36,86 @@ fn run() -> i32 {
         .version("1.0")
         .author("Your Name <your.email@example.com>")
         .about("Performs various ghost key-related tasks")
-        .subcommand(Command::new("generate-master-key")
+        .subcommand(Command::new(CMD_GENERATE_MASTER_KEY)
             .about("Generates a new SERVER_MASTER_KEY and public key")
-            .arg(Arg::new("output-dir")
-                .long("output-dir")
+            .arg(Arg::new(ARG_OUTPUT_DIR)
+                .long(ARG_OUTPUT_DIR)
                 .help("The directory to output the keys")
                 .required(true)
                 .value_name("DIR"))
-            .arg(Arg::new("ignore-permissions")
-                .long("ignore-permissions")
+            .arg(Arg::new(ARG_IGNORE_PERMISSIONS)
+                .long(ARG_IGNORE_PERMISSIONS)
                 .help("Ignore file permission checks")
                 .action(ArgAction::SetTrue)))
-        .subcommand(Command::new("generate-delegate")
+        .subcommand(Command::new(CMD_GENERATE_DELEGATE)
             .about("Generates a new delegate signing key and certificate")
-            .arg(Arg::new("master-signing-key")
-                .long("master-signing-key")
+            .arg(Arg::new(ARG_MASTER_SIGNING_KEY)
+                .long(ARG_MASTER_SIGNING_KEY)
                 .help("The file containing the master signing key")
                 .required(true)
                 .value_name("FILE"))
-            .arg(Arg::new("info")
-                .long("info")
+            .arg(Arg::new(ARG_INFO)
+                .long(ARG_INFO)
                 .help("The info string to be included in the delegate key certificate")
                 .required(true)
                 .value_name("STRING"))
-            .arg(Arg::new("output-dir")
-                .long("output-dir")
+            .arg(Arg::new(ARG_OUTPUT_DIR)
+                .long(ARG_OUTPUT_DIR)
                 .help("The directory to output the delegate keys and certificate")
                 .required(true)
                 .value_name("DIR"))
-            .arg(Arg::new("ignore-permissions")
-                .long("ignore-permissions")
+            .arg(Arg::new(ARG_IGNORE_PERMISSIONS)
+                .long(ARG_IGNORE_PERMISSIONS)
                 .help("Ignore file permission checks")
                 .action(ArgAction::SetTrue)))
-        .subcommand(Command::new("verify-delegate")
+        .subcommand(Command::new(CMD_VERIFY_DELEGATE)
             .about("Verifies a delegate key certificate using the master verifying key")
-            .arg(Arg::new("master-verifying-key")
-                .long("master-verifying-key")
+            .arg(Arg::new(ARG_MASTER_VERIFYING_KEY)
+                .long(ARG_MASTER_VERIFYING_KEY)
                 .help("The file containing the master verifying key")
                 .required(true)
                 .value_name("FILE"))
-            .arg(Arg::new("delegate-certificate")
-                .long("delegate-certificate")
+            .arg(Arg::new(ARG_DELEGATE_CERTIFICATE)
+                .long(ARG_DELEGATE_CERTIFICATE)
                 .help("The file containing the delegate certificate")
                 .required(true)
                 .value_name("FILE")))
-        .subcommand(Command::new("generate-ghost-key")
+        .subcommand(Command::new(CMD_GENERATE_GHOST_KEY)
             .about("Generates a ghost key from a delegate signing key")
-            .arg(Arg::new("delegate-dir")
-                .long("delegate-dir")
+            .arg(Arg::new(ARG_DELEGATE_DIR)
+                .long(ARG_DELEGATE_DIR)
                 .help("The directory containing the delegate certificate and signing key")
                 .required(true)
                 .value_name("DIR"))
-            .arg(Arg::new("output-dir")
-                .long("output-dir")
+            .arg(Arg::new(ARG_OUTPUT_DIR)
+                .long(ARG_OUTPUT_DIR)
                 .help("The directory to output the ghost key files")
                 .required(true)
                 .value_name("DIR")))
-        .subcommand(Command::new("verify-ghost-key")
+        .subcommand(Command::new(CMD_VERIFY_GHOST_KEY)
             .about("Verifies a ghost key certificate using the master verifying key")
-            .arg(Arg::new("master-verifying-key")
-                .long("master-verifying-key")
+            .arg(Arg::new(ARG_MASTER_VERIFYING_KEY)
+                .long(ARG_MASTER_VERIFYING_KEY)
                 .help("The file containing the master verifying key")
                 .required(true)
                 .value_name("FILE"))
-            .arg(Arg::new("ghost-certificate")
-                .long("ghost-certificate")
+            .arg(Arg::new(ARG_GHOST_CERTIFICATE)
+                .long(ARG_GHOST_CERTIFICATE)
                 .help("The file containing the ghost key certificate")
                 .required(true)
                 .value_name("FILE")))
         .get_matches();
 
     match matches.subcommand() {
-        Some(("generate-master-key", sub_matches)) => {
-            let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
-            
+        Some((CMD_GENERATE_MASTER_KEY, sub_matches)) => {
+            let output_dir = Path::new(sub_matches.get_one::<String>(ARG_OUTPUT_DIR).unwrap());
+
             if let Err(e) = std::fs::create_dir_all(output_dir) {
                 eprintln!("{} to create output directory: {}", "Failed".red(), e);
                 return 1;
             }
-            
-            let ignore_permissions = sub_matches.get_flag("ignore-permissions");
+
+            let ignore_permissions = sub_matches.get_flag(ARG_IGNORE_PERMISSIONS);
 
             let result = generate_master_key_cmd(output_dir, ignore_permissions);
             if result == 0 {
@@ -108,8 +123,8 @@ fn run() -> i32 {
             }
             result
         }
-        Some(("generate-delegate", sub_matches)) => {
-            let master_signing_key_file = Path::new(sub_matches.get_one::<String>("master-signing-key").unwrap());
+        Some((CMD_GENERATE_DELEGATE, sub_matches)) => {
+            let master_signing_key_file = Path::new(sub_matches.get_one::<String>(ARG_MASTER_SIGNING_KEY).unwrap());
             let serializable_signing_key = match SerializableSigningKey::from_file(master_signing_key_file) {
                 Ok(key) => key,
                 Err(e) => {
@@ -117,24 +132,24 @@ fn run() -> i32 {
                     return 1;
                 }
             };
-            let master_signing_key: SigningKey = serializable_signing_key.as_signing_key();            
-            let info = sub_matches.get_one::<String>("info").unwrap();
-            let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
+            let master_signing_key: SigningKey = serializable_signing_key.as_signing_key();
+            let info = sub_matches.get_one::<String>(ARG_INFO).unwrap();
+            let output_dir = Path::new(sub_matches.get_one::<String>(ARG_OUTPUT_DIR).unwrap());
             if let Err(e) = std::fs::create_dir_all(output_dir) {
                 eprintln!("{} to create output directory: {}", "Failed".red(), e);
                 return 1;
             }
-            
-            let ignore_permissions = sub_matches.get_flag("ignore-permissions");
-            
+
+            let ignore_permissions = sub_matches.get_flag(ARG_IGNORE_PERMISSIONS);
+
             let result = generate_delegate_cmd(&master_signing_key, info, output_dir, ignore_permissions);
             if result == 0 {
                 println!("{}", "Delegate key generation completed successfully.".green());
             }
             result
         }
-        Some(("verify-delegate", sub_matches)) => {
-            let master_verifying_key_file = Path::new(sub_matches.get_one::<String>("master-verifying-key").unwrap());
+        Some((CMD_VERIFY_DELEGATE, sub_matches)) => {
+            let master_verifying_key_file = Path::new(sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY).unwrap());
             let master_verifying_key = match SerializableVerifyingKey::from_file(master_verifying_key_file) {
                 Ok(key) => key,
                 Err(e) => {
@@ -142,7 +157,7 @@ fn run() -> i32 {
                     return 1;
                 }
             };
-            let delegate_certificate_file = Path::new(sub_matches.get_one::<String>("delegate-certificate").unwrap());
+            let delegate_certificate_file = Path::new(sub_matches.get_one::<String>(ARG_DELEGATE_CERTIFICATE).unwrap());
             let delegate_certificate = match DelegateCertificate::from_file(delegate_certificate_file) {
                 Ok(cert) => cert,
                 Err(e) => {
@@ -152,8 +167,8 @@ fn run() -> i32 {
             };
             verify_delegate_cmd(master_verifying_key.as_verifying_key(), &delegate_certificate)
         }
-        Some(("generate-ghost-key", sub_matches)) => {
-            let delegate_dir = sub_matches.get_one::<String>("delegate-dir").unwrap();
+        Some((CMD_GENERATE_GHOST_KEY, sub_matches)) => {
+            let delegate_dir = sub_matches.get_one::<String>(ARG_DELEGATE_DIR).unwrap();
             let delegate_certificate_file = Path::new(delegate_dir).join("delegate_certificate.pem");
             let delegate_certificate = match DelegateCertificate::from_file(&delegate_certificate_file) {
                 Ok(cert) => cert,
@@ -170,17 +185,17 @@ fn run() -> i32 {
                     return 1;
                 }
             };
-            
-            let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
+
+            let output_dir = Path::new(sub_matches.get_one::<String>(ARG_OUTPUT_DIR).unwrap());
             if let Err(e) = std::fs::create_dir_all(output_dir) {
                 eprintln!("{} to create output directory: {}", "Failed".red(), e);
                 return 1;
             }
-            
+
             generate_ghostkey_cmd(&delegate_certificate, delegate_signing_key, &output_dir)
         }
-        Some(("verify-ghost-key", sub_matches)) => {
-            let master_verifying_key_file = Path::new(sub_matches.get_one::<String>("master-verifying-key").unwrap());
+        Some((CMD_VERIFY_GHOST_KEY, sub_matches)) => {
+            let master_verifying_key_file = Path::new(sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY).unwrap());
             let master_verifying_key = match SerializableVerifyingKey::from_file(master_verifying_key_file) {
                 Ok(key) => key,
                 Err(e) => {
@@ -188,7 +203,7 @@ fn run() -> i32 {
                     return 1;
                 }
             };
-            let ghost_certificate_file = Path::new(sub_matches.get_one::<String>("ghost-certificate").unwrap());
+            let ghost_certificate_file = Path::new(sub_matches.get_one::<String>(ARG_GHOST_CERTIFICATE).unwrap());
             let ghost_certificate = match GhostkeyCertificate::from_file(ghost_certificate_file) {
                 Ok(cert) => cert,
                 Err(e) => {
@@ -204,4 +219,3 @@ fn run() -> i32 {
         }
     }
 }
-

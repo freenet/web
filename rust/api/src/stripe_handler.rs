@@ -12,7 +12,7 @@ use sha2::{Sha256, Digest};
 use base64::{Engine as _, engine::general_purpose};
 use std::error::Error as StdError;
 use std::path::PathBuf;
-use ghostkey::crypto::extract_bytes_from_armor;
+use ghostkey::armorable::*;
 
 #[derive(Debug)]
 pub enum CertificateError {
@@ -60,6 +60,8 @@ impl From<stripe::ParseIdError> for CertificateError {
 }
 
 use serde_json::Value;
+use ghostkey::delegate_certificate::DelegateCertificate;
+use ghostkey::wrappers::signing_key::SerializableSigningKey;
 
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
@@ -172,17 +174,14 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
 
     log::info!("Reading delegate certificate from: {:?}", delegate_cert_path);
     log::info!("Reading delegate key from: {:?}", delegate_key_path);
-
-    let delegate_cert_armored = std::fs::read_to_string(&delegate_cert_path)
+    
+    let delegate_cert = DelegateCertificate::from_file(&delegate_cert_path)
         .map_err(|e| {
             log::error!("Failed to read delegate certificate from {:?}: {}", delegate_cert_path, e);
             CertificateError::KeyError(format!("Failed to read delegate certificate: {}", e))
         })?;
-    let delegate_cert = extract_bytes_from_armor(&delegate_cert_armored, "DELEGATE CERTIFICATE")
-        .map_err(|e| CertificateError::KeyError(format!("Failed to extract delegate certificate: {}", e)))?;
-    let delegate_cert_base64 = general_purpose::STANDARD.encode(&delegate_cert);
 
-    let delegate_key = std::fs::read_to_string(&delegate_key_path)
+    let delegate_key = SerializableSigningKey::from_file(&delegate_key_path)
         .map_err(|e| {
             log::error!("Failed to read delegate key from {:?}: {}", delegate_key_path, e);
             CertificateError::KeyError(format!("Failed to read delegate key: {}", e))
@@ -191,35 +190,10 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
     log::info!("Successfully read both delegate certificate and key");
     log::debug!("Starting sign_with_delegate_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
 
-    let signing_key_bytes = extract_bytes_from_armor(&delegate_key, "DELEGATE SIGNING KEY")
-        .map_err(|e| CertificateError::KeyError(format!("Failed to extract delegate signing key: {}", e)))?;
-
-    let signing_key = SigningKey::from_bytes(GenericArray::from_slice(&signing_key_bytes))
-        .map_err(|e| CertificateError::KeyError(format!("Failed to create signing key: {}", e)))?;
 
     log::info!("Successfully created signing key");
 
-    let blinded_verifying_key_bytes = match blinded_verifying_key {
-        Value::String(s) => general_purpose::STANDARD.decode(s)
-            .map_err(|e| {
-                log::error!("Failed to decode blinded verifying key: {}", e);
-                CertificateError::Base64Error(e)
-            })?,
-        Value::Object(obj) => {
-            let x = obj.get("x").and_then(Value::as_str)
-                .ok_or_else(|| CertificateError::KeyError("Missing 'x' coordinate".to_string()))?;
-            let y = obj.get("y").and_then(Value::as_str)
-                .ok_or_else(|| CertificateError::KeyError("Missing 'y' coordinate".to_string()))?;
-
-            let mut bytes = Vec::new();
-            bytes.extend_from_slice(&general_purpose::STANDARD.decode(x)
-                .map_err(|e| CertificateError::Base64Error(e))?);
-            bytes.extend_from_slice(&general_purpose::STANDARD.decode(y)
-                .map_err(|e| CertificateError::Base64Error(e))?);
-            bytes
-        },
-        _ => return Err(CertificateError::KeyError("Invalid blinded verifying key format".to_string())),
-    };
+    let blinded_verifying_key_bytes = 
 
     log::debug!("Decoded blinded verifying key bytes: {:?}", blinded_verifying_key_bytes);
 
