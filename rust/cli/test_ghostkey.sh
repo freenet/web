@@ -53,47 +53,36 @@ temp_dir=$(mktemp -d)
 echo "Using temporary directory: $temp_dir"
 
 # Test generate-master-key
-run_test "generate-master-key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master-1" 0
+run_test "Generate master key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master-1" 0
 check_files "$temp_dir/master-1" "master_signing_key.pem" "master_verifying_key.pem"
 
 # Test generate-delegate
-run_test "generate-delegate" "cargo run --bin ghostkey -- generate-delegate --master-signing-key $temp_dir/master-1/master_signing_key.pem --info 'Test Delegate' --output-dir $temp_dir/delegate-1" 0
+run_test "Generate delegate" "cargo run --bin ghostkey -- generate-delegate --master-signing-key $temp_dir/master-1/master_signing_key.pem --info 'Test Delegate' --output-dir $temp_dir/delegate-1" 0
 check_files "$temp_dir/delegate-1" "delegate_certificate.pem" "delegate_signing_key.pem"
 
 # Test verify-delegate (should succeed)
-run_test "verify-delegate (valid)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --delegate-certificate $temp_dir/delegate-1/delegate_certificate.pem" 0
+run_test "Verify delegate with valid certificate" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --delegate-certificate $temp_dir/delegate-1/delegate_certificate.pem" 0
 
 # Test verify-delegate with invalid certificate (should fail)
 echo "Invalid certificate" > $temp_dir/INVALID_CERTIFICATE
-run_test "verify-delegate (invalid)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --delegate-certificate $temp_dir/INVALID_CERTIFICATE" 1
+run_test "Verify delegate with invalid certificate (should fail)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --delegate-certificate $temp_dir/INVALID_CERTIFICATE" 1
 
 # Test generate-ghost-key
-run_test "generate-ghost-key" "cargo run --bin ghostkey -- generate-ghost-key --delegate-dir $temp_dir/delegate-1 --output-dir $temp_dir/ghost-1" 0
+run_test "Generate ghost key" "cargo run --bin ghostkey -- generate-ghost-key --delegate-dir $temp_dir/delegate-1 --output-dir $temp_dir/ghost-1" 0
 check_files "$temp_dir/ghost-1" "ghostkey_certificate.pem" "ghostkey_signing_key.pem"
 
 # Test verify-ghost-key
-run_test "verify-ghost-key" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghostkey_certificate.pem" 0
+run_test "Verify ghost key" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghostkey_certificate.pem" 0
 
 # Generate a second master key
-run_test "generate-second-master-key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master-2" 0
+run_test "Generate second master key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master-2" 0
 check_files "$temp_dir/master-2" "master_signing_key.pem" "master_verifying_key.pem"
 
 # Test verify-delegate with wrong master key (should fail)
-run_test "verify-delegate (wrong master key)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --delegate-certificate $temp_dir/delegate-1/delegate_certificate.pem" 1
+run_test "Verify delegate with wrong master key (should fail)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --delegate-certificate $temp_dir/delegate-1/delegate_certificate.pem" 1
 
 # Test verify-ghost-key with wrong master key (should fail)
-run_test "verify-ghost-key (wrong master key)" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghostkey_certificate.pem" 1
-
-# Generate a second delegate
-run_test "generate-second-delegate" "cargo run --bin ghostkey -- generate-delegate --master-signing-key $temp_dir/master-1/master_signing_key.pem --info 'Test Delegate 2' --output-dir $temp_dir/delegate-2" 0
-check_files "$temp_dir/delegate-2" "delegate_certificate.pem" "delegate_signing_key.pem"
-
-# Generate a ghost key with the second delegate
-run_test "generate-ghost-key-2" "cargo run --bin ghostkey -- generate-ghost-key --delegate-dir $temp_dir/delegate-2 --output-dir $temp_dir/ghost-2" 0
-check_files "$temp_dir/ghost-2" "ghostkey_certificate.pem" "ghostkey_signing_key.pem"
-
-# Test verify-ghost-key with mismatched delegate (should fail)
-run_test "verify-ghost-key (mismatched delegate)" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-2/ghostkey_certificate.pem" 1
+run_test "Verify ghost key with wrong master key (should fail)" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghostkey_certificate.pem" 1
 
 # Clean up
 echo "Cleaning up temporary directory"

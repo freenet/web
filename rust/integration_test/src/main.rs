@@ -710,12 +710,12 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
 
     println!("\nDelegate Certificate (deserialized):");
     println!("Verifying Key: {:?}", delegate_cert.verifying_key);
-    println!("Info: {}", delegate_cert.info);
+    println!("Info: {}", delegate_cert.info.blue());
     println!("Signature: {:?}", delegate_cert.signature);
 
     // Parse the JSON string containing the certificate info
     let info: serde_json::Value = serde_json::from_str(&delegate_cert.info)?;
-    println!("\nCertificate Info:");
+    println!("\nInfo:");
     println!("{}", serde_json::to_string_pretty(&info)?);
 
     // Extract amount and currency
