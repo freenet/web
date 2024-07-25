@@ -29,13 +29,13 @@ pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i
         eprintln!("{} to write master signing key: {}", "Failed".red(), e);
         return 1;
     }
-    println!("{} {}", "Master signing key written successfully:".green(), signing_key_file.display().to_string().yellow());
+    println!("{} {}: {}", "Master signing key".green(), "written successfully", signing_key_file.display().to_string().yellow());
     info!("Writing master verifying key to {}", verifying_key_file.display());
     if let Err(e) = verifying_key.to_file(&verifying_key_file) {
         eprintln!("{} to write master verifying key: {}", "Failed".red(), e);
         return 1;
     }
-    println!("{} {}", "Master verifying key written successfully:".green(), verifying_key_file.display().to_string().yellow());
+    println!("{} {}: {}", "Master verifying key".green(), "written successfully", verifying_key_file.display().to_string().yellow());
     if !ignore_permissions {
         if let Err(e) = require_strict_permissions(&signing_key_file) {
             eprintln!("{} to set permissions on master signing key file: {}", "Failed".red(), e);
@@ -68,13 +68,13 @@ pub fn generate_delegate_cmd(
         eprintln!("{} to write delegate certificate: {}", "Failed".red(), e);
         return 1;
     }
-    println!("{} {}", "Delegate certificate written successfully:".green(), delegate_certificate_file.display().to_string().yellow());
+    println!("{} {}: {}", "Delegate certificate".green(), "written successfully", delegate_certificate_file.display().to_string().yellow());
     info!("Writing delegate signing key to {}", delegate_signing_key_file.display());
     if let Err(e) = delegate_signing_key.to_file(&delegate_signing_key_file) {
         eprintln!("{} to write delegate signing key: {}", "Failed".red(), e);
         return 1;
     }
-    println!("{} {}", "Delegate signing key written successfully:".green(), delegate_signing_key_file.display().to_string().yellow());
+    println!("{} {}: {}", "Delegate signing key".green(), "written successfully", delegate_signing_key_file.display().to_string().yellow());
     if !ignore_permissions {
         if let Err(e) = require_strict_permissions(&delegate_signing_key_file) {
             eprintln!("{} to set permissions on delegate signing key file: {}", "Failed".red(), e);
@@ -90,7 +90,7 @@ pub fn generate_delegate_cmd(
 pub fn verify_delegate_cmd(master_verifying_key: &VerifyingKey, delegate_certificate: &DelegateCertificate) -> i32 {
     match delegate_certificate.verify(master_verifying_key) {
         Ok(info) => {
-            println!("Delegate certificate {} successfully.", "verified".green());
+            println!("Delegate certificate {}", "verified".green());
             println!("Info: {}", info.blue());
             0
         },
@@ -111,20 +111,20 @@ pub fn generate_ghostkey_cmd(delegate_certificate: &DelegateCertificate, delegat
         eprintln!("{} to write ghostkey certificate: {}", "Failed".red(), e);
         return 1;
     }
-    println!("{} {}", "Ghostkey certificate written successfully:".green(), ghostkey_certificate_file.display().to_string().yellow());
+    println!("{} {}: {}", "Ghostkey certificate".green(), "written successfully", ghostkey_certificate_file.display().to_string().yellow());
     info!("Writing ghostkey signing key to {}", ghostkey_signing_key_file.display());
     if let Err(e) = ghostkey_signing_key.to_file(&ghostkey_signing_key_file) {
         eprintln!("{} to write ghostkey signing key: {}", "Failed".red(), e);
         return 1;
     }
-    println!("{} {}", "Ghost signing key written successfully:", ghostkey_signing_key_file.display().to_string().yellow());
+    println!("{} {}: {}", "Ghost signing key".green(), "written successfully", ghostkey_signing_key_file.display().to_string().yellow());
     0
 }
 
 pub fn verify_ghostkey_cmd(master_verifying_key: &VerifyingKey, ghost_certificate: &GhostkeyCertificate) -> i32 {
     match ghost_certificate.verify(&Some(master_verifying_key.clone())) {
         Ok(info) => {
-            println!("Ghost certificate {}.", "verified".green());
+            println!("Ghost certificate {}", "verified".green());
             println!("Info: {}", info.blue());
             0
         },
