@@ -50,24 +50,26 @@ temp_dir=$(mktemp -d)
 echo "Using temporary directory: $temp_dir"
 
 # Test generate-master-key
-run_test "generate-master-key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master1" 0
-check_files "$temp_dir" "SERVER_MASTER_KEY" "SERVER_MASTER_KEY.pub"
+run_test "generate-master-key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master-1" 0
+check_files "$temp_dir/master-1" "master_signing_key.pem" "master_verifying_key.pem"
 
 # Test generate-delegate
-run_test "generate-delegate" "cargo run --bin ghostkey -- generate-delegate --master-signing-key $temp_dir/master/master_signing_key.pem --info 'Test Delegate' --output-dir $temp_dir/delegate" 0
+run_test "generate-delegate" "cargo run --bin ghostkey -- generate-delegate --master-signing-key $temp_dir/master-1/master_signing_key.pem --info 'Test Delegate' --output-dir $temp_dir/delegate-1" 0
+check_files "$temp_dir/delegate-1" "delegate_certificate.pem" "delegate_signing_key.pem"
 
 # Test verify-delegate (should succeed)
-run_test "verify-delegate (valid)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/SERVER_MASTER_KEY.pub --delegate-certificate $temp_dir/DELEGATE_CERTIFICATE" 0
+run_test "verify-delegate (valid)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --delegate-certificate $temp_dir/delegate-1/delegate_certificate.pem" 0
 
 # Test verify-delegate with invalid certificate (should fail)
 echo "Invalid certificate" > $temp_dir/INVALID_CERTIFICATE
-run_test "verify-delegate (invalid)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/SERVER_MASTER_KEY.pub --delegate-certificate $temp_dir/INVALID_CERTIFICATE" 1
+run_test "verify-delegate (invalid)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --delegate-certificate $temp_dir/INVALID_CERTIFICATE" 1
 
-# Test generate-ghost-key (not implemented yet, should fail)
-run_test "generate-ghost-key" "cargo run --bin ghostkey -- generate-ghost-key --delegate-dir $temp_dir --output-dir $temp_dir" 1
+# Test generate-ghost-key
+run_test "generate-ghost-key" "cargo run --bin ghostkey -- generate-ghost-key --delegate-dir $temp_dir/delegate-1 --output-dir $temp_dir/ghost-1" 0
+check_files "$temp_dir/ghost-1" "ghostkey_certificate.pem" "ghostkey_signing_key.pem"
 
-# Test verify-ghost-key (not implemented yet, should fail)
-run_test "verify-ghost-key" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/SERVER_MASTER_KEY.pub --ghost-certificate $temp_dir/GHOST_CERTIFICATE" 1
+# Test verify-ghost-key
+run_test "verify-ghost-key" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghostkey_certificate.pem" 0
 
 # Clean up
 echo "Cleaning up temporary directory"
