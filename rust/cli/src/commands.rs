@@ -16,7 +16,7 @@ pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i
     let (signing_key, verifying_key) = match create_keypair() {
         Ok(keypair) => keypair,
         Err(e) => {
-            eprintln!("{} {}", "Failed to create keypair:".red(), e);
+            eprintln!("{} to create keypair: {}", "Failed".red(), e);
             return 1;
         }
     };
@@ -26,19 +26,19 @@ pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i
     let verifying_key_file = output_dir.join("master_verifying_key.pem");
     info!("Writing master signing key to {}", signing_key_file.display());
     if let Err(e) = signing_key.to_file(&signing_key_file) {
-        eprintln!("{} {}", "Failed to write master signing key:".red(), e);
+        eprintln!("{} to write master signing key: {}", "Failed".red(), e);
         return 1;
     }
     println!("{} {}", "Master signing key written successfully:".green(), signing_key_file.display().to_string().yellow());
     info!("Writing master verifying key to {}", verifying_key_file.display());
     if let Err(e) = verifying_key.to_file(&verifying_key_file) {
-        eprintln!("{} {}", "Failed to write master verifying key:".red(), e);
+        eprintln!("{} to write master verifying key: {}", "Failed".red(), e);
         return 1;
     }
     println!("{} {}", "Master verifying key written successfully:".green(), verifying_key_file.display().to_string().yellow());
     if !ignore_permissions {
         if let Err(e) = require_strict_permissions(&signing_key_file) {
-            eprintln!("{} {}", "Failed to set permissions on master signing key file:".red(), e);
+            eprintln!("{} to set permissions on master signing key file: {}", "Failed".red(), e);
             return 1;
         }
     } else {
@@ -56,7 +56,7 @@ pub fn generate_delegate_cmd(
     let (delegate_certificate, delegate_signing_key) = match DelegateCertificate::new(&master_signing_key, &info) {
         Ok(result) => result,
         Err(e) => {
-            eprintln!("{} {}", "Failed to create delegate certificate:".red(), e);
+            eprintln!("{} to create delegate certificate: {}", "Failed".red(), e);
             return 1;
         }
     };
@@ -71,13 +71,13 @@ pub fn generate_delegate_cmd(
     println!("{} {}", "Delegate certificate written successfully:".green(), delegate_certificate_file.display().to_string().yellow());
     info!("Writing delegate signing key to {}", delegate_signing_key_file.display());
     if let Err(e) = delegate_signing_key.to_file(&delegate_signing_key_file) {
-        eprintln!("{} {}", "Failed to write delegate signing key:".red(), e);
+        eprintln!("{} to write delegate signing key: {}", "Failed".red(), e);
         return 1;
     }
     println!("{} {}", "Delegate signing key written successfully:".green(), delegate_signing_key_file.display().to_string().yellow());
     if !ignore_permissions {
         if let Err(e) = require_strict_permissions(&delegate_signing_key_file) {
-            eprintln!("{} {}", "Failed to set permissions on delegate signing key file:".red(), e);
+            eprintln!("{} to set permissions on delegate signing key file: {}", "Failed".red(), e);
             return 1;
         }
     } else {
@@ -95,7 +95,7 @@ pub fn verify_delegate_cmd(master_verifying_key: &VerifyingKey, delegate_certifi
             0
         },
         Err(e) => {
-            eprintln!("{} {}", "Failed to verify delegate certificate:".red(), e);
+            eprintln!("{} to verify delegate certificate: {}", "Failed".red(), e);
             1
         }
     }
@@ -108,13 +108,13 @@ pub fn generate_ghostkey_cmd(delegate_certificate: &DelegateCertificate, delegat
     let ghostkey_signing_key_file = output_dir.join("ghostkey_signing_key.pem");
     info!("Writing ghostkey certificate to {}", ghostkey_certificate_file.display());
     if let Err(e) = ghostkey_certificate.to_file(&ghostkey_certificate_file) {
-        eprintln!("{} {}", "Failed to write ghostkey certificate:".red(), e);
+        eprintln!("{} to write ghostkey certificate: {}", "Failed".red(), e);
         return 1;
     }
     println!("{} {}", "Ghostkey certificate written successfully:".green(), ghostkey_certificate_file.display().to_string().yellow());
     info!("Writing ghostkey signing key to {}", ghostkey_signing_key_file.display());
     if let Err(e) = ghostkey_signing_key.to_file(&ghostkey_signing_key_file) {
-        eprintln!("{} {}", "Failed to write ghostkey signing key:".red(), e);
+        eprintln!("{} to write ghostkey signing key: {}", "Failed".red(), e);
         return 1;
     }
     println!("{} {}", "Ghost signing key written successfully:", ghostkey_signing_key_file.display().to_string().yellow());
@@ -129,7 +129,7 @@ pub fn verify_ghostkey_cmd(master_verifying_key: &VerifyingKey, ghost_certificat
             0
         },
         Err(e) => {
-            eprintln!("{} {}", "Failed to verify ghost key certificate:".red(), e);
+            eprintln!("{} to verify ghost key certificate: {}", "Failed".red(), e);
             1
         }
     }
