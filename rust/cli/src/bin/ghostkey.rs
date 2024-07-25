@@ -96,7 +96,7 @@ fn run() -> i32 {
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
             
             if let Err(e) = std::fs::create_dir_all(output_dir) {
-                eprintln!("{} {}", "Failed to create output directory:".red(), e);
+                eprintln!("{} {}", "Failed".red(), "to create output directory:", e);
                 return 1;
             }
             
@@ -121,7 +121,7 @@ fn run() -> i32 {
             let info = sub_matches.get_one::<String>("info").unwrap();
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
             if let Err(e) = std::fs::create_dir_all(output_dir) {
-                eprintln!("{} {}", "Failed to create output directory:".red(), e);
+                eprintln!("{} {}", "Failed".red(), "to create output directory:", e);
                 return 1;
             }
             
@@ -138,7 +138,7 @@ fn run() -> i32 {
             let master_verifying_key = match SerializableVerifyingKey::from_file(master_verifying_key_file) {
                 Ok(key) => key,
                 Err(e) => {
-                    println!("{} {}", "Failed to read master verifying key:".red(), e);
+                    println!("{} {}", "Failed".red(), "to read master verifying key:", e);
                     return 1;
                 }
             };
@@ -146,7 +146,7 @@ fn run() -> i32 {
             let delegate_certificate = match DelegateCertificate::from_file(delegate_certificate_file) {
                 Ok(cert) => cert,
                 Err(e) => {
-                    println!("{} {}", "Failed to read delegate certificate:".red(), e);
+                    println!("{} {}", "Failed".red(), "to read delegate certificate:", e);
                     return 1;
                 }
             };
@@ -158,7 +158,7 @@ fn run() -> i32 {
             let delegate_certificate = match DelegateCertificate::from_file(&delegate_certificate_file) {
                 Ok(cert) => cert,
                 Err(e) => {
-                    eprintln!("{} {}", "Failed to read delegate certificate:".red(), e);
+                    eprintln!("{} {}", "Failed".red(), "to read delegate certificate:", e);
                     return 1;
                 }
             };
@@ -166,14 +166,14 @@ fn run() -> i32 {
             let delegate_signing_key : &SigningKey = match SerializableSigningKey::from_file(&delegate_signing_key_file) {
                 Ok(key) => &key.as_signing_key(),
                 Err(e) => {
-                    eprintln!("{} {}", "Failed to read delegate signing key:".red(), e);
+                    eprintln!("{} {}", "Failed".red(), "to read delegate signing key:", e);
                     return 1;
                 }
             };
             
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
             if let Err(e) = std::fs::create_dir_all(output_dir) {
-                eprintln!("{} {}", "Failed to create output directory:".red(), e);
+                eprintln!("{} {}", "Failed".red(), "to create output directory:", e);
                 return 1;
             }
             
@@ -184,7 +184,7 @@ fn run() -> i32 {
             let master_verifying_key = match SerializableVerifyingKey::from_file(master_verifying_key_file) {
                 Ok(key) => key,
                 Err(e) => {
-                    eprintln!("{} {}", "Failed to read master verifying key:".red(), e);
+                    eprintln!("{} {}", "Failed".red(), "to read master verifying key:", e);
                     return 1;
                 }
             };
@@ -192,7 +192,7 @@ fn run() -> i32 {
             let ghost_certificate = match GhostkeyCertificate::from_file(ghost_certificate_file) {
                 Ok(cert) => cert,
                 Err(e) => {
-                    eprintln!("{} {}", "Failed to read ghost key certificate:".red(), e);
+                    eprintln!("{} {}", "Failed".red(), "to read ghost key certificate:", e);
                     return 1;
                 }
             };
