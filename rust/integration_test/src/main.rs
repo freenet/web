@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
-use std::process::{Command, Stdio, Child};
-use clap::{App, Arg};
+use std::process::{Command as ProcessCommand, Stdio, Child};
+use clap::{Command as ClapCommand, Arg};
 use std::time::Duration;
 use fantoccini::{Client, ClientBuilder, Locator};
 use std::thread;
@@ -29,13 +29,13 @@ async fn main() -> Result<()> {
 async fn run() -> Result<()> {
     println!("Starting integration test...");
     // Parse command line arguments
-    let matches = App::new("Integration Test")
-        .arg(Arg::with_name("headless")
+    let matches = ClapCommand::new("Integration Test")
+        .arg(Arg::new("headless")
             .long("headless")
             .help("Run browser in headless mode"))
         .get_matches();
 
-    let headless = matches.is_present("headless");
+    let headless = matches.contains_id("headless");
     let mut chromedriver_handle = None;
     if !is_port_in_use(9515) {
         chromedriver_handle = Some(start_chromedriver()?);
@@ -137,17 +137,17 @@ async fn wait_for_api_ready(timeout: Duration) -> bool {
     false
 }
 
-fn validate_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: &std::path::Path) -> Result<()> {
-    let output = Command::new("cargo")
+fn verify_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: &std::path::Path) -> Result<()> {
+    let output = ProcessCommand::new("cargo")
         .args(&[
             "run",
             "--manifest-path",
             "../cli/Cargo.toml",
             "--",
-            "validate-ghost-key",
-            "--master-verifying-key-file",
+            "verify-ghost-key",
+            "--master-verifying-key",
             master_key_file.to_str().unwrap(),
-            "--ghost-certificate-file",
+            "--ghost-certificate",
             cert_file.to_str().unwrap(),
         ])
         .output()?;
@@ -157,7 +157,7 @@ fn validate_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: 
         println!("Ghost key validation failed: {}", stderr);
         Err(anyhow::anyhow!("Ghost key validation failed"))
     } else {
-        println!("Ghost key validated successfully");
+        println!("Ghost key verifyd successfully");
         Ok(())
     }
 }
@@ -191,7 +191,7 @@ fn generate_master_key(temp_dir: &std::path::Path) -> Result<std::path::PathBuf>
     let master_key_file = temp_dir.join("master_signing_key.pem");
     println!("Generating master key in directory: {:?}", temp_dir);
     let cli_dir = std::env::current_dir()?.join("../cli");
-    let output = Command::new("cargo")
+    let output = ProcessCommand::new("cargo")
         .args(&["run", "--quiet", "--manifest-path", cli_dir.join("Cargo.toml").to_str().unwrap(), "--", "generate-master-key", "--output-dir"])
         .arg(temp_dir)
         .current_dir(&cli_dir)
@@ -210,7 +210,7 @@ fn generate_master_key(temp_dir: &std::path::Path) -> Result<std::path::PathBuf>
 
 fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std::path::Path) -> Result<()> {
     println!("Generating delegate keys in: {:?}", delegate_dir);
-    let output = Command::new("bash")
+    let output = ProcessCommand::new("bash")
         .arg("../cli/generate_delegate_keys.sh")
         .args(&["--master-key", master_key_file.to_str().unwrap()])
         .arg("--delegate-dir")
@@ -239,18 +239,18 @@ fn is_port_in_use(port: u16) -> bool {
 }
 
 fn kill_process_on_port(port: u16) -> Result<()> {
-    let output = Command::new("lsof")
+    let output = ProcessCommand::new("lsof")
         .args(&["-t", "-i", &format!(":{}", port)])
         .output()?;
     let pid = String::from_utf8(output.stdout)?.trim().to_string();
     if !pid.is_empty() {
-        Command::new("kill").arg(&pid).output()?;
+        ProcessCommand::new("kill").arg(&pid).output()?;
     }
     Ok(())
 }
 
 fn start_hugo() -> Result<Child> {
-    Command::new("hugo")
+    ProcessCommand::new("hugo")
         .args(&["server", "--disableFastRender"])
         .current_dir("../../hugo-site")
         .stdout(Stdio::piped())
@@ -261,7 +261,7 @@ fn start_hugo() -> Result<Child> {
 
 async fn start_api(delegate_dir: &str) -> Result<Child> {
     println!("Starting API with delegate_dir: {}", delegate_dir);
-    let mut child = Command::new("cargo")
+    let mut child = ProcessCommand::new("cargo")
         .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", delegate_dir])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -354,7 +354,7 @@ async fn is_api_ready() -> Result<()> {
 }
 
 fn start_chromedriver() -> Result<Child> {
-    Command::new("chromedriver")
+    ProcessCommand::new("chromedriver")
         .arg("--port=9515")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -465,7 +465,7 @@ async fn run_browser_test(headless: bool) -> Result<()> {
     // Inspect the ghost key certificate
     inspect_ghost_key_certificate(&combined_key_content)?;
 
-    // Validate the ghost key certificate using the CLI
+    // Verify the ghost key certificate using the CLI
     let master_verifying_key_file = temp_dir.join("master_verifying_key.pem");
     println!("Master verifying key file: {:?}", master_verifying_key_file);
     println!("Ghost certificate file: {:?}", output_file);
@@ -478,16 +478,16 @@ async fn run_browser_test(headless: bool) -> Result<()> {
         println!("Failed to read master verifying key file");
     }
 
-    let output = Command::new("cargo")
+    let output = ProcessCommand::new("cargo")
         .args(&[
             "run",
             "--manifest-path",
             "../cli/Cargo.toml",
             "--",
-            "validate-ghost-key",
-            "--master-verifying-key-file",
+            "verify-ghost-key",
+            "--master-verifying-key",
             master_verifying_key_file.to_str().unwrap(),
-            "--ghost-certificate-file",
+            "--ghost-certificate",
             output_file.to_str().unwrap(),
         ])
         .output()?;
@@ -529,7 +529,7 @@ async fn run_browser_test(headless: bool) -> Result<()> {
 
     // Generate a ghost key using the CLI
     println!("Generating ghost key using CLI...");
-    let cli_output = Command::new("cargo")
+    let cli_output = ProcessCommand::new("cargo")
         .args(&[
             "run",
             "--manifest-path",
@@ -538,7 +538,7 @@ async fn run_browser_test(headless: bool) -> Result<()> {
             "generate-ghostkey",
             "--delegate-dir",
             temp_dir.join("delegates").join("20").to_str().unwrap(),
-            "--output-file",
+            "--output",
             temp_dir.join("cli_ghostkey_certificate.pem").to_str().unwrap(),
         ])
         .output()?;
@@ -551,17 +551,17 @@ async fn run_browser_test(headless: bool) -> Result<()> {
 
     println!("Ghost key generated successfully using CLI");
 
-    // Validate the CLI-generated ghost key
-    let cli_validation_output = Command::new("cargo")
+    // Verify the CLI-generated ghost key
+    let cli_validation_output = ProcessCommand::new("cargo")
         .args(&[
             "run",
             "--manifest-path",
             "../cli/Cargo.toml",
             "--",
-            "validate-ghost-key",
-            "--master-verifying-key-file",
+            "verify-ghost-key",
+            "--master-verifying-key",
             master_verifying_key_file.to_str().unwrap(),
-            "--ghost-certificate-file",
+            "--ghost-certificate",
             temp_dir.join("cli_ghostkey_certificate.pem").to_str().unwrap(),
         ])
         .output()?;
@@ -570,10 +570,10 @@ async fn run_browser_test(headless: bool) -> Result<()> {
         let stderr = String::from_utf8_lossy(&cli_validation_output.stderr);
         println!("CLI-generated ghost key validation failed: {}", stderr);
     } else {
-        println!("CLI-generated ghost key validated successfully");
+        println!("CLI-generated ghost key verifyd successfully");
     }
 
-    // Compare and validate the CLI-generated ghost key with the browser-generated one
+    // Compare and verify the CLI-generated ghost key with the browser-generated one
     println!("Comparing and validating CLI-generated and browser-generated ghost keys...");
     let cli_ghost_key = std::fs::read_to_string(temp_dir.join("cli_ghostkey_certificate.pem"))?;
     let browser_ghost_key = std::fs::read_to_string(&output_file)?;
@@ -595,12 +595,12 @@ async fn run_browser_test(headless: bool) -> Result<()> {
         println!("Browser-generated: {:?}", browser_cert_info);
     }
 
-    // Validate both certificates
+    // Verify both certificates
     println!("\nValidating CLI-generated ghost key:");
-    validate_ghost_key_certificate(&temp_dir.join("cli_ghostkey_certificate.pem"), &master_verifying_key_file)?;
+    verify_ghost_key_certificate(&temp_dir.join("cli_ghostkey_certificate.pem"), &master_verifying_key_file)?;
 
     println!("\nValidating browser-generated ghost key:");
-    validate_ghost_key_certificate(&output_file, &master_verifying_key_file)?;
+    verify_ghost_key_certificate(&output_file, &master_verifying_key_file)?;
 
     Ok(())
     })().await;
@@ -627,9 +627,8 @@ struct CertificateInfo {
 
 fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateInfo> {
     use base64::{engine::general_purpose::STANDARD, Engine as _};
-    use rmp_serde::{Deserializer, config::StructMapConfig};
     use serde::Deserialize;
-    use serde_json::Value;
+    use crate::cli::crypto::ghost_key::DelegateKeyCertificate;
     use std::fs;
     use std::path::Path;
 
@@ -657,8 +656,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
         signature: Vec<u8>,
     }
 
-    let mut deserializer = Deserializer::new(&ghost_key_cert_bytes[..]);
-    let ghost_key_cert: GhostkeyCertificate = match Deserialize::deserialize(&mut deserializer) {
+    let ghost_key_cert: GhostkeyCertificate = match ciborium::de::from_reader(&ghost_key_cert_bytes[..]) {
         Ok(cert) => {
             println!("Successfully deserialized GhostkeyCertificate");
             cert
@@ -698,7 +696,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     }
 
     // Attempt to deserialize the delegate certificate
-    let delegate_cert: Vec<Value> = match rmp_serde::from_slice(&ghost_key_cert.delegate_certificate) {
+    let delegate_cert: DelegateKeyCertificate = match ciborium::de::from_reader(&ghost_key_cert.delegate_certificate[..]) {
         Ok(cert) => {
             println!("Successfully deserialized delegate certificate");
             cert
@@ -711,36 +709,27 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     };
 
     println!("\nDelegate Certificate (deserialized):");
-    for (i, value) in delegate_cert.iter().enumerate() {
-        println!("Item {}: {:?}", i, value);
-    }
+    println!("Verifying Key: {:?}", delegate_cert.verifying_key);
+    println!("Info: {}", delegate_cert.info.blue());
+    println!("Signature: {:?}", delegate_cert.signature);
 
-    // Extract and parse the JSON string containing the certificate info
+    // Parse the JSON string containing the certificate info
+    let info: serde_json::Value = serde_json::from_str(&delegate_cert.info)?;
+    println!("\nInfo:");
+    println!("{}", serde_json::to_string_pretty(&info)?);
+
+    // Extract amount and currency
     let mut cert_info = CertificateInfo {
         version: ghost_key_cert.version,
-        amount: 0,
-        currency: String::new(),
+        amount: info.get("amount").and_then(|v| v.as_u64()).unwrap_or(0),
+        currency: info.get("currency").and_then(|v| v.as_str()).unwrap_or("").to_string(),
     };
 
-    if let Some(Value::String(info_str)) = delegate_cert.get(1) {
-        println!("Certificate info string: {}", info_str);
-        let info: serde_json::Value = serde_json::from_str(info_str)?;
-        println!("\nCertificate Info:");
-        println!("{}", serde_json::to_string_pretty(&info)?);
-
-        // Extract amount and currency
-        cert_info.amount = info.get("amount").and_then(|v| v.as_u64()).unwrap_or(0);
-        cert_info.currency = info.get("currency").and_then(|v| v.as_str()).unwrap_or("").to_string();
-
-        // Verify that the delegate certificate contains the correct amount
-        if cert_info.amount == 20 {
-            println!("Delegate certificate contains the correct amount: $20");
-        } else {
-            println!("Warning: Delegate certificate contains an unexpected amount: ${}", cert_info.amount);
-        }
+    // Verify that the delegate certificate contains the correct amount
+    if cert_info.amount == 20 {
+        println!("Delegate certificate contains the correct amount: $20");
     } else {
-        println!("Warning: Couldn't find the certificate info string in the delegate certificate");
-        println!("Delegate certificate content: {:?}", delegate_cert);
+        println!("Warning: Delegate certificate contains an unexpected amount: ${}", cert_info.amount);
     }
 
     println!("Ghost key certificate inspection completed");

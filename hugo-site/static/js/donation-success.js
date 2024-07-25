@@ -91,6 +91,11 @@ document.addEventListener('DOMContentLoaded', () => {
     showError('An error occurred while loading the necessary libraries. Please try again later.');
     return;
   }
+  if (typeof cbor === 'undefined') {
+    console.error("cbor is not defined. Make sure the CBOR library is properly loaded.");
+    showError('An error occurred while loading the necessary libraries. Please try again later.');
+    return;
+  }
   initPage();
 });
 
@@ -256,12 +261,12 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       ];
       console.log("Ghost key certificate object created:", ghostKeyCertificate);
 
-      // Serialize the GhostkeyCertificate using MessagePack
-      serializedCertificate = msgpack.encode(ghostKeyCertificate);
+      // Serialize the GhostkeyCertificate using CBOR
+      serializedCertificate = cbor.encode(ghostKeyCertificate);
       console.log("GhostkeyCertificate serialized:", serializedCertificate);
 
       // Convert the serialized certificate to base64
-      base64Certificate = bufferToBase64(serializedCertificate);
+      base64Certificate = bufferToBase64(new Uint8Array(serializedCertificate));
       console.log("Serialized certificate converted to base64:", base64Certificate);
 
       // Format the certificate output
