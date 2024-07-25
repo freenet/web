@@ -1,19 +1,16 @@
-use p256::ecdsa::{SigningKey, VerifyingKey};
+use ed25519_dalek::*;
 use serde::{Deserialize, Serialize};
 use crate::delegate_certificate::DelegateCertificate;
 use crate::errors::GhostkeyError;
 use crate::errors::GhostkeyError::SignatureVerificationError;
 use crate::util::{create_keypair, sign_with_hash, verify_with_hash};
-use crate::wrappers::signature::SerializableSignature;
-use crate::wrappers::signing_key::SerializableSigningKey;
-use crate::wrappers::verifying_key::SerializableVerifyingKey;
 
 #[derive(Serialize, Deserialize)]
 pub struct GhostkeyCertificate {
     pub delegate : DelegateCertificate,
-    pub verifying_key : SerializableVerifyingKey,
+    pub verifying_key : VerifyingKey,
     /// signing_key signed by the delegate signing key
-    pub signature : SerializableSignature,
+    pub signature : Signature,
 }
 
 #[cfg(test)]
@@ -94,7 +91,7 @@ mod tests {
 
         // Tamper with the ghostkey verifying key
         let (_, tampered_verifying_key) = create_keypair().unwrap();
-        ghostkey_certificate.verifying_key = SerializableVerifyingKey::from(tampered_verifying_key);
+        ghostkey_certificate.verifying_key = VerifyingKey::from(tampered_verifying_key);
 
         // Try to verify the tampered certificate
         let result = ghostkey_certificate.verify(&Some(master_verifying_key));
@@ -107,14 +104,14 @@ mod tests {
 impl GhostkeyCertificate {
     pub fn new(delegate_certificate: &DelegateCertificate, delegate_signing_key: &SigningKey) -> (Self, SigningKey) {
         let (ghost_signing_key, ghost_verifying_key) = create_keypair().unwrap();
-        let ghost_signing_key = SerializableSigningKey::from(ghost_signing_key);
-        let ghost_verifying_key = SerializableVerifyingKey::from(ghost_verifying_key);
+        let ghost_signing_key = SigningKey::from(ghost_signing_key);
+        let ghost_verifying_key = VerifyingKey::from(ghost_verifying_key);
         
         (Self {
             delegate: delegate_certificate.clone(),
             verifying_key: ghost_verifying_key.clone(),
-            signature: SerializableSignature::from(sign_with_hash(&delegate_signing_key, &ghost_verifying_key).unwrap()),
-        }, ghost_signing_key.as_ref().clone())
+            signature: Signature::from(sign_with_hash(&delegate_signing_key, &ghost_verifying_key).unwrap()),
+        }, ghost_signing_key.clone())
     }
     
     pub fn verify(&self, master_verifying_key: &Option<VerifyingKey>) -> Result<String, Box<GhostkeyError>> {
@@ -123,7 +120,7 @@ impl GhostkeyCertificate {
             .map_err(|e| SignatureVerificationError(format!("Failed to verify delegate: {}", e)))?;
         
         // Verify ghostkey certificate
-        let verification = verify_with_hash(self.delegate.payload.delegate_verifying_key.as_ref(), &self.verifying_key, self.signature.as_ref())
+        let verification = verify_with_hash(&self.delegate.payload.delegate_verifying_key, &self.verifying_key, &self.signature)
             .map_err(|e| SignatureVerificationError(format!("Failed to verify ghostkey: {}", e)))?;
         
         if verification {

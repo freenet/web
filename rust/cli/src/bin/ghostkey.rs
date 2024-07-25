@@ -3,13 +3,11 @@ use clap::{Command, Arg, ArgAction};
 use std::path::Path;
 use colored::Colorize;
 use log::info;
-use p256::ecdsa::SigningKey;
+use ed25519_dalek::*;
 use ghostkey::armorable::Armorable;
 use ghostkey::commands::{generate_delegate_cmd, generate_ghostkey_cmd, generate_master_key_cmd, verify_delegate_cmd, verify_ghostkey_cmd};
 use ghostkey::delegate_certificate::DelegateCertificate;
 use ghostkey::ghostkey_certificate::GhostkeyCertificate;
-use ghostkey::wrappers::signing_key::SerializableSigningKey;
-use ghostkey::wrappers::verifying_key::SerializableVerifyingKey;
 
 const CMD_GENERATE_MASTER_KEY: &str = "generate-master-key";
 const CMD_GENERATE_DELEGATE: &str = "generate-delegate";
@@ -125,14 +123,13 @@ fn run() -> i32 {
         }
         Some((CMD_GENERATE_DELEGATE, sub_matches)) => {
             let master_signing_key_file = Path::new(sub_matches.get_one::<String>(ARG_MASTER_SIGNING_KEY).unwrap());
-            let serializable_signing_key = match SerializableSigningKey::from_file(master_signing_key_file) {
+            let master_signing_key = match SigningKey::from_file(master_signing_key_file) {
                 Ok(key) => key,
                 Err(e) => {
                     eprintln!("{} to read master signing key: {}", "Failed".red(), e);
                     return 1;
                 }
             };
-            let master_signing_key: SigningKey = serializable_signing_key.as_signing_key();
             let info = sub_matches.get_one::<String>(ARG_INFO).unwrap();
             let output_dir = Path::new(sub_matches.get_one::<String>(ARG_OUTPUT_DIR).unwrap());
             if let Err(e) = std::fs::create_dir_all(output_dir) {
@@ -150,7 +147,7 @@ fn run() -> i32 {
         }
         Some((CMD_VERIFY_DELEGATE, sub_matches)) => {
             let master_verifying_key_file = Path::new(sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY).unwrap());
-            let master_verifying_key = match SerializableVerifyingKey::from_file(master_verifying_key_file) {
+            let master_verifying_key = match VerifyingKey::from_file(master_verifying_key_file) {
                 Ok(key) => key,
                 Err(e) => {
                     println!("{} to read master verifying key: {}", "Failed".red(), e);
@@ -165,7 +162,7 @@ fn run() -> i32 {
                     return 1;
                 }
             };
-            verify_delegate_cmd(master_verifying_key.as_verifying_key(), &delegate_certificate)
+            verify_delegate_cmd(&master_verifying_key, &delegate_certificate)
         }
         Some((CMD_GENERATE_GHOST_KEY, sub_matches)) => {
             let delegate_dir = sub_matches.get_one::<String>(ARG_DELEGATE_DIR).unwrap();
@@ -178,8 +175,8 @@ fn run() -> i32 {
                 }
             };
             let delegate_signing_key_file = Path::new(delegate_dir).join("delegate_signing_key.pem");
-            let delegate_signing_key : &SigningKey = match SerializableSigningKey::from_file(&delegate_signing_key_file) {
-                Ok(key) => &key.as_signing_key(),
+            let delegate_signing_key = match SigningKey::from_file(&delegate_signing_key_file) {
+                Ok(key) => key,
                 Err(e) => {
                     eprintln!("{} to read delegate signing key: {}", "Failed".red(), e);
                     return 1;
@@ -192,11 +189,11 @@ fn run() -> i32 {
                 return 1;
             }
 
-            generate_ghostkey_cmd(&delegate_certificate, delegate_signing_key, &output_dir)
+            generate_ghostkey_cmd(&delegate_certificate, &delegate_signing_key, &output_dir)
         }
         Some((CMD_VERIFY_GHOST_KEY, sub_matches)) => {
             let master_verifying_key_file = Path::new(sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY).unwrap());
-            let master_verifying_key = match SerializableVerifyingKey::from_file(master_verifying_key_file) {
+            let master_verifying_key = match VerifyingKey::from_file(master_verifying_key_file) {
                 Ok(key) => key,
                 Err(e) => {
                     eprintln!("{} to read master verifying key: {}", "Failed".red(), e);
@@ -211,7 +208,7 @@ fn run() -> i32 {
                     return 1;
                 }
             };
-            verify_ghostkey_cmd(&master_verifying_key.as_verifying_key(), &ghost_certificate)
+            verify_ghostkey_cmd(&master_verifying_key, &ghost_certificate)
         }
         _ => {
             info!("No valid subcommand provided. Use --help for usage information.");

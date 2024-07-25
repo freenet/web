@@ -1,4 +1,4 @@
-use p256::ecdsa::SigningKey;
+use ed25519_dalek::*;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de;
 use std::convert::TryFrom;

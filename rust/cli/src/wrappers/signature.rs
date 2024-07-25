@@ -1,9 +1,8 @@
-use p256::ecdsa::Signature;
+use ed25519_dalek::*;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de::{self, Visitor};
 use std::fmt;
 use std::convert::TryFrom;
-use p256::elliptic_curve::generic_array::GenericArray;
 use base64::{engine::general_purpose, Engine as _};
 
 #[derive(Clone)]
@@ -16,7 +15,7 @@ impl From<Signature> for SerializableSignature {
 }
 
 impl TryFrom<SerializableSignature> for Signature {
-    type Error = p256::ecdsa::Error;
+    type Error = SignatureError;
 
     fn try_from(serializable_sig: SerializableSignature) -> Result<Self, Self::Error> {
         Ok(serializable_sig.0)
@@ -65,8 +64,11 @@ impl<'de> Deserialize<'de> for SerializableSignature {
                     return Err(de::Error::invalid_length(bytes.len(), &self));
                 }
 
-                let sig_bytes: GenericArray<u8, typenum::U64> = GenericArray::clone_from_slice(&bytes);
-                let sig = Signature::from_bytes(&sig_bytes).map_err(de::Error::custom)?;
+                // Convert Vec<u8> to [u8; 64]
+                let mut sig_bytes = [0u8; 64];
+                sig_bytes.copy_from_slice(&bytes);
+
+                let sig = Signature::from_bytes(&sig_bytes);
                 Ok(SerializableSignature(sig))
             }
         }
@@ -92,13 +94,12 @@ impl std::fmt::Display for SerializableSignature {
 mod tests {
     use super::*;
     use serde_json;
-    use p256::ecdsa::{SigningKey, signature::Signer};
     use rand_core::OsRng;
 
     #[test]
     fn test_serializable_signature_roundtrip() {
         // Generate a random signature
-        let signing_key = SigningKey::random(&mut OsRng);
+        let signing_key = SigningKey::generate(&mut OsRng);
         let message = b"test message";
         let signature: Signature = signing_key.sign(message);
 
@@ -118,7 +119,7 @@ mod tests {
     #[test]
     fn test_serializable_signature_display() {
         // Generate a random signature
-        let signing_key = SigningKey::random(&mut OsRng);
+        let signing_key = SigningKey::generate(&mut OsRng);
         let message = b"test message";
         let signature: Signature = signing_key.sign(message);
 
@@ -136,7 +137,7 @@ mod tests {
     #[test]
     fn test_serializable_signature_as_ref() {
         // Generate a random signature
-        let signing_key = SigningKey::random(&mut OsRng);
+        let signing_key = SigningKey::generate(&mut OsRng);
         let message = b"test message";
         let signature: Signature = signing_key.sign(message);
 

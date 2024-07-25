@@ -2,10 +2,8 @@ use std::path::Path;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use log::info;
-use p256::ecdsa::{SigningKey, VerifyingKey};
+use ed25519_dalek::*;
 use crate::util::create_keypair;
-use crate::wrappers::signing_key::SerializableSigningKey;
-use crate::wrappers::verifying_key::SerializableVerifyingKey;
 use crate::armorable::*;
 use crate::delegate_certificate::DelegateCertificate;
 use crate::errors::GhostkeyError;
@@ -20,8 +18,8 @@ pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i
             return 1;
         }
     };
-    let signing_key : SerializableSigningKey = signing_key.into();
-    let verifying_key : SerializableVerifyingKey = verifying_key.into();
+    let signing_key : SigningKey = signing_key.into();
+    let verifying_key : VerifyingKey = verifying_key.into();
     let signing_key_file = output_dir.join("master_signing_key.pem");
     let verifying_key_file = output_dir.join("master_verifying_key.pem");
     info!("Writing master signing key to {}", signing_key_file.display());
@@ -64,7 +62,6 @@ pub fn generate_delegate_cmd(
             return 1;
         }
     };
-    let delegate_signing_key : SerializableSigningKey = delegate_signing_key.into();
     let delegate_certificate_file = output_dir.join("delegate_certificate.pem");
     let delegate_signing_key_file = output_dir.join("delegate_signing_key.pem");
     info!("Writing delegate certificate to {}", delegate_certificate_file.display());
@@ -111,7 +108,6 @@ pub fn verify_delegate_cmd(master_verifying_key: &VerifyingKey, delegate_certifi
 
 pub fn generate_ghostkey_cmd(delegate_certificate: &DelegateCertificate, delegate_signing_key : &SigningKey, output_dir: &Path) -> i32 {
     let (ghostkey_certificate, ghostkey_signing_key) = GhostkeyCertificate::new(delegate_certificate, delegate_signing_key);
-    let ghostkey_signing_key : SerializableSigningKey = ghostkey_signing_key.into();
     let ghostkey_certificate_file = output_dir.join("ghostkey_certificate.pem");
     let ghostkey_signing_key_file = output_dir.join("ghostkey_signing_key.pem");
     info!("Writing ghostkey certificate to {}", ghostkey_certificate_file.display());

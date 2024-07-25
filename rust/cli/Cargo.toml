@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-p256 = "0.13.2"
+curve25519-dalek = "4.1.3"
+ed25519-dalek = { version = "2.1.1", features = ["rand_core", "serde"]}
 base64 = "0.22.1"
 rand_core = "0.6"
 clap = "4.5.8"

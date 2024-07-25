@@ -1,4 +1,4 @@
-use p256::ecdsa::{Signature, signature::Signer, signature::Verifier, SigningKey, VerifyingKey};
+use ed25519_dalek::*;
 use rand_core::OsRng;
 
 use serde::{Serialize, Deserialize};
@@ -12,7 +12,7 @@ use crate::armorable::*;
 /// A tuple containing a `SigningKey` and its corresponding `VerifyingKey`,
 /// or a `GhostkeyError` if key creation fails.
 pub fn create_keypair() -> Result<(SigningKey, VerifyingKey), GhostkeyError> {
-    let signing_key = SigningKey::random(&mut OsRng);
+    let signing_key = SigningKey::generate(&mut OsRng);
     let verifying_key = VerifyingKey::from(&signing_key);
     Ok((signing_key, verifying_key))
 }
