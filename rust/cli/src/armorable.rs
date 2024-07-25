@@ -27,7 +27,12 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         let full_name = type_name::<Self>();
         let parts: Vec<&str> = full_name.split("::").collect();
         let struct_name = parts.last().unwrap_or(&full_name);
-        Self::camel_case_to_upper(struct_name)
+        let name = if struct_name.starts_with("Serializable") {
+            &struct_name["Serializable".len()..]
+        } else {
+            struct_name
+        };
+        Self::camel_case_to_upper(name)
     }
 
     fn camel_case_to_upper(s: &str) -> String {
@@ -162,6 +167,16 @@ mod tests {
     #[test]
     fn test_struct_name() {
         assert_eq!(TestStruct::struct_name(), "TEST_STRUCT");
+    }
+
+    #[derive(Debug, Serialize, Deserialize, PartialEq)]
+    struct SerializableTestStruct {
+        field: String,
+    }
+
+    #[test]
+    fn test_serializable_struct_name() {
+        assert_eq!(SerializableTestStruct::struct_name(), "TEST_STRUCT");
     }
 
     #[test]
