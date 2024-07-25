@@ -1,11 +1,14 @@
 #!/bin/bash
 
-set -e
-
 # Colors for output
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+
+# Counters for passed and failed tests
+pass_count=0
+fail_count=0
+total_tests=0
 
 # Function to run a command and check its exit status
 run_test() {
@@ -13,23 +16,24 @@ run_test() {
     local command="$2"
     local expected_status="$3"
 
-    echo "Running test: $description"
-    echo "Command: $command"
-    
+    ((total_tests++))
+    echo -n "Running test: $description... "
+
     output=$(eval "$command" 2>&1)
     status=$?
 
-    echo "Command exit status: $status"
-    echo "Command output:"
-    echo "$output"
-
     if [ $status -eq $expected_status ]; then
-        echo -e "${GREEN}PASSED${NC}"
+        echo -e "${GREEN}Ok${NC}"
+        ((pass_count++))
     else
-        echo -e "${RED}FAILED${NC}"
+        echo -e "${RED}Failed${NC}"
+        echo "Command: $command"
         echo "Expected status: $expected_status, Got: $status"
+        echo "Command output:"
+        echo "$output"
+        echo "----------------------------------------"
+        ((fail_count++))
     fi
-    echo "----------------------------------------"
 }
 
 # Function to check if files exist
@@ -37,10 +41,9 @@ check_files() {
     local dir="$1"
     shift
     for file in "$@"; do
-        if [ -f "$dir/$file" ]; then
-            echo "File $file exists in $dir"
-        else
-            echo "File $file does not exist in $dir"
+        if [ ! -f "$dir/$file" ]; then
+            echo -e "${RED}File $file does not exist in $dir${NC}"
+            ((fail_count++))
         fi
     done
 }
@@ -75,4 +78,12 @@ run_test "verify-ghost-key" "cargo run --bin ghostkey -- verify-ghost-key --mast
 echo "Cleaning up temporary directory"
 rm -rf "$temp_dir"
 
-echo "All tests completed."
+# Summary of test results
+echo "----------------------------------------"
+echo "Test Summary: ${pass_count}/${total_tests} tests passed, ${fail_count} tests failed."
+
+if [ $fail_count -eq 0 ]; then
+    echo -e "${GREEN}All tests passed!${NC}"
+else
+    echo -e "${RED}Some tests failed.${NC}"
+fi
