@@ -29,6 +29,10 @@ pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i
         eprintln!("{} to write master signing key: {}", "Failed".red(), e);
         return 1;
     }
+    if let Err(e) = fs::set_permissions(&signing_key_file, fs::Permissions::from_mode(0o600)) {
+        eprintln!("{} to set permissions on master signing key file: {}", "Failed".red(), e);
+        return 1;
+    }
     println!("{} written {}: {}", "Master signing key", "successfully".green(), signing_key_file.display().to_string().yellow());
     info!("Writing master verifying key to {}", verifying_key_file.display());
     if let Err(e) = verifying_key.to_file(&verifying_key_file) {
@@ -74,6 +78,10 @@ pub fn generate_delegate_cmd(
         eprintln!("{} to write delegate signing key: {}", "Failed".red(), e);
         return 1;
     }
+    if let Err(e) = fs::set_permissions(&delegate_signing_key_file, fs::Permissions::from_mode(0o600)) {
+        eprintln!("{} to set permissions on delegate signing key file: {}", "Failed".red(), e);
+        return 1;
+    }
     println!("{} written {}: {}", "Delegate signing key", "successfully".green(), delegate_signing_key_file.display().to_string().yellow());
     if !ignore_permissions {
         if let Err(e) = require_strict_permissions(&delegate_signing_key_file) {
@@ -115,6 +123,10 @@ pub fn generate_ghostkey_cmd(delegate_certificate: &DelegateCertificate, delegat
     info!("Writing ghostkey signing key to {}", ghostkey_signing_key_file.display());
     if let Err(e) = ghostkey_signing_key.to_file(&ghostkey_signing_key_file) {
         eprintln!("{} to write ghostkey signing key: {}", "Failed".red(), e);
+        return 1;
+    }
+    if let Err(e) = fs::set_permissions(&ghostkey_signing_key_file, fs::Permissions::from_mode(0o600)) {
+        eprintln!("{} to set permissions on ghostkey signing key file: {}", "Failed".red(), e);
         return 1;
     }
     println!("{} written {}: {}", "Ghost signing key", "successfully".green(), ghostkey_signing_key_file.display().to_string().yellow());
