@@ -2,7 +2,7 @@ use std::process;
 use clap::{Command, Arg, ArgAction};
 use std::path::Path;
 use colored::Colorize;
-use log::{info, error};
+use log::info;
 use p256::ecdsa::SigningKey;
 use ghostkey::armorable::Armorable;
 use ghostkey::commands::{generate_delegate_cmd, generate_ghostkey_cmd, generate_master_key_cmd, verify_delegate_cmd, verify_ghostkey_cmd};
@@ -96,20 +96,24 @@ fn run() -> i32 {
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
             
             if let Err(e) = std::fs::create_dir_all(output_dir) {
-                error!("{} {}", "Failed to create output directory:".red(), e);
+                eprintln!("{} {}", "Failed to create output directory:".red(), e);
                 return 1;
             }
             
             let ignore_permissions = sub_matches.get_flag("ignore-permissions");
 
-            generate_master_key_cmd(output_dir, ignore_permissions)
+            let result = generate_master_key_cmd(output_dir, ignore_permissions);
+            if result == 0 {
+                println!("{}", "Master key generation completed successfully.".green());
+            }
+            result
         }
         Some(("generate-delegate", sub_matches)) => {
             let master_signing_key_file = Path::new(sub_matches.get_one::<String>("master-signing-key").unwrap());
             let serializable_signing_key = match SerializableSigningKey::from_file(master_signing_key_file) {
                 Ok(key) => key,
                 Err(e) => {
-                    error!("{} {}", "Failed to read master signing key:".red(), e);
+                    eprintln!("{} to read master signing key: {}", "Failed".red(), e);
                     return 1;
                 }
             };
@@ -117,20 +121,24 @@ fn run() -> i32 {
             let info = sub_matches.get_one::<String>("info").unwrap();
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
             if let Err(e) = std::fs::create_dir_all(output_dir) {
-                error!("{} {}", "Failed to create output directory:".red(), e);
+                eprintln!("{} {}", "Failed to create output directory:".red(), e);
                 return 1;
             }
             
             let ignore_permissions = sub_matches.get_flag("ignore-permissions");
             
-            generate_delegate_cmd(&master_signing_key, info, output_dir, ignore_permissions)
+            let result = generate_delegate_cmd(&master_signing_key, info, output_dir, ignore_permissions);
+            if result == 0 {
+                println!("{}", "Delegate key generation completed successfully.".green());
+            }
+            result
         }
         Some(("verify-delegate", sub_matches)) => {
             let master_verifying_key_file = Path::new(sub_matches.get_one::<String>("master-verifying-key").unwrap());
             let master_verifying_key = match SerializableVerifyingKey::from_file(master_verifying_key_file) {
                 Ok(key) => key,
                 Err(e) => {
-                    error!("{} {}", "Failed to read master verifying key:".red(), e);
+                    println!("{} {}", "Failed to read master verifying key:".red(), e);
                     return 1;
                 }
             };
@@ -138,7 +146,7 @@ fn run() -> i32 {
             let delegate_certificate = match DelegateCertificate::from_file(delegate_certificate_file) {
                 Ok(cert) => cert,
                 Err(e) => {
-                    error!("{} {}", "Failed to read delegate certificate:".red(), e);
+                    println!("{} {}", "Failed to read delegate certificate:".red(), e);
                     return 1;
                 }
             };
@@ -150,7 +158,7 @@ fn run() -> i32 {
             let delegate_certificate = match DelegateCertificate::from_file(&delegate_certificate_file) {
                 Ok(cert) => cert,
                 Err(e) => {
-                    error!("{} {}", "Failed to read delegate certificate:".red(), e);
+                    eprintln!("{} {}", "Failed to read delegate certificate:".red(), e);
                     return 1;
                 }
             };
@@ -158,14 +166,14 @@ fn run() -> i32 {
             let delegate_signing_key : &SigningKey = match SerializableSigningKey::from_file(&delegate_signing_key_file) {
                 Ok(key) => &key.as_signing_key(),
                 Err(e) => {
-                    error!("{} {}", "Failed to read delegate signing key:".red(), e);
+                    eprintln!("{} {}", "Failed to read delegate signing key:".red(), e);
                     return 1;
                 }
             };
             
             let output_dir = Path::new(sub_matches.get_one::<String>("output-dir").unwrap());
             if let Err(e) = std::fs::create_dir_all(output_dir) {
-                error!("{} {}", "Failed to create output directory:".red(), e);
+                eprintln!("{} {}", "Failed to create output directory:".red(), e);
                 return 1;
             }
             
@@ -176,7 +184,7 @@ fn run() -> i32 {
             let master_verifying_key = match SerializableVerifyingKey::from_file(master_verifying_key_file) {
                 Ok(key) => key,
                 Err(e) => {
-                    error!("{} {}", "Failed to read master verifying key:".red(), e);
+                    eprintln!("{} {}", "Failed to read master verifying key:".red(), e);
                     return 1;
                 }
             };
@@ -184,7 +192,7 @@ fn run() -> i32 {
             let ghost_certificate = match GhostkeyCertificate::from_file(ghost_certificate_file) {
                 Ok(cert) => cert,
                 Err(e) => {
-                    error!("{} {}", "Failed to read ghost key certificate:".red(), e);
+                    eprintln!("{} {}", "Failed to read ghost key certificate:".red(), e);
                     return 1;
                 }
             };
