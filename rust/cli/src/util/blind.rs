@@ -139,13 +139,11 @@ mod tests {
         let (r, s_blinded) = sign_blinded_message(&secret_key, &blinded_message);
         let (_, s) = unblind_signature(r, s_blinded, &blinding_factor);
 
-        let k = hash_to_scalar(r.compress().as_bytes());
         let left = ED25519_BASEPOINT_POINT * s;
-        let right = r + (public_key * k);
-        let right_multiplied = right * message;
+        let right = r + (public_key * message);
 
         println!("Left: {:?}", left);
-        println!("Right * message: {:?}", right_multiplied);
-        assert_eq!(left, right_multiplied, "Blind signature equation does not hold");
+        println!("Right: {:?}", right);
+        assert_eq!(left, right, "Blind signature equation does not hold");
     }
 }
