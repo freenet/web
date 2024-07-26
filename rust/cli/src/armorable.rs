@@ -67,27 +67,36 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         Ok(())
     }
 
-    fn from_file(file_path: &Path) -> Result<Self, GhostkeyError>
+    fn from_armored_string(armored_string: &str) -> Result<Self, GhostkeyError>
     where
         Self: Sized,
     {
-        let file = File::open(file_path).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
-        let mut reader = BufReader::new(file);
-        let mut pem_content = String::new();
-        reader.read_to_string(&mut pem_content).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
-
         let struct_name = Self::struct_name();
         let _begin_label = format!("-----BEGIN {}-----", struct_name);
         let _end_label = format!("-----END {}-----", struct_name);
 
-        let base64_encoded = pem_content
+        let base64_encoded = armored_string
             .lines()
             .filter(|line| !line.starts_with("-----"))
             .collect::<Vec<&str>>()
             .join("");
 
-        let decoded = BASE64_STANDARD.decode(&base64_encoded).map_err(|e| GhostkeyError::Base64DecodeError(e.to_string()))?;
+        let decoded = BASE64_STANDARD.decode(&base64_encoded)
+            .map_err(|e| GhostkeyError::Base64DecodeError(e.to_string()))?;
         Self::from_bytes(&decoded)
+    }
+
+    fn from_file(file_path: &Path) -> Result<Self, GhostkeyError>
+    where
+        Self: Sized,
+    {
+        let mut file = File::open(file_path)
+            .map_err(|e| GhostkeyError::IOError(e.to_string()))?;
+        let mut armored_content = String::new();
+        file.read_to_string(&mut armored_content)
+            .map_err(|e| GhostkeyError::IOError(e.to_string()))?;
+
+        Self::from_armored_string(&armored_content)
     }
 
     fn to_base64(&self) -> Result<String, Box<dyn std::error::Error>> {
@@ -198,5 +207,23 @@ mod tests {
         let decoded_struct = TestStruct::from_bytes(&bytes).unwrap();
 
         assert_eq!(test_struct, decoded_struct);
+    }
+
+    #[test]
+    fn test_from_armored_string() {
+        let test_struct = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+
+        let temp_dir = tempdir().unwrap();
+        let file_path = temp_dir.path().join("test_struct.armored");
+
+        test_struct.to_file(&file_path).unwrap();
+
+        let armored_content = std::fs::read_to_string(&file_path).unwrap();
+        let loaded_struct = TestStruct::from_armored_string(&armored_content).unwrap();
+
+        assert_eq!(test_struct, loaded_struct);
     }
 }
