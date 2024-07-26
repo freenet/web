@@ -37,7 +37,7 @@ pub fn verify_signature(
     let message_scalar = hash_to_scalar(message);
     let k = hash_to_scalar(r.compress().as_bytes());
     let left = ED25519_BASEPOINT_POINT * s;
-    let right = r + (public_key * (k * message_scalar));
+    let right = r + (public_key * k * message_scalar);
     left == right
 }
 
@@ -70,7 +70,9 @@ mod tests {
         let (r, s) = unblind_signature(r, s_blinded, &blinding_factor);
 
         // Verify the signature
-        assert!(verify_signature(&public_key, message, r, s), "Signature verification failed");
+        let verification_result = verify_signature(&public_key, message, r, s);
+        println!("Verification result: {}", verification_result);
+        assert!(verification_result, "Signature verification failed");
 
         // Verify that the signature fails with a different message
         let wrong_message = b"Wrong message";
@@ -104,6 +106,9 @@ mod tests {
 
         assert_eq!(r, r_unblinded, "R point should not change during unblinding");
         assert_ne!(s_blinded, s_unblinded, "S scalar should change during unblinding");
-        assert!(verify_signature(&public_key, message, r_unblinded, s_unblinded), "Unblinded signature should verify correctly");
+        
+        let verification_result = verify_signature(&public_key, message, r_unblinded, s_unblinded);
+        println!("Unblinded signature verification result: {}", verification_result);
+        assert!(verification_result, "Unblinded signature should verify correctly");
     }
 }
