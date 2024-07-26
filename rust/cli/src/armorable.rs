@@ -81,7 +81,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
             .collect();
 
         match matching_blocks.len() {
-            0 => return Err(GhostkeyError::DecodingError(format!("No matching block found for {}", struct_name))),
+            0 => Err(GhostkeyError::DecodingError(format!("No matching block found for {}", struct_name))),
             1 => {
                 let block = matching_blocks[0];
                 let base64_encoded = block
