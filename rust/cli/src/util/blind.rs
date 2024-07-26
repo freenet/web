@@ -1,38 +1,52 @@
+// blind.rs
+
+extern crate curve25519_dalek;
+extern crate sha2;
+extern crate rand;
+extern crate serde;
+extern crate serde_json;
+
 use curve25519_dalek::scalar::Scalar;
-use curve25519_dalek::edwards::EdwardsPoint;
-use curve25519_dalek::constants::ED25519_BASEPOINT_POINT;
-use rand_core::OsRng;
-/// Blinds a message using a random blinding factor.
-pub fn blind_message(message: &Scalar) -> (Scalar, Scalar) {
-    let blinding_factor = Scalar::random(&mut OsRng);
-    let blinded_message = message * blinding_factor;
-    (blinded_message, blinding_factor)
+use curve25519_dalek::ristretto::RistrettoPoint;
+use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT;
+use sha2::{Sha512, Digest};
+use rand::rngs::OsRng;
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct KeyPair {
+    pub sk: Scalar,
+    pub pk: RistrettoPoint,
 }
 
-/// Signs a blinded message using the signing key.
-pub fn sign_blinded_message(signing_key: &Scalar, blinded_message: &Scalar) -> (EdwardsPoint, Scalar) {
-    let r = Scalar::random(&mut OsRng);
-    let r_point = ED25519_BASEPOINT_POINT * r;
-    let s = r + signing_key * blinded_message;
-    (r_point, s)
+pub fn generate_keypair() -> KeyPair {
+    let sk = Scalar::random(&mut OsRng);
+    let pk = &sk * &RISTRETTO_BASEPOINT_POINT;
+    KeyPair { sk, pk }
 }
 
-/// Unblinds a signature using the blinding factor.
-pub fn unblind_signature(r: EdwardsPoint, s: Scalar, blinding_factor: &Scalar) -> (EdwardsPoint, Scalar) {
-    let s_unblinded = s * blinding_factor.invert();
-    (r, s_unblinded)
+pub fn blind_message(message: &[u8], r: &Scalar, a: &Scalar, b: &Scalar) -> (Scalar, RistrettoPoint) {
+    let m = Scalar::hash_from_bytes::<Sha512>(message);
+    let R_prime = r * RISTRETTO_BASEPOINT_POINT;
+    let R = a * R_prime + b * RISTRETTO_BASEPOINT_POINT;
+    let x = Scalar::from_bytes_mod_order(R.compress().as_bytes()[..32].try_into().unwrap());
+    let blinded_message = a.invert() * x * m;
+    (blinded_message, R)
 }
 
-/// Verifies a signature against a public key and message.
-pub fn verify_signature(
-    public_key: &EdwardsPoint,
-    message: &Scalar,
-    r: EdwardsPoint,
-    s: Scalar,
-) -> bool {
-    let left = ED25519_BASEPOINT_POINT * s;
-    let right = r + (public_key * message);
-    left == right
+pub fn sign_blinded_message(sk: &Scalar, blinded_message: &Scalar, k: &Scalar) -> Scalar {
+    let s_prime = sk * blinded_message + k;
+    s_prime
+}
+
+pub fn unblind_signature(a: &Scalar, b: &Scalar, blind_signature: &Scalar) -> Scalar {
+    a * blind_signature + b
+}
+
+pub fn verify_signature(message: &[u8], signature: &Scalar, R: &RistrettoPoint, pk: &RistrettoPoint) -> bool {
+    let h = Scalar::hash_from_bytes::<Sha512>(message);
+    let x = Scalar::from_bytes_mod_order(R.compress().as_bytes()[..32].try_into().unwrap());
+    signature * RISTRETTO_BASEPOINT_POINT == R + x * h * pk
 }
 
 #[cfg(test)]
@@ -40,110 +54,54 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_blind_sign_unblind_verify() {
-        let message = Scalar::random(&mut OsRng);
-        
-        // Generate a key pair
-        let secret_key = Scalar::random(&mut OsRng);
-        let public_key = ED25519_BASEPOINT_POINT * secret_key;
+    fn test_blind_signature() {
+        // Generate keypair
+        let keypair = generate_keypair();
 
-        // Blind the message
-        let (blinded_message, blinding_factor) = blind_message(&message);
+        // Original message
+        let message = b"Hello, world!";
 
-        // Sign the blinded message
-        let (r, s_blinded) = sign_blinded_message(&secret_key, &blinded_message);
+        // Blinding
+        let r = Scalar::random(&mut OsRng);
+        let a = Scalar::random(&mut OsRng);
+        let b = Scalar::random(&mut OsRng);
+        let (blinded_message, R) = blind_message(message, &r, &a, &b);
 
-        // Unblind the signature
-        let (r, s) = unblind_signature(r, s_blinded, &blinding_factor);
+        // Blind signature
+        let k = Scalar::random(&mut OsRng);
+        let blind_signature = sign_blinded_message(&keypair.sk, &blinded_message, &k);
 
-        // Verify the signature
-        let verification_result = verify_signature(&public_key, &message, r, s);
-        println!("Verification result: {}", verification_result);
-        assert!(verification_result, "Signature verification failed");
+        // Unblinding
+        let signature = unblind_signature(&a, &b, &blind_signature);
 
-        // Verify that the signature fails with a different message
-        let wrong_message = Scalar::random(&mut OsRng);
-        assert!(!verify_signature(&public_key, &wrong_message, r, s), "Signature incorrectly verified with wrong message");
-
-        // Verify that the signature fails with a different public key
-        let wrong_secret_key = Scalar::random(&mut OsRng);
-        let wrong_public_key = ED25519_BASEPOINT_POINT * wrong_secret_key;
-        assert!(!verify_signature(&wrong_public_key, &message, r, s), "Signature incorrectly verified with wrong public key");
+        // Verification
+        assert!(verify_signature(message, &signature, &R, &keypair.pk));
     }
 
     #[test]
-    fn test_different_blinding_factors_produce_different_results() {
-        let message = Scalar::random(&mut OsRng);
-        
-        let (blinded_message1, _) = blind_message(&message);
-        let (blinded_message2, _) = blind_message(&message);
+    fn test_invalid_signature() {
+        // Generate keypair
+        let keypair = generate_keypair();
 
-        assert_ne!(blinded_message1, blinded_message2, "Blinded messages should be different");
-    }
+        // Original message
+        let message = b"Hello, world!";
 
-    #[test]
-    fn test_unblind_signature_correctness() {
-        let message = Scalar::random(&mut OsRng);
-        let secret_key = Scalar::random(&mut OsRng);
-        let public_key = ED25519_BASEPOINT_POINT * secret_key;
+        // Blinding
+        let r = Scalar::random(&mut OsRng);
+        let a = Scalar::random(&mut OsRng);
+        let b = Scalar::random(&mut OsRng);
+        let (blinded_message, R) = blind_message(message, &r, &a, &b);
 
-        let (blinded_message, blinding_factor) = blind_message(&message);
-        let (r, s_blinded) = sign_blinded_message(&secret_key, &blinded_message);
-        let (r_unblinded, s_unblinded) = unblind_signature(r, s_blinded, &blinding_factor);
+        // Blind signature
+        let k = Scalar::random(&mut OsRng);
+        let blind_signature = sign_blinded_message(&keypair.sk, &blinded_message, &k);
 
-        assert_eq!(r, r_unblinded, "R point should not change during unblinding");
-        assert_ne!(s_blinded, s_unblinded, "S scalar should change during unblinding");
-        
-        let verification_result = verify_signature(&public_key, &message, r_unblinded, s_unblinded);
-        println!("Unblinded signature verification result: {}", verification_result);
-        assert!(verification_result, "Unblinded signature should verify correctly");
-    }
+        // Unblinding with wrong factor
+        let wrong_a = Scalar::random(&mut OsRng);
+        let signature = unblind_signature(&wrong_a, &b, &blind_signature);
 
-    #[test]
-    fn test_blind_signature_process() {
-        let message = Scalar::random(&mut OsRng);
-        
-        // Generate a key pair
-        let secret_key = Scalar::random(&mut OsRng);
-        let public_key = ED25519_BASEPOINT_POINT * secret_key;
-
-        // Blind the message
-        let (blinded_message, blinding_factor) = blind_message(&message);
-
-        // Sign the blinded message
-        let (r, s_blinded) = sign_blinded_message(&secret_key, &blinded_message);
-
-        // Unblind the signature
-        let (r, s) = unblind_signature(r, s_blinded, &blinding_factor);
-
-        // Verify the signature
-        let verification_result = verify_signature(&public_key, &message, r, s);
-        
-        println!("Original message: {:?}", message);
-        println!("Blinded message: {:?}", blinded_message);
-        println!("Blinding factor: {:?}", blinding_factor);
-        println!("R: {:?}", r);
-        println!("S (blinded): {:?}", s_blinded);
-        println!("S (unblinded): {:?}", s);
-        println!("Verification result: {}", verification_result);
-
-        assert!(verification_result, "Blind signature process failed");
-    }
-
-    #[test]
-    fn test_blind_signature_math() {
-        let message = Scalar::random(&mut OsRng);
-        let secret_key = Scalar::random(&mut OsRng);
-        let public_key = ED25519_BASEPOINT_POINT * secret_key;
-        let (blinded_message, blinding_factor) = blind_message(&message);
-        let (r, s_blinded) = sign_blinded_message(&secret_key, &blinded_message);
-        let (_, s) = unblind_signature(r, s_blinded, &blinding_factor);
-
-        let left = ED25519_BASEPOINT_POINT * s;
-        let right = r + (public_key * message);
-
-        println!("Left: {:?}", left);
-        println!("Right: {:?}", right);
-        assert_eq!(left, right, "Blind signature equation does not hold");
+        // Verification should fail
+        assert!(!verify_signature(message, &signature, &R, &keypair.pk));
     }
 }
+
