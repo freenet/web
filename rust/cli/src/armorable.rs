@@ -72,18 +72,31 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         Self: Sized,
     {
         let struct_name = Self::struct_name();
-        let _begin_label = format!("-----BEGIN {}-----", struct_name);
-        let _end_label = format!("-----END {}-----", struct_name);
+        let begin_label = format!("-----BEGIN {}-----", struct_name);
+        let end_label = format!("-----END {}-----", struct_name);
 
-        let base64_encoded = armored_string
-            .lines()
-            .filter(|line| !line.starts_with("-----"))
-            .collect::<Vec<&str>>()
-            .join("");
+        let blocks: Vec<&str> = armored_string.split(&begin_label).collect();
+        let matching_blocks: Vec<&str> = blocks.into_iter()
+            .filter(|block| block.contains(&end_label))
+            .collect();
 
-        let decoded = BASE64_STANDARD.decode(&base64_encoded)
-            .map_err(|e| GhostkeyError::Base64DecodeError(e.to_string()))?;
-        Self::from_bytes(&decoded)
+        match matching_blocks.len() {
+            0 => return Err(GhostkeyError::DecodingError(format!("No matching block found for {}", struct_name))),
+            1 => {
+                let block = matching_blocks[0];
+                let base64_encoded = block
+                    .lines()
+                    .take_while(|line| !line.contains(&end_label))
+                    .filter(|line| !line.starts_with("-----"))
+                    .collect::<Vec<&str>>()
+                    .join("");
+
+                let decoded = BASE64_STANDARD.decode(&base64_encoded)
+                    .map_err(|e| GhostkeyError::Base64DecodeError(e.to_string()))?;
+                Self::from_bytes(&decoded)
+            },
+            _ => Err(GhostkeyError::DecodingError(format!("Multiple matching blocks found for {}", struct_name))),
+        }
     }
 
     fn from_file(file_path: &Path) -> Result<Self, GhostkeyError>
@@ -211,19 +224,40 @@ mod tests {
 
     #[test]
     fn test_from_armored_string() {
-        let test_struct = TestStruct {
+        let test_struct1 = TestStruct {
             field1: "Hello".to_string(),
             field2: 42,
         };
+        let test_struct2 = TestStruct {
+            field1: "World".to_string(),
+            field2: 24,
+        };
 
         let temp_dir = tempdir().unwrap();
-        let file_path = temp_dir.path().join("test_struct.armored");
+        let file_path1 = temp_dir.path().join("test_struct1.armored");
+        let file_path2 = temp_dir.path().join("test_struct2.armored");
 
-        test_struct.to_file(&file_path).unwrap();
+        test_struct1.to_file(&file_path1).unwrap();
+        test_struct2.to_file(&file_path2).unwrap();
 
-        let armored_content = std::fs::read_to_string(&file_path).unwrap();
-        let loaded_struct = TestStruct::from_armored_string(&armored_content).unwrap();
+        let armored_content1 = std::fs::read_to_string(&file_path1).unwrap();
+        let armored_content2 = std::fs::read_to_string(&file_path2).unwrap();
 
-        assert_eq!(test_struct, loaded_struct);
+        // Test single block
+        let loaded_struct1 = TestStruct::from_armored_string(&armored_content1).unwrap();
+        assert_eq!(test_struct1, loaded_struct1);
+
+        // Test multiple blocks
+        let combined_content = format!("{}\n{}", armored_content1, armored_content2);
+        let loaded_struct2 = TestStruct::from_armored_string(&combined_content).unwrap();
+        assert_eq!(test_struct1, loaded_struct2);
+
+        // Test no matching block
+        let wrong_content = "-----BEGIN WRONG_STRUCT-----\nwrongcontent\n-----END WRONG_STRUCT-----\n";
+        assert!(TestStruct::from_armored_string(wrong_content).is_err());
+
+        // Test multiple matching blocks
+        let duplicate_content = format!("{}\n{}", armored_content1, armored_content1);
+        assert!(TestStruct::from_armored_string(&duplicate_content).is_err());
     }
 }
