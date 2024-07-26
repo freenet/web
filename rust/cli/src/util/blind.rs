@@ -35,8 +35,8 @@ pub fn verify_signature(
 ) -> bool {
     let k = hash_to_scalar(r.compress().as_bytes());
     let left = ED25519_BASEPOINT_POINT * s;
-    let right = r + (public_key * k * message);
-    left == right
+    let right = r + (public_key * k);
+    left == right * message
 }
 
 /// Helper function to hash a byte slice to a Scalar.
@@ -139,5 +139,24 @@ mod tests {
         println!("Verification result: {}", verification_result);
 
         assert!(verification_result, "Blind signature process failed");
+    }
+
+    #[test]
+    fn test_blind_signature_math() {
+        let message = Scalar::random(&mut OsRng);
+        let secret_key = Scalar::random(&mut OsRng);
+        let public_key = ED25519_BASEPOINT_POINT * secret_key;
+        let (blinded_message, blinding_factor) = blind_message(&message);
+        let (r, s_blinded) = sign_blinded_message(&secret_key, &blinded_message);
+        let (_, s) = unblind_signature(r, s_blinded, &blinding_factor);
+
+        let k = hash_to_scalar(r.compress().as_bytes());
+        let left = ED25519_BASEPOINT_POINT * s;
+        let right = r + (public_key * k);
+        let right_multiplied = right * message;
+
+        println!("Left: {:?}", left);
+        println!("Right * message: {:?}", right_multiplied);
+        assert_eq!(left, right_multiplied, "Blind signature equation does not hold");
     }
 }
