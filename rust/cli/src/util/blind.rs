@@ -37,7 +37,7 @@ pub fn verify_signature(
     let message_scalar = hash_to_scalar(message);
     let k = hash_to_scalar(r.compress().as_bytes());
     let left = ED25519_BASEPOINT_POINT * s;
-    let right = r + (public_key * k * message_scalar);
+    let right = r + (public_key * (k * message_scalar));
     left == right
 }
 
@@ -70,39 +70,16 @@ mod tests {
         let (r, s) = unblind_signature(r, s_blinded, &blinding_factor);
 
         // Verify the signature
-        assert!(verify_signature(&public_key, message, r, s));
-    }
+        assert!(verify_signature(&public_key, message, r, s), "Signature verification failed");
 
-    #[test]
-    fn test_verify_fails_with_wrong_message() {
-        let message = b"Hello, world!";
+        // Verify that the signature fails with a different message
         let wrong_message = b"Wrong message";
-        
-        let secret_key = Scalar::random(&mut OsRng);
-        let public_key = ED25519_BASEPOINT_POINT * secret_key;
+        assert!(!verify_signature(&public_key, wrong_message, r, s), "Signature incorrectly verified with wrong message");
 
-        let (blinded_message, blinding_factor) = blind_message(message);
-        let (r, s_blinded) = sign_blinded_message(&secret_key, &blinded_message);
-        let (r, s) = unblind_signature(r, s_blinded, &blinding_factor);
-
-        assert!(!verify_signature(&public_key, wrong_message, r, s));
-    }
-
-    #[test]
-    fn test_verify_fails_with_wrong_public_key() {
-        let message = b"Hello, world!";
-        
-        let secret_key = Scalar::random(&mut OsRng);
-        let public_key = ED25519_BASEPOINT_POINT * secret_key;
-
+        // Verify that the signature fails with a different public key
         let wrong_secret_key = Scalar::random(&mut OsRng);
         let wrong_public_key = ED25519_BASEPOINT_POINT * wrong_secret_key;
-
-        let (blinded_message, blinding_factor) = blind_message(message);
-        let (r, s_blinded) = sign_blinded_message(&secret_key, &blinded_message);
-        let (r, s) = unblind_signature(r, s_blinded, &blinding_factor);
-
-        assert!(!verify_signature(&wrong_public_key, message, r, s));
+        assert!(!verify_signature(&wrong_public_key, message, r, s), "Signature incorrectly verified with wrong public key");
     }
 
     #[test]
@@ -112,6 +89,21 @@ mod tests {
         let (blinded_message1, _) = blind_message(message);
         let (blinded_message2, _) = blind_message(message);
 
-        assert_ne!(blinded_message1, blinded_message2);
+        assert_ne!(blinded_message1, blinded_message2, "Blinded messages should be different");
+    }
+
+    #[test]
+    fn test_unblind_signature_correctness() {
+        let message = b"Hello, world!";
+        let secret_key = Scalar::random(&mut OsRng);
+        let public_key = ED25519_BASEPOINT_POINT * secret_key;
+
+        let (blinded_message, blinding_factor) = blind_message(message);
+        let (r, s_blinded) = sign_blinded_message(&secret_key, &blinded_message);
+        let (r_unblinded, s_unblinded) = unblind_signature(r, s_blinded, &blinding_factor);
+
+        assert_eq!(r, r_unblinded, "R point should not change during unblinding");
+        assert_ne!(s_blinded, s_unblinded, "S scalar should change during unblinding");
+        assert!(verify_signature(&public_key, message, r_unblinded, s_unblinded), "Unblinded signature should verify correctly");
     }
 }
