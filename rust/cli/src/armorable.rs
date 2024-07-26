@@ -80,23 +80,33 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
             .filter(|block| block.contains(&end_label))
             .collect();
 
-        match matching_blocks.len() {
-            0 => Err(GhostkeyError::DecodingError(format!("No matching block found for {}", struct_name))),
-            1 => {
-                let block = matching_blocks[0];
-                let base64_encoded = block
-                    .lines()
-                    .take_while(|line| !line.contains(&end_label))
-                    .filter(|line| !line.starts_with("-----"))
-                    .collect::<Vec<&str>>()
-                    .join("");
-
-                let decoded = BASE64_STANDARD.decode(&base64_encoded)
-                    .map_err(|e| GhostkeyError::Base64DecodeError(e.to_string()))?;
-                Self::from_bytes(&decoded)
-            },
-            _ => Err(GhostkeyError::DecodingError(format!("Multiple matching blocks found for {}", struct_name))),
+        if matching_blocks.is_empty() {
+            return Err(GhostkeyError::DecodingError(format!("No matching block found for {}", struct_name)));
         }
+
+        for block in matching_blocks {
+            if let Ok(result) = Self::decode_block(block, &end_label) {
+                return Ok(result);
+            }
+        }
+
+        Err(GhostkeyError::DecodingError(format!("Failed to decode any matching block for {}", struct_name)))
+    }
+
+    fn decode_block(block: &str, end_label: &str) -> Result<Self, GhostkeyError>
+    where
+        Self: Sized,
+    {
+        let base64_encoded = block
+            .lines()
+            .take_while(|line| !line.contains(end_label))
+            .filter(|line| !line.starts_with("-----"))
+            .collect::<Vec<&str>>()
+            .join("");
+
+        let decoded = BASE64_STANDARD.decode(&base64_encoded)
+            .map_err(|e| GhostkeyError::Base64DecodeError(e.to_string()))?;
+        Self::from_bytes(&decoded)
     }
 
     fn from_file(file_path: &Path) -> Result<Self, GhostkeyError>
@@ -256,8 +266,9 @@ mod tests {
         let wrong_content = "-----BEGIN WRONG_STRUCT-----\nwrongcontent\n-----END WRONG_STRUCT-----\n";
         assert!(TestStruct::from_armored_string(wrong_content).is_err());
 
-        // Test multiple matching blocks
+        // Test multiple matching blocks (should now succeed)
         let duplicate_content = format!("{}\n{}", armored_content1, armored_content1);
-        assert!(TestStruct::from_armored_string(&duplicate_content).is_err());
+        let loaded_struct3 = TestStruct::from_armored_string(&duplicate_content).unwrap();
+        assert_eq!(test_struct1, loaded_struct3);
     }
 }
