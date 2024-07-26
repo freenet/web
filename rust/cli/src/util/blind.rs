@@ -37,8 +37,8 @@ pub fn verify_signature(
     let message_scalar = hash_to_scalar(message);
     let k = hash_to_scalar(r.compress().as_bytes());
     let left = ED25519_BASEPOINT_POINT * s;
-    let right = r + (public_key * k * message_scalar);
-    left == right
+    let right = r + (public_key * k);
+    left == right * message_scalar.invert()
 }
 
 /// Helper function to hash a byte slice to a Scalar.
@@ -110,5 +110,36 @@ mod tests {
         let verification_result = verify_signature(&public_key, message, r_unblinded, s_unblinded);
         println!("Unblinded signature verification result: {}", verification_result);
         assert!(verification_result, "Unblinded signature should verify correctly");
+    }
+
+    #[test]
+    fn test_blind_signature_process() {
+        let message = b"Hello, world!";
+        
+        // Generate a key pair
+        let secret_key = Scalar::random(&mut OsRng);
+        let public_key = ED25519_BASEPOINT_POINT * secret_key;
+
+        // Blind the message
+        let (blinded_message, blinding_factor) = blind_message(message);
+
+        // Sign the blinded message
+        let (r, s_blinded) = sign_blinded_message(&secret_key, &blinded_message);
+
+        // Unblind the signature
+        let (r, s) = unblind_signature(r, s_blinded, &blinding_factor);
+
+        // Verify the signature
+        let verification_result = verify_signature(&public_key, message, r, s);
+        
+        println!("Original message: {:?}", message);
+        println!("Blinded message: {:?}", blinded_message);
+        println!("Blinding factor: {:?}", blinding_factor);
+        println!("R: {:?}", r);
+        println!("S (blinded): {:?}", s_blinded);
+        println!("S (unblinded): {:?}", s);
+        println!("Verification result: {}", verification_result);
+
+        assert!(verification_result, "Blind signature process failed");
     }
 }
