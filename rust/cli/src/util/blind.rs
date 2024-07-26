@@ -2,8 +2,6 @@ use curve25519_dalek::scalar::Scalar;
 use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::constants::ED25519_BASEPOINT_POINT;
 use rand_core::OsRng;
-use sha2::{Sha512, Digest};
-
 /// Blinds a message using a random blinding factor.
 pub fn blind_message(message: &Scalar) -> (Scalar, Scalar) {
     let blinding_factor = Scalar::random(&mut OsRng);
@@ -15,8 +13,7 @@ pub fn blind_message(message: &Scalar) -> (Scalar, Scalar) {
 pub fn sign_blinded_message(signing_key: &Scalar, blinded_message: &Scalar) -> (EdwardsPoint, Scalar) {
     let r = Scalar::random(&mut OsRng);
     let r_point = ED25519_BASEPOINT_POINT * r;
-    let k = hash_to_scalar(r_point.compress().as_bytes());
-    let s = r + k * signing_key * blinded_message;
+    let s = r + signing_key * blinded_message;
     (r_point, s)
 }
 
@@ -33,17 +30,9 @@ pub fn verify_signature(
     r: EdwardsPoint,
     s: Scalar,
 ) -> bool {
-    let k = hash_to_scalar(r.compress().as_bytes());
     let left = ED25519_BASEPOINT_POINT * s;
-    let right = r + (public_key * k);
-    left == right * message
-}
-
-/// Helper function to hash a byte slice to a Scalar.
-fn hash_to_scalar(data: &[u8]) -> Scalar {
-    let mut hasher = Sha512::new();
-    hasher.update(data);
-    Scalar::from_hash(hasher)
+    let right = r + (public_key * message);
+    left == right
 }
 
 #[cfg(test)]
