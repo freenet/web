@@ -1,14 +1,18 @@
-use rocket::serde::{Deserialize, Serialize};
-use stripe::{Client, PaymentIntent, PaymentIntentStatus};
-use std::str::FromStr;
 use std::collections::HashMap;
-use rand_core::OsRng;
-use sha2::{Sha256, Digest};
-use base64::{Engine as _, engine::general_purpose};
 use std::error::Error as StdError;
 use std::path::PathBuf;
+use std::str::FromStr;
+
+use base64::{Engine as _, engine::general_purpose};
 use ed25519_dalek::SigningKey;
+use rand_core::OsRng;
+use rocket::serde::{Deserialize, Serialize};
+use serde_json::Value;
+use sha2::{Digest, Sha256};
+use stripe::{Client, PaymentIntent, PaymentIntentStatus};
+
 use ghostkey::armorable::*;
+use ghostkey::delegate_certificate::DelegateCertificate;
 
 #[derive(Debug)]
 pub enum CertificateError {
@@ -54,9 +58,6 @@ impl From<stripe::ParseIdError> for CertificateError {
         CertificateError::ParseIdError(error)
     }
 }
-
-use serde_json::Value;
-use ghostkey::delegate_certificate::DelegateCertificate;
 
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
