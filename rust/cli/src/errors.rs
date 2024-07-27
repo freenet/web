@@ -4,6 +4,7 @@ use GhostkeyError::*;
 pub enum GhostkeyError {
     KeyCreationError(String),
     SignatureError(String),
+    RSAError(String),
     SignatureVerificationError(String),
     Base64DecodeError(String),
     SerializationError(String),
@@ -15,7 +16,6 @@ pub enum GhostkeyError {
     IOError(String),
 }
 
-
 impl std::error::Error for GhostkeyError {}
 
 impl std::fmt::Display for GhostkeyError {
@@ -24,6 +24,7 @@ impl std::fmt::Display for GhostkeyError {
             KeyCreationError(msg) => write!(f, "Key Creation Error: {}", msg),
             SignatureError(msg) => write!(f, "Signature Error: {}", msg),
             SignatureVerificationError(msg) => write!(f, "Signature Verification Error: {}", msg),
+            RSAError(msg) => write!(f, "Blind RSA Error: {}", msg),
             Base64DecodeError(msg) => write!(f, "Base64 Decode Error: {}", msg),
             SerializationError(msg) => write!(f, "Serialization Error: {}", msg),
             DeserializationError(msg) => write!(f, "Deserialization Error: {}", msg),

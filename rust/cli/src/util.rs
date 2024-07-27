@@ -3,9 +3,10 @@ pub mod blind;
 use ed25519_dalek::*;
 use rand_core::OsRng;
 
-use serde::{Serialize, Deserialize};
-use crate::errors::GhostkeyError;
 use crate::armorable::*;
+use crate::errors::GhostkeyError;
+use blind_rsa_signatures::{KeyPair as RSAKeyPair, Options, Signature as RSASignature};
+use serde::{Deserialize, Serialize};
 
 /// Creates a new ECDSA keypair for signing and verification.
 ///
@@ -33,8 +34,13 @@ pub fn create_keypair() -> Result<(SigningKey, VerifyingKey), GhostkeyError> {
 /// # Note
 ///
 /// This function uses blake3 to hash the data before signing.
-pub fn sign_with_hash<T: Serialize + for<'de> Deserialize<'de>>(signing_key: &SigningKey, data: &T) -> Result<Signature, Box<GhostkeyError>> {
-    let bytes = data.to_bytes().map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
+pub fn sign_with_hash<T: Serialize + for<'de> Deserialize<'de>>(
+    signing_key: &SigningKey,
+    data: &T,
+) -> Result<Signature, Box<GhostkeyError>> {
+    let bytes = data
+        .to_bytes()
+        .map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
     Ok(signing_key.sign(bytes.as_slice()))
 }
 
@@ -54,9 +60,48 @@ pub fn sign_with_hash<T: Serialize + for<'de> Deserialize<'de>>(signing_key: &Si
 /// # Note
 ///
 /// This function uses blake3 to hash the data before verification.
-pub fn verify_with_hash<T: Serialize + for<'de> Deserialize<'de>>(verifying_key: &VerifyingKey, data: &T, signature: &Signature) -> Result<bool, Box<GhostkeyError>> {
-    let bytes = data.to_bytes().map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
+pub fn verify_with_hash<T: Serialize + for<'de> Deserialize<'de>>(
+    verifying_key: &VerifyingKey,
+    data: &T,
+    signature: &Signature,
+) -> Result<bool, Box<GhostkeyError>> {
+    let bytes = data
+        .to_bytes()
+        .map_err(|e| GhostkeyError::SerializationError(e.to_string()))?;
     Ok(verifying_key.verify(bytes.as_slice(), signature).is_ok())
+}
+
+/// Signs the given data using the provided RSA signing key, uses blind signature internally
+/// to guarantee compatibility with actual blind signatures, even if it's less efficient.
+/// This function is SLOW, taking 12 seconds on a modern PC (2024).
+pub fn unblinded_rsa_sign(
+    signing_keypair: &RSAKeyPair,
+    msg: &[u8],
+) -> Result<RSASignature, Box<GhostkeyError>> {
+    let options = Options::default();
+
+    let blinding_result = signing_keypair
+        .pk
+        .blind(&mut OsRng, msg, false, &options)
+        .map_err(|e| GhostkeyError::RSAError(e.to_string()))?;
+
+    let blind_sig = signing_keypair
+        .sk
+        .blind_sign(&mut OsRng, &blinding_result.blind_msg, &options)
+        .map_err(|e| GhostkeyError::RSAError(e.to_string()))?;
+
+    let sig = signing_keypair
+        .pk
+        .finalize(
+            &blind_sig,
+            &blinding_result.secret,
+            blinding_result.msg_randomizer,
+            msg,
+            &options,
+        )
+        .map_err(|e| GhostkeyError::RSAError(e.to_string()))?;
+
+    Ok(sig)
 }
 
 #[cfg(test)]
@@ -101,5 +146,17 @@ mod tests {
         };
         let is_valid = verify_with_hash(&verifying_key, &modified_data, &signature).unwrap();
         assert!(!is_valid);
+    }
+
+    #[test]
+    fn test_rsa_sign_and_verify() {
+        let keypair = RSAKeyPair::generate(&mut OsRng, 2048).unwrap();
+        let msg = b"test";
+
+        let signature = unblinded_rsa_sign(&keypair, msg).unwrap();
+        let is_valid = keypair
+            .pk
+            .verify(&signature, None, msg, &Default::default());
+        assert!(is_valid.is_ok());
     }
 }
