@@ -1,3 +1,6 @@
 [workspace]
-members = ["api", "cli", "integration_test"]
+members = ["api", "cli", "integration_test", "gkwasm"]
 resolver = "2"
+
+[patch.crates-io]
+getrandom = { version = "0.2.15", features = ["js"] }

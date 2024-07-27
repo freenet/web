@@ -2,16 +2,12 @@ use rocket::serde::{Deserialize, Serialize};
 use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 use std::str::FromStr;
 use std::collections::HashMap;
-use p256::{
-    ecdsa::{self, SigningKey, signature::Signer},
-    SecretKey,
-};
-use p256::elliptic_curve::generic_array::GenericArray;
 use rand_core::OsRng;
 use sha2::{Sha256, Digest};
 use base64::{Engine as _, engine::general_purpose};
 use std::error::Error as StdError;
 use std::path::PathBuf;
+use ed25519_dalek::SigningKey;
 use ghostkey::armorable::*;
 
 #[derive(Debug)]
@@ -61,7 +57,6 @@ impl From<stripe::ParseIdError> for CertificateError {
 
 use serde_json::Value;
 use ghostkey::delegate_certificate::DelegateCertificate;
-use ghostkey::wrappers::signing_key::SerializableSigningKey;
 
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
@@ -162,7 +157,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     })
 }
 
-fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<(String, DelegateInfo), CertificateError> {
+fn sign_with_delegate_key(blinded_verifying_key_bytes: &[u8], amount: i64) -> Result<(String, DelegateInfo), CertificateError> {
     let delegate_dir = PathBuf::from(std::env::var("DELEGATE_DIR").map_err(|e| {
         log::error!("DELEGATE_DIR environment variable not set: {}", e);
         CertificateError::KeyError("DELEGATE_DIR environment variable not set".to_string())
@@ -181,52 +176,27 @@ fn sign_with_delegate_key(blinded_verifying_key: &Value, amount: i64) -> Result<
             CertificateError::KeyError(format!("Failed to read delegate certificate: {}", e))
         })?;
 
-    let delegate_key = SerializableSigningKey::from_file(&delegate_key_path)
+    let delegate_key = SigningKey::from_file(&delegate_key_path)
         .map_err(|e| {
             log::error!("Failed to read delegate key from {:?}: {}", delegate_key_path, e);
             CertificateError::KeyError(format!("Failed to read delegate key: {}", e))
         })?;
 
     log::info!("Successfully read both delegate certificate and key");
-    log::debug!("Starting sign_with_delegate_key function with blinded_verifying_key: {:?}", blinded_verifying_key);
+    log::debug!("Starting sign_with_delegate_key function with blinded_verifying_key, length: {:?}", blinded_verifying_key_bytes.len());
 
 
     log::info!("Successfully created signing key");
-
+ 
+    todo!()
+    /*
     let blinded_verifying_key_bytes = 
 
     log::debug!("Decoded blinded verifying key bytes: {:?}", blinded_verifying_key_bytes);
 
-    // Generate a random nonce
-    let nonce = SecretKey::random(&mut OsRng);
-    let nonce_bytes = nonce.to_bytes();
 
-    // Combine the blinded verifying key and nonce, and hash them
-    let mut hasher = Sha256::new();
-    hasher.update(&blinded_verifying_key_bytes);
-    hasher.update(&nonce_bytes);
-    let message = hasher.finalize();
-
-    // Sign the hash
-    let blind_signature: ecdsa::Signature = signing_key.try_sign(&message)
-        .map_err(|e| CertificateError::KeyError(format!("Failed to sign message: {}", e)))?;
-
-    // Convert the signature to bytes
-    let signature_bytes = blind_signature.to_bytes();
-
-    // Combine the signature and nonce
-    let mut combined = Vec::with_capacity(signature_bytes.len() + 32);
-    combined.extend_from_slice(&signature_bytes);
-    combined.extend_from_slice(&nonce_bytes);
-
-    log::debug!("Combined signature and nonce length: {}", combined.len());
-
-    let delegate_info = DelegateInfo {
-        certificate: delegate_cert_base64,
-        amount: delegate_amount,
-    };
-
-    Ok((general_purpose::STANDARD.encode(&combined), delegate_info))
+    
+    Ok((general_purpose::STANDARD.encode(&combined), delegate_info)) */
 }
 
 // The create_payment_intent function and associated structs have been removed

@@ -1,3 +1,5 @@
+pub mod blind;
+
 use ed25519_dalek::*;
 use rand_core::OsRng;
 

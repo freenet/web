@@ -1,7 +1,7 @@
 use ciborium::{de::from_reader, ser::into_writer};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::{BufReader, Read, Write};
+use std::io::{Read, Write};
 use std::any::type_name;
 use std::path::Path;
 use base64::Engine;

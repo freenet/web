@@ -253,12 +253,11 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
       console.log("Decoded delegate certificate length:", decodedDelegateCertificate.length);
 
       // Create the GhostkeyCertificate object as a struct
-      ghostKeyCertificate = [
-        1, // version
-        decodedDelegateCertificate,
-        Array.from(new Uint8Array(publicKey)),
-        Array.from(new Uint8Array(unblindedSignature))
-      ];
+      ghostKeyCertificate = {
+          delegate : decodedDelegateCertificate,
+          verifying_key : Array.from(new Uint8Array(publicKey)),
+          signature : unblindedSignature };
+
       console.log("Ghost key certificate object created:", ghostKeyCertificate);
 
       // Serialize the GhostkeyCertificate using CBOR
