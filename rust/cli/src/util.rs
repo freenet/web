@@ -73,7 +73,6 @@ pub fn verify_with_hash<T: Serialize + for<'de> Deserialize<'de>>(
 
 /// Signs the given data using the provided RSA signing key, uses blind signature internally
 /// to guarantee compatibility with actual blind signatures, even if it's less efficient.
-/// This function is SLOW, taking 12 seconds on a modern PC (2024).
 pub fn unblinded_rsa_sign(
     signing_keypair: &RSAKeyPair,
     msg: &[u8],
@@ -106,6 +105,7 @@ pub fn unblinded_rsa_sign(
 
 #[cfg(test)]
 mod tests {
+    use std::time::Instant;
     use serde::{Deserialize, Serialize};
 
     use super::*;
@@ -150,13 +150,25 @@ mod tests {
 
     #[test]
     fn test_rsa_sign_and_verify() {
+        println!("Generating RSA keypair...");
+        let start = Instant::now();
         let keypair = RSAKeyPair::generate(&mut OsRng, 2048).unwrap();
         let msg = b"test";
-
+        println!("RSA keypair generated in {}ms", start.elapsed().as_millis());
+        
+        println!("Signing message...");
+        
+        let start = Instant::now();
         let signature = unblinded_rsa_sign(&keypair, msg).unwrap();
+        println!("Message signed in {}ms", start.elapsed().as_millis());
+        
+        println!("Verifying signature...");
+        let start = Instant::now();
         let is_valid = keypair
             .pk
             .verify(&signature, None, msg, &Default::default());
+        
+        println!("Signature verified in {}ms", start.elapsed().as_millis());
         assert!(is_valid.is_ok());
     }
 }
