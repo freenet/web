@@ -2,13 +2,13 @@ use blind_rsa_signatures::SecretKey as RSASigningKey;
 use clap::{Arg, ArgAction, Command};
 use colored::Colorize;
 use ed25519_dalek::*;
-use ghostkey::armorable::Armorable;
+use gklib::armorable::Armorable;
 use ghostkey::commands::{
     generate_delegate_cmd, generate_ghostkey_cmd, generate_master_key_cmd, verify_delegate_cmd,
     verify_ghostkey_cmd,
 };
-use ghostkey::delegate_certificate::DelegateCertificate;
-use ghostkey::ghostkey_certificate::GhostkeyCertificate;
+use gklib::delegate_certificate::DelegateCertificate;
+use gklib::ghostkey_certificate::GhostkeyCertificate;
 use log::info;
 use std::path::Path;
 use std::process;

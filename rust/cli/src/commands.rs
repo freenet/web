@@ -1,8 +1,8 @@
-use crate::armorable::*;
-use crate::delegate_certificate::DelegateCertificate;
-use crate::errors::GhostkeyError;
-use crate::ghostkey_certificate::GhostkeyCertificate;
-use crate::util::create_keypair;
+use gklib::armorable::*;
+use gklib::delegate_certificate::DelegateCertificate;
+use gklib::errors::GhostkeyError;
+use gklib::ghostkey_certificate::GhostkeyCertificate;
+use gklib::util::create_keypair;
 use blind_rsa_signatures::SecretKey as RSASigningKey;
 use colored::Colorize;
 use ed25519_dalek::*;

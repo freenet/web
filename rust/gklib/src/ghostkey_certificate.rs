@@ -1,7 +1,7 @@
-use crate::delegate_certificate::DelegateCertificate;
-use crate::errors::GhostkeyError;
-use crate::errors::GhostkeyError::{RSAError, SignatureVerificationError};
-use crate::util::{create_keypair, unblinded_rsa_sign};
+use super::delegate_certificate::DelegateCertificate;
+use super::errors::GhostkeyError;
+use super::errors::GhostkeyError::{RSAError, SignatureVerificationError};
+use super::util::{create_keypair, unblinded_rsa_sign};
 use blind_rsa_signatures::{
     KeyPair, Options, SecretKey as RSASigningKey, Signature as RSASignature,
 };
@@ -19,7 +19,7 @@ pub struct GhostkeyCertificate {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::util::create_keypair;
+    use ghostkey::util::create_keypair;
 
     #[test]
     fn test_ghostkey_certificate_creation_and_verification() {

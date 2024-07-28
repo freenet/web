@@ -8,9 +8,9 @@ use std::time::Instant;
 use std::env;
 use std::fs;
 use std::io::{BufRead, BufReader};
-use ghostkey::armorable::Armorable;
-use ghostkey::delegate_certificate::DelegateCertificate;
-use ghostkey::ghostkey_certificate::GhostkeyCertificate;
+use gklib::armorable::Armorable;
+use gklib::delegate_certificate::DelegateCertificate;
+use gklib::ghostkey_certificate::GhostkeyCertificate;
 
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
@@ -633,7 +633,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     use serde::Deserialize;
     use std::fs;
     use std::path::Path;
-    use ghostkey::armorable::*;
+    use gklib::armorable::*;
 
     println!("Starting ghost key certificate inspection");
 

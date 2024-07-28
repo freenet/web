@@ -9,8 +9,8 @@ use rocket::serde::{Deserialize, Serialize};
 use sha2::Digest;
 use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 
-use ghostkey::armorable::*;
-use ghostkey::armorable::Armorable;
+use gklib::armorable::*;
+use gklib::armorable::Armorable;
 
 use crate::delegates::sign_with_delegate_key;
 use crate::errors::CertificateError;

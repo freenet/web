@@ -1,5 +1,5 @@
-use crate::errors::GhostkeyError;
-use crate::util::{sign_with_hash, verify_with_hash};
+use super::errors::GhostkeyError;
+use super::util::{sign_with_hash, verify_with_hash};
 use blind_rsa_signatures::{
     KeyPair as RSAKeyPair, PublicKey as RSAVerifyingKey, SecretKey as RSASigningKey,
 };
@@ -62,7 +62,7 @@ impl DelegateCertificate {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::util::create_keypair;
+    use ghostkey::util::create_keypair;
 
     #[test]
     fn test_delegate_certificate_creation_and_verification() {

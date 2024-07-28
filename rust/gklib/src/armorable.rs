@@ -1,5 +1,5 @@
-use crate::errors::GhostkeyError;
-use crate::errors::GhostkeyError::Base64DecodeError;
+use super::errors::GhostkeyError;
+use super::errors::GhostkeyError::Base64DecodeError;
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine;
 use ciborium::{de::from_reader, ser::into_writer};

@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use blind_rsa_signatures::{BlindedMessage, BlindSignature, KeyPair as RSAKeyPair, Options, PublicKey as RSAVerifyingKey, SecretKey as RSASigningKey};
 use rand_core::OsRng;
 
-use ghostkey::armorable::*;
-use ghostkey::delegate_certificate::DelegateCertificate;
+use gklib::armorable::*;
+use gklib::delegate_certificate::DelegateCertificate;
 
 use crate::handle_sign_cert::CertificateError;
 

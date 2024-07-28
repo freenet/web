@@ -25,6 +25,7 @@ typenum = "1.17.0"
 sha3 = "0.11.0-pre.3"
 signature = "2.2.0"
 blind-rsa-signatures = "0.15.1"
+gklib = { path = "../gklib" }
 
 [[bin]]
 name = "ghostkey"

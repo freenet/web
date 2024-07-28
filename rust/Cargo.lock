@@ -1059,6 +1059,7 @@ dependencies = [
  "curve25519-dalek",
  "ed25519-dalek",
  "env_logger",
+ "gklib",
  "hex",
  "log",
  "rand 0.8.5",
@@ -1079,6 +1080,21 @@ name = "gimli"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
+
+[[package]]
+name = "gklib"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "blind-rsa-signatures",
+ "ciborium",
+ "curve25519-dalek",
+ "ed25519-dalek",
+ "rand 0.8.5",
+ "rand_core 0.6.4",
+ "serde",
+ "serde_bytes",
+]
 
 [[package]]
 name = "gkwasm"
