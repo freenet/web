@@ -42,13 +42,6 @@ path = "src/lib.rs"
 name = "ghostkey"
 path = "src/bin/ghostkey.rs"
 required-features = ["cli"]
-wasm = []
-
-[dependencies]
-serde = { version = "1.0", features = ["derive"] }
-base64 = "0.13"
-ciborium = "0.2"
-ed25519-dalek = "1.0"
 rand_core = "0.6"
 blind_rsa_signatures = "0.14"
 
