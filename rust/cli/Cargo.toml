@@ -9,6 +9,12 @@ cli = ["file_io"]
 file_io = []
 wasm = []
 
+[features]
+default = ["cli"]
+cli = ["file_io"]
+file_io = []
+wasm = []
+
 [dependencies]
 curve25519-dalek = { version = "4.1.3", features = ["rand_core", "serde"]}
 ed25519-dalek = { version = "2.1.1", features = ["rand_core", "serde"]}
