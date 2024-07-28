@@ -1,5 +1,7 @@
 pub mod blind;
 
+use env_logger;
+
 use ed25519_dalek::*;
 use rand_core::OsRng;
 

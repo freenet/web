@@ -11,6 +11,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 #[cfg(feature = "file_io")]
 use std::path::Path;
+use tempfile::tempdir;
 
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     fn to_bytes(&self) -> Result<Vec<u8>, GhostkeyError> {
