@@ -5,7 +5,7 @@ edition = "2021"
 
 [features]
 default = ["cli"]
-cli = ["file_io"]
+cli = ["file_io", "clap", "colored"]
 file_io = []
 wasm = []
 
