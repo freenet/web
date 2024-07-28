@@ -49,6 +49,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         result.to_uppercase()
     }
 
+    #[cfg(feature = "file_io")]
     fn to_file(&self, file_path: &Path) -> Result<(), GhostkeyError> {
         let buf = self
             .to_bytes()
