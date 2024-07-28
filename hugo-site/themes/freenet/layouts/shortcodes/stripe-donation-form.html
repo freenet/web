@@ -51,7 +51,9 @@
       if (!data.client_secret) {
         throw new Error('The server response did not include a client secret.');
       }
-      const { client_secret: clientSecret } = data;
+      const { client_secret: clientSecret, delegate_base64 : delegateBase64 } = data;
+
+      localStorage.setItem('delegate_base64', delegateBase64);
 
       const appearance = {
         theme: 'stripe',

@@ -1,15 +1,17 @@
-use crate::stripe_handler::{sign_certificate, SignCertificateRequest, SignCertificateResponse, DelegateInfo, CertificateError};
 use std::collections::HashMap;
+use std::str::FromStr;
+use std::time::Instant;
+
+use log::{debug, error, info};
+use rocket::{Request, Response, Route};
+use rocket::{get, options, post, routes};
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
-use rocket::{Request, Response, Route};
-use rocket::{get, post, options, routes};
 use serde::{Deserialize, Serialize};
-use std::time::Instant;
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
-use std::str::FromStr;
-use log::{info, error, debug};
+use crate::delegates::get_delegate;
+use crate::handle_sign_cert::{CertificateError, DelegateInfo, sign_certificate, SignCertificateRequest, SignCertificateResponse};
 
 pub struct CORS;
 
@@ -73,6 +75,7 @@ pub struct DonationRequest {
 pub struct DonationResponse {
     pub client_secret: String,
     pub payment_intent_id: String,
+    pub delegate_base64 : String,
 }
 
 #[get("/")]
@@ -112,8 +115,7 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Re
                 CertificateError::CertificateAlreadySigned => {
                     info!("Certificate already signed");
                     Ok(Json(SignCertificateResponse {
-                        blind_signature: String::new(),
-                        delegate_info: DelegateInfo::default(),
+                        blind_signature_base64: String::new(),
                     }))
                 },
                 CertificateError::KeyError(msg) => {
@@ -228,12 +230,18 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         .await
         .map_err(DonationError::StripeError)?;
 
+    
+    
     info!("Payment intent created successfully");
+    
+    let (delegate_certificate, _) =  get_delegate(request.amount as u64);
+    
     match intent.client_secret {
         Some(secret) => {
             Ok(Json(DonationResponse {
                 client_secret: secret,
                 payment_intent_id: intent.id.to_string(),
+                delegate_base64: delegate_certificate.to_base64(),
             }))
         },
         None => {

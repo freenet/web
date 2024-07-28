@@ -1,14 +1,17 @@
-use rocket::{launch, catchers, get, routes};
+use std::env;
+
+use clap::{Arg, Command};
+use dotenv::dotenv;
+use log::{error, info, LevelFilter};
+use rocket::{catchers, get, launch, routes};
+use rocket::{catch, Request};
 use rocket::fairing::AdHoc;
 use rocket::http::Header;
-use rocket::{Request, catch};
-use dotenv::dotenv;
-use log::{LevelFilter, info, error};
 
 mod routes;
-use clap::{Command, Arg};
-use std::env;
-mod stripe_handler;
+mod handle_sign_cert;
+mod delegates;
+mod errors;
 
 pub static DELEGATE_DIR: &str = "DELEGATE_DIR";
 
@@ -52,6 +55,9 @@ fn rocket() -> _ {
         Ok(path) => info!(".env file loaded successfully from: {:?}", path),
         Err(e) => error!("Failed to load .env file: {}", e),
     }
+
+    env::var("DELEGATE_DIR").expect("DELEGATE_DIR environment variable not set");
+    
     rocket::build()
         .attach(routes::CORS)
         .attach(routes::RequestTimer)

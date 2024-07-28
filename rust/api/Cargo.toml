@@ -22,7 +22,9 @@ rand_core = "0.6.4"
 sha2 = "0.10.6"
 clap = { version = "4.3", features = ["derive"] }
 rand = "0.8"
-fantoccini = "0.19"
+fantoccini = "0.21.0"
 thiserror = "1.0"
 chrono = "0.4"
 serde = { version = "1.0", features = ["derive"] }
+# Not sure why this is needed as it should be pulled in by ghostkey dependency
+blind-rsa-signatures = "0.15.1"
