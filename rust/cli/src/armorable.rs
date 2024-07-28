@@ -5,15 +5,9 @@ use base64::Engine;
 use ciborium::{de::from_reader, ser::into_writer};
 use serde::{Deserialize, Serialize};
 use std::any::type_name;
-use tempfile::tempdir;
-use tempfile::tempdir;
-#[cfg(feature = "file_io")]
 use std::fs::File;
-#[cfg(feature = "file_io")]
 use std::io::{Read, Write};
-#[cfg(feature = "file_io")]
 use std::path::Path;
-use tempfile::tempdir;
 
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     fn to_bytes(&self) -> Result<Vec<u8>, GhostkeyError> {
@@ -52,7 +46,6 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         result.to_uppercase()
     }
 
-    #[cfg(feature = "file_io")]
     fn to_file(&self, file_path: &Path) -> Result<(), GhostkeyError> {
         let buf = self
             .to_bytes()
