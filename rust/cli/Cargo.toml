@@ -42,15 +42,6 @@ path = "src/lib.rs"
 name = "ghostkey"
 path = "src/bin/ghostkey.rs"
 required-features = ["cli"]
-[package]
-name = "ghostkey-cli"
-version = "0.1.0"
-edition = "2021"
-
-[features]
-default = ["cli"]
-cli = ["file_io"]
-file_io = []
 wasm = []
 
 [dependencies]
