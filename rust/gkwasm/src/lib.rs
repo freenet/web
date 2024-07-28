@@ -7,7 +7,7 @@ use ed25519_dalek::VerifyingKey as ECVerifyingKey;
 use rand::rngs::OsRng;
 
 #[wasm_bindgen]
-pub fn generate_keypair_with_blinded() -> Object {
+pub fn generate_keypair_with_blinded() -> JsValue {
     use blind_rsa_signatures::{KeyPair, Options};
     let options = Options::default();
     let rng = &mut OsRng;
@@ -18,16 +18,15 @@ pub fn generate_keypair_with_blinded() -> Object {
     let ec_signing_key_base64 = base64::prelude::BASE64_STANDARD.encode(ec_signing_key.to_bytes());
 
     let ec_verifying_key_base64 = base64::prelude::BASE64_STANDARD.encode(ec_verifying_key.to_bytes());
-
-    let blinded_verifying_key = todo!("NEED DELEGATE PUBLIC KEY");
+    
 
     // Create a javascript object with the rsa_keypair and the blinded_public_key
-    let obj = Object::new();
-    Reflect::set(&obj, &"ec_signing_key".into(), &ec_signing_key_base64.into()).unwrap();
-    Reflect::set(&obj, &"ec_verifying_key".into(), &ec_verifying_key_base64.into()).unwrap();
+    let return_obj = Object::new();
+    Reflect::set(&return_obj, &"ec_signing_key".into(), &ec_signing_key_base64.into()).unwrap();
+    Reflect::set(&return_obj, &"ec_verifying_key".into(), &ec_verifying_key_base64.into()).unwrap();
     
     
-    obj
+    JsValue::from(return_obj)
 }
 
 /*
