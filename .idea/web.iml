@@ -9,6 +9,8 @@
       <sourceFolder url="file://$MODULE_DIR$/rust/cli/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/common/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/integration_test/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/gklib/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/gkwasm/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/rocket-api/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/api/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/target" />
