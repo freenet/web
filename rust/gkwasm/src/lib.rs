@@ -5,6 +5,7 @@ use ciborium::ser::into_writer;
 use ed25519_dalek::SigningKey as ECSigningKey;
 use ed25519_dalek::VerifyingKey as ECVerifyingKey;
 use rand::rngs::OsRng;
+use ghostkey::armorable::Armorable;
 
 #[wasm_bindgen]
 pub fn generate_keypair_with_blinded() -> JsValue {
@@ -14,17 +15,12 @@ pub fn generate_keypair_with_blinded() -> JsValue {
 
     let ec_signing_key = ECSigningKey::generate(&mut OsRng);
     let ec_verifying_key = ECVerifyingKey::from(&ec_signing_key);
-
-    let ec_signing_key_base64 = base64::prelude::BASE64_STANDARD.encode(ec_signing_key.to_bytes());
-
-    let ec_verifying_key_base64 = base64::prelude::BASE64_STANDARD.encode(ec_verifying_key.to_bytes());
     
 
     // Create a javascript object with the rsa_keypair and the blinded_public_key
     let return_obj = Object::new();
-    Reflect::set(&return_obj, &"ec_signing_key".into(), &ec_signing_key_base64.into()).unwrap();
-    Reflect::set(&return_obj, &"ec_verifying_key".into(), &ec_verifying_key_base64.into()).unwrap();
-    
+    Reflect::set(&return_obj, &"ec_signing_key".into(), &ec_signing_key.to_base64().unwrap().into()).unwrap();
+    Reflect::set(&return_obj, &"ec_verifying_key".into(), &ec_verifying_key.to_base64().unwrap().into()).unwrap();
     
     JsValue::from(return_obj)
 }

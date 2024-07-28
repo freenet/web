@@ -1090,6 +1090,7 @@ dependencies = [
  "curve25519-dalek",
  "ed25519-dalek",
  "getrandom 0.2.15",
+ "ghostkey",
  "js-sys",
  "rand 0.8.5",
  "serde",
