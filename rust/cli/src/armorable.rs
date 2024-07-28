@@ -5,8 +5,11 @@ use base64::Engine;
 use ciborium::{de::from_reader, ser::into_writer};
 use serde::{Deserialize, Serialize};
 use std::any::type_name;
+#[cfg(feature = "file_io")]
 use std::fs::File;
+#[cfg(feature = "file_io")]
 use std::io::{Read, Write};
+#[cfg(feature = "file_io")]
 use std::path::Path;
 
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
