@@ -1062,6 +1062,8 @@ dependencies = [
  "base64 0.22.1",
  "blind-rsa-signatures",
  "ciborium",
+ "curve25519-dalek",
+ "ed25519-dalek",
  "getrandom 0.2.15",
  "js-sys",
  "rand 0.8.5",
