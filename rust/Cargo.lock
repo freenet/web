@@ -1109,6 +1109,7 @@ dependencies = [
  "gklib",
  "js-sys",
  "rand 0.8.5",
+ "rand_chacha 0.3.1",
  "serde",
  "serde_bytes",
  "wasm-bindgen",

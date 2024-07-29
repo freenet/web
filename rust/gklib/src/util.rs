@@ -1,5 +1,5 @@
 use ed25519_dalek::*;
-use rand_core::OsRng;
+use rand_core::{CryptoRng, OsRng, RngCore};
 
 use crate::armorable::*;
 use crate::errors::GhostkeyError;
@@ -12,8 +12,11 @@ use serde::{Deserialize, Serialize};
 ///
 /// A tuple containing a `SigningKey` and its corresponding `VerifyingKey`,
 /// or a `GhostkeyError` if key creation fails.
-pub fn create_keypair() -> Result<(SigningKey, VerifyingKey), GhostkeyError> {
-    let signing_key = SigningKey::generate(&mut OsRng);
+pub fn create_keypair<R>(rng: &mut R) -> Result<(SigningKey, VerifyingKey), GhostkeyError>
+where
+    R: RngCore + CryptoRng,
+{
+    let signing_key = SigningKey::generate(rng);
     let verifying_key = VerifyingKey::from(&signing_key);
     Ok((signing_key, verifying_key))
 }
@@ -103,8 +106,6 @@ pub fn unblinded_rsa_sign(
 
 #[cfg(test)]
 mod tests {
-    use std::time::Instant;
-    use log::info;
     use serde::{Deserialize, Serialize};
 
     use super::*;
@@ -117,7 +118,7 @@ mod tests {
 
     #[test]
     fn test_create_keypair() {
-        let result = create_keypair();
+        let result = create_keypair(&mut OsRng);
         assert!(result.is_ok());
         let (signing_key, verifying_key) = result.unwrap();
         assert_eq!(VerifyingKey::from(&signing_key), verifying_key);
@@ -125,7 +126,7 @@ mod tests {
 
     #[test]
     fn test_sign_and_verify() {
-        let (signing_key, verifying_key) = create_keypair().unwrap();
+        let (signing_key, verifying_key) = create_keypair(&mut OsRng).unwrap();
         let test_data = TestData {
             field1: "Hello".to_string(),
             field2: 42,
@@ -149,27 +150,13 @@ mod tests {
 
     #[test]
     fn test_rsa_sign_and_verify() {
-        let _ = env_logger::try_init();
-        
-        info!("Generating RSA keypair...");
-        let start = Instant::now();
         let keypair = RSAKeyPair::generate(&mut OsRng, 2048).unwrap();
         let msg = b"test";
-        info!("RSA keypair generated in {}ms", start.elapsed().as_millis());
-
-        info!("Signing message...");
-
-        let start = Instant::now();
         let signature = unblinded_rsa_sign(&keypair, msg).unwrap();
-        info!("Message signed in {}ms", start.elapsed().as_millis());
-
-        info!("Verifying signature...");
-        let start = Instant::now();
         let is_valid = keypair
             .pk
             .verify(&signature, None, msg, &Default::default());
 
-        info!("Signature verified in {}ms", start.elapsed().as_millis());
         assert!(is_valid.is_ok());
     }
 }

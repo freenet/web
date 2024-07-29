@@ -6,6 +6,7 @@ use blind_rsa_signatures::{
     KeyPair, Options, SecretKey as RSASigningKey, Signature as RSASignature,
 };
 use ed25519_dalek::*;
+use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -16,15 +17,15 @@ pub struct GhostkeyCertificate {
     pub signature: RSASignature,
 }
 
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ghostkey::util::create_keypair;
 
     #[test]
     fn test_ghostkey_certificate_creation_and_verification() {
         // Create a master key pair
-        let (master_signing_key, master_verifying_key) = create_keypair().unwrap();
+        let (master_signing_key, master_verifying_key) = create_keypair(&mut OsRng).unwrap();
 
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
@@ -37,7 +38,7 @@ mod tests {
 
         // Verify the ghostkey certificate
         let verified_info = ghostkey_certificate
-            .verify(&Some(master_verifying_key))
+            .verify(&master_verifying_key)
             .unwrap();
         assert_eq!(verified_info, info);
     }
@@ -45,8 +46,8 @@ mod tests {
     #[test]
     fn test_ghostkey_certificate_invalid_master_key() {
         // Create two sets of key pairs
-        let (master_signing_key, _) = create_keypair().unwrap();
-        let (_, wrong_master_verifying_key) = create_keypair().unwrap();
+        let (master_signing_key, _) = create_keypair(&mut OsRng).unwrap();
+        let (_, wrong_master_verifying_key) = create_keypair(&mut OsRng).unwrap();
 
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
@@ -58,7 +59,7 @@ mod tests {
             GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
 
         // Try to verify with the wrong master key
-        let result = ghostkey_certificate.verify(&Some(wrong_master_verifying_key));
+        let result = ghostkey_certificate.verify(&wrong_master_verifying_key);
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err().as_ref(),
@@ -69,7 +70,7 @@ mod tests {
     #[test]
     fn test_ghostkey_certificate_tampered_delegate() {
         // Create a master key pair
-        let (master_signing_key, master_verifying_key) = create_keypair().unwrap();
+        let (master_signing_key, master_verifying_key) = create_keypair(&mut OsRng).unwrap();
 
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
@@ -84,7 +85,7 @@ mod tests {
         ghostkey_certificate.delegate.payload.info = "Tampered Info".to_string();
 
         // Try to verify the tampered certificate
-        let result = ghostkey_certificate.verify(&Some(master_verifying_key));
+        let result = ghostkey_certificate.verify(&master_verifying_key);
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err().as_ref(),
@@ -95,7 +96,7 @@ mod tests {
     #[test]
     fn test_ghostkey_certificate_tampered_ghostkey() {
         // Create a master key pair
-        let (master_signing_key, master_verifying_key) = create_keypair().unwrap();
+        let (master_signing_key, master_verifying_key) = create_keypair(&mut OsRng).unwrap();
 
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
@@ -107,11 +108,11 @@ mod tests {
             GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
 
         // Tamper with the ghostkey verifying key
-        let (_, tampered_verifying_key) = create_keypair().unwrap();
+        let (_, tampered_verifying_key) = create_keypair(&mut OsRng).unwrap();
         ghostkey_certificate.verifying_key = VerifyingKey::from(tampered_verifying_key);
 
         // Try to verify the tampered certificate
-        let result = ghostkey_certificate.verify(&Some(master_verifying_key));
+        let result = ghostkey_certificate.verify(&master_verifying_key);
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err().as_ref(),
@@ -129,7 +130,7 @@ impl GhostkeyCertificate {
             delegate_signing_key.public_key().unwrap(),
             delegate_signing_key.clone(),
         );
-        let (ghost_signing_key, ghost_verifying_key) = create_keypair().unwrap();
+        let (ghost_signing_key, ghost_verifying_key) = create_keypair(&mut OsRng).unwrap();
         let ghost_signing_key = SigningKey::from(ghost_signing_key);
         let ghost_verifying_key = VerifyingKey::from(ghost_verifying_key);
 
@@ -147,12 +148,12 @@ impl GhostkeyCertificate {
 
     pub fn verify(
         &self,
-        master_verifying_key: &Option<VerifyingKey>,
+        master_verifying_key: &VerifyingKey,
     ) -> Result<String, Box<GhostkeyError>> {
         // Verify delegate certificate
         let info = self
             .delegate
-            .verify(master_verifying_key.as_ref().unwrap())
+            .verify(master_verifying_key)
             .map_err(|e| SignatureVerificationError(format!("Failed to verify delegate: {}", e)))?;
 
         // Verify ghostkey certificate
