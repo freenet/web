@@ -61,13 +61,13 @@ impl DelegateCertificate {
 
 #[cfg(test)]
 mod tests {
+    use crate::util::create_keypair;
     use super::*;
-    use ghostkey::util::create_keypair;
 
     #[test]
     fn test_delegate_certificate_creation_and_verification() {
         // Create a master key pair
-        let (master_signing_key, master_verifying_key) = create_keypair().unwrap();
+        let (master_signing_key, master_verifying_key) = create_keypair(&mut OsRng).unwrap();
 
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
@@ -82,8 +82,8 @@ mod tests {
     #[test]
     fn test_delegate_certificate_invalid_signature() {
         // Create two sets of key pairs
-        let (master_signing_key, _) = create_keypair().unwrap();
-        let (_, wrong_verifying_key) = create_keypair().unwrap();
+        let (master_signing_key, _) = create_keypair(&mut OsRng).unwrap();
+        let (_, wrong_verifying_key) = create_keypair(&mut OsRng).unwrap();
 
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
@@ -102,7 +102,7 @@ mod tests {
     #[test]
     fn test_delegate_certificate_payload_integrity() {
         // Create a master key pair
-        let (master_signing_key, master_verifying_key) = create_keypair().unwrap();
+        let (master_signing_key, master_verifying_key) = create_keypair(&mut OsRng).unwrap();
 
         // Create a delegate certificate
         let info = "Test Delegate".to_string();

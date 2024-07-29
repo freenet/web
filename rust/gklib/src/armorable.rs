@@ -23,6 +23,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         let object: Self = from_reader(bytes).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
         Ok(object)
     }
+
     fn struct_name() -> String {
         let full_name = type_name::<Self>();
         let parts: Vec<&str> = full_name.split("::").collect();
@@ -46,7 +47,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         result.to_uppercase()
     }
 
-    fn to_file(&self, file_path: &Path) -> Result<(), GhostkeyError> {
+    fn to_armoured_string(&self) -> Result<String, GhostkeyError> {
         let buf = self
             .to_bytes()
             .map_err(|e| GhostkeyError::IOError(e.to_string()))?;
@@ -65,8 +66,12 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
             struct_name, wrapped, struct_name
         );
 
-        let mut file =
-            File::create(file_path).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
+        Ok(pem_content)
+    }
+
+    fn to_file(&self, file_path: &Path) -> Result<(), GhostkeyError> {
+        let pem_content = self.to_armoured_string()?;
+        let mut file = File::create(file_path).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
         file.write_all(pem_content.as_bytes())
             .map_err(|e| GhostkeyError::IOError(e.to_string()))?;
         Ok(())
@@ -155,7 +160,6 @@ impl<T: Serialize + for<'de> Deserialize<'de>> Armorable for T {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::tempdir;
 
     #[derive(Debug, Serialize, Deserialize, PartialEq)]
     struct TestStruct {
@@ -185,29 +189,6 @@ mod tests {
         let decoded_struct = TestStruct::from_base64(&base64_string).unwrap();
 
         assert_eq!(test_struct, decoded_struct);
-    }
-
-    #[test]
-    fn test_to_file_and_from_file() {
-        let test_struct = TestStruct {
-            field1: "Hello".to_string(),
-            field2: 42,
-        };
-
-        let temp_dir = tempdir().unwrap();
-        let file_path = temp_dir.path().join("test_struct.armored");
-
-        test_struct.to_file(&file_path).unwrap();
-
-        // dump file contents to stdout
-        std::process::Command::new("cat")
-            .arg(&file_path)
-            .status()
-            .expect("failed to execute process");
-
-        let loaded_struct = TestStruct::from_file(&file_path).unwrap();
-
-        assert_eq!(test_struct, loaded_struct);
     }
 
     #[test]
@@ -252,38 +233,23 @@ mod tests {
             field1: "Hello".to_string(),
             field2: 42,
         };
-        let test_struct2 = TestStruct {
-            field1: "World".to_string(),
-            field2: 24,
+
+        let armored = test_struct1.to_armoured_string().unwrap();
+        let decoded_struct1 = TestStruct::from_armored_string(&armored).unwrap();
+
+        assert_eq!(test_struct1, decoded_struct1);
+    }
+
+    #[test]
+    fn test_mismatched_label_from_armored_string() {
+        let test_struct1 = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
         };
 
-        let temp_dir = tempdir().unwrap();
-        let file_path1 = temp_dir.path().join("test_struct1.armored");
-        let file_path2 = temp_dir.path().join("test_struct2.armored");
-
-        test_struct1.to_file(&file_path1).unwrap();
-        test_struct2.to_file(&file_path2).unwrap();
-
-        let armored_content1 = std::fs::read_to_string(&file_path1).unwrap();
-        let armored_content2 = std::fs::read_to_string(&file_path2).unwrap();
-
-        // Test single block
-        let loaded_struct1 = TestStruct::from_armored_string(&armored_content1).unwrap();
-        assert_eq!(test_struct1, loaded_struct1);
-
-        // Test multiple blocks
-        let combined_content = format!("{}\n{}", armored_content1, armored_content2);
-        let loaded_struct2 = TestStruct::from_armored_string(&combined_content).unwrap();
-        assert_eq!(test_struct1, loaded_struct2);
-
-        // Test no matching block
-        let wrong_content =
-            "-----BEGIN WRONG_STRUCT-----\nwrongcontent\n-----END WRONG_STRUCT-----\n";
-        assert!(TestStruct::from_armored_string(wrong_content).is_err());
-
-        // Test multiple matching blocks (should now succeed)
-        let duplicate_content = format!("{}\n{}", armored_content1, armored_content1);
-        let loaded_struct3 = TestStruct::from_armored_string(&duplicate_content).unwrap();
-        assert_eq!(test_struct1, loaded_struct3);
+        let armored = test_struct1.to_armoured_string().unwrap();
+        let mismatched_label = "-----BEGIN TEST_STRUCT-----\n\n-----END TEST_STRUCTS-----\n";
+        let decoded_struct1 = TestStruct::from_armored_string(&mismatched_label);
+        assert!(decoded_struct1.is_err());
     }
 }

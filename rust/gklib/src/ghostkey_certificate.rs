@@ -8,6 +8,7 @@ use blind_rsa_signatures::{
 use ed25519_dalek::*;
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
+use crate::armorable::Armorable;
 
 #[derive(Serialize, Deserialize)]
 pub struct GhostkeyCertificate {
@@ -164,17 +165,16 @@ impl GhostkeyCertificate {
             .verify(
                 &self.signature,
                 None,
-                &self.verifying_key.to_bytes(),
+                Armorable::to_bytes(&self.verifying_key).unwrap(),
                 &Options::default(),
             )
             .map_err(|e| RSAError(format!("Failed to verify ghostkey: {}", e)));
 
-        if verification.is_ok() {
-            Ok(info)
-        } else {
-            Err(Box::new(SignatureVerificationError(
-                "Failed to verify ghostkey certificate".to_string(),
-            )))
+        match verification {
+            Ok(_) => Ok(info),
+            Err(e) => Err(Box::new(SignatureVerificationError(
+                format!("Failed to verify ghostkey certificate: {}", e),
+            ))),
         }
     }
 }
