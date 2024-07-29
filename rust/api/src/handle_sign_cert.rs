@@ -13,7 +13,7 @@ use gklib::armorable::*;
 use gklib::armorable::Armorable;
 
 use crate::delegates::sign_with_delegate_key;
-use crate::errors::CertificateError;
+pub use crate::errors::CertificateError;
 
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
@@ -89,7 +89,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
             CertificateError::Base64Error(e)
         })?;
 
-    let amount = pi.amount;
+    let amount = pi.amount as u64;
     let blind_signature = sign_with_delegate_key(&blinded_ghostkey, amount)
         .map_err(|e| {
             log::error!("Error in sign_with_delegate_key: {:?}", e);

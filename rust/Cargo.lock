@@ -2281,7 +2281,7 @@ dependencies = [
  "ed25519-dalek",
  "env_logger",
  "fantoccini 0.21.0",
- "ghostkey",
+ "gklib",
  "hex",
  "log",
  "rand 0.8.5",

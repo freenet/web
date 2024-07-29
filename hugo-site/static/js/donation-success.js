@@ -1,16 +1,26 @@
-// Use global nacl and nacl-util objects
+// WebAssembly module
+let wasmModule;
 
+// Helper functions for base64 encoding/decoding
 function bufferToBase64(buffer) {
-    return nacl.util.encodeBase64(buffer);
+    return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
 }
 
 function base64ToBuffer(base64) {
-    return nacl.util.decodeBase64(base64);
+    return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
 }
 
-// Helper function to encode ArrayBuffer to base64
-function arrayBufferToBase64(buffer) {
-    return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+// Load WebAssembly module
+async function loadWasmModule() {
+    const response = await fetch('/wasm/gkwasm.wasm');
+    const buffer = await response.arrayBuffer();
+    const module = await WebAssembly.instantiate(buffer, {
+        env: {
+            // Add any required environment functions here
+        }
+    });
+    wasmModule = module.instance.exports;
+    console.log("WebAssembly module loaded");
 }
 
 // Function to check for required elements and log detailed information
@@ -47,7 +57,7 @@ function checkRequiredElements() {
 }
 
 // Function to initialize the page
-function initPage() {
+async function initPage() {
   console.log("Initializing page");
   
   // Check if we're on the correct page
@@ -59,6 +69,14 @@ function initPage() {
   console.log("Donation success page detected. Checking required elements...");
   if (!checkRequiredElements()) {
     console.error("Required elements not found. Page initialization failed.");
+    return;
+  }
+
+  try {
+    await loadWasmModule();
+  } catch (error) {
+    console.error("Failed to load WebAssembly module:", error);
+    showError('Failed to load necessary components. Please try again later.');
     return;
   }
 
@@ -84,19 +102,14 @@ function initPage() {
 }
 
 // Ensure the DOM is fully loaded before running the script
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log("DOMContentLoaded event fired");
-  if (typeof nacl === 'undefined' || typeof nacl.util === 'undefined') {
-    console.error("nacl or nacl.util is not defined. Make sure the TweetNaCl library is properly loaded.");
-    showError('An error occurred while loading the necessary libraries. Please try again later.');
-    return;
+  try {
+    await initPage();
+  } catch (error) {
+    console.error("Error during page initialization:", error);
+    showError('An error occurred while initializing the page. Please try again later.');
   }
-  if (typeof cbor === 'undefined') {
-    console.error("cbor is not defined. Make sure the CBOR library is properly loaded.");
-    showError('An error occurred while loading the necessary libraries. Please try again later.');
-    return;
-  }
-  initPage();
 });
 
 // Log any errors that occur during script execution
@@ -117,23 +130,17 @@ function generateTestCertificate() {
 async function generateAndSignCertificate(paymentIntentId) {
   console.log("Starting generateAndSignCertificate");
   try {
-    // Generate Ed25519 key pair
-    const keyPair = nacl.sign.keyPair();
-    const publicKey = keyPair.publicKey;
-    const privateKey = keyPair.secretKey;
+    // Generate key pair using WebAssembly
+    const keyPairPtr = wasmModule.generate_keypair();
+    const publicKey = new Uint8Array(wasmModule.memory.buffer, wasmModule.get_public_key(keyPairPtr), 32);
+    const privateKey = new Uint8Array(wasmModule.memory.buffer, wasmModule.get_private_key(keyPairPtr), 64);
     console.log("Key pair generated");
 
-    const blindingFactor = nacl.randomBytes(32);
-    console.log("Blinding factor generated:", bufferToBase64(blindingFactor));
-
-    // Convert the public key to a curve point
-    const publicKeyPoint = nacl.scalarMult.base(publicKey);
-
-    // Blind the public key (message)
-    const blindedPublicKey = nacl.scalarMult(blindingFactor, publicKeyPoint);
+    // Generate blinding factor and blind the public key
+    const blindingFactorPtr = wasmModule.generate_blinding_factor();
+    const blindedPublicKeyPtr = wasmModule.blind_public_key(keyPairPtr, blindingFactorPtr);
+    const blindedPublicKey = new Uint8Array(wasmModule.memory.buffer, blindedPublicKeyPtr, 32);
     console.log("Public key blinded");
-    console.log("Original public key:", bufferToBase64(publicKey));
-    console.log("Blinded public key:", bufferToBase64(blindedPublicKey));
 
     // Send blinded public key to server for signing
     console.log("Sending request to server");
@@ -181,54 +188,23 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.log("Blind signature received");
     const blindSignature = base64ToBuffer(data.blind_signature);
 
-    // Calculate the modular multiplicative inverse of the blinding factor
-    const blindingFactorInverse = nacl.scalarMult.base(blindingFactor);
-    console.log("Blinding factor:", bufferToBase64(blindingFactor));
-    console.log("Blinding factor inverse:", bufferToBase64(blindingFactorInverse));
-    console.log("Blinding factor inverse length:", blindingFactorInverse.length);
-    console.log("Blind signature:", bufferToBase64(blindSignature));
-    console.log("Blinding factor length:", blindingFactor.length);
-    console.log("Blind signature length:", blindSignature.length);
-
-    // The blind signature is now a 96-byte combined signature
-    const receivedCombinedSignature = blindSignature;
-
-    // Extract the signature and nonce from the combined data
-    const signatureLength = receivedCombinedSignature.length - 32;
-    const extractedSignature = receivedCombinedSignature.slice(0, signatureLength);
-    const nonce = receivedCombinedSignature.slice(signatureLength);
-
-    console.log("Extracted signature length:", extractedSignature.length);
-    console.log("Nonce length:", nonce.length);
-
-    // Unblind the signature
-    if (blindingFactorInverse.length !== 32) {
-        throw new Error(`Invalid size for unblinding: blindingFactorInverse length = ${blindingFactorInverse.length}`);
-    }
-    
-    // Unblind the signature using scalar multiplication
-    const unblindedSignature = new Uint8Array(64);
-    for (let i = 0; i < 64; i++) {
-        unblindedSignature[i] = extractedSignature[i] ^ blindingFactorInverse[i % 32];
-    }
-
-    // Combine the unblinded signature and nonce
-    const finalCombinedSignature = new Uint8Array(unblindedSignature.length + nonce.length);
-    finalCombinedSignature.set(unblindedSignature);
-    finalCombinedSignature.set(nonce, unblindedSignature.length);
+    // Unblind the signature using WebAssembly
+    const blindSignaturePtr = wasmModule.copy_array_to_wasm(blindSignature);
+    const unblindedSignaturePtr = wasmModule.unblind_signature(blindSignaturePtr, blindingFactorPtr);
+    const unblindedSignature = new Uint8Array(wasmModule.memory.buffer, unblindedSignaturePtr, 64);
     console.log("Signature unblinded");
-    console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
-
-    // Ensure the unblinded signature is 64 bytes long
-    if (unblindedSignature.length !== 64) {
-        throw new Error(`Invalid unblinded signature length: ${unblindedSignature.length}`);
-    }
 
     console.log("Calling displayCertificate");
     displayCertificate(publicKey, privateKey, unblindedSignature, data.delegate_info);
   } catch (error) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
+  } finally {
+    // Clean up WebAssembly memory
+    wasmModule.free_keypair(keyPairPtr);
+    wasmModule.free_blinding_factor(blindingFactorPtr);
+    wasmModule.free_blinded_public_key(blindedPublicKeyPtr);
+    wasmModule.free_unblinded_signature(unblindedSignaturePtr);
   }
 }
 

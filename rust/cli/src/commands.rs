@@ -10,9 +10,10 @@ use log::info;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
+use rand_core::OsRng;
 
 pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i32 {
-    let (signing_key, verifying_key) = match create_keypair() {
+    let (signing_key, verifying_key) = match create_keypair(&mut OsRng) {
         Ok(keypair) => keypair,
         Err(e) => {
             eprintln!("{} to create keypair: {}", "Failed".red(), e);
@@ -226,7 +227,7 @@ pub fn verify_ghostkey_cmd(
     master_verifying_key: &VerifyingKey,
     ghost_certificate: &GhostkeyCertificate,
 ) -> i32 {
-    match ghost_certificate.verify(&Some(master_verifying_key.clone())) {
+    match ghost_certificate.verify(&master_verifying_key.clone()) {
         Ok(info) => {
             println!("Ghost certificate {}", "verified".green());
             println!("Info: {}", info.blue());

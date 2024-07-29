@@ -11,7 +11,7 @@ use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
 use crate::delegates::get_delegate;
-use crate::handle_sign_cert::{CertificateError, DelegateInfo, sign_certificate, SignCertificateRequest, SignCertificateResponse};
+use crate::handle_sign_cert::{CertificateError, sign_certificate, SignCertificateRequest, SignCertificateResponse};
 
 pub struct CORS;
 
