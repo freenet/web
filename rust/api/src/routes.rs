@@ -243,7 +243,7 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     
     info!("Payment intent created successfully");
     
-    let (delegate_certificate, _) =  get_delegate(request.amount as u64);
+    let (delegate_certificate, _) =  get_delegate(request.amount as u64).map_err(|e| DonationError::OtherError(e.to_string()))?;
     
     match intent.client_secret {
         Some(secret) => {

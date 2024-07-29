@@ -86,7 +86,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     let blinded_ghostkey = BlindedMessage::from_base64(&request.blinded_ghostkey_base64)
         .map_err(|e| {
             log::error!("Error in from_base64: {:?}", e);
-            CertificateError::Base64Error(e)
+            CertificateError::Base64Error(base64::DecodeError::from(e))
         })?;
 
     let amount = pi.amount as u64;
@@ -97,6 +97,10 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
         })?;
 
     Ok(SignCertificateResponse {
-        blind_signature_base64: blind_signature.to_base64(),
+        blind_signature_base64: blind_signature.to_base64().map_err(|e| CertificateError::Base64Error(base64::DecodeError::from(e)))?,
+        delegate_info: DelegateInfo {
+            certificate: delegate_certificate.to_base64().map_err(|e| CertificateError::Base64Error(base64::DecodeError::from(e)))?,
+            amount: delegate_certificate.payload.amount,
+        },
     })
 }
