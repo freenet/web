@@ -141,7 +141,6 @@ impl GhostkeyCertificate {
                 verifying_key: ghost_verifying_key.clone(),
                 signature: unblinded_rsa_sign(&delegate_keypair, &ghost_verifying_key.to_bytes())
                     .unwrap(),
-                //   signature: Signature::from(sign_with_hash(&delegate_signing_key, &ghost_verifying_key).unwrap()),
             },
             ghost_signing_key.clone(),
         )
