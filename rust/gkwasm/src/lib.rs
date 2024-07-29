@@ -147,5 +147,6 @@ mod tests {
         let verified = ghostkey_certificate.verify(&master_verifying_key);
 
         assert!(verified.is_ok(), "Verification failed: {:?}", verified.unwrap_err());
+        assert_eq!(verified.unwrap(), "Test Delegate");
     }
 }

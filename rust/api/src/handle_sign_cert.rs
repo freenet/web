@@ -24,6 +24,7 @@ pub struct SignCertificateRequest {
 #[derive(Debug, Serialize)]
 pub struct SignCertificateResponse {
     pub blind_signature_base64: String,
+    pub delegate_certificate: String,
 }
 
 pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, CertificateError> {
