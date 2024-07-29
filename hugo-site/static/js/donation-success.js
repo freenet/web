@@ -159,24 +159,22 @@ async function generateAndSignCertificate(paymentIntentId) {
         credentials: 'include'
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Server response error:', response.status, errorText);
-        if (response.status === 400 && errorText.includes("Payment method is missing")) {
-          showError('Payment method is missing. Please return to the donation page and try again.');
-          return;
-        }
-        throw new Error(`Server error: ${response.status} - ${errorText}`);
-      }
-
       console.log("Received response from server");
       data = await response.json();
       console.log("Server response data:", data);
-      if (!data.blind_signature) {
-        if (data.message === "CERTIFICATE_ALREADY_SIGNED") {
-          showError('Certificate already signed for this payment.');
-          return;
+
+      if (!response.ok) {
+        if (data.error) {
+          console.error('Server response error:', data.status, data.error);
+          showError(data.error);
+        } else {
+          console.error('Server response error:', response.status);
+          showError('An unexpected error occurred. Please try again later.');
         }
+        return;
+      }
+
+      if (!data.blind_signature) {
         throw new Error('No blind signature received from server');
       }
     } catch (error) {

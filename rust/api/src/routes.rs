@@ -9,6 +9,14 @@ use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
+use rocket::http::Status;
+use rocket::serde::json::Json;
+
+#[derive(Serialize)]
+struct ErrorResponse {
+    error: String,
+    status: u16,
+}
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
 use crate::delegates::get_delegate;
 use crate::handle_sign_cert::{CertificateError, sign_certificate, SignCertificateRequest, SignCertificateResponse};
@@ -93,38 +101,39 @@ fn get_message() -> Json<Message> {
 }
 
 #[post("/sign-certificate", data = "<request>")]
-pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Result<Json<SignCertificateResponse>, Status> {
+pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Result<Json<SignCertificateResponse>, Json<ErrorResponse>> {
     info!("Received sign-certificate request: {:?}", request);
     match sign_certificate(request.into_inner()).await {
         Ok(response) => {
             info!("Certificate signed successfully");
-            let json_response = serde_json::to_string(&response).unwrap_or_else(|e| {
-                error!("Failed to serialize response: {:?}", e);
-                "{}".to_string()
-            });
-            info!("Sending response: {}", json_response);
             Ok(Json(response))
         },
         Err(e) => {
             error!("Error signing certificate: {:?}", e);
             match e {
                 CertificateError::PaymentNotSuccessful => {
-                    error!("Payment not successful. Please check the Stripe dashboard for more details.");
-                    Err(Status::BadRequest)
+                    Err(Json(ErrorResponse {
+                        error: "Payment not successful. Please check your payment details and try again.".to_string(),
+                        status: Status::BadRequest.code,
+                    }))
                 },
                 CertificateError::CertificateAlreadySigned => {
-                    info!("Certificate already signed");
-                    Ok(Json(SignCertificateResponse {
-                        blind_signature_base64: String::new(),
+                    Err(Json(ErrorResponse {
+                        error: "Certificate has already been signed for this payment.".to_string(),
+                        status: Status::Conflict.code,
                     }))
                 },
                 CertificateError::KeyError(msg) => {
-                    error!("Key error: {}", msg);
-                    Err(Status::InternalServerError)
+                    Err(Json(ErrorResponse {
+                        error: format!("Key error: {}", msg),
+                        status: Status::InternalServerError.code,
+                    }))
                 },
                 _ => {
-                    error!("Unexpected error: {:?}", e);
-                    Err(Status::InternalServerError)
+                    Err(Json(ErrorResponse {
+                        error: "An unexpected error occurred. Please try again later.".to_string(),
+                        status: Status::InternalServerError.code,
+                    }))
                 }
             }
         },
