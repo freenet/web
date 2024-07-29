@@ -9,8 +9,6 @@ use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
-use rocket::http::Status;
-use rocket::serde::json::Json;
 
 #[derive(Serialize)]
 struct ErrorResponse {
