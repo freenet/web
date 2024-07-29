@@ -248,7 +248,7 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
             Ok(Json(DonationResponse {
                 client_secret: secret,
                 payment_intent_id: intent.id.to_string(),
-                delegate_base64: delegate_certificate.to_base64(),
+                delegate_base64: delegate_certificate.to_armoured_string().map_err(|e| DonationError::OtherError(e.to_string()))?,
             }))
         },
         None => {

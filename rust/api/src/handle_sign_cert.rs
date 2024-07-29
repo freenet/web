@@ -6,6 +6,8 @@ use rocket::serde::{Deserialize, Serialize};
 use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 
 use gklib::armorable::Armorable;
+use gklib::delegate_certificate::DelegateCertificate;
+use gklib::delegate_certificate::DelegateCertificate;
 
 use crate::delegates::sign_with_delegate_key;
 pub use crate::errors::CertificateError;
@@ -20,6 +22,7 @@ pub struct SignCertificateRequest {
 pub struct SignCertificateResponse {
     pub blind_signature_base64: String,
     pub delegate_certificate: String,
+    pub amount: u64,
 }
 
 pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCertificateResponse, CertificateError> {
@@ -91,11 +94,11 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
             e
         })?;
 
+    let (delegate_certificate, _) = get_delegate(amount)?;
+    
     Ok(SignCertificateResponse {
-        blind_signature_base64: blind_signature.to_base64().map_err(|e| CertificateError::Base64Error(base64::DecodeError::from(e)))?,
-        delegate_info: DelegateInfo {
-            certificate: delegate_certificate.to_base64().map_err(|e| CertificateError::Base64Error(base64::DecodeError::from(e)))?,
-            amount: delegate_certificate.payload.amount,
-        },
+        blind_signature_base64: blind_signature.to_base64().map_err(|e| CertificateError::Base64Error(e.into()))?,
+        delegate_certificate: delegate_certificate.to_armoured_string()?,
+        amount,
     })
 }
