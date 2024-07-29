@@ -1,15 +1,10 @@
 use std::collections::HashMap;
-use std::error::Error as StdError;
 use std::str::FromStr;
 
-use base64::Engine as _;
-use base64::Engine;
 use blind_rsa_signatures::BlindedMessage;
 use rocket::serde::{Deserialize, Serialize};
-use sha2::Digest;
 use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 
-use gklib::armorable::*;
 use gklib::armorable::Armorable;
 
 use crate::delegates::sign_with_delegate_key;
