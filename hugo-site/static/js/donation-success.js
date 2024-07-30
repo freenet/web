@@ -126,40 +126,18 @@ function generateTestCertificate() {
 async function generateAndSignCertificate(paymentIntentId) {
   console.log("Starting generateAndSignCertificate");
   try {
-    // First, get the delegate certificate from the server
-    console.log("Fetching delegate certificate");
-    let delegateResponse;
-    try {
-      delegateResponse = await fetch('/get-delegate-certificate', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ payment_intent_id: paymentIntentId }),
-        credentials: 'same-origin'
-      });
-    } catch (error) {
-      console.error("Network error when fetching delegate certificate:", error);
-      throw new Error(`Network error: ${error.message}`);
+    // Retrieve the delegate certificate from localStorage
+    console.log("Retrieving delegate certificate from localStorage");
+    const delegateCertificateBase64 = localStorage.getItem('delegate_base64');
+    if (!delegateCertificateBase64) {
+      throw new Error('Delegate certificate not found in localStorage');
     }
-
-    if (!delegateResponse.ok) {
-      const errorText = await delegateResponse.text();
-      console.error("Server error when fetching delegate certificate:", errorText);
-      throw new Error(`Failed to fetch delegate certificate: ${delegateResponse.status} - ${errorText}`);
-    }
-
-    const delegateData = await delegateResponse.json();
-    console.log("Delegate certificate received");
-
-    if (!delegateData.delegate_certificate_base64) {
-      throw new Error('Invalid delegate certificate data received from server');
-    }
+    console.log("Delegate certificate retrieved from localStorage");
 
     // Generate key pair and blind the public key using WebAssembly
     console.log("Generating key pair and blinding public key");
     const seed = crypto.getRandomValues(new Uint8Array(32));
-    const result = wasmModule.wasm_generate_keypair_and_blind(delegateData.delegate_certificate_base64, seed);
+    const result = wasmModule.wasm_generate_keypair_and_blind(delegateCertificateBase64, seed);
     
     if (typeof result === 'string') {
       throw new Error(result); // This is an error message
