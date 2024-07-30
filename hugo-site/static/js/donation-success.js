@@ -126,53 +126,33 @@ function generateTestCertificate() {
 async function generateAndSignCertificate(paymentIntentId) {
   console.log("Starting generateAndSignCertificate");
   try {
-    // Send request to server to get delegate certificate and sign blinded public key
-    console.log("Sending request to server");
-    let data;
-    try {
-      const response = await fetch('http://127.0.0.1:8000/sign-certificate', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Origin': window.location.origin
-        },
-        body: JSON.stringify({ 
-          payment_intent_id: paymentIntentId, 
-          blinded_public_key: blindedPublicKey
-        }),
-        credentials: 'include'
-      });
+    // First, get the delegate certificate from the server
+    console.log("Fetching delegate certificate");
+    const delegateResponse = await fetch('http://127.0.0.1:8000/get-delegate-certificate', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Origin': window.location.origin
+      },
+      body: JSON.stringify({ payment_intent_id: paymentIntentId }),
+      credentials: 'include'
+    });
 
-      console.log("Received response from server");
-      data = await response.json();
-      console.log("Server response data:", data);
-
-      if (!response.ok) {
-        if (data.error) {
-          console.error('Server response error:', data.status, data.error);
-          showError(data.error);
-        } else {
-          console.error('Server response error:', response.status);
-          showError('An unexpected error occurred. Please try again later.');
-        }
-        return;
-      }
-
-      if (!data.blind_signature_base64 || !data.delegate_info || !data.delegate_info.certificate_base64) {
-        throw new Error('Invalid data received from server');
-      }
-    } catch (error) {
-      console.error("Error in server communication:", error);
-      showError(`Error communicating with server: ${error.message}`);
-      return;
+    if (!delegateResponse.ok) {
+      throw new Error(`Failed to fetch delegate certificate: ${delegateResponse.status}`);
     }
 
-    console.log("Server data received");
+    const delegateData = await delegateResponse.json();
+    console.log("Delegate certificate received");
+
+    if (!delegateData.delegate_certificate_base64) {
+      throw new Error('Invalid delegate certificate data received from server');
+    }
 
     // Generate key pair and blind the public key using WebAssembly
+    console.log("Generating key pair and blinding public key");
     const seed = crypto.getRandomValues(new Uint8Array(32));
-    const delegateCertificateBase64 = data.delegate_info.certificate_base64;
-    const result = wasmModule.wasm_generate_keypair_and_blind(delegateCertificateBase64, seed);
+    const result = wasmModule.wasm_generate_keypair_and_blind(delegateData.delegate_certificate_base64, seed);
     
     if (typeof result === 'string') {
       throw new Error(result); // This is an error message
@@ -181,12 +161,41 @@ async function generateAndSignCertificate(paymentIntentId) {
     const publicKey = result.ec_verifying_key;
     const privateKey = result.ec_signing_key;
     const blindingSecret = result.blinding_secret;
+    const blindedPublicKey = result.blinded_signing_key;
     console.log("Key pair generated and public key blinded");
 
+    // Now send the blinded public key to the server for signing
+    console.log("Sending blinded public key for signing");
+    const signResponse = await fetch('http://127.0.0.1:8000/sign-certificate', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Origin': window.location.origin
+      },
+      body: JSON.stringify({ 
+        payment_intent_id: paymentIntentId, 
+        blinded_public_key: blindedPublicKey
+      }),
+      credentials: 'include'
+    });
+
+    if (!signResponse.ok) {
+      const errorData = await signResponse.json();
+      throw new Error(errorData.error || `Server responded with status: ${signResponse.status}`);
+    }
+
+    const signData = await signResponse.json();
+    console.log("Received signed blinded public key");
+
+    if (!signData.blind_signature_base64) {
+      throw new Error('Invalid signing data received from server');
+    }
+
     // Generate the Ghostkey certificate using WebAssembly
+    console.log("Generating Ghostkey certificate");
     const ghostkeyCertificateBase64 = wasmModule.wasm_generate_ghostkey_certificate(
-      delegateCertificateBase64,
-      data.blind_signature_base64,
+      delegateData.delegate_certificate_base64,
+      signData.blind_signature_base64,
       blindingSecret,
       publicKey
     );
@@ -196,7 +205,7 @@ async function generateAndSignCertificate(paymentIntentId) {
     }
 
     console.log("Ghostkey certificate generated");
-    displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64, data.delegate_info);
+    displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64, delegateData.delegate_info);
   } catch (error) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
