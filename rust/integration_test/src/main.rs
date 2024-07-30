@@ -253,7 +253,7 @@ async fn start_api(temp_dir: &std::path::Path) -> Result<Child> {
     let delegate_dir = temp_dir.join("delegates");
     println!("Starting API with delegate_dir: {}", delegate_dir.display());
     let mut child = ProcessCommand::new("cargo")
-        .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", delegate_dir])
+        .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", delegate_dir.to_str().unwrap()])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
