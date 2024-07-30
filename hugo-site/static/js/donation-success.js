@@ -130,17 +130,20 @@ function generateTestCertificate() {
 async function generateAndSignCertificate(paymentIntentId) {
   console.log("Starting generateAndSignCertificate");
   try {
-    // Generate key pair using WebAssembly
-    const keyPairPtr = wasmModule.generate_keypair();
-    const publicKey = new Uint8Array(wasmModule.memory.buffer, wasmModule.get_public_key(keyPairPtr), 32);
-    const privateKey = new Uint8Array(wasmModule.memory.buffer, wasmModule.get_private_key(keyPairPtr), 64);
-    console.log("Key pair generated");
+    // Generate key pair and blind the public key using WebAssembly
+    const seed = crypto.getRandomValues(new Uint8Array(32));
+    const delegateCertificateBase64 = data.delegate_info.certificate_base64;
+    const result = wasmModule.wasm_generate_keypair_and_blind(delegateCertificateBase64, seed);
+    
+    if (typeof result === 'string') {
+      throw new Error(result); // This is an error message
+    }
 
-    // Generate blinding factor and blind the public key
-    const blindingFactorPtr = wasmModule.generate_blinding_factor();
-    const blindedPublicKeyPtr = wasmModule.blind_public_key(keyPairPtr, blindingFactorPtr);
-    const blindedPublicKey = new Uint8Array(wasmModule.memory.buffer, blindedPublicKeyPtr, 32);
-    console.log("Public key blinded");
+    const publicKey = base64ToBuffer(result.ec_verifying_key);
+    const privateKey = base64ToBuffer(result.ec_signing_key);
+    const blindedPublicKey = base64ToBuffer(result.blinded_signing_key);
+    const blindingSecret = result.blinding_secret;
+    console.log("Key pair generated and public key blinded");
 
     // Send blinded public key to server for signing
     console.log("Sending request to server");
@@ -186,80 +189,54 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.log("Blind signature received");
     const blindSignature = base64ToBuffer(data.blind_signature_base64);
 
-    // Unblind the signature using WebAssembly
-    const unblindedSignature = wasmModule.unblind_signature(blindSignature, blindingFactorPtr);
-    console.log("Signature unblinded");
+    // Generate the Ghostkey certificate using WebAssembly
+    const ghostkeyCertificateBase64 = wasmModule.wasm_generate_ghostkey_certificate(
+      delegateCertificateBase64,
+      data.blind_signature_base64,
+      blindingSecret,
+      result.ec_verifying_key
+    );
 
-    console.log("Calling displayCertificate");
-    displayCertificate(publicKey, privateKey, unblindedSignature, data.delegate_info);
+    if (typeof ghostkeyCertificateBase64 === 'string' && ghostkeyCertificateBase64.startsWith('Error:')) {
+      throw new Error(ghostkeyCertificateBase64);
+    }
+
+    console.log("Ghostkey certificate generated");
+    displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64, data.delegate_info);
   } catch (error) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
-  } finally {
-    // Clean up WebAssembly memory
-    wasmModule.free_keypair(keyPairPtr);
-    wasmModule.free_blinding_factor(blindingFactorPtr);
-    wasmModule.free_blinded_public_key(blindedPublicKeyPtr);
   }
 }
 
-function displayCertificate(publicKey, privateKey, unblindedSignature, delegateInfo) {
+function displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64, delegateInfo) {
   console.log("Displaying certificate");
   try {
-    if (!delegateInfo || !delegateInfo.certificate_base64) {
-      throw new Error("Delegate certificate is missing");
+    if (!ghostkeyCertificateBase64) {
+      throw new Error("Ghostkey certificate is missing");
     }
 
-    console.log("Delegate certificate:", delegateInfo.certificate_base64);
+    console.log("Ghostkey certificate:", ghostkeyCertificateBase64);
     console.log("Public key:", bufferToBase64(publicKey));
-    console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
     console.log("Delegate info:", delegateInfo);
 
-    let ghostKeyCertificate, serializedCertificate, base64Certificate, formattedOutput;
-
-    try {
-      const decodedDelegateCertificate = base64ToBuffer(delegateInfo.certificate_base64);
-      console.log("Decoded delegate certificate:", decodedDelegateCertificate);
-      console.log("Decoded delegate certificate type:", Object.prototype.toString.call(decodedDelegateCertificate));
-      console.log("Decoded delegate certificate length:", decodedDelegateCertificate.length);
-
-      // Create the GhostkeyCertificate object as a struct
-      ghostKeyCertificate = {
-          delegate : decodedDelegateCertificate,
-          verifying_key : Array.from(new Uint8Array(publicKey)),
-          signature : unblindedSignature };
-
-      console.log("Ghost key certificate object created:", ghostKeyCertificate);
-
-      // Serialize the GhostkeyCertificate using CBOR
-      serializedCertificate = cbor.encode(ghostKeyCertificate);
-      console.log("GhostkeyCertificate serialized:", serializedCertificate);
-
-      // Convert the serialized certificate to base64
-      base64Certificate = bufferToBase64(new Uint8Array(serializedCertificate));
-      console.log("Serialized certificate converted to base64:", base64Certificate);
-
-      // Format the certificate output
-      const formattedCertificate = `-----BEGIN GHOSTKEY CERTIFICATE-----
-${wrapBase64(base64Certificate, 64)}
+    // Format the certificate output
+    const formattedCertificate = `-----BEGIN GHOSTKEY CERTIFICATE-----
+${wrapBase64(ghostkeyCertificateBase64, 64)}
 -----END GHOSTKEY CERTIFICATE-----`;
 
-      // Convert the ghost signing key (privateKey) to base64
-      const base64SigningKey = bufferToBase64(privateKey);
+    // Convert the ghost signing key (privateKey) to base64
+    const base64SigningKey = bufferToBase64(privateKey);
 
-      // Format the ghost signing key output
-      const formattedSigningKey = `-----BEGIN GHOST KEY-----
+    // Format the ghost signing key output
+    const formattedSigningKey = `-----BEGIN GHOST KEY-----
 ${wrapBase64(base64SigningKey, 64)}
 -----END GHOST KEY-----`;
 
-      // Combine the certificate and signing key
-      formattedOutput = `${formattedCertificate}\n\n${formattedSigningKey}`;
+    // Combine the certificate and signing key
+    const formattedOutput = `${formattedCertificate}\n\n${formattedSigningKey}`;
 
-      console.log("Ghost Key Certificate and Signing Key created successfully");
-    } catch (encodingError) {
-      console.error("Error in GhostKey encoding:", encodingError);
-      throw new Error(`GhostKey encoding failed: ${encodingError.message}`);
-    }
+    console.log("Ghost Key Certificate and Signing Key created successfully");
     
     const certificateSection = document.getElementById('certificateSection');
     const certificateInfo = document.getElementById('certificate-info');
