@@ -206,11 +206,11 @@ async function generateAndSignCertificate(paymentIntentId) {
 function displayCertificate(publicKey, privateKey, unblindedSignature, delegateInfo) {
   console.log("Displaying certificate");
   try {
-    if (!delegateInfo || !delegateInfo.certificate) {
+    if (!delegateInfo || !delegateInfo.certificate_base64) {
       throw new Error("Delegate certificate is missing");
     }
 
-    console.log("Delegate certificate:", delegateInfo.certificate);
+    console.log("Delegate certificate:", delegateInfo.certificate_base64);
     console.log("Public key:", bufferToBase64(publicKey));
     console.log("Unblinded signature:", bufferToBase64(unblindedSignature));
     console.log("Delegate info:", delegateInfo);
@@ -218,7 +218,7 @@ function displayCertificate(publicKey, privateKey, unblindedSignature, delegateI
     let ghostKeyCertificate, serializedCertificate, base64Certificate, formattedOutput;
 
     try {
-      const decodedDelegateCertificate = base64ToBuffer(delegateInfo.certificate);
+      const decodedDelegateCertificate = base64ToBuffer(delegateInfo.certificate_base64);
       console.log("Decoded delegate certificate:", decodedDelegateCertificate);
       console.log("Decoded delegate certificate type:", Object.prototype.toString.call(decodedDelegateCertificate));
       console.log("Decoded delegate certificate length:", decodedDelegateCertificate.length);

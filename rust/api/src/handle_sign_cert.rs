@@ -19,7 +19,7 @@ pub struct SignCertificateRequest {
 #[derive(Debug, Serialize)]
 pub struct SignCertificateResponse {
     pub blind_signature_base64: String,
-    pub delegate_certificate: String,
+    pub delegate_certificate_base64: String,
     pub amount: u64,
 }
 
@@ -96,7 +96,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     
     Ok(SignCertificateResponse {
         blind_signature_base64: blind_signature.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
-        delegate_certificate: delegate_certificate.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
+        delegate_certificate_base64: delegate_certificate.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
         amount,
     })
 }
