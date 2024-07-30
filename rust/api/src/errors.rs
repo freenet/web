@@ -1,4 +1,5 @@
 use serde::de::StdError;
+use gklib::errors::GhostkeyError;
 
 #[derive(Debug)]
 pub enum CertificateError {
@@ -10,7 +11,7 @@ pub enum CertificateError {
     KeyError(String),
     ParseIdError(stripe::ParseIdError),
     MiscError(String),
-    GhostkeyError(gklib::GhostkeyError),
+    GhostkeyError(GhostkeyError),
 }
 
 impl std::fmt::Display for CertificateError {
@@ -24,6 +25,7 @@ impl std::fmt::Display for CertificateError {
             CertificateError::KeyError(e) => write!(f, "Key error: {}", e),
             CertificateError::ParseIdError(e) => write!(f, "Parse ID error: {}", e),
             CertificateError::MiscError(e) => write!(f, "Miscellaneous error: {}", e),
+            CertificateError::GhostkeyError(e) => write!(f, "Ghostkey error: {}", e),
         }
     }
 }
@@ -48,8 +50,8 @@ impl From<stripe::ParseIdError> for CertificateError {
     }
 }
 
-impl From<gklib::GhostkeyError> for CertificateError {
-    fn from(error: gklib::GhostkeyError) -> Self {
+impl From<GhostkeyError> for CertificateError {
+    fn from(error: GhostkeyError) -> Self {
         CertificateError::GhostkeyError(error)
     }
 }

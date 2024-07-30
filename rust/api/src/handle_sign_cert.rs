@@ -6,7 +6,6 @@ use rocket::serde::{Deserialize, Serialize};
 use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 
 use gklib::armorable::Armorable;
-use gklib::delegate_certificate::DelegateCertificate;
 
 use crate::delegates::sign_with_delegate_key;
 pub use crate::errors::CertificateError;
@@ -83,7 +82,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     let blinded_ghostkey = BlindedMessage::from_base64(&request.blinded_ghostkey_base64)
         .map_err(|e| {
             log::error!("Error in from_base64: {:?}", e);
-            CertificateError::Base64Error(e)
+            CertificateError::MiscError(e.to_string())
         })?;
 
     let amount = pi.amount as u64;
