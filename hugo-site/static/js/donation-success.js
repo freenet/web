@@ -9,7 +9,7 @@ function bufferToBase64(buffer) {
 // Load WebAssembly module
 async function loadWasmModule() {
     try {
-        const wasm = await import('/wasm/gkwasm.js');
+        const wasm = await import('/static/wasm/gkwasm.js');
         await wasm.default();
         wasmModule = wasm;
         console.log("WebAssembly module loaded");
