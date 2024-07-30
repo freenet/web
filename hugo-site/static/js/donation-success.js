@@ -94,7 +94,7 @@ async function initPage() {
     generateTestCertificate();
   } else if (paymentIntent) {
     console.log("Payment intent detected:", paymentIntent);
-    generateAndSignCertificate(paymentIntent);
+    await generateAndSignCertificate(paymentIntent);
   } else {
     console.log("No payment intent or test mode detected");
     showError('Payment information not found.');
