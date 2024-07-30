@@ -53,11 +53,17 @@
       }
       const { client_secret: clientSecret, delegate_base64 : delegateBase64 } = data;
 
-      console.log('Storing delegateBase64 in localStorage:', delegateBase64);
+      console.log('Received data from server:', data);
+      console.log('Attempting to store delegateBase64 in localStorage:', delegateBase64);
       
-      alert('Storing delegateBase64 in localStorage');
-      
-      localStorage.setItem('delegate_base64', delegateBase64);
+      if (delegateBase64) {
+        localStorage.setItem('delegate_base64', delegateBase64);
+        console.log('delegateBase64 stored in localStorage');
+        alert('delegateBase64 stored in localStorage: ' + delegateBase64);
+      } else {
+        console.error('delegateBase64 is undefined or null');
+        alert('Error: delegateBase64 is undefined or null');
+      }
 
       const appearance = {
         theme: 'stripe',
