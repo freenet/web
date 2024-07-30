@@ -32,10 +32,10 @@ async fn run() -> Result<()> {
     println!("Starting integration test...");
     let headless = parse_arguments();
     let temp_dir = setup_environment().await?;
-    let (mut hugo_handle, mut api_handle, chromedriver_handle) = start_services(temp_dir).await?;
+    let (mut hugo_handle, mut api_handle, chromedriver_handle) = start_services(&temp_dir).await?;
 
     // Setup delegate keys
-    setup_delegate_keys(temp_dir).context("Failed to setup delegate keys")?;
+    setup_delegate_keys(&temp_dir).context("Failed to setup delegate keys")?;
 
     // Run the browser test
     let result = run_browser_test(headless, &temp_dir).await;
@@ -67,7 +67,7 @@ async fn setup_environment() -> Result<std::path::PathBuf> {
 }
 
 async fn start_services(temp_dir: &std::path::Path) -> Result<(Child, Child, Option<Child>)> {
-    let mut chromedriver_handle = start_chromedriver_if_needed().await?;
+    let chromedriver_handle = start_chromedriver_if_needed().await?;
     kill_process_if_running(1313, "Hugo").await?;
     let hugo_handle = start_hugo()?;
     kill_process_if_running(API_PORT, "API").await?;
@@ -250,9 +250,9 @@ fn start_hugo() -> Result<Child> {
 }
 
 async fn start_api(temp_dir: &std::path::Path) -> Result<Child> {
-    let delegate_dir = temp_dir.join("delegates").to_str().unwrap();
-    println!("Starting API with delegate_dir: {}", delegate_dir);
-    let child = ProcessCommand::new("cargo")
+    let delegate_dir = temp_dir.join("delegates");
+    println!("Starting API with delegate_dir: {}", delegate_dir.display());
+    let mut child = ProcessCommand::new("cargo")
         .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", delegate_dir])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -368,7 +368,7 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
 
 
 async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<()> {
-    let temp_dir = temp_dir.to_path_buf(); // Convert to owned PathBuf
+    let _temp_dir = temp_dir.to_path_buf(); // Convert to owned PathBuf
     use serde_json::json;
     let mut caps = serde_json::map::Map::new();
     let chrome_args = if headless {
@@ -618,7 +618,6 @@ struct CertificateInfo {
 }
 
 fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateInfo> {
-    use base64;
     use std::path::Path;
     use gklib::armorable::*;
 
