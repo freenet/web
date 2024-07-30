@@ -174,7 +174,7 @@ async function generateAndSignCertificate(paymentIntentId) {
         return;
       }
 
-      if (!data.blind_signature) {
+      if (!data.blind_signature_base64) {
         throw new Error('No blind signature received from server');
       }
     } catch (error) {
@@ -184,7 +184,7 @@ async function generateAndSignCertificate(paymentIntentId) {
     }
 
     console.log("Blind signature received");
-    const blindSignature = base64ToBuffer(data.blind_signature);
+    const blindSignature = base64ToBuffer(data.blind_signature_base64);
 
     // Unblind the signature using WebAssembly
     const unblindedSignature = wasmModule.unblind_signature(blindSignature, blindingFactorPtr);
