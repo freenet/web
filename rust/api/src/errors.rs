@@ -10,6 +10,7 @@ pub enum CertificateError {
     KeyError(String),
     ParseIdError(stripe::ParseIdError),
     MiscError(String),
+    GhostkeyError(gklib::GhostkeyError),
 }
 
 impl std::fmt::Display for CertificateError {
@@ -44,5 +45,11 @@ impl From<base64::DecodeError> for CertificateError {
 impl From<stripe::ParseIdError> for CertificateError {
     fn from(error: stripe::ParseIdError) -> Self {
         CertificateError::ParseIdError(error)
+    }
+}
+
+impl From<gklib::GhostkeyError> for CertificateError {
+    fn from(error: gklib::GhostkeyError) -> Self {
+        CertificateError::GhostkeyError(error)
     }
 }

@@ -7,7 +7,6 @@ use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 
 use gklib::armorable::Armorable;
 use gklib::delegate_certificate::DelegateCertificate;
-use gklib::armorable::Armorable;
 
 use crate::delegates::sign_with_delegate_key;
 pub use crate::errors::CertificateError;
@@ -84,7 +83,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     let blinded_ghostkey = BlindedMessage::from_base64(&request.blinded_ghostkey_base64)
         .map_err(|e| {
             log::error!("Error in from_base64: {:?}", e);
-            CertificateError::Base64Error(e.to_string())
+            CertificateError::Base64Error(e)
         })?;
 
     let amount = pi.amount as u64;
@@ -97,8 +96,8 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     let (delegate_certificate, _) = crate::delegates::get_delegate(amount)?;
     
     Ok(SignCertificateResponse {
-        blind_signature_base64: blind_signature.to_base64().map_err(|e| CertificateError::Base64Error(e.to_string()))?,
-        delegate_certificate: delegate_certificate.to_armored_string()?,
+        blind_signature_base64: blind_signature.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
+        delegate_certificate: delegate_certificate.to_armored_string().map_err(|e| CertificateError::MiscError(e.to_string()))?,
         amount,
     })
 }
