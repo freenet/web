@@ -99,9 +99,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
         delegate_certificate_base64: delegate_certificate.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
         amount: amount_cents,
     })
-
-    log::info!("STRIPE_SECRET_KEY found");
-    let client = Client::new(stripe_secret_key);
+}
 
     // Verify payment intent
     let pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await
