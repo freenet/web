@@ -99,7 +99,6 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
         delegate_certificate_base64: delegate_certificate.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
         amount: amount_cents,
     })
-}
 
     // Verify payment intent
     let pi = PaymentIntent::retrieve(&client, &stripe::PaymentIntentId::from_str(&request.payment_intent_id)?, &[]).await
