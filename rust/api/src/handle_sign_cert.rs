@@ -156,11 +156,11 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
             e
         })?;
 
-    let (delegate_certificate, _) = crate::delegates::get_delegate(amount)?;
+    let (delegate_certificate, _) = crate::delegates::get_delegate(amount_cents)?;
     
     Ok(SignCertificateResponse {
         blind_signature_base64: blind_signature.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
         delegate_certificate_base64: delegate_certificate.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
-        amount,
+        amount: amount_cents,
     })
 }
