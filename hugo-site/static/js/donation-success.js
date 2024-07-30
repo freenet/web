@@ -126,6 +126,8 @@ function generateTestCertificate() {
 async function generateAndSignCertificate(paymentIntentId) {
   console.log("Starting generateAndSignCertificate");
   try {
+      const delegateCertificateBase64 = localStorage.getItem('delegate_certificate_base64');
+      
     // Generate key pair and blind the public key using WebAssembly
     console.log("Generating key pair and blinding public key");
     const seed = crypto.getRandomValues(new Uint8Array(32));
