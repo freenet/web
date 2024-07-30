@@ -126,22 +126,7 @@ function generateTestCertificate() {
 async function generateAndSignCertificate(paymentIntentId) {
   console.log("Starting generateAndSignCertificate");
   try {
-    // Generate key pair and blind the public key using WebAssembly
-    const seed = crypto.getRandomValues(new Uint8Array(32));
-    const delegateCertificateBase64 = data.delegate_info.certificate_base64;
-    const result = wasmModule.wasm_generate_keypair_and_blind(delegateCertificateBase64, seed);
-    
-    if (typeof result === 'string') {
-      throw new Error(result); // This is an error message
-    }
-
-    const publicKey = result.ec_verifying_key;
-    const privateKey = result.ec_signing_key;
-    const blindedPublicKey = result.blinded_signing_key;
-    const blindingSecret = result.blinding_secret;
-    console.log("Key pair generated and public key blinded");
-
-    // Send blinded public key to server for signing
+    // Send request to server to get delegate certificate and sign blinded public key
     console.log("Sending request to server");
     let data;
     try {
@@ -173,8 +158,8 @@ async function generateAndSignCertificate(paymentIntentId) {
         return;
       }
 
-      if (!data.blind_signature_base64) {
-        throw new Error('No blind signature received from server');
+      if (!data.blind_signature_base64 || !data.delegate_info || !data.delegate_info.certificate_base64) {
+        throw new Error('Invalid data received from server');
       }
     } catch (error) {
       console.error("Error in server communication:", error);
@@ -182,7 +167,21 @@ async function generateAndSignCertificate(paymentIntentId) {
       return;
     }
 
-    console.log("Blind signature received");
+    console.log("Server data received");
+
+    // Generate key pair and blind the public key using WebAssembly
+    const seed = crypto.getRandomValues(new Uint8Array(32));
+    const delegateCertificateBase64 = data.delegate_info.certificate_base64;
+    const result = wasmModule.wasm_generate_keypair_and_blind(delegateCertificateBase64, seed);
+    
+    if (typeof result === 'string') {
+      throw new Error(result); // This is an error message
+    }
+
+    const publicKey = result.ec_verifying_key;
+    const privateKey = result.ec_signing_key;
+    const blindingSecret = result.blinding_secret;
+    console.log("Key pair generated and public key blinded");
 
     // Generate the Ghostkey certificate using WebAssembly
     const ghostkeyCertificateBase64 = wasmModule.wasm_generate_ghostkey_certificate(
