@@ -12,15 +12,15 @@ function base64ToBuffer(base64) {
 
 // Load WebAssembly module
 async function loadWasmModule() {
-    const response = await fetch('/wasm/gkwasm.wasm');
-    const buffer = await response.arrayBuffer();
-    const module = await WebAssembly.instantiate(buffer, {
-        env: {
-            // Add any required environment functions here
-        }
-    });
-    wasmModule = module.instance.exports;
-    console.log("WebAssembly module loaded");
+    try {
+        const wasm = await import('/wasm/gkwasm.js');
+        await wasm.default('/wasm/gkwasm.wasm');
+        wasmModule = wasm;
+        console.log("WebAssembly module loaded");
+    } catch (error) {
+        console.error("Failed to load WebAssembly module:", error);
+        throw error;
+    }
 }
 
 // Function to check for required elements and log detailed information
