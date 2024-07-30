@@ -115,26 +115,6 @@ fn kill_process(handle: &mut Child, process_name: &str) {
     }
 }
 
-async fn wait_for_api_ready(timeout: Duration) -> bool {
-    let start_time = Instant::now();
-    while start_time.elapsed() < timeout {
-        match reqwest::get("http://localhost:8000/health").await {
-            Ok(response) => {
-                if response.status().is_success() {
-                    println!("API is ready");
-                    return true;
-                }
-            }
-            Err(e) => {
-                println!("Error connecting to API: {}", e);
-            }
-        }
-        println!("API not ready, retrying...");
-        tokio::time::sleep(Duration::from_millis(500)).await;
-    }
-    println!("API failed to become ready within the timeout period");
-    false
-}
 
 fn verify_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: &std::path::Path) -> Result<()> {
     let output = ProcessCommand::new("cargo")
