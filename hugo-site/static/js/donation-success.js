@@ -15,6 +15,11 @@ async function loadWasmModule() {
         console.log("WebAssembly module loaded");
     } catch (error) {
         console.error("Failed to load WebAssembly module:", error);
+        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+            console.error("This might be due to the WASM file not being found or CORS issues.");
+        } else if (error instanceof WebAssembly.CompileError) {
+            console.error("This might be due to the wrong MIME type being served for the WASM file.");
+        }
         throw error;
     }
 }
