@@ -53,6 +53,10 @@
       }
       const { client_secret: clientSecret, delegate_base64 : delegateBase64 } = data;
 
+      console.log('Storing delegateBase64 in localStorage:', delegateBase64);
+      
+      alert('Storing delegateBase64 in localStorage');
+      
       localStorage.setItem('delegate_base64', delegateBase64);
 
       const appearance = {
