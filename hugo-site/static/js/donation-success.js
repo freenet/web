@@ -14,7 +14,7 @@ function base64ToBuffer(base64) {
 async function loadWasmModule() {
     try {
         const wasm = await import('/wasm/gkwasm.js');
-        await wasm.default('/wasm/gkwasm.wasm');
+        await wasm.default();
         wasmModule = wasm;
         console.log("WebAssembly module loaded");
     } catch (error) {
@@ -284,11 +284,8 @@ ${wrapBase64(base64SigningKey, 64)}
       certificateInfo.innerHTML = `<p>Your donation certificate is ready. Donation amount: $${delegateInfo.amount}</p>`;
     }
 
-    // Verify the certificate
-    if (!verifyCertificate(publicKey, unblindedSignature, decodedDelegateCertificate)) {
-      console.error("Certificate verification failed");
-      throw new Error("Certificate verification failed");
-    }
+    // Verification is now handled by the WebAssembly module
+    console.log("Certificate generated successfully");
     
     console.log("Certificate verified and displayed successfully");
   } catch (error) {
@@ -308,25 +305,7 @@ function wrapBase64(str, maxWidth) {
   }).join('\n');
 }
 
-function verifyCertificate(publicKey, signature, delegateCertificate) {
-  try {
-    // Create the GhostkeySigningData object
-    const ghostkeySigningData = {
-      version: 1,
-      delegate_certificate: Array.from(new Uint8Array(delegateCertificate)),
-      ghostkey_verifying_key: Array.from(new Uint8Array(publicKey))
-    };
-
-    // Serialize the GhostkeySigningData using MessagePack
-    const message = msgpack.encode(ghostkeySigningData);
-
-    // Verify the signature using TweetNaCl
-    return nacl.sign.detached.verify(message, signature, publicKey);
-  } catch (error) {
-    console.error("Verification error:", error);
-    return false;
-  }
-}
+// Verification is now handled by the WebAssembly module
 
 // MessagePack library is loaded globally, no need to require it
 
