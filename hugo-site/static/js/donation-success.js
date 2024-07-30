@@ -187,9 +187,7 @@ async function generateAndSignCertificate(paymentIntentId) {
     const blindSignature = base64ToBuffer(data.blind_signature);
 
     // Unblind the signature using WebAssembly
-    const blindSignaturePtr = wasmModule.copy_array_to_wasm(blindSignature);
-    const unblindedSignaturePtr = wasmModule.unblind_signature(blindSignaturePtr, blindingFactorPtr);
-    const unblindedSignature = new Uint8Array(wasmModule.memory.buffer, unblindedSignaturePtr, 64);
+    const unblindedSignature = wasmModule.unblind_signature(blindSignature, blindingFactorPtr);
     console.log("Signature unblinded");
 
     console.log("Calling displayCertificate");
@@ -202,7 +200,6 @@ async function generateAndSignCertificate(paymentIntentId) {
     wasmModule.free_keypair(keyPairPtr);
     wasmModule.free_blinding_factor(blindingFactorPtr);
     wasmModule.free_blinded_public_key(blindedPublicKeyPtr);
-    wasmModule.free_unblinded_signature(unblindedSignaturePtr);
   }
 }
 
