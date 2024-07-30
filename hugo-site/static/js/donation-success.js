@@ -128,18 +128,25 @@ async function generateAndSignCertificate(paymentIntentId) {
   try {
     // First, get the delegate certificate from the server
     console.log("Fetching delegate certificate");
-    const delegateResponse = await fetch('http://127.0.0.1:8000/get-delegate-certificate', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Origin': window.location.origin
-      },
-      body: JSON.stringify({ payment_intent_id: paymentIntentId }),
-      credentials: 'include'
-    });
+    let delegateResponse;
+    try {
+      delegateResponse = await fetch('/get-delegate-certificate', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ payment_intent_id: paymentIntentId }),
+        credentials: 'same-origin'
+      });
+    } catch (error) {
+      console.error("Network error when fetching delegate certificate:", error);
+      throw new Error(`Network error: ${error.message}`);
+    }
 
     if (!delegateResponse.ok) {
-      throw new Error(`Failed to fetch delegate certificate: ${delegateResponse.status}`);
+      const errorText = await delegateResponse.text();
+      console.error("Server error when fetching delegate certificate:", errorText);
+      throw new Error(`Failed to fetch delegate certificate: ${delegateResponse.status} - ${errorText}`);
     }
 
     const delegateData = await delegateResponse.json();
@@ -166,22 +173,28 @@ async function generateAndSignCertificate(paymentIntentId) {
 
     // Now send the blinded public key to the server for signing
     console.log("Sending blinded public key for signing");
-    const signResponse = await fetch('http://127.0.0.1:8000/sign-certificate', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Origin': window.location.origin
-      },
-      body: JSON.stringify({ 
-        payment_intent_id: paymentIntentId, 
-        blinded_public_key: blindedPublicKey
-      }),
-      credentials: 'include'
-    });
+    let signResponse;
+    try {
+      signResponse = await fetch('/sign-certificate', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          payment_intent_id: paymentIntentId, 
+          blinded_public_key: blindedPublicKey
+        }),
+        credentials: 'same-origin'
+      });
+    } catch (error) {
+      console.error("Network error when sending blinded public key for signing:", error);
+      throw new Error(`Network error: ${error.message}`);
+    }
 
     if (!signResponse.ok) {
-      const errorData = await signResponse.json();
-      throw new Error(errorData.error || `Server responded with status: ${signResponse.status}`);
+      const errorText = await signResponse.text();
+      console.error("Server error when sending blinded public key for signing:", errorText);
+      throw new Error(`Failed to sign certificate: ${signResponse.status} - ${errorText}`);
     }
 
     const signData = await signResponse.json();
