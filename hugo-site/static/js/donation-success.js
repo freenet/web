@@ -1,13 +1,9 @@
 // WebAssembly module
 let wasmModule;
 
-// Helper functions for base64 encoding/decoding
+// Helper function for base64 encoding (only used for random seed)
 function bufferToBase64(buffer) {
     return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
-}
-
-function base64ToBuffer(base64) {
-    return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
 }
 
 // Load WebAssembly module
@@ -139,9 +135,9 @@ async function generateAndSignCertificate(paymentIntentId) {
       throw new Error(result); // This is an error message
     }
 
-    const publicKey = base64ToBuffer(result.ec_verifying_key);
-    const privateKey = base64ToBuffer(result.ec_signing_key);
-    const blindedPublicKey = base64ToBuffer(result.blinded_signing_key);
+    const publicKey = result.ec_verifying_key;
+    const privateKey = result.ec_signing_key;
+    const blindedPublicKey = result.blinded_signing_key;
     const blindingSecret = result.blinding_secret;
     console.log("Key pair generated and public key blinded");
 
@@ -157,7 +153,7 @@ async function generateAndSignCertificate(paymentIntentId) {
         },
         body: JSON.stringify({ 
           payment_intent_id: paymentIntentId, 
-          blinded_public_key: bufferToBase64(blindedPublicKey)
+          blinded_public_key: blindedPublicKey
         }),
         credentials: 'include'
       });
@@ -187,14 +183,13 @@ async function generateAndSignCertificate(paymentIntentId) {
     }
 
     console.log("Blind signature received");
-    const blindSignature = base64ToBuffer(data.blind_signature_base64);
 
     // Generate the Ghostkey certificate using WebAssembly
     const ghostkeyCertificateBase64 = wasmModule.wasm_generate_ghostkey_certificate(
       delegateCertificateBase64,
       data.blind_signature_base64,
       blindingSecret,
-      result.ec_verifying_key
+      publicKey
     );
 
     if (typeof ghostkeyCertificateBase64 === 'string' && ghostkeyCertificateBase64.startsWith('Error:')) {
@@ -217,7 +212,7 @@ function displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64, de
     }
 
     console.log("Ghostkey certificate:", ghostkeyCertificateBase64);
-    console.log("Public key:", bufferToBase64(publicKey));
+    console.log("Public key:", publicKey);
     console.log("Delegate info:", delegateInfo);
 
     // Format the certificate output
@@ -225,12 +220,9 @@ function displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64, de
 ${wrapBase64(ghostkeyCertificateBase64, 64)}
 -----END GHOSTKEY CERTIFICATE-----`;
 
-    // Convert the ghost signing key (privateKey) to base64
-    const base64SigningKey = bufferToBase64(privateKey);
-
     // Format the ghost signing key output
     const formattedSigningKey = `-----BEGIN GHOST KEY-----
-${wrapBase64(base64SigningKey, 64)}
+${wrapBase64(privateKey, 64)}
 -----END GHOST KEY-----`;
 
     // Combine the certificate and signing key
