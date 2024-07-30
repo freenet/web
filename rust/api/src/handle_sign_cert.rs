@@ -96,7 +96,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     
     Ok(SignCertificateResponse {
         blind_signature_base64: blind_signature.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
-        delegate_certificate: delegate_certificate.to_armored_string().map_err(|e| CertificateError::MiscError(e.to_string()))?,
+        delegate_certificate: delegate_certificate.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
         amount,
     })
 }
