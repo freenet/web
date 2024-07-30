@@ -85,18 +85,20 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
             CertificateError::MiscError(e.to_string())
         })?;
 
-    let amount = pi.amount as u64;
-    let blind_signature = sign_with_delegate_key(&blinded_ghostkey, amount)
+    let amount_cents = pi.amount as u64;
+    let amount_dollars = amount_cents / 100;
+    let blind_signature = sign_with_delegate_key(&blinded_ghostkey, amount_dollars)
         .map_err(|e| {
             log::error!("Error in sign_with_delegate_key: {:?}", e);
             e
         })?;
 
-    let (delegate_certificate, _) = crate::delegates::get_delegate(amount)?;
+    let (delegate_certificate, _) = crate::delegates::get_delegate(amount_dollars)?;
     
     Ok(SignCertificateResponse {
         blind_signature_base64: blind_signature.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
+        // TODO: Shouldn't be needed if this is being stored in localstorage
         delegate_certificate_base64: delegate_certificate.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
-        amount,
+        amount: amount_cents,
     })
 }

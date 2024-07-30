@@ -11,11 +11,12 @@ use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]
-struct ErrorResponse {
+pub struct ErrorResponse {
     error: String,
     status: u16,
 }
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
+use gklib::armorable::Armorable;
 use crate::delegates::get_delegate;
 use crate::handle_sign_cert::{CertificateError, sign_certificate, SignCertificateRequest, SignCertificateResponse};
 
@@ -81,7 +82,7 @@ pub struct DonationRequest {
 pub struct DonationResponse {
     pub client_secret: String,
     pub payment_intent_id: String,
-    pub delegate_base64 : String,
+    pub delegate_certificate_base64: String,
 }
 
 #[get("/")]
@@ -241,14 +242,19 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
     
     info!("Payment intent created successfully");
     
-    let (delegate_certificate, _) =  get_delegate(request.amount as u64).map_err(|e| DonationError::OtherError(e.to_string()))?;
+    let amount_dollars = request.amount / 100;
+    
+    let (delegate_certificate, _) = get_delegate(amount_dollars as u64).map_err(|e| {
+        error!("Error getting delegate: {:?}", e);
+        DonationError::OtherError("Error getting delegate".to_string())
+    })?;
     
     match intent.client_secret {
         Some(secret) => {
             Ok(Json(DonationResponse {
                 client_secret: secret,
                 payment_intent_id: intent.id.to_string(),
-                delegate_base64: delegate_certificate.to_armoured_string().map_err(|e| DonationError::OtherError(e.to_string()))?,
+                delegate_certificate_base64: delegate_certificate.to_base64().unwrap(),
             }))
         },
         None => {

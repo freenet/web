@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use blind_rsa_signatures::{BlindedMessage, BlindSignature, KeyPair as RSAKeyPair, Options, PublicKey as RSAVerifyingKey, SecretKey as RSASigningKey};
+use blind_rsa_signatures::{BlindedMessage, BlindSignature, Options, SecretKey as RSASigningKey};
 use rand_core::OsRng;
 
 use gklib::armorable::*;
@@ -23,12 +23,12 @@ pub(crate) fn get_delegate(amount: u64) -> Result<(DelegateCertificate, RSASigni
     Ok((cert, signing_key))
 }
 
-pub(crate) fn sign_with_delegate_key(blinded_ghostkey: &BlindedMessage, amount: u64) -> Result<BlindSignature, CertificateError> {
-    let (_, delegate_signing_key) = get_delegate(amount)?;
+pub(crate) fn sign_with_delegate_key(blinded_ghostkey: &BlindedMessage, amount_dollars: u64) -> Result<BlindSignature, CertificateError> {
+    let (_, delegate_signing_key) = get_delegate(amount_dollars)?;
 
     let options = Options::default();
 
-    let blind_sig = delegate_signing_key.blind_sign(&mut OsRng, blinded_ghostkey.blind_msg(), &options)
+    let blind_sig = delegate_signing_key.blind_sign(&mut OsRng, blinded_ghostkey, &options)
         .map_err(|e| CertificateError::MiscError(format!("Failed to blind sign: {}", e)))?;
 
     Ok(blind_sig)

@@ -126,14 +126,6 @@ function generateTestCertificate() {
 async function generateAndSignCertificate(paymentIntentId) {
   console.log("Starting generateAndSignCertificate");
   try {
-    // Retrieve the delegate certificate from localStorage
-    console.log("Retrieving delegate certificate from localStorage");
-    const delegateCertificateBase64 = localStorage.getItem('delegate_base64');
-    if (!delegateCertificateBase64) {
-      throw new Error('Delegate certificate not found in localStorage');
-    }
-    console.log("Delegate certificate retrieved from localStorage");
-
     // Generate key pair and blind the public key using WebAssembly
     console.log("Generating key pair and blinding public key");
     const seed = crypto.getRandomValues(new Uint8Array(32));

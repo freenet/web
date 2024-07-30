@@ -34,6 +34,7 @@
   document.addEventListener('DOMContentLoaded', initializeStripe);
 
   async function initializeStripe() {
+      alert('initializeStripe() called');
     try {
       stripe = Stripe('{{ .Site.Params.stripePublishableKey }}');
       const response = await fetch('http://127.0.0.1:8000/create-donation', {
@@ -51,19 +52,11 @@
       if (!data.client_secret) {
         throw new Error('The server response did not include a client secret.');
       }
-      const { client_secret: clientSecret, delegate_base64 : delegateBase64 } = data;
+      const { client_secret: clientSecret, delegate_certificate_base64 : delegateCertBase64 } = data;
 
-      console.log('Received data from server:', data);
-      console.log('Attempting to store delegateBase64 in localStorage:', delegateBase64);
+      localStorage.setItem('delegate_certificate_base64', delegateCertBase64);
       
-      if (delegateBase64) {
-        localStorage.setItem('delegate_base64', delegateBase64);
-        console.log('delegateBase64 stored in localStorage');
-        alert('delegateBase64 stored in localStorage: ' + delegateBase64);
-      } else {
-        console.error('delegateBase64 is undefined or null');
-        alert('Error: delegateBase64 is undefined or null');
-      }
+      console.log('Received data from server:', data);
 
       const appearance = {
         theme: 'stripe',
