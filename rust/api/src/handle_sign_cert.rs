@@ -85,65 +85,6 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
             CertificateError::MiscError(e.to_string())
         })?;
 
-    let amount_cents = pi.amount as u64;
-    let blind_signature = sign_with_delegate_key(&blinded_ghostkey, amount_cents)
-        .map_err(|e| {
-            log::error!("Error in sign_with_delegate_key: {:?}", e);
-            e
-        })?;
-
-    let (delegate_certificate, _) = crate::delegates::get_delegate(amount_cents)?;
-    
-    Ok(SignCertificateResponse {
-        blind_signature_base64: blind_signature.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
-        delegate_certificate_base64: delegate_certificate.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
-        amount: amount_cents,
-    })
-}
-            CertificateError::StripeError(e)
-        })?;
-
-    log::info!("Retrieved PaymentIntent: {:?}", pi);
-    log::info!("PaymentIntent status: {:?}", pi.status);
-
-    match pi.status {
-        PaymentIntentStatus::Succeeded => {
-            // Proceed with certificate signing
-        },
-        PaymentIntentStatus::RequiresPaymentMethod => {
-            log::error!("Payment method is missing. Status: {:?}", pi.status);
-            return Err(CertificateError::PaymentMethodMissing);
-        },
-        _ => {
-            log::error!("Payment not successful. Status: {:?}", pi.status);
-            return Err(CertificateError::PaymentNotSuccessful);
-        }
-    }
-
-    // Check if the certificate has already been signed
-    if pi.metadata.get("certificate_signed").is_some() {
-        log::warn!("Certificate already signed for PaymentIntent: {}", pi.id);
-        return Err(CertificateError::CertificateAlreadySigned);
-    }
-
-    // Mark the payment intent as used for certificate signing
-    let mut metadata = HashMap::new();
-    metadata.insert("certificate_signed".to_string(), "true".to_string());
-    let params = stripe::UpdatePaymentIntent {
-        metadata: Some(metadata),
-        ..Default::default()
-    };
-    PaymentIntent::update(&client, &pi.id, params).await?;
-
-    // Sign the certificate
-    log::info!("Payment intent verified successfully");
-
-    let blinded_ghostkey = BlindedMessage::from_base64(&request.blinded_ghostkey_base64)
-        .map_err(|e| {
-            log::error!("Error in from_base64: {:?}", e);
-            CertificateError::MiscError(e.to_string())
-        })?;
-
     let amount = pi.amount as u64;
     let blind_signature = sign_with_delegate_key(&blinded_ghostkey, amount)
         .map_err(|e| {
@@ -151,11 +92,11 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
             e
         })?;
 
-    let (delegate_certificate, _) = crate::delegates::get_delegate(amount_cents)?;
+    let (delegate_certificate, _) = crate::delegates::get_delegate(amount)?;
     
     Ok(SignCertificateResponse {
         blind_signature_base64: blind_signature.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
         delegate_certificate_base64: delegate_certificate.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
-        amount: amount_cents,
+        amount,
     })
 }
