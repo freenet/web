@@ -31,92 +31,89 @@ async fn main() -> Result<()> {
 
 async fn run() -> Result<()> {
     println!("Starting integration test...");
-    // Parse command line arguments
+    let headless = parse_arguments();
+    let temp_dir = setup_environment().await?;
+    let (mut hugo_handle, mut api_handle, chromedriver_handle) = start_services(&temp_dir).await?;
+
+    // Setup delegate keys
+    setup_delegate_keys(&temp_dir).context("Failed to setup delegate keys")?;
+
+    // Run the browser test
+    let result = run_browser_test(headless, &temp_dir).await;
+
+    // Keep the browser open for debugging, regardless of the test result
+    wait_for_user_input("Test completed. Browser window left open for debugging. Press Enter to close the browser and end the test.");
+
+    // Clean up
+    cleanup_processes(&mut hugo_handle, &mut api_handle, chromedriver_handle).await;
+
+    // Return the result of the browser test
+    println!("Integration test finished. Result: {:?}", result);
+    result
+}
+
+fn parse_arguments() -> bool {
     let matches = ClapCommand::new("Integration Test")
         .arg(Arg::new("headless")
             .long("headless")
             .help("Run browser in headless mode"))
         .get_matches();
+    matches.contains_id("headless")
+}
 
-    let headless = matches.contains_id("headless");
-    let mut chromedriver_handle = None;
+async fn setup_environment() -> Result<std::path::PathBuf> {
+    let temp_dir = env::temp_dir().join("ghostkey_test");
+    fs::create_dir_all(&temp_dir)?;
+    Ok(temp_dir)
+}
+
+async fn start_services(temp_dir: &std::path::Path) -> Result<(Child, Child, Option<Child>)> {
+    let mut chromedriver_handle = start_chromedriver_if_needed().await?;
+    kill_process_if_running(1313, "Hugo").await?;
+    let hugo_handle = start_hugo()?;
+    kill_process_if_running(API_PORT, "API").await?;
+    let api_handle = start_api(temp_dir).await?;
+    Ok((hugo_handle, api_handle, chromedriver_handle))
+}
+
+async fn start_chromedriver_if_needed() -> Result<Option<Child>> {
     if !is_port_in_use(9515) {
-        chromedriver_handle = Some(start_chromedriver()?);
-        tokio::time::sleep(Duration::from_secs(2)).await; // Give ChromeDriver time to start
+        let handle = start_chromedriver()?;
+        tokio::time::sleep(Duration::from_secs(2)).await;
+        Ok(Some(handle))
+    } else {
+        Ok(None)
     }
+}
 
-    // Always attempt to kill Hugo if it's running
-    if is_port_in_use(1313) {
-        println!("Attempting to kill Hugo process on port 1313");
-        kill_process_on_port(1313)?;
+async fn kill_process_if_running(port: u16, process_name: &str) -> Result<()> {
+    if is_port_in_use(port) {
+        println!("Attempting to kill {} process on port {}", process_name, port);
+        kill_process_on_port(port)?;
+        tokio::time::sleep(Duration::from_secs(2)).await;
     }
+    Ok(())
+}
 
-    // Start Hugo
-    let mut hugo_handle = start_hugo()?;
-    println!("Hugo started successfully");
-
-    // Check if API is already running
-    if is_port_in_use(8000) {
-        println!("API is already running on port 8000. Attempting to kill the process...");
-        kill_process_on_port(8000)?;
-        tokio::time::sleep(Duration::from_secs(2)).await; // Give some time for the process to be killed
-    }
-
-    // Start API
-    let delegate_dir = env::temp_dir().join("ghostkey_test").join("delegates").to_str().unwrap().to_string();
-    let mut api_handle = match start_api(&delegate_dir).await {
-        Ok(handle) => {
-            println!("API process started successfully");
-            handle
-        }
-        Err(e) => {
-            eprintln!("Failed to start API process: {}", e);
-            return Err(e.into());
-        }
-    };
-
-    // Wait for the API to be ready
-    println!("Waiting for API to become ready...");
-    if !wait_for_api_ready(Duration::from_secs(5)).await {
-        eprintln!("API failed to become ready within the 5-second timeout period");
-        api_handle.kill().expect("Failed to kill API process");
-        return Err(anyhow::anyhow!("API failed to start within 5 seconds"));
-    }
-    println!("API is ready");
-
-    // Setup delegate keys
-    setup_delegate_keys().context("Failed to setup delegate keys")?;
-
-    // Run the browser test
-    let result = run_browser_test(headless).await;
-
-    // Keep the browser open for debugging, regardless of the test result
-    println!("Test completed. Browser window left open for debugging.");
-    println!("Press Enter to close the browser and end the test.");
+fn wait_for_user_input(message: &str) {
+    println!("{}", message);
     let mut input = String::new();
-    std::io::stdin().read_line(&mut input)?;
+    std::io::stdin().read_line(&mut input).expect("Failed to read line");
+}
 
-    // Clean up
+async fn cleanup_processes(hugo_handle: &mut Child, api_handle: &mut Child, chromedriver_handle: Option<Child>) {
     println!("Cleaning up processes...");
-
-    if let Err(e) = hugo_handle.kill() {
-        eprintln!("Failed to kill Hugo process: {}", e);
-    }
-
-    if let Err(e) = api_handle.kill() {
-        eprintln!("Failed to kill API process: {}", e);
-    }
-
-    // Stop ChromeDriver if we started it
+    kill_process(hugo_handle, "Hugo");
+    kill_process(api_handle, "API");
     if let Some(mut handle) = chromedriver_handle {
-        if let Err(e) = handle.kill() {
-            eprintln!("Failed to kill ChromeDriver process: {}", e);
-        }
+        kill_process(&mut handle, "ChromeDriver");
     }
+}
 
-    // Return the result of the browser test
-    println!("Integration test finished. Result: {:?}", result);
-    result
+fn kill_process(handle: &mut Child, process_name: &str) {
+    if let Err(e) = handle.kill() {
+        eprintln!("Failed to kill {} process: {}", process_name, e);
+    }
 }
 
 async fn wait_for_api_ready(timeout: Duration) -> bool {
@@ -165,22 +162,13 @@ fn verify_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: &s
     }
 }
 
-fn setup_delegate_keys() -> Result<()> {
-    let temp_dir = env::temp_dir().join("ghostkey_test");
+fn setup_delegate_keys(temp_dir: &std::path::Path) -> Result<()> {
     let delegate_dir = temp_dir.join("delegates");
 
     println!("Temporary directory: {:?}", temp_dir);
 
-    // Clean up the temporary directory if it exists
-    if temp_dir.exists() {
-        println!("Removing existing temporary directory");
-        fs::remove_dir_all(&temp_dir)?;
-    }
-    println!("Creating temporary directory");
-    fs::create_dir_all(&temp_dir)?;
-
     // Generate master key
-    let master_key_file = generate_master_key(&temp_dir)?;
+    let master_key_file = generate_master_key(temp_dir)?;
 
     // Generate delegate keys
     generate_delegate_keys(&master_key_file, &delegate_dir)?;
@@ -379,7 +367,7 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
 }
 
 
-async fn run_browser_test(headless: bool) -> Result<()> {
+async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<()> {
     use serde_json::json;
     let mut caps = serde_json::map::Map::new();
     let chrome_args = if headless {
@@ -722,4 +710,73 @@ fn analyze_validation_error(stderr: &str, stdout: &str) -> String {
     } else {
         "An unknown error occurred during ghost key validation. Please check the full error message for more details."
     }.to_string()
+}
+// Helper functions
+
+fn is_port_in_use(port: u16) -> bool {
+    std::net::TcpListener::bind(("127.0.0.1", port)).is_err()
+}
+
+fn kill_process_on_port(port: u16) -> Result<()> {
+    let output = ProcessCommand::new("lsof")
+        .args(&["-t", "-i", &format!(":{}", port)])
+        .output()?;
+    let pid = String::from_utf8(output.stdout)?.trim().to_string();
+    if !pid.is_empty() {
+        ProcessCommand::new("kill").arg(&pid).output()?;
+    }
+    Ok(())
+}
+
+fn start_hugo() -> Result<Child> {
+    ProcessCommand::new("hugo")
+        .args(&["server", "--disableFastRender"])
+        .current_dir("../../hugo-site")
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .context("Failed to start Hugo")
+}
+
+async fn start_api(temp_dir: &std::path::Path) -> Result<Child> {
+    let delegate_dir = temp_dir.join("delegates").to_str().unwrap().to_string();
+    println!("Starting API with delegate_dir: {}", delegate_dir);
+    let mut child = ProcessCommand::new("cargo")
+        .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", &delegate_dir])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .context("Failed to spawn API process")?;
+
+    // Wait for the API to start
+    let start_time = Instant::now();
+    while start_time.elapsed() < API_STARTUP_TIMEOUT {
+        if is_api_ready().await.is_ok() {
+            println!("API started successfully");
+            return Ok(child);
+        }
+        tokio::time::sleep(Duration::from_millis(500)).await;
+    }
+
+    Err(anyhow::anyhow!("API failed to start within the timeout period"))
+}
+
+async fn is_api_ready() -> Result<()> {
+    let client = reqwest::Client::new();
+    client.get(&format!("http://localhost:{}/health", API_PORT))
+        .send()
+        .await
+        .context("Failed to connect to API health endpoint")?
+        .error_for_status()
+        .context("API health check failed")?;
+    Ok(())
+}
+
+fn start_chromedriver() -> Result<Child> {
+    ProcessCommand::new("chromedriver")
+        .arg("--port=9515")
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .context("Failed to start ChromeDriver")
 }
