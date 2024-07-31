@@ -191,7 +191,7 @@ fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std:
                 "--manifest-path",
                 "../cli/Cargo.toml",
                 "--",
-                "generate-delegate-key",
+                "generate-delegate",
                 "--master-key",
                 master_key_file.to_str().unwrap(),
                 "--amount",
