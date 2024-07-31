@@ -10,7 +10,6 @@ use std::fs;
 use std::io::{BufRead, BufReader};
 use ed25519_dalek::VerifyingKey;
 use serde::{Deserialize, Serialize};
-use gklib::armorable::Armorable;
 use gklib::delegate_certificate::DelegateCertificate;
 use gklib::ghostkey_certificate::GhostkeyCertificate;
 
@@ -99,12 +98,6 @@ async fn kill_process_if_running(port: u16, process_name: &str) -> Result<()> {
     Ok(())
 }
 
-fn wait_for_user_input(message: &str) {
-    println!("{}", message);
-    let mut input = String::new();
-    std::io::stdin().read_line(&mut input).expect("Failed to read line");
-}
-
 async fn cleanup_processes(hugo_handle: &mut Child, api_handle: &mut Child, chromedriver_handle: Option<Child>) {
     println!("Cleaning up processes...");
     kill_process(hugo_handle, "Hugo");
@@ -120,31 +113,6 @@ fn kill_process(handle: &mut Child, process_name: &str) {
     }
 }
 
-
-fn verify_ghost_key_certificate(cert_file: &std::path::Path, master_key_file: &std::path::Path) -> Result<()> {
-    let output = ProcessCommand::new("cargo")
-        .args(&[
-            "run",
-            "--manifest-path",
-            "../cli/Cargo.toml",
-            "--",
-            "verify-ghost-key",
-            "--master-verifying-key",
-            master_key_file.to_str().unwrap(),
-            "--ghost-certificate",
-            cert_file.to_str().unwrap(),
-        ])
-        .output()?;
-
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        println!("Ghost key validation failed: {}", stderr);
-        Err(anyhow::anyhow!("Ghost key validation failed"))
-    } else {
-        println!("Ghost key verifyd successfully");
-        Ok(())
-    }
-}
 
 fn setup_delegate_keys(temp_dir: &std::path::Path) -> Result<()> {
     let delegate_dir = temp_dir.join("delegates");
@@ -352,8 +320,8 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
 }
 
 
-async fn run_browser_test(headless: bool, wait_on_failure: bool, visible: bool, temp_dir: &std::path::Path) -> Result<()> {
-    let _temp_dir = temp_dir.to_path_buf(); // Convert to owned PathBuf
+async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool, temp_dir: &std::path::Path) -> Result<()> {
+    let temp_dir = temp_dir.to_path_buf(); // Convert to owned PathBuf
     use serde_json::json;
     let mut caps = serde_json::map::Map::new();
     let chrome_args = if !visible {
@@ -526,38 +494,6 @@ struct CertificateInfo {
     currency: String,
 }
 
-fn inspect_ghost_key_certificate(combined_key_text: &str, master_verifying_key : VerifyingKey) -> Result<String> {
-    use std::path::Path;
-    use gklib::armorable::*;
-
-    println!("Starting ghost key certificate inspection");
-
-    // Extract the ghost key certificate from the combined key
-    let ghost_key_cert_base64 = combined_key_text.lines()
-        .skip_while(|line| !line.starts_with("-----BEGIN GHOSTKEY CERTIFICATE-----"))
-        .take_while(|line| !line.starts_with("-----END GHOSTKEY CERTIFICATE-----"))
-        .filter(|line| !line.starts_with("-----"))
-        .collect::<Vec<&str>>()
-        .join("");
-
-    println!("Extracted base64 ghost key certificate. Length: {}", ghost_key_cert_base64.len());
-
-    let ghostkey_certificate = GhostkeyCertificate::from_armored_string(combined_key_text)?;
-
-    println!("Ghost Key Certificate info: {}", ghostkey_certificate.delegate.payload.info);
-
-    // Load the delegate key from file
-    let delegate_key_path = Path::new("/tmp/ghostkey_test/delegates/delegate_certificate_20.pem");
-    let delegate_certificate = DelegateCertificate::from_file(delegate_key_path)?;
-
-    println!("Loaded delegate key from file. Byte length: {}", delegate_certificate.to_bytes().unwrap().len());
-
-    // Verify the ghost key certificate
-
-    let certificate_info = ghostkey_certificate.verify(&master_verifying_key)?;
-    
-    Ok(certificate_info)
-}
 fn analyze_validation_error(stderr: &str, stdout: &str) -> String {
     if stderr.contains("Signature verification failed") {
         "The ghost key certificate signature is invalid. This could be due to tampering, use of an incorrect master key, or a mismatch between the certificate data and the signature."
