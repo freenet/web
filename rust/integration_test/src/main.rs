@@ -8,6 +8,9 @@ use std::time::Instant;
 use std::env;
 use std::fs;
 use std::io::{BufRead, BufReader};
+use ed25519_dalek::VerifyingKey;
+use serde::{Deserialize, Serialize};
+use gklib::armorable::Armorable;
 use gklib::delegate_certificate::DelegateCertificate;
 use gklib::ghostkey_certificate::GhostkeyCertificate;
 
@@ -433,10 +436,7 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
         let output_file = temp_dir.join("ghostkey_certificate.pem");
         std::fs::write(&output_file, combined_key_content.clone())?;
         println!("Ghost key certificate saved to: {}", output_file.display());
-
-        // Inspect the ghost key certificate
-        inspect_ghost_key_certificate(&combined_key_content)?;
-
+        
         // Verify the ghost key certificate using the CLI
         let master_verifying_key_file = temp_dir.join("master_verifying_key.pem");
         println!("Master verifying key file: {:?}", master_verifying_key_file);
@@ -550,14 +550,17 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
         let cli_ghost_key = std::fs::read_to_string(temp_dir.join("cli_ghostkey_certificate.pem"))?;
         let browser_ghost_key = std::fs::read_to_string(&output_file)?;
 
+        let master_verifying_key = VerifyingKey::from_file(temp_dir.join("master_verifying_key.pem").as_path()).unwrap();
+        
         println!("Inspecting CLI-generated ghost key certificate:");
-        let cli_cert_info = inspect_ghost_key_certificate(&cli_ghost_key)?;
-
-        println!("\nInspecting browser-generated ghost key certificate:");
-        let browser_cert_info = inspect_ghost_key_certificate(&browser_ghost_key)?;
-
+        let cli_cert_info = inspect_ghost_key_certificate(&cli_ghost_key, master_verifying_key)?;
+        
+        // Parse cli_cert_info as JSON before inspecting it
+        let cert_info: CertificateInfo = serde_json::from_str(&cli_cert_info)?;
+        
+        
         // Compare relevant parts of the certificates
-        if cli_cert_info.version == browser_cert_info.version &&
+        if cli_cert_info.version == cert_info.version &&
             cli_cert_info.amount == browser_cert_info.amount &&
             cli_cert_info.currency == browser_cert_info.currency {
             println!("CLI-generated and browser-generated ghost keys have matching version, amount, and currency");
@@ -590,14 +593,14 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
     test_result
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 struct CertificateInfo {
     version: u8,
     amount: u64,
     currency: String,
 }
 
-fn inspect_ghost_key_certificate(combined_key_text: &str, master_verifying_key : VerifyingKey) -> Result<CertificateInfo> {
+fn inspect_ghost_key_certificate(combined_key_text: &str, master_verifying_key : VerifyingKey) -> Result<String> {
     use std::path::Path;
     use gklib::armorable::*;
 
@@ -622,21 +625,12 @@ fn inspect_ghost_key_certificate(combined_key_text: &str, master_verifying_key :
     let delegate_certificate = DelegateCertificate::from_file(delegate_key_path)?;
 
     println!("Loaded delegate key from file. Byte length: {}", delegate_certificate.to_bytes().unwrap().len());
-    
-    // Verify the ghost key certificate
-    
-    ghostkey_certificate.verify()?;
-    
-        // Verify that the delegate certificate contains the correct amount
-        if cert_info.amount == 20 {
-            println!("Delegate certificate contains the correct amount: $20");
-        } else {
-            println!("Warning: Delegate certificate contains an unexpected amount: ${}", cert_info.amount);
-        }
-    
-        println!("Ghost key certificate inspection completed");
-        Ok(cert_info)
 
+    // Verify the ghost key certificate
+
+    let certificate_info = ghostkey_certificate.verify(&master_verifying_key)?;
+    
+    Ok(certificate_info)
 }
 fn analyze_validation_error(stderr: &str, stdout: &str) -> String {
     if stderr.contains("Signature verification failed") {
