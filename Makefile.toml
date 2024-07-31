@@ -95,3 +95,19 @@ script = """
 cd hugo-site
 hugo --minify
 """
+
+[tasks.test]
+description = "Run all tests"
+script = """
+# Run unit tests for each crate
+cd rust/gklib && cargo test
+cd ../gkwasm && cargo test
+cd ../api && cargo test
+cd ../cli && cargo test
+
+# Run ghostkey CLI tests
+./rust/cli/test_ghostkey.sh
+
+# Run integration tests
+cd rust/integration_test && cargo run
+"""
