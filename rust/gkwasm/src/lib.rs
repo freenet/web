@@ -66,7 +66,8 @@ fn generate_ghostkey_certificate_core(
     delegate_certificate_base64: String,
     blinded_signature_base64: String,
     blinding_secret_base64: String,
-    ec_verifying_key_base64: String
+    ec_verifying_key_base64: String,
+    ec_signing_key_base64: String
 ) -> Result<String, String> {
     let blind_signature = BlindSignature::from_base64(&blinded_signature_base64)
         .map_err(|_| "Invalid blinded signature".to_string())?;
@@ -79,6 +80,9 @@ fn generate_ghostkey_certificate_core(
 
     let ec_verifying_key = ed25519_dalek::VerifyingKey::from_base64(&ec_verifying_key_base64)
         .map_err(|_| "Invalid EC verifying key".to_string())?;
+
+    let ec_signing_key = ed25519_dalek::SigningKey::from_base64(&ec_signing_key_base64)
+        .map_err(|_| "Invalid EC signing key".to_string())?;
 
     let verifying_key_bytes = Armorable::to_bytes(&ec_verifying_key)
         .map_err(|_| "Failed to convert verifying key to bytes".to_string())?;
@@ -97,7 +101,12 @@ fn generate_ghostkey_certificate_core(
         signature: unblinded_signature,
     };
     
-    Ok(ghostkey_certificate.to_base64().unwrap())
+    let armored_certificate = ghostkey_certificate.to_armored_string()
+        .map_err(|_| "Failed to armor ghostkey certificate".to_string())?;
+    let armored_signing_key = ec_signing_key.to_armored_string()
+        .map_err(|_| "Failed to armor signing key".to_string())?;
+
+    Ok(format!("{}\n\n{}", armored_certificate, armored_signing_key))
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -106,16 +115,18 @@ pub fn wasm_generate_ghostkey_certificate(
     delegate_certificate_base64: String,
     blinded_signature_base64: String,
     blinding_secret_base64: String,
-    ec_verifying_key_base64: String
+    ec_verifying_key_base64: String,
+    ec_signing_key_base64: String
 ) -> JsValue {
     match generate_ghostkey_certificate_core(
         delegate_certificate_base64,
         blinded_signature_base64,
         blinding_secret_base64,
         ec_verifying_key_base64,
+        ec_signing_key_base64,
     ) {
-        Ok(cert) => JsValue::from_str(&cert),
-        Err(err) => JsValue::from_str(&err),
+        Ok(armored_output) => JsValue::from_str(&armored_output),
+        Err(err) => JsValue::from_str(&format!("Error: {}", err)),
     }
 }
 

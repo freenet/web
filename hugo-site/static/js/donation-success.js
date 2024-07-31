@@ -183,50 +183,31 @@ async function generateAndSignCertificate(paymentIntentId) {
 
     // Generate the Ghostkey certificate using WebAssembly
     console.log("Generating Ghostkey certificate");
-    const ghostkeyCertificateBase64 = wasmModule.wasm_generate_ghostkey_certificate(
-        delegateCertificateBase64,
+    const armoredOutput = wasmModule.wasm_generate_ghostkey_certificate(
+      delegateCertificateBase64,
       signData.blind_signature_base64,
       blindingSecret,
-      publicKey
+      publicKey,
+      privateKey
     );
 
-    if (typeof ghostkeyCertificateBase64 === 'string' && ghostkeyCertificateBase64.startsWith('Error:')) {
-      throw new Error(ghostkeyCertificateBase64);
+    if (typeof armoredOutput === 'string' && armoredOutput.startsWith('Error:')) {
+      throw new Error(armoredOutput);
     }
 
-    console.log("Ghostkey certificate generated");
-    displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64);
+    console.log("Ghostkey certificate and signing key generated");
+    displayCertificate(armoredOutput);
   } catch (error) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
   }
 }
 
-function displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64) {
+function displayCertificate(armoredOutput) {
   console.log("Displaying certificate");
   try {
-    if (!ghostkeyCertificateBase64) {
-      throw new Error("Ghostkey certificate is missing");
-    }
+    console.log("Armored output received");
 
-    console.log("Ghostkey certificate:", ghostkeyCertificateBase64);
-    console.log("Public key:", publicKey);
-
-    // Format the certificate output
-    const formattedCertificate = `-----BEGIN GHOSTKEY_CERTIFICATE-----
-${wrapBase64(ghostkeyCertificateBase64, 64)}
------END GHOSTKEY_CERTIFICATE-----`;
-
-    // Format the ghost signing key output
-    const formattedSigningKey = `-----BEGIN GHOST KEY-----
-${wrapBase64(privateKey, 64)}
------END GHOST KEY-----`;
-
-    // Combine the certificate and signing key
-    const formattedOutput = `${formattedCertificate}\n\n${formattedSigningKey}`;
-
-    console.log("Ghost Key Certificate and Signing Key created successfully");
-    
     const certificateSection = document.getElementById('certificateSection');
     const certificateInfo = document.getElementById('certificate-info');
     const combinedKeyTextarea = document.getElementById('combinedKey');
@@ -239,7 +220,7 @@ ${wrapBase64(privateKey, 64)}
     certificateSection.style.display = 'block';
     certificateInfo.style.display = 'block';
     
-    combinedKeyTextarea.value = formattedOutput;
+    combinedKeyTextarea.value = armoredOutput;
     console.log("Ghost Key populated in textarea");
 
     // Set up copy button
@@ -256,7 +237,7 @@ ${wrapBase64(privateKey, 64)}
     const downloadButton = document.getElementById('downloadCertificate');
     if (downloadButton) {
       downloadButton.addEventListener('click', function() {
-        const blob = new Blob([formattedOutput], { type: 'text/plain' });
+        const blob = new Blob([armoredOutput], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -273,25 +254,11 @@ ${wrapBase64(privateKey, 64)}
       certificateInfo.innerHTML = `<p>Your donation certificate is ready. Donation amount: $${delegateInfo.amount}</p>`;
     }
 
-    // Verification is now handled by the WebAssembly module
-    console.log("Certificate generated successfully");
-    
-    console.log("Certificate verified and displayed successfully");
+    console.log("Certificate displayed successfully");
   } catch (error) {
     console.error("Error in displayCertificate:", error);
     showError(`Error displaying Ghost Key: ${error.message}. Please contact support.`);
   }
-}
-
-// Function to wrap base64 encoded text
-function wrapBase64(str, maxWidth) {
-  const lines = str.split('\n');
-  return lines.map(line => {
-    if (line.startsWith('-----')) {
-      return line;
-    }
-    return line.match(new RegExp(`.{1,${maxWidth}}`, 'g')).join('\n');
-  }).join('\n');
 }
 
 // Verification is now handled by the WebAssembly module
