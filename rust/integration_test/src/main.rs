@@ -32,7 +32,7 @@ fn print_result(success: bool) {
 async fn main() -> Result<()> {
     match run().await {
         Ok(_) => {
-            println!("{}", "Integration test completed successfully".green());
+            println!("Integration test completed {}", "successfully".green());
             Ok(())
         }
         Err(e) => {
@@ -50,7 +50,8 @@ async fn run() -> Result<()> {
     let (mut hugo_handle, mut api_handle, chromedriver_handle) = start_services(&temp_dir).await?;
     setup_delegate_keys(&temp_dir).context("Failed to setup delegate keys")?;
     
-    println!("Running browser test...");
+    print_task(&format!("Starting {} browser", if visible { "visible" } else { "headless" }));
+    print_result(true);
     let result = run_browser_test(headless, wait_on_failure, visible, &temp_dir).await;
     
     cleanup_processes(&mut hugo_handle, &mut api_handle, chromedriver_handle).await;
