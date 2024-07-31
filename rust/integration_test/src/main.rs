@@ -337,32 +337,36 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         println!("{}", "Ok".green());
 
         print!("Filling out donation form... ");
-        let form = wait_for_element(&c, Locator::Id("payment-form"), Duration::from_secs(10)).await?;
-        let amount_radio = form.find(Locator::Css("input[name='amount'][value='20']")).await?;
+        let form = wait_for_element(&c, Locator::Id("payment-form"), Duration::from_secs(30)).await?;
+        let amount_radio = wait_for_element(&c, Locator::Css("input[name='amount'][value='20']"), Duration::from_secs(10)).await?;
         amount_radio.click().await?;
-        let currency_select = form.find(Locator::Id("currency")).await?;
-        let currency_option = currency_select.find(Locator::Css("option[value='usd']")).await?;
+        let currency_select = wait_for_element(&c, Locator::Id("currency"), Duration::from_secs(10)).await?;
+        let currency_option = wait_for_element(&currency_select, Locator::Css("option[value='usd']"), Duration::from_secs(10)).await?;
         currency_option.click().await?;
         println!("{}", "Ok".green());
 
         print!("Filling out Stripe payment form... ");
-        let stripe_iframe = wait_for_element(&c, Locator::Css("iframe[name^='__privateStripeFrame']"), Duration::from_secs(10)).await?;
+        let stripe_iframe = wait_for_element(&c, Locator::Css("iframe[name^='__privateStripeFrame']"), Duration::from_secs(30)).await?;
         let iframes = c.find_all(Locator::Css("iframe")).await?;
         let iframe_index = iframes.iter().position(|e| e.element_id() == stripe_iframe.element_id()).unwrap() as u16;
         c.enter_frame(Some(iframe_index)).await?;
+        
+        // Wait for Stripe form to be fully loaded
+        wait_for_element(&c, Locator::Css("input[name='number']"), Duration::from_secs(30)).await?;
+        
         let card_number = wait_for_element(&c, Locator::Css("input[name='number']"), Duration::from_secs(10)).await?;
         card_number.send_keys("4242424242424242").await?;
-        let card_expiry = wait_for_element(&c, Locator::Css("input[name='expiry']"), Duration::from_secs(5)).await?;
+        let card_expiry = wait_for_element(&c, Locator::Css("input[name='expiry']"), Duration::from_secs(10)).await?;
         card_expiry.send_keys("1225").await?;
-        let card_cvc = wait_for_element(&c, Locator::Css("input[name='cvc']"), Duration::from_secs(5)).await?;
+        let card_cvc = wait_for_element(&c, Locator::Css("input[name='cvc']"), Duration::from_secs(10)).await?;
         card_cvc.send_keys("123").await?;
-        let postal_code = wait_for_element(&c, Locator::Css("input[name='postalCode']"), Duration::from_secs(5)).await?;
+        let postal_code = wait_for_element(&c, Locator::Css("input[name='postalCode']"), Duration::from_secs(10)).await?;
         postal_code.send_keys("12345").await?;
         c.enter_frame(None).await?;
         println!("{}", "Ok".green());
 
         print!("Submitting payment... ");
-        let submit_button = form.find(Locator::Id("submit")).await?;
+        let submit_button = wait_for_element(&c, Locator::Id("submit"), Duration::from_secs(10)).await?;
         submit_button.click().await?;
         println!("{}", "Ok".green());
 
