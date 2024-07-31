@@ -53,20 +53,7 @@ async fn run() -> Result<()> {
     print_task(&format!("Starting {} browser", if visible { "visible" } else { "headless" }));
     print_result(true);
 
-    // Add a delay to ensure the page is fully loaded
-    std::thread::sleep(std::time::Duration::from_secs(5));
-
-    // Log the current URL
-    let current_url = driver.current_url().await?;
-    println!("Current URL: {}", current_url);
-
-    // Check if we're on the success page
-    if !current_url.contains("/donate/ghostkey/success") {
-        println!("Error: Not on the success page. Current page: {}", current_url);
-        println!("Page source:");
-        println!("{}", driver.page_source().await?);
-        return Err(anyhow::anyhow!("Failed to reach the success page"));
-    }
+    // Remove the delay and URL checks from this location
     let result = run_browser_test(headless, wait_on_failure, visible, &temp_dir).await;
     
     cleanup_processes(&mut hugo_handle, &mut api_handle, chromedriver_handle).await;
@@ -416,7 +403,7 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
 
         // Check if we're on the success page
         let current_url = c.current_url().await?;
-        if !current_url.contains("/donate/ghostkey/success") {
+        if !current_url.as_str().contains("/donate/ghostkey/success") {
             println!("Error: Not on the success page. Current page: {}", current_url);
             println!("Page source:");
             println!("{}", c.source().await?);
