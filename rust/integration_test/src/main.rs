@@ -542,7 +542,7 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
             let stderr = String::from_utf8_lossy(&cli_validation_output.stderr);
             println!("CLI-generated ghost key validation failed: {}", stderr);
         } else {
-            println!("CLI-generated ghost key verifyd successfully");
+            println!("CLI-generated ghost key verified successfully");
         }
 
         // Compare and verify the CLI-generated ghost key with the browser-generated one
@@ -591,13 +591,6 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
 
     // Return the test result
     test_result
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct CertificateInfo {
-    version: u8,
-    amount: u64,
-    currency: String,
 }
 
 fn inspect_ghost_key_certificate(combined_key_text: &str, master_verifying_key : VerifyingKey) -> Result<String> {
