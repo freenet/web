@@ -106,7 +106,10 @@ fn generate_ghostkey_certificate_core(
     let armored_signing_key = ec_signing_key.to_armored_string()
         .map_err(|_| "Failed to armor signing key".to_string())?;
 
-    Ok(format!("{}\n\n{}", armored_certificate, armored_signing_key))
+    let return_obj = Object::new();
+    Reflect::set(&return_obj, &JsString::from("armored_ghostkey_cert"), &JsString::from(armored_certificate)).unwrap();
+    Reflect::set(&return_obj, &JsString::from("armored_ghostkey_signing_key"), &JsString::from(armored_signing_key)).unwrap();
+    Ok(return_obj)
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -117,7 +120,7 @@ pub fn wasm_generate_ghostkey_certificate(
     blinding_secret_base64: String,
     ec_verifying_key_base64: String,
     ec_signing_key_base64: String
-) -> JsValue {
+) -> Result<JsValue, JsValue> {
     match generate_ghostkey_certificate_core(
         delegate_certificate_base64,
         blinded_signature_base64,
@@ -125,8 +128,8 @@ pub fn wasm_generate_ghostkey_certificate(
         ec_verifying_key_base64,
         ec_signing_key_base64,
     ) {
-        Ok(armored_output) => JsValue::from_str(&armored_output),
-        Err(err) => JsValue::from_str(&format!("Error: {}", err)),
+        Ok(result_obj) => Ok(result_obj.into()),
+        Err(err) => Err(JsValue::from_str(&format!("Error: {}", err))),
     }
 }
 

@@ -183,7 +183,7 @@ async function generateAndSignCertificate(paymentIntentId) {
 
     // Generate the Ghostkey certificate using WebAssembly
     console.log("Generating Ghostkey certificate");
-    const armoredOutput = wasmModule.wasm_generate_ghostkey_certificate(
+    const result = wasmModule.wasm_generate_ghostkey_certificate(
       delegateCertificateBase64,
       signData.blind_signature_base64,
       blindingSecret,
@@ -191,22 +191,22 @@ async function generateAndSignCertificate(paymentIntentId) {
       privateKey
     );
 
-    if (typeof armoredOutput === 'string' && armoredOutput.startsWith('Error:')) {
-      throw new Error(armoredOutput);
+    if (result instanceof Error) {
+      throw result;
     }
 
     console.log("Ghostkey certificate and signing key generated");
-    displayCertificate(armoredOutput);
+    displayCertificate(result.armored_ghostkey_cert, result.armored_ghostkey_signing_key);
   } catch (error) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
   }
 }
 
-function displayCertificate(armoredOutput) {
+function displayCertificate(armoredCertificate, armoredSigningKey) {
   console.log("Displaying certificate");
   try {
-    console.log("Armored output received");
+    console.log("Armored certificate and signing key received");
 
     const certificateSection = document.getElementById('certificateSection');
     const certificateInfo = document.getElementById('certificate-info');
@@ -220,8 +220,9 @@ function displayCertificate(armoredOutput) {
     certificateSection.style.display = 'block';
     certificateInfo.style.display = 'block';
     
-    combinedKeyTextarea.value = armoredOutput;
-    console.log("Ghost Key populated in textarea");
+    const combinedOutput = `${armoredCertificate}\n\n${armoredSigningKey}`;
+    combinedKeyTextarea.value = combinedOutput;
+    console.log("Ghost Key certificate and signing key populated in textarea");
 
     // Set up copy button
     const copyButton = document.getElementById('copyCombinedKey');
@@ -229,7 +230,7 @@ function displayCertificate(armoredOutput) {
       copyButton.addEventListener('click', function() {
         combinedKeyTextarea.select();
         document.execCommand('copy');
-        alert('Ghost Key copied to clipboard!');
+        alert('Ghost Key certificate and signing key copied to clipboard!');
       });
     }
 
@@ -237,7 +238,7 @@ function displayCertificate(armoredOutput) {
     const downloadButton = document.getElementById('downloadCertificate');
     if (downloadButton) {
       downloadButton.addEventListener('click', function() {
-        const blob = new Blob([armoredOutput], { type: 'text/plain' });
+        const blob = new Blob([combinedOutput], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -254,10 +255,10 @@ function displayCertificate(armoredOutput) {
       certificateInfo.innerHTML = `<p>Your donation certificate is ready. Donation amount: $${delegateInfo.amount}</p>`;
     }
 
-    console.log("Certificate displayed successfully");
+    console.log("Certificate and signing key displayed successfully");
   } catch (error) {
     console.error("Error in displayCertificate:", error);
-    showError(`Error displaying Ghost Key: ${error.message}. Please contact support.`);
+    showError(`Error displaying Ghost Key certificate and signing key: ${error.message}. Please contact support.`);
   }
 }
 
