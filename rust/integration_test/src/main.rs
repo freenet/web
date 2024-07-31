@@ -345,6 +345,13 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         println!("{}", "Ok".green());
 
         print!("Filling out Stripe payment form... ");
+        
+        // Wait for the submit button to be visible before proceeding
+        wait_for_element(&c, Locator::Id("submit"), Duration::from_secs(30)).await?;
+        
+        // Add a small delay to ensure the form is fully rendered
+        tokio::time::sleep(Duration::from_secs(1)).await;
+        
         let stripe_iframe = wait_for_element(&c, Locator::Css("iframe[name^='__privateStripeFrame']"), Duration::from_secs(30)).await?;
         let iframes = c.find_all(Locator::Css("iframe")).await?;
         let iframe_index = iframes.iter().position(|e| e.element_id() == stripe_iframe.element_id()).unwrap() as u16;
@@ -355,10 +362,13 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         
         let card_number = wait_for_element(&c, Locator::Css("input[name='number']"), Duration::from_secs(10)).await?;
         card_number.send_keys("4242424242424242").await?;
+        tokio::time::sleep(Duration::from_millis(100)).await; // Small delay after each input
         let card_expiry = wait_for_element(&c, Locator::Css("input[name='expiry']"), Duration::from_secs(10)).await?;
         card_expiry.send_keys("1225").await?;
+        tokio::time::sleep(Duration::from_millis(100)).await;
         let card_cvc = wait_for_element(&c, Locator::Css("input[name='cvc']"), Duration::from_secs(10)).await?;
         card_cvc.send_keys("123").await?;
+        tokio::time::sleep(Duration::from_millis(100)).await;
         let postal_code = wait_for_element(&c, Locator::Css("input[name='postalCode']"), Duration::from_secs(10)).await?;
         postal_code.send_keys("12345").await?;
         c.enter_frame(None).await?;
