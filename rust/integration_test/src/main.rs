@@ -341,8 +341,7 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         let amount_radio = wait_for_element(&c, Locator::Css("input[name='amount'][value='20']"), Duration::from_secs(10)).await?;
         amount_radio.click().await?;
         let currency_select = wait_for_element(&c, Locator::Id("currency"), Duration::from_secs(10)).await?;
-        let currency_option = wait_for_element(&currency_select, Locator::Css("option[value='usd']"), Duration::from_secs(10)).await?;
-        currency_option.click().await?;
+        currency_select.select_by_value("usd").await?;
         println!("{}", "Ok".green());
 
         print!("Filling out Stripe payment form... ");
