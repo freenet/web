@@ -3,7 +3,7 @@ use std::env;
 use clap::{Arg, Command};
 use dotenv::dotenv;
 use log::{error, info, LevelFilter};
-use rocket::{catchers, get, launch, routes};
+use rocket::{catchers, get, launch, routes, Config};
 use rocket::{catch, Request};
 use rocket::fairing::AdHoc;
 use rocket::http::Header;
@@ -38,9 +38,22 @@ fn rocket() -> _ {
             .value_name("DIR")
             .help("Sets the delegate directory")
             .required(true))
+        .arg(Arg::new("tls-cert")
+            .long("tls-cert")
+            .value_name("FILE")
+            .help("Path to TLS certificate file")
+            .required(true))
+        .arg(Arg::new("tls-key")
+            .long("tls-key")
+            .value_name("FILE")
+            .help("Path to TLS private key file")
+            .required(true))
         .get_matches();
 
     let delegate_dir = matches.get_one::<String>("delegate-dir").unwrap();
+    let tls_cert = matches.get_one::<String>("tls-cert").unwrap();
+    let tls_key = matches.get_one::<String>("tls-key").unwrap();
+
     env::set_var(DELEGATE_DIR, delegate_dir);
 
     env_logger::builder()
@@ -58,7 +71,11 @@ fn rocket() -> _ {
 
     env::var("DELEGATE_DIR").expect("DELEGATE_DIR environment variable not set");
     
-    rocket::build()
+    let config = Config::figment()
+        .merge(("tls.certs", tls_cert))
+        .merge(("tls.key", tls_key));
+
+    rocket::custom(config)
         .attach(routes::CORS)
         .attach(routes::RequestTimer)
         .attach(AdHoc::on_response("Powered-By Header", |_, res| Box::pin(async move {
