@@ -44,7 +44,7 @@ async fn main() -> Result<()> {
 
 async fn run() -> Result<()> {
     println!("Starting integration test...");
-    let (headless, wait_on_failure, visible) = parse_arguments();
+    let (headless, wait_on_failure, wait, visible) = parse_arguments();
     
     let temp_dir = setup_environment().await?;
     let (mut hugo_handle, mut api_handle, chromedriver_handle) = start_services(&temp_dir).await?;
@@ -54,14 +54,14 @@ async fn run() -> Result<()> {
     print_result(true);
 
     // Remove the delay and URL checks from this location
-    let result = run_browser_test(headless, wait_on_failure, visible, &temp_dir).await;
+    let result = run_browser_test(headless, wait_on_failure, wait, visible, &temp_dir).await;
     
     cleanup_processes(&mut hugo_handle, &mut api_handle, chromedriver_handle).await;
 
     result
 }
 
-fn parse_arguments() -> (bool, bool, bool) {
+fn parse_arguments() -> (bool, bool, bool, bool) {
     let matches = ClapCommand::new("Integration Test")
         .arg(Arg::new("visible")
             .long("visible")
@@ -71,8 +71,17 @@ fn parse_arguments() -> (bool, bool, bool) {
             .long("wait-on-failure")
             .help("Wait for user input if the test fails")
             .action(ArgAction::SetTrue))
+        .arg(Arg::new("wait")
+            .long("wait")
+            .help("Wait for user input after the test, regardless of outcome")
+            .action(ArgAction::SetTrue))
         .get_matches();
-    (!matches.get_flag("visible"), matches.get_flag("wait-on-failure"), matches.get_flag("visible"))
+    (
+        !matches.get_flag("visible"),
+        matches.get_flag("wait-on-failure"),
+        matches.get_flag("wait"),
+        matches.get_flag("visible")
+    )
 }
 
 async fn setup_environment() -> Result<std::path::PathBuf> {
@@ -308,7 +317,7 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
 }
 
 
-async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool, temp_dir: &std::path::Path) -> Result<()> {
+async fn run_browser_test(_headless: bool, wait_on_failure: bool, wait: bool, visible: bool, temp_dir: &std::path::Path) -> Result<()> {
     let _temp_dir = temp_dir.to_path_buf(); // Convert to owned PathBuf
     use serde_json::json;
     let mut caps = serde_json::map::Map::new();
@@ -453,8 +462,13 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         Ok(())
     })().await;
 
-    if test_result.is_err() && wait_on_failure {
-        println!("{}", "Test failed. Browser window left open for debugging.".yellow());
+    if (test_result.is_err() && wait_on_failure) || wait {
+        let message = if test_result.is_err() {
+            "Test failed. Browser window left open for debugging.".yellow()
+        } else {
+            "Test succeeded. Browser window left open for inspection.".green()
+        };
+        println!("{}", message);
         println!("Press Enter to close the browser and end the test.");
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;
