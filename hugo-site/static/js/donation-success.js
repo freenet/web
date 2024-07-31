@@ -152,14 +152,14 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.log("Sending blinded public key for signing");
     let signResponse;
     try {
-      signResponse = await fetch('/sign-certificate', {
+      signResponse = await fetch('http://localhost:8000/sign-certificate', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
           payment_intent_id: paymentIntentId, 
-          blinded_public_key: blindedPublicKey
+          blinded_ghostkey_base64: blindedPublicKey
         }),
         credentials: 'same-origin'
       });
@@ -184,7 +184,7 @@ async function generateAndSignCertificate(paymentIntentId) {
     // Generate the Ghostkey certificate using WebAssembly
     console.log("Generating Ghostkey certificate");
     const ghostkeyCertificateBase64 = wasmModule.wasm_generate_ghostkey_certificate(
-      delegateData.delegate_certificate_base64,
+        delegateCertificateBase64,
       signData.blind_signature_base64,
       blindingSecret,
       publicKey
@@ -195,14 +195,14 @@ async function generateAndSignCertificate(paymentIntentId) {
     }
 
     console.log("Ghostkey certificate generated");
-    displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64, delegateData.delegate_info);
+    displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64);
   } catch (error) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);
   }
 }
 
-function displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64, delegateInfo) {
+function displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64) {
   console.log("Displaying certificate");
   try {
     if (!ghostkeyCertificateBase64) {
@@ -211,12 +211,11 @@ function displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64, de
 
     console.log("Ghostkey certificate:", ghostkeyCertificateBase64);
     console.log("Public key:", publicKey);
-    console.log("Delegate info:", delegateInfo);
 
     // Format the certificate output
-    const formattedCertificate = `-----BEGIN GHOSTKEY CERTIFICATE-----
+    const formattedCertificate = `-----BEGIN GHOSTKEY_CERTIFICATE-----
 ${wrapBase64(ghostkeyCertificateBase64, 64)}
------END GHOSTKEY CERTIFICATE-----`;
+-----END GHOSTKEY_CERTIFICATE-----`;
 
     // Format the ghost signing key output
     const formattedSigningKey = `-----BEGIN GHOST KEY-----

@@ -1,5 +1,5 @@
 <div id="stripe-donation-form" style="max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
-  <form id="payment-form">
+    <form id="payment-form">
     <div id="amount-options" style="margin-bottom: 20px;">
       <label style="margin-right: 10px;"><input type="radio" name="amount" value="5" required checked> $5</label>
       <label style="margin-right: 10px;"><input type="radio" name="amount" value="20" required checked> $20</label>
@@ -34,7 +34,6 @@
   document.addEventListener('DOMContentLoaded', initializeStripe);
 
   async function initializeStripe() {
-      alert('initializeStripe() called');
     try {
       stripe = Stripe('{{ .Site.Params.stripePublishableKey }}');
       const response = await fetch('http://127.0.0.1:8000/create-donation', {
