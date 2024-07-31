@@ -8,6 +8,8 @@ alias = "dev"
 description = "Build and run in development mode"
 dependencies = [
     "build-wasm-dev",
+    "build-api-dev",
+    "build-cli-dev",
     "generate-delegate-keys",
     "test-ghostkey",
     "build-hugo-dev"
@@ -17,6 +19,8 @@ dependencies = [
 description = "Build and run in release mode"
 dependencies = [
     "build-wasm-release",
+    "build-api-release",
+    "build-cli-release",
     "generate-delegate-keys",
     "test-ghostkey",
     "build-hugo-release"
@@ -34,6 +38,34 @@ description = "Build WebAssembly in release mode"
 script = """
 cd rust/gkwasm
 wasm-pack build --release --target web --out-dir ../../hugo-site/static/wasm
+"""
+
+[tasks.build-api-dev]
+description = "Build API in development mode"
+script = """
+cd rust/api
+cargo build
+"""
+
+[tasks.build-api-release]
+description = "Build API in release mode"
+script = """
+cd rust/api
+cargo build --release
+"""
+
+[tasks.build-cli-dev]
+description = "Build CLI in development mode"
+script = """
+cd rust/cli
+cargo build
+"""
+
+[tasks.build-cli-release]
+description = "Build CLI in release mode"
+script = """
+cd rust/cli
+cargo build --release
 """
 
 [tasks.generate-delegate-keys]
