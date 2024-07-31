@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use gklib::armorable::Armorable;
 use gklib::delegate_certificate::DelegateCertificate;
 use gklib::ghostkey_certificate::GhostkeyCertificate;
-use colored::*;
+use colored::Colorize;
 
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
 
 async fn run() -> Result<()> {
     println!("Starting integration test...");
-    let (headless, wait_on_failure, visible) = parse_arguments();
+    let (_headless, wait_on_failure, visible) = parse_arguments();
     let temp_dir = setup_environment().await?;
     let (mut hugo_handle, hugo_output, mut api_handle, api_stdout, api_stderr, chromedriver_handle) = start_services(&temp_dir).await?;
 
@@ -42,7 +42,7 @@ async fn run() -> Result<()> {
     setup_delegate_keys(&temp_dir).context("Failed to setup delegate keys")?;
 
     // Run the browser test
-    let result = run_browser_test(headless, wait_on_failure, visible, &temp_dir).await;
+    let result = run_browser_test(wait_on_failure, visible, &temp_dir).await;
 
     // Clean up
     cleanup_processes(&mut hugo_handle, &mut api_handle, chromedriver_handle).await;
@@ -53,8 +53,8 @@ async fn run() -> Result<()> {
     } else {
         println!("{}", "Integration test failed".red());
         println!("Hugo output:");
-        println!("{}", hugo_output.stdout);
-        println!("{}", hugo_output.stderr);
+        println!("{}", String::from_utf8_lossy(&hugo_output.stdout));
+        println!("{}", String::from_utf8_lossy(&hugo_output.stderr));
         println!("API stdout:");
         println!("{}", api_stdout);
         println!("API stderr:");
@@ -83,13 +83,13 @@ async fn setup_environment() -> Result<std::path::PathBuf> {
     Ok(temp_dir)
 }
 
-async fn start_services(temp_dir: &std::path::Path) -> Result<(Child, Child, Option<Child>)> {
+async fn start_services(temp_dir: &std::path::Path) -> Result<(Child, Output, Child, String, String, Option<Child>)> {
     let chromedriver_handle = start_chromedriver_if_needed().await?;
     kill_process_if_running(1313, "Hugo").await?;
-    let hugo_handle = start_hugo()?;
+    let (hugo_handle, hugo_output) = start_hugo()?;
     kill_process_if_running(API_PORT, "API").await?;
-    let api_handle = start_api(temp_dir).await?;
-    Ok((hugo_handle, api_handle, chromedriver_handle))
+    let (api_handle, api_stdout, api_stderr) = start_api(temp_dir).await?;
+    Ok((hugo_handle, hugo_output, api_handle, api_stdout, api_stderr, chromedriver_handle))
 }
 
 async fn start_chromedriver_if_needed() -> Result<Option<Child>> {
@@ -238,7 +238,7 @@ fn kill_process_on_port(port: u16) -> Result<()> {
 }
 
 fn start_hugo() -> Result<(Child, Output)> {
-    let mut child = ProcessCommand::new("hugo")
+    let child = ProcessCommand::new("hugo")
         .args(&["server", "--disableFastRender"])
         .current_dir("../../hugo-site")
         .stdout(Stdio::piped())
@@ -247,7 +247,13 @@ fn start_hugo() -> Result<(Child, Output)> {
         .context("Failed to start Hugo")?;
 
     let output = child.wait_with_output()?;
-    Ok((child, output))
+    Ok((ProcessCommand::new("hugo")
+        .args(&["server", "--disableFastRender"])
+        .current_dir("../../hugo-site")
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .context("Failed to start Hugo")?, output))
 }
 
 async fn start_api(temp_dir: &std::path::Path) -> Result<(Child, String, String)> {
@@ -354,7 +360,7 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
 }
 
 
-async fn run_browser_test(headless: bool, wait_on_failure: bool, visible: bool, temp_dir: &std::path::Path) -> Result<()> {
+async fn run_browser_test(wait_on_failure: bool, visible: bool, temp_dir: &std::path::Path) -> Result<()> {
     let _temp_dir = temp_dir.to_path_buf(); // Convert to owned PathBuf
     use serde_json::json;
     let mut caps = serde_json::map::Map::new();
