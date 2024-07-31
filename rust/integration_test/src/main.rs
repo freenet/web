@@ -414,6 +414,15 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         }
         print_result(true);
 
+        // Check if we're on the success page
+        let current_url = c.current_url().await?;
+        if !current_url.contains("/donate/ghostkey/success") {
+            println!("Error: Not on the success page. Current page: {}", current_url);
+            println!("Page source:");
+            println!("{}", c.source().await?);
+            return Err(anyhow::anyhow!("Failed to reach the success page"));
+        }
+
         print_task("Saving ghostkey certificate");
         let combined_key_content = c.execute(
             "return document.querySelector('textarea#combinedKey').value;",
