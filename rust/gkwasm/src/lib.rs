@@ -96,7 +96,7 @@ fn generate_ghostkey_certificate_core(
         verifying_key: ec_verifying_key,
         signature: unblinded_signature,
     };
-
+    
     Ok(ghostkey_certificate.to_base64().unwrap())
 }
 

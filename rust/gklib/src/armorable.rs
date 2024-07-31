@@ -247,7 +247,7 @@ mod tests {
             field2: 42,
         };
 
-        let armored = test_struct1.to_armoured_string().unwrap();
+        let _armored = test_struct1.to_armoured_string().unwrap();
         let mismatched_label = "-----BEGIN TEST_STRUCT-----\n\n-----END TEST_STRUCTS-----\n";
         let decoded_struct1 = TestStruct::from_armored_string(&mismatched_label);
         assert!(decoded_struct1.is_err());

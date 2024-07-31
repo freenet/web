@@ -90,7 +90,7 @@ mod tests {
             DelegateCertificate::new(&master_signing_key, &info).unwrap();
 
         // Create a ghostkey certificate
-        let (ghostkey_certificate, ghostkey_signing_key) =
+        let (ghostkey_certificate, _ghostkey_signing_key) =
             GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
 
         // Verify the ghostkey certificate

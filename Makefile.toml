@@ -10,7 +10,6 @@ dependencies = [
     "build-wasm-dev",
     "build-api-dev",
     "build-cli-dev",
-    "test-ghostkey",
     "build-hugo-dev"
 ]
 
@@ -94,17 +93,21 @@ cd hugo-site
 hugo --minify
 """
 
-[tasks.test]
+[tasks.integration-test]
 description = "Run all tests"
+dependencies = ["dev"]
 script = """
 # Run unit tests for each crate
 cd rust/gklib && cargo test
 cd ../gkwasm && cargo test
 cd ../api && cargo test
 cd ../cli && cargo test
+cd ../..
 
 # Run ghostkey CLI tests
-./rust/cli/test_ghostkey.sh
+cd rust/cli
+./test_ghostkey.sh
+cd ../..
 
 # Run integration tests
 cd rust/integration_test && cargo run
