@@ -123,7 +123,6 @@ fn setup_delegate_keys(temp_dir: &std::path::Path) -> Result<()> {
 
 fn generate_master_key(temp_dir: &std::path::Path) -> Result<std::path::PathBuf> {
     let master_key_file = temp_dir.join("master_signing_key.pem");
-    println!("Generating master key in directory: {:?}", temp_dir);
     let cli_dir = std::env::current_dir()?.join("../cli");
     let output = ProcessCommand::new("cargo")
         .args(&["run", "--quiet", "--manifest-path", cli_dir.join("Cargo.toml").to_str().unwrap(), "--", "generate-master-key", "--output-dir"])
@@ -134,8 +133,6 @@ fn generate_master_key(temp_dir: &std::path::Path) -> Result<std::path::PathBuf>
 
     if !output.status.success() {
         let error_msg = format!("Failed to generate master key: {}", String::from_utf8_lossy(&output.stderr));
-        println!("Error: {}", error_msg);
-        println!("Stdout: {}", String::from_utf8_lossy(&output.stdout));
         return Err(anyhow::anyhow!(error_msg));
     }
 
@@ -143,7 +140,6 @@ fn generate_master_key(temp_dir: &std::path::Path) -> Result<std::path::PathBuf>
 }
 
 fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std::path::Path) -> Result<()> {
-    println!("Generating delegate keys in: {:?}", delegate_dir);
     let output = ProcessCommand::new("bash")
         .arg("../cli/generate_delegate_keys.sh")
         .args(&["--master-key", master_key_file.to_str().unwrap()])
@@ -160,11 +156,9 @@ fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std:
             String::from_utf8_lossy(&output.stdout),
             String::from_utf8_lossy(&output.stderr)
         );
-        println!("Error: {}", error_msg);
         return Err(anyhow::anyhow!(error_msg));
     }
 
-    println!("Delegate keys generated successfully");
     Ok(())
 }
 
