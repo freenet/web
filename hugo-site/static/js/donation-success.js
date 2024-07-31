@@ -250,9 +250,9 @@ function displayCertificate(armoredCertificate, armoredSigningKey) {
       });
     }
 
-    // Display delegate info
-    if (certificateInfo && delegateInfo) {
-      certificateInfo.innerHTML = `<p>Your donation certificate is ready. Donation amount: $${delegateInfo.amount}</p>`;
+    // Display certificate info
+    if (certificateInfo) {
+      certificateInfo.innerHTML = `<p>Your Ghost Key certificate is ready. You can now copy or download it.</p>`;
     }
 
     console.log("Certificate and signing key displayed successfully");
