@@ -9,7 +9,7 @@ use std::env;
 use std::fs;
 use std::io::{BufRead, BufReader};
 use ed25519_dalek::VerifyingKey;
-use serde_json::Value;
+use serde::{Deserialize, Serialize};
 use gklib::armorable::Armorable;
 use gklib::delegate_certificate::DelegateCertificate;
 use gklib::ghostkey_certificate::GhostkeyCertificate;
@@ -183,37 +183,24 @@ fn generate_master_key(temp_dir: &std::path::Path) -> Result<std::path::PathBuf>
 
 fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std::path::Path) -> Result<()> {
     println!("Generating delegate keys in: {:?}", delegate_dir);
-    let amounts = [20, 50, 100]; // Add more amounts if needed
-    for amount in amounts.iter() {
-        let info = format!(r#"{{"amount": {}, "currency": "USD"}}"#, amount);
-        let output = ProcessCommand::new("cargo")
-            .args(&[
-                "run",
-                "--manifest-path",
-                "../cli/Cargo.toml",
-                "--",
-                "generate-delegate",
-                "--master-signing-key",
-                master_key_file.to_str().unwrap(),
-                "--info",
-                &info,
-                "--output-dir",
-                delegate_dir.to_str().unwrap(),
-            ])
-            .output()
-            .context("Failed to execute generate-delegate command")?;
+    let output = ProcessCommand::new("bash")
+        .arg("../cli/generate_delegate_keys.sh")
+        .args(&["--master-key", master_key_file.to_str().unwrap()])
+        .arg("--delegate-dir")
+        .arg(delegate_dir)
+        .arg("--overwrite")
+        .output()
+        .context("Failed to execute generate_delegate_keys.sh")?;
 
-        if !output.status.success() {
-            let error_msg = format!(
-                "Failed to generate delegate key for amount {}. Exit status: {}\nStdout: {}\nStderr: {}",
-                amount,
-                output.status,
-                String::from_utf8_lossy(&output.stdout),
-                String::from_utf8_lossy(&output.stderr)
-            );
-            println!("Error: {}", error_msg);
-            return Err(anyhow::anyhow!(error_msg));
-        }
+    if !output.status.success() {
+        let error_msg = format!(
+            "Failed to generate delegate keys. Exit status: {}\nStdout: {}\nStderr: {}",
+            output.status,
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        println!("Error: {}", error_msg);
+        return Err(anyhow::anyhow!(error_msg));
     }
 
     println!("Delegate keys generated successfully");
@@ -514,8 +501,6 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
 
         // Generate a ghost key using the CLI
         println!("Generating ghost key using CLI...");
-        println!("Delegate directory: {:?}", temp_dir.join("delegates"));
-        println!("Output directory: {:?}", temp_dir);
         let cli_output = ProcessCommand::new("cargo")
             .args(&[
                 "run",
@@ -524,11 +509,9 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
                 "--",
                 "generate-ghostkey",
                 "--delegate-dir",
-                temp_dir.join("delegates").to_str().unwrap(),
-                "--output-dir",
-                temp_dir.to_str().unwrap(),
-                "--amount",
-                "20", // Make sure this matches one of the amounts used in generate_delegate_keys
+                temp_dir.join("delegates").join("20").to_str().unwrap(),
+                "--output",
+                temp_dir.join("cli_ghostkey_certificate.pem").to_str().unwrap(),
             ])
             .output()?;
 
@@ -559,7 +542,7 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
             let stderr = String::from_utf8_lossy(&cli_validation_output.stderr);
             println!("CLI-generated ghost key validation failed: {}", stderr);
         } else {
-            println!("CLI-generated ghost key verified successfully");
+            println!("CLI-generated ghost key verifyd successfully");
         }
 
         // Compare and verify the CLI-generated ghost key with the browser-generated one
@@ -573,32 +556,18 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
         let cli_cert_info = inspect_ghost_key_certificate(&cli_ghost_key, master_verifying_key)?;
         
         // Parse cli_cert_info as JSON before inspecting it
-        println!("Inspecting browser-generated ghost key certificate:");
-        let browser_cert_info = inspect_ghost_key_certificate(&browser_ghost_key, master_verifying_key)?;
-
-        // Parse both cert_info strings as JSON
-        let cli_cert_info: Value = serde_json::from_str(&cli_cert_info)?;
-        let browser_cert_info: Value = serde_json::from_str(&browser_cert_info)?;
-
+        let cert_info: CertificateInfo = serde_json::from_str(&cli_cert_info)?;
+        
+        
         // Compare relevant parts of the certificates
-        let fields_to_compare = ["version", "amount", "currency"];
-        let mut all_fields_match = true;
-
-        for field in fields_to_compare.iter() {
-            if cli_cert_info[field] == browser_cert_info[field] {
-                println!("{} matches: {}", field, cli_cert_info[field]);
-            } else {
-                println!("{} mismatch - CLI: {}, Browser: {}", field, cli_cert_info[field], browser_cert_info[field]);
-                all_fields_match = false;
-            }
-        }
-
-        if all_fields_match {
+        if cli_cert_info.version == cert_info.version &&
+            cli_cert_info.amount == browser_cert_info.amount &&
+            cli_cert_info.currency == browser_cert_info.currency {
             println!("CLI-generated and browser-generated ghost keys have matching version, amount, and currency");
         } else {
-            println!("Warning: CLI-generated and browser-generated ghost keys differ in one or more fields");
-            println!("CLI-generated: {}", serde_json::to_string_pretty(&cli_cert_info)?);
-            println!("Browser-generated: {}", serde_json::to_string_pretty(&browser_cert_info)?);
+            println!("Warning: CLI-generated and browser-generated ghost keys differ in version, amount, or currency");
+            println!("CLI-generated: {:?}", cli_cert_info);
+            println!("Browser-generated: {:?}", browser_cert_info);
         }
 
         // Verify both certificates
@@ -622,6 +591,13 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
 
     // Return the test result
     test_result
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CertificateInfo {
+    version: u8,
+    amount: u64,
+    currency: String,
 }
 
 fn inspect_ghost_key_certificate(combined_key_text: &str, master_verifying_key : VerifyingKey) -> Result<String> {
