@@ -337,7 +337,7 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         println!("{}", "Ok".green());
 
         print!("Filling out donation form... ");
-        let form = wait_for_element(&c, Locator::Id("payment-form"), Duration::from_secs(30)).await?;
+        let _form = wait_for_element(&c, Locator::Id("payment-form"), Duration::from_secs(30)).await?;
         let amount_radio = wait_for_element(&c, Locator::Css("input[name='amount'][value='20']"), Duration::from_secs(10)).await?;
         amount_radio.click().await?;
         let currency_select = wait_for_element(&c, Locator::Id("currency"), Duration::from_secs(10)).await?;
