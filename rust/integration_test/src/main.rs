@@ -9,6 +9,7 @@ use std::env;
 use std::fs;
 use std::io::{BufRead, BufReader};
 use serde::{Deserialize, Serialize};
+use colored::*;
 
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
@@ -30,20 +31,30 @@ async fn main() -> Result<()> {
 async fn run() -> Result<()> {
     println!("Starting integration test...");
     let (headless, wait_on_failure, visible) = parse_arguments();
+    
+    print!("Setting up environment... ");
     let temp_dir = setup_environment().await?;
+    println!("{}", "Ok".green());
+
+    print!("Starting services... ");
     let (mut hugo_handle, mut api_handle, chromedriver_handle) = start_services(&temp_dir).await?;
+    println!("{}", "Ok".green());
 
-    // Setup delegate keys
+    print!("Setting up delegate keys... ");
     setup_delegate_keys(&temp_dir).context("Failed to setup delegate keys")?;
+    println!("{}", "Ok".green());
 
-    // Run the browser test
+    print!("Running browser test... ");
     let result = run_browser_test(headless, wait_on_failure, visible, &temp_dir).await;
+    match &result {
+        Ok(_) => println!("{}", "Ok".green()),
+        Err(e) => println!("{}", format!("Failed: {}", e).red()),
+    }
 
-    // Clean up
+    print!("Cleaning up processes... ");
     cleanup_processes(&mut hugo_handle, &mut api_handle, chromedriver_handle).await;
+    println!("{}", "Ok".green());
 
-    // Return the result of the browser test
-    println!("Integration test finished. Result: {:?}", result);
     result
 }
 
@@ -114,15 +125,14 @@ fn kill_process(handle: &mut Child, process_name: &str) {
 fn setup_delegate_keys(temp_dir: &std::path::Path) -> Result<()> {
     let delegate_dir = temp_dir.join("delegates");
 
-    println!("Temporary directory: {:?}", temp_dir);
-
-    // Generate master key
+    print!("Generating master key... ");
     let master_key_file = generate_master_key(temp_dir)?;
+    println!("{}", "Ok".green());
 
-    // Generate delegate keys
+    print!("Generating delegate keys... ");
     generate_delegate_keys(&master_key_file, &delegate_dir)?;
+    println!("{}", "Ok".green());
 
-    println!("Successfully generated delegate keys");
     env::set_var("GHOSTKEY_DELEGATE_DIR", delegate_dir.to_str().unwrap());
     Ok(())
 }
@@ -201,7 +211,6 @@ fn start_hugo() -> Result<Child> {
 
 async fn start_api(temp_dir: &std::path::Path) -> Result<Child> {
     let delegate_dir = temp_dir.join("delegates");
-    println!("Starting API with delegate_dir: {}", delegate_dir.display());
     let mut child = ProcessCommand::new("cargo")
         .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", delegate_dir.to_str().unwrap()])
         .stdout(Stdio::piped())
@@ -215,27 +224,13 @@ async fn start_api(temp_dir: &std::path::Path) -> Result<Child> {
     let stdout_reader = BufReader::new(stdout);
     let stderr_reader = BufReader::new(stderr);
 
-    // Collect stdout and stderr
-    let mut stdout_lines = Vec::new();
-    let mut stderr_lines = Vec::new();
-
     // Spawn threads to read stdout and stderr
     let stdout_thread = thread::spawn(move || {
-        stdout_reader.lines().for_each(|line| {
-            if let Ok(line) = line {
-                stdout_lines.push(line);
-            }
-        });
-        stdout_lines
+        stdout_reader.lines().collect::<Result<Vec<_>, _>>().unwrap_or_default()
     });
 
     let stderr_thread = thread::spawn(move || {
-        stderr_reader.lines().for_each(|line| {
-            if let Ok(line) = line {
-                stderr_lines.push(line);
-            }
-        });
-        stderr_lines
+        stderr_reader.lines().collect::<Result<Vec<_>, _>>().unwrap_or_default()
     });
 
     // Wait for the API to start
@@ -243,39 +238,40 @@ async fn start_api(temp_dir: &std::path::Path) -> Result<Child> {
     while start_time.elapsed() < API_STARTUP_TIMEOUT {
         match child.try_wait() {
             Ok(Some(status)) => {
-                // Print collected stdout and stderr if API fails to start
                 let stdout = stdout_thread.join().unwrap();
                 let stderr = stderr_thread.join().unwrap();
+                println!("{}", "Failed".red());
+                println!("API process exited unexpectedly with status: {}", status);
                 println!("API stdout:");
                 stdout.iter().for_each(|line| println!("{}", line));
                 println!("API stderr:");
                 stderr.iter().for_each(|line| eprintln!("{}", line));
-                return Err(anyhow::anyhow!("API process exited unexpectedly with status: {}", status));
+                return Err(anyhow::anyhow!("API process exited unexpectedly"));
             }
             Ok(None) => {
-                // Check if the API is responding
                 if is_api_ready().await.is_ok() {
-                    println!("API started successfully");
                     return Ok(child);
                 }
             }
             Err(e) => {
-                // Print collected stdout and stderr if API fails to start
                 let stdout = stdout_thread.join().unwrap();
                 let stderr = stderr_thread.join().unwrap();
+                println!("{}", "Failed".red());
+                println!("Error checking API process status: {}", e);
                 println!("API stdout:");
                 stdout.iter().for_each(|line| println!("{}", line));
                 println!("API stderr:");
                 stderr.iter().for_each(|line| eprintln!("{}", line));
-                return Err(anyhow::anyhow!("Error checking API process status: {}", e));
+                return Err(anyhow::anyhow!("Error checking API process status"));
             }
         }
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
 
-    // Print collected stdout and stderr if API fails to start
     let stdout = stdout_thread.join().unwrap();
     let stderr = stderr_thread.join().unwrap();
+    println!("{}", "Failed".red());
+    println!("API failed to start within the timeout period");
     println!("API stdout:");
     stdout.iter().for_each(|line| println!("{}", line));
     println!("API stderr:");
@@ -335,88 +331,67 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
 
     // Wrap the entire test in a closure
     let test_result = (|| async {
-
-        // Navigate to the donation page
+        print!("Navigating to donation page... ");
         c.goto("http://localhost:1313/donate/ghostkey/").await?;
+        println!("{}", "Ok".green());
 
-        // Wait for the Stripe form to load with a timeout
+        print!("Filling out donation form... ");
         let form = wait_for_element(&c, Locator::Id("payment-form"), Duration::from_secs(10)).await?;
-
-        // Select donation amount
         let amount_radio = form.find(Locator::Css("input[name='amount'][value='20']")).await?;
         amount_radio.click().await?;
-
-        // Select currency
         let currency_select = form.find(Locator::Id("currency")).await?;
         let currency_option = currency_select.find(Locator::Css("option[value='usd']")).await?;
         currency_option.click().await?;
+        println!("{}", "Ok".green());
 
-        // Wait for the Stripe iframe to be present
+        print!("Filling out Stripe payment form... ");
         let stripe_iframe = wait_for_element(&c, Locator::Css("iframe[name^='__privateStripeFrame']"), Duration::from_secs(10)).await?;
-
-        // Switch to the Stripe iframe
         let iframes = c.find_all(Locator::Css("iframe")).await?;
         let iframe_index = iframes.iter().position(|e| e.element_id() == stripe_iframe.element_id()).unwrap() as u16;
         c.enter_frame(Some(iframe_index)).await?;
-
-        // Wait for the card number input to be present and visible inside the iframe
         let card_number = wait_for_element(&c, Locator::Css("input[name='number']"), Duration::from_secs(10)).await?;
         card_number.send_keys("4242424242424242").await?;
-
         let card_expiry = wait_for_element(&c, Locator::Css("input[name='expiry']"), Duration::from_secs(5)).await?;
         card_expiry.send_keys("1225").await?;
-
         let card_cvc = wait_for_element(&c, Locator::Css("input[name='cvc']"), Duration::from_secs(5)).await?;
         card_cvc.send_keys("123").await?;
-
         let postal_code = wait_for_element(&c, Locator::Css("input[name='postalCode']"), Duration::from_secs(5)).await?;
         postal_code.send_keys("12345").await?;
-
-        // Switch back to the default content
         c.enter_frame(None).await?;
+        println!("{}", "Ok".green());
 
-        // Submit the form
+        print!("Submitting payment... ");
         let submit_button = form.find(Locator::Id("submit")).await?;
         submit_button.click().await?;
+        println!("{}", "Ok".green());
 
-        // Check for error message
+        print!("Checking for errors... ");
         if let Ok(error_element) = c.find(Locator::Id("errorMessage")).await {
             if let Ok(error_text) = error_element.text().await {
                 if !error_text.trim().is_empty() {
-                    println!("Error occurred on the page: {}", error_text);
+                    println!("{}", "Failed".red());
                     return Err(anyhow::anyhow!("Error occurred on the page: {}", error_text));
                 }
             }
         }
+        println!("{}", "Ok".green());
 
-        // Wait for the combined key textarea with a longer timeout
+        print!("Waiting for ghost key certificate... ");
         let _combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(60)).await?;
+        println!("{}", "Ok".green());
 
-        // Get the content of the textarea using JavaScript
+        print!("Saving ghost key certificate... ");
         let combined_key_content = c.execute(
             "return document.querySelector('textarea#combinedKey').value;",
             vec![],
         ).await?.as_str().unwrap_or("").to_string();
-
-        // Save the content to a file in the temporary directory
         let temp_dir = env::temp_dir().join("ghostkey_test");
         let output_file = temp_dir.join("ghostkey_certificate.pem");
         std::fs::write(&output_file, combined_key_content.clone())?;
-        println!("Ghost key certificate saved to: {}", output_file.display());
+        println!("{}", "Ok".green());
         
-        // Verify the ghost key certificate using the CLI
+        print!("Verifying ghost key certificate... ");
         let master_verifying_key_file = temp_dir.join("master_verifying_key.pem");
-        println!("Master verifying key file: {:?}", master_verifying_key_file);
-        println!("Ghost certificate file: {:?}", output_file);
-
-        // Log the contents of the master verifying key file
-        println!("Contents of master verifying key file:");
-        if let Ok(contents) = std::fs::read_to_string(&master_verifying_key_file) {
-            println!("{}", contents);
-        } else {
-            println!("Failed to read master verifying key file");
-        }
-
         let output = ProcessCommand::new("cargo")
             .args(&[
                 "run",
@@ -431,45 +406,22 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
             ])
             .output()?;
 
-        println!("Validation command executed. Exit status: {:?}", output.status);
-
         if !output.status.success() {
+            println!("{}", "Failed".red());
             let stderr = String::from_utf8_lossy(&output.stderr);
             let stdout = String::from_utf8_lossy(&output.stdout);
             println!("Ghost key validation failed.");
             println!("Stderr: {}", stderr);
             println!("Stdout: {}", stdout);
-
-            // Print the contents of the ghost certificate file
-            println!("Contents of ghost certificate file:");
-            if let Ok(contents) = std::fs::read_to_string(&output_file) {
-                println!("{}", contents);
-            } else {
-                println!("Failed to read ghost certificate file");
-            }
-
-            // Log the base64 representation of the ghost certificate file
-            println!("Base64 representation of ghost certificate file:");
-            if let Ok(contents) = std::fs::read(&output_file) {
-                use base64::{engine::general_purpose::STANDARD, Engine as _};
-                println!("{}", STANDARD.encode(&contents));
-            } else {
-                println!("Failed to read ghost certificate file for base64 representation");
-            }
-
-            // Analyze the error message for more detailed explanation
             let error_details = analyze_validation_error(&stderr, &stdout);
             println!("Detailed error analysis: {}", error_details);
-
             return Err(anyhow::anyhow!("Ghost key validation failed: {}. Aborting test.", error_details));
-        } else {
-            println!("Ghost key certificate validation succeeded");
         }
+        println!("{}", "Ok".green());
 
         Ok(())
     })().await;
 
-    // If the test failed and wait_on_failure is true, wait for user input
     if test_result.is_err() && wait_on_failure {
         println!("Test failed. Browser window left open for debugging.");
         println!("Press Enter to close the browser and end the test.");
@@ -477,10 +429,7 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         std::io::stdin().read_line(&mut input)?;
     }
 
-    // Close the browser
     c.close().await?;
-
-    // Return the test result
     test_result
 }
 
