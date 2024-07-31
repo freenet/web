@@ -192,7 +192,7 @@ fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std:
                 "../cli/Cargo.toml",
                 "--",
                 "generate-delegate",
-                "--master-key",
+                "--master-signing-key",
                 master_key_file.to_str().unwrap(),
                 "--amount",
                 &amount.to_string(),
@@ -200,7 +200,7 @@ fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std:
                 delegate_dir.to_str().unwrap(),
             ])
             .output()
-            .context("Failed to execute generate-delegate-key command")?;
+            .context("Failed to execute generate-delegate command")?;
 
         if !output.status.success() {
             let error_msg = format!(
