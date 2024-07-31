@@ -13,6 +13,7 @@ use base64::prelude::*;
 use wasm_bindgen::prelude::*;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct KeypairAndBlindResult {
     ec_signing_key: String,
     ec_verifying_key: String,
@@ -20,6 +21,7 @@ struct KeypairAndBlindResult {
     blinding_secret: String,
 }
 
+#[allow(dead_code)]
 fn generate_keypair_and_blind_core(delegate_certificate_base64: String, seed: Vec<u8>) -> Result<KeypairAndBlindResult, String> {
     if seed.len() != 32 {
         return Err("Seed must be exactly 32 bytes".to_string());
@@ -62,6 +64,7 @@ pub fn wasm_generate_keypair_and_blind(delegate_certificate_base64: String, seed
     }
 }
 
+#[allow(dead_code)]
 fn generate_ghostkey_certificate_core(
     delegate_certificate_base64: String,
     blinded_signature_base64: String,
