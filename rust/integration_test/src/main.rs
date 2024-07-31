@@ -183,24 +183,36 @@ fn generate_master_key(temp_dir: &std::path::Path) -> Result<std::path::PathBuf>
 
 fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std::path::Path) -> Result<()> {
     println!("Generating delegate keys in: {:?}", delegate_dir);
-    let output = ProcessCommand::new("bash")
-        .arg("../cli/generate_delegate_keys.sh")
-        .args(&["--master-key", master_key_file.to_str().unwrap()])
-        .arg("--delegate-dir")
-        .arg(delegate_dir)
-        .arg("--overwrite")
-        .output()
-        .context("Failed to execute generate_delegate_keys.sh")?;
+    let amounts = [20, 50, 100]; // Add more amounts if needed
+    for amount in amounts.iter() {
+        let output = ProcessCommand::new("cargo")
+            .args(&[
+                "run",
+                "--manifest-path",
+                "../cli/Cargo.toml",
+                "--",
+                "generate-delegate-key",
+                "--master-key",
+                master_key_file.to_str().unwrap(),
+                "--amount",
+                &amount.to_string(),
+                "--output-dir",
+                delegate_dir.to_str().unwrap(),
+            ])
+            .output()
+            .context("Failed to execute generate-delegate-key command")?;
 
-    if !output.status.success() {
-        let error_msg = format!(
-            "Failed to generate delegate keys. Exit status: {}\nStdout: {}\nStderr: {}",
-            output.status,
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr)
-        );
-        println!("Error: {}", error_msg);
-        return Err(anyhow::anyhow!(error_msg));
+        if !output.status.success() {
+            let error_msg = format!(
+                "Failed to generate delegate key for amount {}. Exit status: {}\nStdout: {}\nStderr: {}",
+                amount,
+                output.status,
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+            println!("Error: {}", error_msg);
+            return Err(anyhow::anyhow!(error_msg));
+        }
     }
 
     println!("Delegate keys generated successfully");
@@ -514,6 +526,8 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
                 temp_dir.join("delegates").to_str().unwrap(),
                 "--output-dir",
                 temp_dir.to_str().unwrap(),
+                "--amount",
+                "20", // Make sure this matches one of the amounts used in generate_delegate_keys
             ])
             .output()?;
 
