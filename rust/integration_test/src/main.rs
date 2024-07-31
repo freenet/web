@@ -501,6 +501,8 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
 
         // Generate a ghost key using the CLI
         println!("Generating ghost key using CLI...");
+        println!("Delegate directory: {:?}", temp_dir.join("delegates"));
+        println!("Output directory: {:?}", temp_dir);
         let cli_output = ProcessCommand::new("cargo")
             .args(&[
                 "run",
@@ -509,9 +511,9 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
                 "--",
                 "generate-ghostkey",
                 "--delegate-dir",
-                temp_dir.join("delegates").join("20").to_str().unwrap(),
+                temp_dir.join("delegates").to_str().unwrap(),
                 "--output-dir",
-                temp_dir.join("cli_ghostkey_certificate.pem").to_str().unwrap(),
+                temp_dir.to_str().unwrap(),
             ])
             .output()?;
 
