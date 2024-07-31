@@ -68,7 +68,7 @@ fn generate_ghostkey_certificate_core(
     blinding_secret_base64: String,
     ec_verifying_key_base64: String,
     ec_signing_key_base64: String
-) -> Result<String, String> {
+) -> Result<Object, String> {
     let blind_signature = BlindSignature::from_base64(&blinded_signature_base64)
         .map_err(|_| "Invalid blinded signature".to_string())?;
 
@@ -128,7 +128,7 @@ pub fn wasm_generate_ghostkey_certificate(
         ec_verifying_key_base64,
         ec_signing_key_base64,
     ) {
-        Ok(result_obj) => Ok(result_obj.into()),
+        Ok(result_obj) => Ok(JsValue::from(result_obj)),
         Err(err) => Err(JsValue::from_str(&format!("Error: {}", err))),
     }
 }
