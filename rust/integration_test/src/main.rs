@@ -85,7 +85,6 @@ async fn start_chromedriver_if_needed() -> Result<Option<Child>> {
 
 async fn kill_process_if_running(port: u16, process_name: &str) -> Result<()> {
     if is_port_in_use(port) {
-        println!("Attempting to kill {} process on port {}", process_name, port);
         kill_process_on_port(port)?;
         tokio::time::sleep(Duration::from_secs(2)).await;
     }
