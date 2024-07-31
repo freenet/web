@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use std::process::{Command as ProcessCommand, Stdio, Child, Output};
+use std::process::{Command as ProcessCommand, Stdio, Child};
 use clap::{Command as ClapCommand, Arg, ArgAction};
 use std::time::Duration;
 use fantoccini::{Client, ClientBuilder, Locator};
@@ -13,7 +13,6 @@ use serde::{Deserialize, Serialize};
 use gklib::armorable::Armorable;
 use gklib::delegate_certificate::DelegateCertificate;
 use gklib::ghostkey_certificate::GhostkeyCertificate;
-use colored::Colorize;
 
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
@@ -34,32 +33,21 @@ async fn main() -> Result<()> {
 
 async fn run() -> Result<()> {
     println!("Starting integration test...");
-    let (_headless, wait_on_failure, visible) = parse_arguments();
+    let (headless, wait_on_failure, visible) = parse_arguments();
     let temp_dir = setup_environment().await?;
-    let (mut hugo_handle, hugo_output, mut api_handle, api_stdout, api_stderr, chromedriver_handle) = start_services(&temp_dir).await?;
+    let (mut hugo_handle, mut api_handle, chromedriver_handle) = start_services(&temp_dir).await?;
 
     // Setup delegate keys
     setup_delegate_keys(&temp_dir).context("Failed to setup delegate keys")?;
 
     // Run the browser test
-    let result = run_browser_test(wait_on_failure, visible, &temp_dir).await;
+    let result = run_browser_test(headless, wait_on_failure, visible, &temp_dir).await;
 
     // Clean up
     cleanup_processes(&mut hugo_handle, &mut api_handle, chromedriver_handle).await;
 
     // Return the result of the browser test
-    if result.is_ok() {
-        println!("{}", "Integration test finished successfully".green());
-    } else {
-        println!("{}", "Integration test failed".red());
-        println!("Hugo output:");
-        println!("{}", String::from_utf8_lossy(&hugo_output.stdout));
-        println!("{}", String::from_utf8_lossy(&hugo_output.stderr));
-        println!("API stdout:");
-        println!("{}", api_stdout);
-        println!("API stderr:");
-        println!("{}", api_stderr);
-    }
+    println!("Integration test finished. Result: {:?}", result);
     result
 }
 
@@ -83,13 +71,13 @@ async fn setup_environment() -> Result<std::path::PathBuf> {
     Ok(temp_dir)
 }
 
-async fn start_services(temp_dir: &std::path::Path) -> Result<(Child, Output, Child, String, String, Option<Child>)> {
+async fn start_services(temp_dir: &std::path::Path) -> Result<(Child, Child, Option<Child>)> {
     let chromedriver_handle = start_chromedriver_if_needed().await?;
     kill_process_if_running(1313, "Hugo").await?;
-    let (hugo_handle, hugo_output) = start_hugo()?;
+    let hugo_handle = start_hugo()?;
     kill_process_if_running(API_PORT, "API").await?;
-    let (api_handle, api_stdout, api_stderr) = start_api(temp_dir).await?;
-    Ok((hugo_handle, hugo_output, api_handle, api_stdout, api_stderr, chromedriver_handle))
+    let api_handle = start_api(temp_dir).await?;
+    Ok((hugo_handle, api_handle, chromedriver_handle))
 }
 
 async fn start_chromedriver_if_needed() -> Result<Option<Child>> {
@@ -104,10 +92,9 @@ async fn start_chromedriver_if_needed() -> Result<Option<Child>> {
 
 async fn kill_process_if_running(port: u16, process_name: &str) -> Result<()> {
     if is_port_in_use(port) {
-        print!("Attempting to kill {} process on port {}... ", process_name, port);
+        println!("Attempting to kill {} process on port {}", process_name, port);
         kill_process_on_port(port)?;
         tokio::time::sleep(Duration::from_secs(2)).await;
-        println!("{}", "Ok".green());
     }
     Ok(())
 }
@@ -237,28 +224,19 @@ fn kill_process_on_port(port: u16) -> Result<()> {
     Ok(())
 }
 
-fn start_hugo() -> Result<(Child, Output)> {
-    let child = ProcessCommand::new("hugo")
+fn start_hugo() -> Result<Child> {
+    ProcessCommand::new("hugo")
         .args(&["server", "--disableFastRender"])
         .current_dir("../../hugo-site")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .context("Failed to start Hugo")?;
-
-    let output = child.wait_with_output()?;
-    Ok((ProcessCommand::new("hugo")
-        .args(&["server", "--disableFastRender"])
-        .current_dir("../../hugo-site")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .context("Failed to start Hugo")?, output))
+        .context("Failed to start Hugo")
 }
 
-async fn start_api(temp_dir: &std::path::Path) -> Result<(Child, String, String)> {
+async fn start_api(temp_dir: &std::path::Path) -> Result<Child> {
     let delegate_dir = temp_dir.join("delegates");
-    print!("Starting API with delegate_dir: {}... ", delegate_dir.display());
+    println!("Starting API with delegate_dir: {}", delegate_dir.display());
     let mut child = ProcessCommand::new("cargo")
         .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", delegate_dir.to_str().unwrap()])
         .stdout(Stdio::piped())
@@ -272,9 +250,11 @@ async fn start_api(temp_dir: &std::path::Path) -> Result<(Child, String, String)
     let stdout_reader = BufReader::new(stdout);
     let stderr_reader = BufReader::new(stderr);
 
+    // Collect stdout and stderr
     let mut stdout_lines = Vec::new();
     let mut stderr_lines = Vec::new();
 
+    // Spawn threads to read stdout and stderr
     let stdout_thread = thread::spawn(move || {
         stdout_reader.lines().for_each(|line| {
             if let Ok(line) = line {
@@ -293,36 +273,48 @@ async fn start_api(temp_dir: &std::path::Path) -> Result<(Child, String, String)
         stderr_lines
     });
 
+    // Wait for the API to start
     let start_time = Instant::now();
     while start_time.elapsed() < API_STARTUP_TIMEOUT {
         match child.try_wait() {
             Ok(Some(status)) => {
-                let stdout = stdout_thread.join().unwrap().join("\n");
-                let stderr = stderr_thread.join().unwrap().join("\n");
-                println!("{}", "Failed".red());
+                // Print collected stdout and stderr if API fails to start
+                let stdout = stdout_thread.join().unwrap();
+                let stderr = stderr_thread.join().unwrap();
+                println!("API stdout:");
+                stdout.iter().for_each(|line| println!("{}", line));
+                println!("API stderr:");
+                stderr.iter().for_each(|line| eprintln!("{}", line));
                 return Err(anyhow::anyhow!("API process exited unexpectedly with status: {}", status));
             }
             Ok(None) => {
+                // Check if the API is responding
                 if is_api_ready().await.is_ok() {
-                    println!("{}", "Ok".green());
-                    let stdout = stdout_thread.join().unwrap().join("\n");
-                    let stderr = stderr_thread.join().unwrap().join("\n");
-                    return Ok((child, stdout, stderr));
+                    println!("API started successfully");
+                    return Ok(child);
                 }
             }
             Err(e) => {
-                let stdout = stdout_thread.join().unwrap().join("\n");
-                let stderr = stderr_thread.join().unwrap().join("\n");
-                println!("{}", "Failed".red());
+                // Print collected stdout and stderr if API fails to start
+                let stdout = stdout_thread.join().unwrap();
+                let stderr = stderr_thread.join().unwrap();
+                println!("API stdout:");
+                stdout.iter().for_each(|line| println!("{}", line));
+                println!("API stderr:");
+                stderr.iter().for_each(|line| eprintln!("{}", line));
                 return Err(anyhow::anyhow!("Error checking API process status: {}", e));
             }
         }
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
 
-    let stdout = stdout_thread.join().unwrap().join("\n");
-    let stderr = stderr_thread.join().unwrap().join("\n");
-    println!("{}", "Failed".red());
+    // Print collected stdout and stderr if API fails to start
+    let stdout = stdout_thread.join().unwrap();
+    let stderr = stderr_thread.join().unwrap();
+    println!("API stdout:");
+    stdout.iter().for_each(|line| println!("{}", line));
+    println!("API stderr:");
+    stderr.iter().for_each(|line| eprintln!("{}", line));
     Err(anyhow::anyhow!("API failed to start within the timeout period"))
 }
 
@@ -360,7 +352,7 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
 }
 
 
-async fn run_browser_test(wait_on_failure: bool, visible: bool, temp_dir: &std::path::Path) -> Result<()> {
+async fn run_browser_test(headless: bool, wait_on_failure: bool, visible: bool, temp_dir: &std::path::Path) -> Result<()> {
     let _temp_dir = temp_dir.to_path_buf(); // Convert to owned PathBuf
     use serde_json::json;
     let mut caps = serde_json::map::Map::new();
