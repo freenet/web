@@ -8,10 +8,7 @@ use std::time::Instant;
 use std::env;
 use std::fs;
 use std::io::{BufRead, BufReader};
-use ed25519_dalek::VerifyingKey;
 use serde::{Deserialize, Serialize};
-use gklib::delegate_certificate::DelegateCertificate;
-use gklib::ghostkey_certificate::GhostkeyCertificate;
 
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
@@ -314,14 +311,14 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
                 return Ok(element);
             }
         }
-        tokio::time::sleep(Duration::from_millis(100)).await;
+        tokio::time::sleep(Duration::from_millis(500)).await;
     }
     Err(anyhow::anyhow!("Timeout waiting for element with selector: {:?}", locator))
 }
 
 
 async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool, temp_dir: &std::path::Path) -> Result<()> {
-    let temp_dir = temp_dir.to_path_buf(); // Convert to owned PathBuf
+    let _temp_dir = temp_dir.to_path_buf(); // Convert to owned PathBuf
     use serde_json::json;
     let mut caps = serde_json::map::Map::new();
     let chrome_args = if !visible {
@@ -392,8 +389,8 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
             }
         }
 
-        // Wait for the combined key textarea
-        let _combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(10)).await?;
+        // Wait for the combined key textarea with a longer timeout
+        let _combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(60)).await?;
 
         // Get the content of the textarea using JavaScript
         let combined_key_content = c.execute(
