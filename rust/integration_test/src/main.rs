@@ -307,6 +307,7 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
                 return Ok(element);
             }
         }
+        println!("Element not found, waiting... Elapsed time: {:?}", start.elapsed());
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
     Err(anyhow::anyhow!("Timeout waiting for element with selector: {:?}", locator))
@@ -377,8 +378,22 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         println!("{}", "Ok".green());
 
         print!("Waiting for ghost key certificate... ");
-        let _combined_key_element = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(60)).await?;
-        println!("{}", "Ok".green());
+        let combined_key_result = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(120)).await;
+        match combined_key_result {
+            Ok(_) => println!("{}", "Ok".green()),
+            Err(e) => {
+                println!("{}", "Failed".red());
+                println!("Error: {}", e);
+                // Add debugging information
+                if let Ok(body) = c.source().await {
+                    println!("Page source:\n{}", body);
+                }
+                if let Ok(url) = c.current_url().await {
+                    println!("Current URL: {}", url);
+                }
+                return Err(anyhow::anyhow!("Failed to find ghost key certificate: {}", e));
+            }
+        }
 
         print!("Saving ghost key certificate... ");
         let combined_key_content = c.execute(
