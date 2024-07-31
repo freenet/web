@@ -185,6 +185,7 @@ fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std:
     println!("Generating delegate keys in: {:?}", delegate_dir);
     let amounts = [20, 50, 100]; // Add more amounts if needed
     for amount in amounts.iter() {
+        let info = format!(r#"{{"amount": {}, "currency": "USD"}}"#, amount);
         let output = ProcessCommand::new("cargo")
             .args(&[
                 "run",
@@ -194,8 +195,8 @@ fn generate_delegate_keys(master_key_file: &std::path::Path, delegate_dir: &std:
                 "generate-delegate",
                 "--master-signing-key",
                 master_key_file.to_str().unwrap(),
-                "--amount",
-                &amount.to_string(),
+                "--info",
+                &info,
                 "--output-dir",
                 delegate_dir.to_str().unwrap(),
             ])
