@@ -82,6 +82,7 @@ script = """
 
 [tasks.build-hugo-dev]
 description = "Build Hugo site in development mode"
+dependencies = ["build-wasm-dev"]
 script = """
 cd hugo-site
 hugo
@@ -89,6 +90,7 @@ hugo
 
 [tasks.build-hugo-release]
 description = "Build Hugo site in release mode"
+dependencies = ["build-wasm-release"]
 script = """
 cd hugo-site
 hugo --minify
