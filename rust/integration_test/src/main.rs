@@ -382,7 +382,7 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         }
         print_result(true);
 
-        print_task("Waiting for ghost key certificate");
+        print_task("Waiting for ghostkey certificate");
         let combined_key_result = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(120)).await;
         if combined_key_result.is_err() {
             let e = combined_key_result.unwrap_err();
@@ -395,11 +395,11 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
                 println!("Current URL: {}", url);
             }
             print_result(false);
-            return Err(anyhow::anyhow!("Failed to find ghost key certificate: {}", e));
+            return Err(anyhow::anyhow!("Failed to find ghostkey certificate: {}", e));
         }
         print_result(true);
 
-        print_task("Saving ghost key certificate");
+        print_task("Saving ghostkey certificate");
         let combined_key_content = c.execute(
             "return document.querySelector('textarea#combinedKey').value;",
             vec![],
@@ -409,7 +409,7 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         std::fs::write(&output_file, combined_key_content.clone())?;
         print_result(true);
         
-        print_task("Verifying ghost key certificate");
+        print_task("Verifying ghostkey certificate");
         let master_verifying_key_file = temp_dir.join("master_verifying_key.pem");
         let output = ProcessCommand::new("cargo")
             .args(&[
@@ -428,17 +428,17 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             let stdout = String::from_utf8_lossy(&output.stdout);
-            println!("{}", "Ghost key validation failed.".red());
+            println!("{}", "Ghostkey validation failed.".red());
             println!("Stderr: {}", stderr);
             println!("Stdout: {}", stdout);
             let error_details = analyze_validation_error(&stderr, &stdout);
             println!("Detailed error analysis: {}", error_details);
             print_result(false);
-            return Err(anyhow::anyhow!("Ghost key validation failed: {}. Aborting test.", error_details));
+            return Err(anyhow::anyhow!("Ghostkey validation failed: {}. Aborting test.", error_details));
         }
 
         print_result(true);
-        println!("{}", "Ghost key certificate verified successfully.".green());
+        println!("Ghostkey certificate {}.", "verified".green());
         Ok(())
     })().await;
 
@@ -462,16 +462,16 @@ struct CertificateInfo {
 
 fn analyze_validation_error(stderr: &str, stdout: &str) -> String {
     if stderr.contains("Signature verification failed") {
-        "The ghost key certificate signature is invalid. This could be due to tampering, use of an incorrect master key, or a mismatch between the certificate data and the signature."
+        "The ghostkey certificate signature is invalid. This could be due to tampering, use of an incorrect master key, or a mismatch between the certificate data and the signature."
     } else if stderr.contains("Invalid certificate format") {
-        "The ghost key certificate has an invalid format. It may be corrupted or not properly encoded."
+        "The ghostkey certificate has an invalid format. It may be corrupted or not properly encoded."
     } else if stderr.contains("Delegate certificate validation failed") {
-        "The delegate certificate within the ghost key certificate is invalid. This could indicate an issue with the delegate key generation or signing process."
+        "The delegate certificate within the ghostkey certificate is invalid. This could indicate an issue with the delegate key generation or signing process."
     } else if stderr.contains("Invalid ghostkey verifying key") {
-        "The ghost key verifying key in the certificate is invalid. This could be due to incorrect key generation or corruption of the certificate."
+        "The ghostkey verifying key in the certificate is invalid. This could be due to incorrect key generation or corruption of the certificate."
     } else if stdout.contains("amount mismatch") {
-        "The amount in the ghost key certificate does not match the expected value. This could indicate tampering or an error in the certificate generation process."
+        "The amount in the ghostkey certificate does not match the expected value. This could indicate tampering or an error in the certificate generation process."
     } else {
-        "An unknown error occurred during ghost key validation. Please check the full error message for more details."
+        "An unknown error occurred during ghostkey validation. Please check the full error message for more details."
     }.to_string()
 }
