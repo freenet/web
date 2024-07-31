@@ -18,6 +18,62 @@ pub struct GhostkeyCertificate {
     pub signature: RSASignature,
 }
 
+impl GhostkeyCertificate {
+    pub fn new(
+        delegate_certificate: &DelegateCertificate,
+        delegate_signing_key: &RSASigningKey,
+    ) -> (Self, SigningKey) {
+        let delegate_keypair = KeyPair::new(
+            delegate_signing_key.public_key().unwrap(),
+            delegate_signing_key.clone(),
+        );
+        let (ghost_signing_key, ghost_verifying_key) = create_keypair(&mut OsRng).unwrap();
+        let ghost_signing_key = SigningKey::from(ghost_signing_key);
+        let ghost_verifying_key = VerifyingKey::from(ghost_verifying_key);
+
+        (
+            Self {
+                delegate: delegate_certificate.clone(),
+                verifying_key: ghost_verifying_key.clone(),
+                signature: unblinded_rsa_sign(&delegate_keypair, &Armorable::to_bytes(&ghost_verifying_key).unwrap())
+                    .unwrap(),
+            },
+            ghost_signing_key.clone(),
+        )
+    }
+
+    pub fn verify(
+        &self,
+        master_verifying_key: &VerifyingKey,
+    ) -> Result<String, Box<GhostkeyError>> {
+        // Verify delegate certificate
+        let info = self
+            .delegate
+            .verify(master_verifying_key)
+            .map_err(|e| SignatureVerificationError(format!("Failed to verify delegate: {}", e)))?;
+
+        // Verify ghostkey certificate
+        let verification = self
+            .delegate
+            .payload
+            .delegate_verifying_key
+            .verify(
+                &self.signature,
+                None,
+                Armorable::to_bytes(&self.verifying_key).unwrap(),
+                &Options::default(),
+            )
+            .map_err(|e| RSAError(format!("Failed to verify ghostkey: {}", e)));
+
+        match verification {
+            Ok(_) => Ok(info),
+            Err(e) => Err(Box::new(SignatureVerificationError(
+                format!("Failed to verify ghostkey certificate: {}", e),
+            ))),
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -122,58 +178,3 @@ mod tests {
     }
 }
 
-impl GhostkeyCertificate {
-    pub fn new(
-        delegate_certificate: &DelegateCertificate,
-        delegate_signing_key: &RSASigningKey,
-    ) -> (Self, SigningKey) {
-        let delegate_keypair = KeyPair::new(
-            delegate_signing_key.public_key().unwrap(),
-            delegate_signing_key.clone(),
-        );
-        let (ghost_signing_key, ghost_verifying_key) = create_keypair(&mut OsRng).unwrap();
-        let ghost_signing_key = SigningKey::from(ghost_signing_key);
-        let ghost_verifying_key = VerifyingKey::from(ghost_verifying_key);
-
-        (
-            Self {
-                delegate: delegate_certificate.clone(),
-                verifying_key: ghost_verifying_key.clone(),
-                signature: unblinded_rsa_sign(&delegate_keypair, &ghost_verifying_key.to_bytes())
-                    .unwrap(),
-            },
-            ghost_signing_key.clone(),
-        )
-    }
-
-    pub fn verify(
-        &self,
-        master_verifying_key: &VerifyingKey,
-    ) -> Result<String, Box<GhostkeyError>> {
-        // Verify delegate certificate
-        let info = self
-            .delegate
-            .verify(master_verifying_key)
-            .map_err(|e| SignatureVerificationError(format!("Failed to verify delegate: {}", e)))?;
-
-        // Verify ghostkey certificate
-        let verification = self
-            .delegate
-            .payload
-            .delegate_verifying_key
-            .verify(
-                &self.signature,
-                None,
-                Armorable::to_bytes(&self.verifying_key).unwrap(),
-                &Options::default(),
-            )
-            .map_err(|e| RSAError(format!("Failed to verify ghostkey: {}", e)));
-
-        match verification {
-            Ok(_) => Ok(info),
-            Err(e) => Err(Box::new(SignatureVerificationError(
-                format!("Failed to verify ghostkey certificate: {}", e),
-            ))),
-        }
-    }
-}
