@@ -14,15 +14,28 @@ use colored::*;
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
 
+fn print_task(description: &str) {
+    print!("{}... ", description);
+    std::io::stdout().flush().unwrap();
+}
+
+fn print_result(success: bool) {
+    if success {
+        println!("{}", "Ok".green());
+    } else {
+        println!("{}", "Failed".red());
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     match run().await {
         Ok(_) => {
-            println!("Integration test completed successfully");
+            println!("{}", "Integration test completed successfully".green());
             Ok(())
         }
         Err(e) => {
-            eprintln!("Integration test failed: {}", e);
+            eprintln!("{}: {}", "Integration test failed".red(), e);
             Err(e)
         }
     }
@@ -109,15 +122,15 @@ fn kill_process(handle: &mut Child, process_name: &str) {
 fn setup_delegate_keys(temp_dir: &std::path::Path) -> Result<()> {
     let delegate_dir = temp_dir.join("delegates");
 
-    print!("Generating master key... ");
+    print_task("Generating master key");
     let master_key_file = generate_master_key(temp_dir)?;
-    println!("{}", "Ok".green());
+    print_result(true);
 
-    print!("Generating delegate keys... ");
+    print_task("Generating delegate keys");
     generate_delegate_keys(&master_key_file, &delegate_dir)?;
-    println!("{}", "Ok".green());
+    print_result(true);
 
-    env::set_var("GHOSTKEY_DELEGATE_DIR", delegate_dir.to_str().unwrap());
+    env::set_var("GHOSTKEY_DELEGATE_KEY_DIR", delegate_dir.to_str().unwrap());
     Ok(())
 }
 
@@ -309,17 +322,19 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
 
     // Wrap the entire test in a closure
     let test_result = (|| async {
-        println!("Navigating to donation page...");
+        print_task("Navigating to donation page");
         c.goto("http://localhost:1313/donate/ghostkey/").await?;
+        print_result(true);
 
-        println!("Filling out donation form...");
+        print_task("Filling out donation form");
         let _form = wait_for_element(&c, Locator::Id("payment-form"), Duration::from_secs(30)).await?;
         let amount_radio = wait_for_element(&c, Locator::Css("input[name='amount'][value='20']"), Duration::from_secs(10)).await?;
         amount_radio.click().await?;
         let currency_select = wait_for_element(&c, Locator::Id("currency"), Duration::from_secs(10)).await?;
         currency_select.select_by_value("usd").await?;
+        print_result(true);
 
-        println!("Filling out Stripe payment form...");
+        print_task("Filling out Stripe payment form");
         
         // Wait for the submit button to be visible before proceeding
         wait_for_element(&c, Locator::Id("submit"), Duration::from_secs(30)).await?;
@@ -347,21 +362,25 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         let postal_code = wait_for_element(&c, Locator::Css("input[name='postalCode']"), Duration::from_secs(10)).await?;
         postal_code.send_keys("12345").await?;
         c.enter_frame(None).await?;
+        print_result(true);
 
-        println!("Submitting payment...");
+        print_task("Submitting payment");
         let submit_button = wait_for_element(&c, Locator::Id("submit"), Duration::from_secs(10)).await?;
         submit_button.click().await?;
+        print_result(true);
 
-        println!("Checking for errors...");
+        print_task("Checking for errors");
         if let Ok(error_element) = c.find(Locator::Id("errorMessage")).await {
             if let Ok(error_text) = error_element.text().await {
                 if !error_text.trim().is_empty() {
+                    print_result(false);
                     return Err(anyhow::anyhow!("Error occurred on the page: {}", error_text));
                 }
             }
         }
+        print_result(true);
 
-        println!("Waiting for ghost key certificate...");
+        print_task("Waiting for ghost key certificate");
         let combined_key_result = wait_for_element(&c, Locator::Css("textarea#combinedKey"), Duration::from_secs(120)).await;
         if combined_key_result.is_err() {
             let e = combined_key_result.unwrap_err();
@@ -373,10 +392,12 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
             if let Ok(url) = c.current_url().await {
                 println!("Current URL: {}", url);
             }
+            print_result(false);
             return Err(anyhow::anyhow!("Failed to find ghost key certificate: {}", e));
         }
+        print_result(true);
 
-        println!("Saving ghost key certificate...");
+        print_task("Saving ghost key certificate");
         let combined_key_content = c.execute(
             "return document.querySelector('textarea#combinedKey').value;",
             vec![],
@@ -384,8 +405,9 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         let temp_dir = env::temp_dir().join("ghostkey_test");
         let output_file = temp_dir.join("ghostkey_certificate.pem");
         std::fs::write(&output_file, combined_key_content.clone())?;
+        print_result(true);
         
-        println!("Verifying ghost key certificate...");
+        print_task("Verifying ghost key certificate");
         let master_verifying_key_file = temp_dir.join("master_verifying_key.pem");
         let output = ProcessCommand::new("cargo")
             .args(&[
@@ -404,20 +426,22 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, visible: bool,
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             let stdout = String::from_utf8_lossy(&output.stdout);
-            println!("Ghost key validation failed.");
+            println!("{}", "Ghost key validation failed.".red());
             println!("Stderr: {}", stderr);
             println!("Stdout: {}", stdout);
             let error_details = analyze_validation_error(&stderr, &stdout);
             println!("Detailed error analysis: {}", error_details);
+            print_result(false);
             return Err(anyhow::anyhow!("Ghost key validation failed: {}. Aborting test.", error_details));
         }
 
-        println!("Ghost key certificate verified successfully.");
+        print_result(true);
+        println!("{}", "Ghost key certificate verified successfully.".green());
         Ok(())
     })().await;
 
     if test_result.is_err() && wait_on_failure {
-        println!("Test failed. Browser window left open for debugging.");
+        println!("{}", "Test failed. Browser window left open for debugging.".yellow());
         println!("Press Enter to close the browser and end the test.");
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;
