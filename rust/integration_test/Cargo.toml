@@ -16,5 +16,5 @@ serde_json = "1.0"
 ghostkey = { path = "../cli" }
 gklib = { path = "../gklib" }
 curve25519-dalek = { version = "4.1.3", features = ["rand_core", "serde"]}
-ed25519-dalek = { version = "2.1.1", features = ["rand_core", "serde"]}[dependencies]
+ed25519-dalek = { version = "2.1.1", features = ["rand_core", "serde"]}
 colored = "2.0"
