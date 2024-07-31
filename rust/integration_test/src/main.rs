@@ -9,7 +9,7 @@ use std::env;
 use std::fs;
 use std::io::{BufRead, BufReader};
 use ed25519_dalek::VerifyingKey;
-use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use gklib::armorable::Armorable;
 use gklib::delegate_certificate::DelegateCertificate;
 use gklib::ghostkey_certificate::GhostkeyCertificate;
@@ -556,15 +556,12 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
         let cli_cert_info = inspect_ghost_key_certificate(&cli_ghost_key, master_verifying_key)?;
         
         // Parse cli_cert_info as JSON before inspecting it
-        let cert_info: CertificateInfo = serde_json::from_str(&cli_cert_info)?;
-        
-        
         println!("Inspecting browser-generated ghost key certificate:");
         let browser_cert_info = inspect_ghost_key_certificate(&browser_ghost_key, master_verifying_key)?;
 
         // Parse both cert_info strings as JSON
-        let cli_cert_info: serde_json::Value = serde_json::from_str(&cli_cert_info)?;
-        let browser_cert_info: serde_json::Value = serde_json::from_str(&browser_cert_info)?;
+        let cli_cert_info: Value = serde_json::from_str(&cli_cert_info)?;
+        let browser_cert_info: Value = serde_json::from_str(&browser_cert_info)?;
 
         // Compare relevant parts of the certificates
         let fields_to_compare = ["version", "amount", "currency"];
