@@ -10,7 +10,6 @@ dependencies = [
     "build-wasm-dev",
     "build-api-dev",
     "build-cli-dev",
-    "generate-delegate-keys",
     "test-ghostkey",
     "build-hugo-dev"
 ]
@@ -21,7 +20,6 @@ dependencies = [
     "build-wasm-release",
     "build-api-release",
     "build-cli-release",
-    "generate-delegate-keys",
     "test-ghostkey",
     "build-hugo-release"
 ]
