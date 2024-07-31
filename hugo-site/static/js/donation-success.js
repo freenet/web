@@ -215,7 +215,7 @@ function displayCertificate(publicKey, privateKey, ghostkeyCertificateBase64) {
     // Format the certificate output
     const formattedCertificate = `-----BEGIN GHOSTKEY_CERTIFICATE-----
 ${wrapBase64(ghostkeyCertificateBase64, 64)}
------END GHOSTKEY_ERTIFICATE-----`;
+-----END GHOSTKEY_CERTIFICATE-----`;
 
     // Format the ghost signing key output
     const formattedSigningKey = `-----BEGIN GHOST KEY-----

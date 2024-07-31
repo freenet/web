@@ -597,7 +597,7 @@ struct CertificateInfo {
     currency: String,
 }
 
-fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateInfo> {
+fn inspect_ghost_key_certificate(combined_key_text: &str, master_verifying_key : VerifyingKey) -> Result<CertificateInfo> {
     use std::path::Path;
     use gklib::armorable::*;
 
@@ -622,45 +622,10 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     let delegate_certificate = DelegateCertificate::from_file(delegate_key_path)?;
 
     println!("Loaded delegate key from file. Byte length: {}", delegate_certificate.to_bytes().unwrap().len());
-    /*
-        // Compare the loaded delegate key with the one in the ghost key certificate
-        if delegate_key_bytes == ghost_key_cert.delegate_certificate {
-            println!("Delegate key in ghost key certificate matches the one from file");
-        } else {
-            println!("Warning: Delegate key in ghost key certificate does not match the one from file");
-            println!("File delegate key (first 100 bytes): {:?}", &delegate_key_bytes[..100.min(delegate_key_bytes.len())]);
-            println!("Certificate delegate key (first 100 bytes): {:?}", &ghost_key_cert.delegate_certificate[..100.min(ghost_key_cert.delegate_certificate.len())]);
-        }
     
-        // Attempt to deserialize the delegate certificate
-        let delegate_cert: DelegateKeyCertificate = match ciborium::de::from_reader(&ghost_key_cert.delegate_certificate[..]) {
-            Ok(cert) => {
-                println!("Successfully deserialized delegate certificate");
-                cert
-            },
-            Err(e) => {
-                println!("Error deserializing delegate certificate: {:?}", e);
-                println!("Delegate certificate content (first 100 bytes): {:?}", &ghost_key_cert.delegate_certificate[..100.min(ghost_key_cert.delegate_certificate.len())]);
-                return Err(anyhow::anyhow!("Failed to deserialize delegate certificate: {:?}", e));
-            }
-        };
+    // Verify the ghost key certificate
     
-        println!("\nDelegate Certificate (deserialized):");
-        println!("Verifying Key: {:?}", delegate_cert.verifying_key);
-        println!("Info: {}", delegate_cert.info.blue());
-        println!("Signature: {:?}", delegate_cert.signature);
-    
-        // Parse the JSON string containing the certificate info
-        let info: serde_json::Value = serde_json::from_str(&delegate_cert.info)?;
-        println!("\nInfo:");
-        println!("{}", serde_json::to_string_pretty(&info)?);
-    
-        // Extract amount and currency
-        let mut cert_info = CertificateInfo {
-            version: ghost_key_cert.version,
-            amount: info.get("amount").and_then(|v| v.as_u64()).unwrap_or(0),
-            currency: info.get("currency").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-        };
+    ghostkey_certificate.verify()?;
     
         // Verify that the delegate certificate contains the correct amount
         if cert_info.amount == 20 {
@@ -671,8 +636,7 @@ fn inspect_ghost_key_certificate(combined_key_text: &str) -> Result<CertificateI
     
         println!("Ghost key certificate inspection completed");
         Ok(cert_info)
-        */
-    todo!()
+
 }
 fn analyze_validation_error(stderr: &str, stdout: &str) -> String {
     if stderr.contains("Signature verification failed") {
