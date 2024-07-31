@@ -10,6 +10,7 @@ use std::fs;
 use std::io::{BufRead, BufReader};
 use serde::{Deserialize, Serialize};
 use colored::*;
+use std::io::Write;
 
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
@@ -96,7 +97,7 @@ async fn start_chromedriver_if_needed() -> Result<Option<Child>> {
     }
 }
 
-async fn kill_process_if_running(port: u16, process_name: &str) -> Result<()> {
+async fn kill_process_if_running(port: u16, _process_name: &str) -> Result<()> {
     if is_port_in_use(port) {
         kill_process_on_port(port)?;
         tokio::time::sleep(Duration::from_secs(2)).await;
