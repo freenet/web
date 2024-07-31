@@ -3,7 +3,7 @@ use std::env;
 use clap::{Arg, Command};
 use dotenv::dotenv;
 use log::{error, info, LevelFilter};
-use rocket::{catchers, get, launch, routes, Config};
+use rocket::{catchers, get, launch, routes, Config, figment::Figment};
 use rocket::{catch, Request};
 use rocket::fairing::AdHoc;
 use rocket::http::Header;
@@ -41,19 +41,14 @@ fn rocket() -> _ {
         .arg(Arg::new("tls-cert")
             .long("tls-cert")
             .value_name("FILE")
-            .help("Path to TLS certificate file")
-            .required(true))
+            .help("Path to TLS certificate file"))
         .arg(Arg::new("tls-key")
             .long("tls-key")
             .value_name("FILE")
-            .help("Path to TLS private key file")
-            .required(true))
+            .help("Path to TLS private key file"))
         .get_matches();
 
     let delegate_dir = matches.get_one::<String>("delegate-dir").unwrap();
-    let tls_cert = matches.get_one::<String>("tls-cert").unwrap();
-    let tls_key = matches.get_one::<String>("tls-key").unwrap();
-
     env::set_var(DELEGATE_DIR, delegate_dir);
 
     env_logger::builder()
@@ -71,9 +66,15 @@ fn rocket() -> _ {
 
     env::var("DELEGATE_DIR").expect("DELEGATE_DIR environment variable not set");
     
-    let config = Config::figment()
-        .merge(("tls.certs", tls_cert))
-        .merge(("tls.key", tls_key));
+    let config = if let (Some(tls_cert), Some(tls_key)) = (matches.get_one::<String>("tls-cert"), matches.get_one::<String>("tls-key")) {
+        info!("TLS certificate and key provided. Starting in HTTPS mode.");
+        Config::figment()
+            .merge(("tls.certs", tls_cert))
+            .merge(("tls.key", tls_key))
+    } else {
+        info!("No TLS certificate and key provided. Starting in HTTP mode.");
+        Config::figment()
+    };
 
     rocket::custom(config)
         .attach(routes::CORS)
