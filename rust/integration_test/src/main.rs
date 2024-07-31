@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use std::process::{Command as ProcessCommand, Stdio, Child};
-use clap::{Command as ClapCommand, Arg};
+use clap::{Command as ClapCommand, Arg, ArgAction};
 use std::time::Duration;
 use fantoccini::{Client, ClientBuilder, Locator};
 use std::thread;
@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
 
 async fn run() -> Result<()> {
     println!("Starting integration test...");
-    let headless = parse_arguments();
+    let (headless, wait_on_failure) = parse_arguments();
     let temp_dir = setup_environment().await?;
     let (mut hugo_handle, mut api_handle, chromedriver_handle) = start_services(&temp_dir).await?;
 
@@ -41,10 +41,7 @@ async fn run() -> Result<()> {
     setup_delegate_keys(&temp_dir).context("Failed to setup delegate keys")?;
 
     // Run the browser test
-    let result = run_browser_test(headless, &temp_dir).await;
-
-    // Keep the browser open for debugging, regardless of the test result
-    wait_for_user_input("Test completed. Browser window left open for debugging. Press Enter to close the browser and end the test.");
+    let result = run_browser_test(headless, wait_on_failure, &temp_dir).await;
 
     // Clean up
     cleanup_processes(&mut hugo_handle, &mut api_handle, chromedriver_handle).await;
@@ -54,13 +51,18 @@ async fn run() -> Result<()> {
     result
 }
 
-fn parse_arguments() -> bool {
+fn parse_arguments() -> (bool, bool) {
     let matches = ClapCommand::new("Integration Test")
         .arg(Arg::new("headless")
             .long("headless")
-            .help("Run browser in headless mode"))
+            .help("Run browser in headless mode")
+            .action(ArgAction::SetTrue))
+        .arg(Arg::new("wait-on-failure")
+            .long("wait-on-failure")
+            .help("Wait for user input if the test fails")
+            .action(ArgAction::SetTrue))
         .get_matches();
-    matches.contains_id("headless")
+    (matches.get_flag("headless"), matches.get_flag("wait-on-failure"))
 }
 
 async fn setup_environment() -> Result<std::path::PathBuf> {
@@ -350,7 +352,7 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
 }
 
 
-async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<()> {
+async fn run_browser_test(headless: bool, wait_on_failure: bool, temp_dir: &std::path::Path) -> Result<()> {
     let _temp_dir = temp_dir.to_path_buf(); // Convert to owned PathBuf
     use serde_json::json;
     let mut caps = serde_json::map::Map::new();
@@ -502,11 +504,13 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
         Ok(())
     })().await;
 
-    // Print the message and wait for user input regardless of the test result
-    println!("Test completed. Browser window left open for debugging.");
-    println!("Press Enter to close the browser and end the test.");
-    let mut input = String::new();
-    std::io::stdin().read_line(&mut input)?;
+    // If the test failed and wait_on_failure is true, wait for user input
+    if test_result.is_err() && wait_on_failure {
+        println!("Test failed. Browser window left open for debugging.");
+        println!("Press Enter to close the browser and end the test.");
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input)?;
+    }
 
     // Close the browser
     c.close().await?;
