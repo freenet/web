@@ -559,15 +559,32 @@ async fn run_browser_test(headless: bool, temp_dir: &std::path::Path) -> Result<
         let cert_info: CertificateInfo = serde_json::from_str(&cli_cert_info)?;
         
         
+        println!("Inspecting browser-generated ghost key certificate:");
+        let browser_cert_info = inspect_ghost_key_certificate(&browser_ghost_key, master_verifying_key)?;
+
+        // Parse both cert_info strings as JSON
+        let cli_cert_info: serde_json::Value = serde_json::from_str(&cli_cert_info)?;
+        let browser_cert_info: serde_json::Value = serde_json::from_str(&browser_cert_info)?;
+
         // Compare relevant parts of the certificates
-        if cli_cert_info.version == cert_info.version &&
-            cli_cert_info.amount == browser_cert_info.amount &&
-            cli_cert_info.currency == browser_cert_info.currency {
+        let fields_to_compare = ["version", "amount", "currency"];
+        let mut all_fields_match = true;
+
+        for field in fields_to_compare.iter() {
+            if cli_cert_info[field] == browser_cert_info[field] {
+                println!("{} matches: {}", field, cli_cert_info[field]);
+            } else {
+                println!("{} mismatch - CLI: {}, Browser: {}", field, cli_cert_info[field], browser_cert_info[field]);
+                all_fields_match = false;
+            }
+        }
+
+        if all_fields_match {
             println!("CLI-generated and browser-generated ghost keys have matching version, amount, and currency");
         } else {
-            println!("Warning: CLI-generated and browser-generated ghost keys differ in version, amount, or currency");
-            println!("CLI-generated: {:?}", cli_cert_info);
-            println!("Browser-generated: {:?}", browser_cert_info);
+            println!("Warning: CLI-generated and browser-generated ghost keys differ in one or more fields");
+            println!("CLI-generated: {}", serde_json::to_string_pretty(&cli_cert_info)?);
+            println!("Browser-generated: {}", serde_json::to_string_pretty(&browser_cert_info)?);
         }
 
         // Verify both certificates
