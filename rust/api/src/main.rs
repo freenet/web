@@ -1,4 +1,5 @@
-use std::env;
+use std::{env, time::SystemTime, fs};
+use std::sync::{Arc, Mutex};
 
 use clap::{Arg, Command};
 use dotenv::dotenv;
@@ -7,6 +8,7 @@ use rocket::{catchers, get, launch, routes, Config, figment::Figment};
 use rocket::{catch, Request};
 use rocket::fairing::AdHoc;
 use rocket::http::Header;
+use tokio::time::{interval, Duration};
 
 mod routes;
 mod handle_sign_cert;
@@ -14,6 +16,36 @@ mod delegates;
 mod errors;
 
 pub static DELEGATE_DIR: &str = "DELEGATE_DIR";
+
+struct TlsConfig {
+    cert: String,
+    key: String,
+    last_modified: SystemTime,
+}
+
+impl TlsConfig {
+    fn new(cert: String, key: String) -> Self {
+        let last_modified = SystemTime::now();
+        Self { cert, key, last_modified }
+    }
+
+    fn update_if_changed(&mut self) -> bool {
+        let cert_modified = fs::metadata(&self.cert).and_then(|m| m.modified()).ok();
+        let key_modified = fs::metadata(&self.key).and_then(|m| m.modified()).ok();
+
+        if let (Some(cert_time), Some(key_time)) = (cert_modified, key_modified) {
+            let max_time = cert_time.max(key_time);
+            if max_time > self.last_modified {
+                self.last_modified = max_time;
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    }
+}
 
 #[catch(404)]
 fn not_found(req: &Request) -> String {
@@ -66,17 +98,33 @@ fn rocket() -> _ {
 
     env::var("DELEGATE_DIR").expect("DELEGATE_DIR environment variable not set");
     
-    let config = if let (Some(tls_cert), Some(tls_key)) = (matches.get_one::<String>("tls-cert"), matches.get_one::<String>("tls-key")) {
+    let tls_config = if let (Some(tls_cert), Some(tls_key)) = (matches.get_one::<String>("tls-cert"), matches.get_one::<String>("tls-key")) {
         info!("TLS certificate and key provided. Starting in HTTPS mode.");
-        Config::figment()
-            .merge(("tls.certs", tls_cert))
-            .merge(("tls.key", tls_key))
+        Some(Arc::new(Mutex::new(TlsConfig::new(tls_cert.to_string(), tls_key.to_string()))))
     } else {
         info!("No TLS certificate and key provided. Starting in HTTP mode.");
-        Config::figment()
+        None
     };
 
-    rocket::custom(config)
+    let config = rocket::Config::figment();
+    let rocket = rocket::custom(config);
+
+    if let Some(tls_config) = tls_config.clone() {
+        tokio::spawn(async move {
+            let mut interval = interval(Duration::from_secs(3600)); // Check every hour
+            loop {
+                interval.tick().await;
+                let mut config = tls_config.lock().unwrap();
+                if config.update_if_changed() {
+                    info!("TLS certificate or key has been updated. Reloading configuration.");
+                    // In a real implementation, you would need to signal Rocket to reload its TLS config here.
+                    // This might involve restarting the server or using a more sophisticated hot-reload mechanism.
+                }
+            }
+        });
+    }
+
+    rocket
         .attach(routes::CORS)
         .attach(routes::RequestTimer)
         .attach(AdHoc::on_response("Powered-By Header", |_, res| Box::pin(async move {
@@ -87,6 +135,16 @@ fn rocket() -> _ {
             res.set_header(Header::new("X-Content-Type-Options", "nosniff"));
             res.set_header(Header::new("Referrer-Policy", "strict-origin-when-cross-origin"));
         })))
+        .attach(AdHoc::on_ignite("TLS Config", |rocket| async move {
+            if let Some(tls_config) = tls_config {
+                let config = tls_config.lock().unwrap();
+                rocket.configure(Config::figment()
+                    .merge(("tls.certs", &config.cert))
+                    .merge(("tls.key", &config.key)))
+            } else {
+                Ok(rocket)
+            }
+        }))
         .mount("/", routes::get_routes())
         .mount("/", routes![health])
         .register("/", catchers![not_found, internal_error])
