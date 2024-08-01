@@ -4,11 +4,11 @@ use std::sync::{Arc, Mutex};
 use clap::{Arg, Command};
 use dotenv::dotenv;
 use log::{error, info, LevelFilter};
-use rocket::{catchers, get, launch, routes, Config, figment::Figment};
+use rocket::{catchers, get, launch, routes, Config};
 use rocket::{catch, Request};
 use rocket::fairing::AdHoc;
 use rocket::http::Header;
-use tokio::time::{interval, Duration};
+use rocket::tokio::time::{interval, Duration};
 
 mod routes;
 mod handle_sign_cert;
@@ -142,7 +142,7 @@ fn rocket() -> _ {
                     .merge(("tls.certs", &config.cert))
                     .merge(("tls.key", &config.key)))
             } else {
-                Ok(rocket)
+                rocket
             }
         }))
         .mount("/", routes::get_routes())
