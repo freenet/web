@@ -8,7 +8,7 @@ use rocket::{catchers, get, launch, routes, Config};
 use rocket::{catch, Request};
 use rocket::fairing::AdHoc;
 use rocket::http::Header;
-use rocket::tokio::time::{interval, Duration};
+use rocket::tokio::{self, time::{interval, Duration}};
 
 mod routes;
 mod handle_sign_cert;
