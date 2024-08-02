@@ -1,9 +1,8 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use fantoccini::{Client, ClientBuilder, Locator};
 use std::time::{Duration, Instant};
 use std::path::Path;
 use std::process::Command;
-use std::env;
 use serde_json::json;
 use colored::*;
 

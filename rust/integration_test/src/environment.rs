@@ -3,6 +3,8 @@ use std::process::Command;
 use std::path::{Path, PathBuf};
 use std::env;
 use std::fs;
+use std::io::Write;
+use colored::Colorize;
 
 pub async fn setup_environment() -> Result<PathBuf> {
     let temp_dir = env::temp_dir().join("ghost_key_test");
