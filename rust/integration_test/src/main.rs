@@ -15,6 +15,7 @@ async fn main() -> Result<()> {
         }
         Err(e) => {
             eprintln!("{}: {}", "Integration test failed".red(), e);
+            eprintln!("Error details: {:?}", e);
             Err(e)
         }
     }
