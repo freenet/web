@@ -121,14 +121,17 @@ async fn main() {
                     // Signal the server to reload its TLS config
                     let (tx, rx) = tokio::sync::oneshot::channel();
                     tx.send(()).expect("Failed to send reload signal");
+                    let tls_config = tls_config.clone();
                     tokio::spawn(async move {
                         if let Err(e) = rx.await {
                             error!("Failed to receive reload signal: {}", e);
                         }
                         // Trigger the actual reload mechanism
-                        // This could involve restarting the server or updating the TLS acceptor
-                        // For now, we'll just log that a reload would occur
                         info!("TLS config reload triggered");
+                        match reload_tls_config(&tls_config).await {
+                            Ok(_) => info!("TLS config reloaded successfully"),
+                            Err(e) => error!("Failed to reload TLS config: {}", e),
+                        }
                     });
                 }
             }
