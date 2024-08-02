@@ -1,10 +1,11 @@
 use anyhow::Result;
 use fantoccini::{Client, ClientBuilder, Locator};
 use std::time::{Duration, Instant};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use serde_json::json;
 use colored::*;
+use base64;
 
 pub async fn run_browser_test(cli_args: &crate::cli::CliArgs, temp_dir: &Path) -> Result<()> {
     let mut caps = serde_json::map::Map::new();
@@ -19,6 +20,9 @@ pub async fn run_browser_test(cli_args: &crate::cli::CliArgs, temp_dir: &Path) -
         .capabilities(caps)
         .connect("http://localhost:9515")
         .await?;
+    
+    // Set a consistent viewport size
+    c.set_window_rect(0, 0, 1366, 768).await?;
 
     let test_result = run_test(&c, temp_dir).await;
 
@@ -39,8 +43,11 @@ pub async fn run_browser_test(cli_args: &crate::cli::CliArgs, temp_dir: &Path) -
 }
 
 async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
+    let screenshot_dir = temp_dir.join("screenshots");
+    std::fs::create_dir_all(&screenshot_dir)?;
     crate::environment::print_task("Navigating to donation page");
     c.goto("http://localhost:1313/donate/ghostkey/").await?;
+    capture_screenshot(c, &screenshot_dir, "01_donation_page.png").await?;
     crate::environment::print_result(true);
 
     crate::environment::print_task("Filling out donation form");
@@ -81,6 +88,7 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
     crate::environment::print_task("Submitting payment");
     let submit_button = wait_for_element(c, Locator::Id("submit"), Duration::from_secs(10)).await?;
     submit_button.click().await?;
+    capture_screenshot(c, &screenshot_dir, "02_after_submit.png").await?;
     crate::environment::print_result(true);
 
     crate::environment::print_task("Checking for errors and waiting for redirect");
@@ -108,6 +116,7 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
 
     if start_time.elapsed() >= timeout {
         crate::environment::print_result(false);
+        capture_screenshot(c, &screenshot_dir, "03_timeout_error.png").await?;
         println!("Current URL: {}", c.current_url().await?);
         println!("Page source:");
         println!("{}", c.source().await?);
@@ -215,4 +224,11 @@ fn analyze_validation_error(stderr: &str, stdout: &str) -> String {
     } else {
         "An unknown error occurred during ghostkey validation. Please check the full error message for more details."
     }.to_string()
+}
+
+async fn capture_screenshot(client: &Client, dir: &Path, filename: &str) -> Result<()> {
+    let screenshot = client.screenshot(fantoccini::ScreenshotOptions::default()).await?;
+    let path = dir.join(filename);
+    std::fs::write(path, &screenshot)?;
+    Ok(())
 }
