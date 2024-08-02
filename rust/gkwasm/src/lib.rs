@@ -173,6 +173,8 @@ mod tests {
         assert_eq!(verified.unwrap(), "Test Delegate");
     }
 }
+
+#[allow(dead_code)]
 #[derive(Debug)]
 struct GhostKeyCertificateResult {
     armored_ghost_key_cert: String,
