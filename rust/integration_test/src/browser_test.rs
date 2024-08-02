@@ -1,11 +1,10 @@
 use anyhow::Result;
 use fantoccini::{Client, ClientBuilder, Locator};
 use std::time::{Duration, Instant};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 use serde_json::json;
 use colored::*;
-use base64;
 
 pub async fn run_browser_test(cli_args: &crate::cli::CliArgs, temp_dir: &Path) -> Result<()> {
     let mut caps = serde_json::map::Map::new();
