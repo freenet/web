@@ -7,6 +7,9 @@ mod errors;
 
 #[tokio::main]
 async fn main() {
+    // Initialize logger
+    env_logger::init();
+
     let app = routes::get_routes();
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));

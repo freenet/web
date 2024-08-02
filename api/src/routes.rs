@@ -1,7 +1,7 @@
 use axum::{
-    extract::Path,
+    extract::Json,
     http::StatusCode,
-    response::{IntoResponse, Json},
+    response::IntoResponse,
     routing::post,
     Router,
 };
@@ -12,7 +12,7 @@ use crate::errors::CertificateError;
 
 pub async fn sign_certificate_route(
     Json(request): Json<SignCertificateRequest>,
-) -> Result<Json<SignCertificateResponse>, (StatusCode, Json<ErrorResponse>)> {
+) -> impl IntoResponse {
     // Implementation goes here
     todo!()
 }
