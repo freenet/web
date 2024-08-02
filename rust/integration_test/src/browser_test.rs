@@ -83,40 +83,63 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
     submit_button.click().await?;
     crate::environment::print_result(true);
 
-    crate::environment::print_task("Checking for errors");
-    if let Ok(error_element) = c.find(Locator::Id("errorMessage")).await {
-        if let Ok(error_text) = error_element.text().await {
-            if !error_text.trim().is_empty() {
-                crate::environment::print_result(false);
-                return Err(anyhow::anyhow!("Error occurred on the page: {}", error_text));
+    crate::environment::print_task("Checking for errors and waiting for redirect");
+    let start_time = Instant::now();
+    let timeout = Duration::from_secs(60);
+
+    while start_time.elapsed() < timeout {
+        if let Ok(error_element) = c.find(Locator::Id("payment-message")).await {
+            if let Ok(error_text) = error_element.text().await {
+                if !error_text.trim().is_empty() {
+                    crate::environment::print_result(false);
+                    return Err(anyhow::anyhow!("Error occurred on the page: {}", error_text));
+                }
             }
         }
+
+        let current_url = c.current_url().await?;
+        if current_url.as_str().contains("/donate/ghostkey/success") {
+            crate::environment::print_result(true);
+            break;
+        }
+
+        tokio::time::sleep(Duration::from_secs(1)).await;
     }
-    crate::environment::print_result(true);
+
+    if start_time.elapsed() >= timeout {
+        crate::environment::print_result(false);
+        println!("Current URL: {}", c.current_url().await?);
+        println!("Page source:");
+        println!("{}", c.source().await?);
+        return Err(anyhow::anyhow!("Timed out waiting for redirect to success page"));
+    }
 
     crate::environment::print_task("Waiting for ghostkey certificate");
-    let combined_key_result = wait_for_element(c, Locator::Css("textarea#combinedKey"), Duration::from_secs(120)).await;
-    if combined_key_result.is_err() {
-        let e = combined_key_result.unwrap_err();
+    let start_time = Instant::now();
+    let timeout = Duration::from_secs(120);
+    let mut combined_key_result = Err(anyhow::anyhow!("Initial error"));
+
+    while start_time.elapsed() < timeout {
+        let current_url = c.current_url().await?;
+        if current_url.as_str().contains("/donate/ghostkey/success") {
+            combined_key_result = wait_for_element(c, Locator::Css("textarea#combinedKey"), Duration::from_secs(5)).await;
+            if combined_key_result.is_ok() {
+                break;
+            }
+        }
+        tokio::time::sleep(Duration::from_secs(1)).await;
+    }
+
+    if let Err(e) = combined_key_result {
         println!("Error: {}", e);
-        if let Ok(body) = c.source().await {
-            println!("Page source:\n{}", body);
-        }
-        if let Ok(url) = c.current_url().await {
-            println!("Current URL: {}", url);
-        }
+        let current_url = c.current_url().await?;
+        println!("Current URL: {}", current_url);
+        println!("Page source:");
+        println!("{}", c.source().await?);
         crate::environment::print_result(false);
         return Err(anyhow::anyhow!("Failed to find ghostkey certificate: {}", e));
     }
     crate::environment::print_result(true);
-
-    let current_url = c.current_url().await?;
-    if !current_url.as_str().contains("/donate/ghostkey/success") {
-        println!("Error: Not on the success page. Current page: {}", current_url);
-        println!("Page source:");
-        println!("{}", c.source().await?);
-        return Err(anyhow::anyhow!("Failed to reach the success page"));
-    }
 
     crate::environment::print_task("Saving ghostkey certificate");
     let combined_key_content = c.execute(
@@ -163,10 +186,15 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
 async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Duration) -> Result<fantoccini::elements::Element> {
     let start = Instant::now();
     while start.elapsed() < timeout {
-        if let Ok(element) = client.find(locator.clone()).await {
-            if element.is_displayed().await? {
-                return Ok(element);
+        match client.find(locator.clone()).await {
+            Ok(element) => {
+                match element.is_displayed().await {
+                    Ok(true) => return Ok(element),
+                    Ok(false) => println!("Element found but not displayed: {:?}", locator),
+                    Err(e) => println!("Error checking if element is displayed: {:?}", e),
+                }
             }
+            Err(e) => println!("Error finding element: {:?}", e),
         }
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
