@@ -1,14 +1,19 @@
 use std::{env, time::SystemTime, fs};
 use std::sync::{Arc, Mutex};
+use std::net::SocketAddr;
 
 use clap::{Arg, Command};
 use dotenv::dotenv;
 use log::{error, info, LevelFilter};
-use rocket::{catchers, get, launch, routes, Config};
-use rocket::{catch, Request};
-use rocket::fairing::AdHoc;
-use rocket::http::Header;
-use rocket::tokio::{self, time::{interval, Duration}};
+use axum::{
+    routing::{get, post},
+    Router, Server,
+    http::{StatusCode, HeaderMap, HeaderValue},
+    response::IntoResponse,
+    extract::State,
+};
+use tower_http::trace::TraceLayer;
+use tower_http::cors::CorsLayer;
 
 mod routes;
 mod handle_sign_cert;
@@ -47,23 +52,20 @@ impl TlsConfig {
     }
 }
 
-#[catch(404)]
-fn not_found(req: &Request) -> String {
-    format!("Sorry, '{}' is not a valid path.", req.uri())
+async fn not_found() -> impl IntoResponse {
+    (StatusCode::NOT_FOUND, "Sorry, this is not a valid path.")
 }
 
-#[catch(500)]
-fn internal_error() -> &'static str {
-    "Internal server error. Please try again later."
+async fn internal_error() -> impl IntoResponse {
+    (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error. Please try again later.")
 }
 
-#[get("/health")]
-fn health() -> &'static str {
+async fn health() -> &'static str {
     "OK"
 }
 
-#[launch]
-fn rocket() -> _ {
+#[tokio::main]
+async fn main() {
     let matches = Command::new("Freenet Certified Donation API")
         .arg(Arg::new("delegate-dir")
             .long("delegate-dir")
@@ -106,46 +108,33 @@ fn rocket() -> _ {
         None
     };
 
-    let config = rocket::Config::figment();
-    let rocket = rocket::custom(config);
+    let app = Router::new()
+        .route("/health", get(health))
+        .merge(routes::get_routes())
+        .layer(TraceLayer::new_for_http())
+        .layer(CorsLayer::permissive())
+        .fallback(not_found)
+        .with_state(tls_config.clone());
 
     if let Some(tls_config) = tls_config.clone() {
         tokio::spawn(async move {
-            let mut interval = interval(Duration::from_secs(3600)); // Check every hour
+            let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(3600)); // Check every hour
             loop {
                 interval.tick().await;
                 let mut config = tls_config.lock().unwrap();
                 if config.update_if_changed() {
                     info!("TLS certificate or key has been updated. Reloading configuration.");
-                    // In a real implementation, you would need to signal Rocket to reload its TLS config here.
+                    // In a real implementation, you would need to signal the server to reload its TLS config here.
                     // This might involve restarting the server or using a more sophisticated hot-reload mechanism.
                 }
             }
         });
     }
 
-    rocket
-        .attach(routes::CORS)
-        .attach(routes::RequestTimer)
-        .attach(AdHoc::on_response("Powered-By Header", |_, res| Box::pin(async move {
-            res.set_header(Header::new("X-Powered-By", "Freenet GhostKey API"));
-        })))
-        .attach(AdHoc::on_response("Security Headers", |_, res| Box::pin(async move {
-            res.set_header(Header::new("X-XSS-Protection", "1; mode=block"));
-            res.set_header(Header::new("X-Content-Type-Options", "nosniff"));
-            res.set_header(Header::new("Referrer-Policy", "strict-origin-when-cross-origin"));
-        })))
-        .attach(AdHoc::on_ignite("TLS Config", |rocket| async move {
-            if let Some(tls_config) = tls_config {
-                let config = tls_config.lock().unwrap();
-                rocket.configure(Config::figment()
-                    .merge(("tls.certs", &config.cert))
-                    .merge(("tls.key", &config.key)))
-            } else {
-                rocket
-            }
-        }))
-        .mount("/", routes::get_routes())
-        .mount("/", routes![health])
-        .register("/", catchers![not_found, internal_error])
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    info!("Listening on {}", addr);
+    Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }

@@ -1,70 +1,27 @@
 use std::collections::HashMap;
 use std::str::FromStr;
-use std::time::Instant;
+use std::sync::Arc;
 
+use axum::{
+    routing::{get, post},
+    Router,
+    http::{StatusCode, HeaderMap},
+    response::{IntoResponse, Json},
+    extract::{State, Path},
+};
 use log::{debug, error, info};
-use rocket::{Request, Response, Route};
-use rocket::{get, options, post, routes};
-use rocket::fairing::{Fairing, Info, Kind};
-use rocket::http::{Header, Status};
-use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
+use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
+use gklib::armorable::Armorable;
+
+use crate::delegates::get_delegate;
+use crate::handle_sign_cert::{CertificateError, sign_certificate, SignCertificateRequest, SignCertificateResponse};
+use crate::TlsConfig;
 
 #[derive(Serialize)]
 pub struct ErrorResponse {
     error: String,
     status: u16,
-}
-use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
-use gklib::armorable::Armorable;
-use crate::delegates::get_delegate;
-use crate::handle_sign_cert::{CertificateError, sign_certificate, SignCertificateRequest, SignCertificateResponse};
-
-pub struct CORS;
-
-#[rocket::async_trait]
-impl Fairing for CORS {
-    fn info(&self) -> Info {
-        Info {
-            name: "Add CORS headers to responses",
-            kind: Kind::Response
-        }
-    }
-
-    async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
-        let allowed_origins = ["http://localhost:1313", "https://freenet.org"];
-        let origin = request.headers().get_one("Origin").unwrap_or("");
-        
-        if allowed_origins.contains(&origin) {
-            response.set_header(Header::new("Access-Control-Allow-Origin", origin));
-            response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS"));
-            response.set_header(Header::new("Access-Control-Allow-Headers", "Content-Type, Authorization"));
-            response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
-            response.set_header(Header::new("Access-Control-Max-Age", "86400"));
-        }
-    }
-}
-
-pub struct RequestTimer;
-
-#[rocket::async_trait]
-impl Fairing for RequestTimer {
-    fn info(&self) -> Info {
-        Info {
-            name: "Request Timer",
-            kind: Kind::Request | Kind::Response
-        }
-    }
-
-    async fn on_request(&self, request: &mut Request<'_>, _: &mut rocket::Data<'_>) {
-        request.local_cache(|| Instant::now());
-    }
-
-    async fn on_response<'r>(&self, request: &'r Request<'_>, _: &mut Response<'r>) {
-        let start_time = request.local_cache(|| Instant::now());
-        let duration = start_time.elapsed();
-        debug!("Request to {} took {}ms", request.uri(), duration.as_millis());
-    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -85,24 +42,23 @@ pub struct DonationResponse {
     pub delegate_certificate_base64: String,
 }
 
-#[get("/")]
-fn index() -> Json<serde_json::Value> {
+async fn index() -> impl IntoResponse {
     Json(serde_json::json!({
         "message": "Hello, world!"
     }))
 }
 
-#[get("/message")]
-fn get_message() -> Json<Message> {
+async fn get_message() -> impl IntoResponse {
     Json(Message {
         content: String::from("Welcome to the Freenet API! This message confirms that the API is functioning correctly."),
     })
 }
 
-#[post("/sign-certificate", data = "<request>")]
-pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Result<Json<SignCertificateResponse>, Json<ErrorResponse>> {
+async fn sign_certificate_route(
+    Json(request): Json<SignCertificateRequest>,
+) -> Result<Json<SignCertificateResponse>, (StatusCode, Json<ErrorResponse>)> {
     info!("Received sign-certificate request: {:?}", request);
-    match sign_certificate(request.into_inner()).await {
+    match sign_certificate(request).await {
         Ok(response) => {
             info!("Certificate signed successfully");
             Ok(Json(response))
@@ -111,47 +67,32 @@ pub async fn sign_certificate_route(request: Json<SignCertificateRequest>) -> Re
             error!("Error signing certificate: {:?}", e);
             match e {
                 CertificateError::PaymentNotSuccessful => {
-                    Err(Json(ErrorResponse {
+                    Err((StatusCode::BAD_REQUEST, Json(ErrorResponse {
                         error: "Payment not successful. Please check your payment details and try again.".to_string(),
-                        status: Status::BadRequest.code,
-                    }))
+                        status: StatusCode::BAD_REQUEST.as_u16(),
+                    })))
                 },
                 CertificateError::CertificateAlreadySigned => {
-                    Err(Json(ErrorResponse {
+                    Err((StatusCode::CONFLICT, Json(ErrorResponse {
                         error: "Certificate has already been signed for this payment.".to_string(),
-                        status: Status::Conflict.code,
-                    }))
+                        status: StatusCode::CONFLICT.as_u16(),
+                    })))
                 },
                 CertificateError::KeyError(msg) => {
-                    Err(Json(ErrorResponse {
+                    Err((StatusCode::INTERNAL_SERVER_ERROR, Json(ErrorResponse {
                         error: format!("Key error: {}", msg),
-                        status: Status::InternalServerError.code,
-                    }))
+                        status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+                    })))
                 },
                 _ => {
-                    Err(Json(ErrorResponse {
+                    Err((StatusCode::INTERNAL_SERVER_ERROR, Json(ErrorResponse {
                         error: "An unexpected error occurred. Please try again later.".to_string(),
-                        status: Status::InternalServerError.code,
-                    }))
+                        status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+                    })))
                 }
             }
         },
     }
-}
-
-#[options("/sign-certificate")]
-pub fn options_sign_certificate() -> Status {
-    Status::Ok
-}
-
-#[options("/create-donation")]
-pub fn options_create_donation() -> Status {
-    Status::Ok
-}
-
-#[options("/create-payment-intent")]
-pub fn options_create_payment_intent() -> Status {
-    Status::Ok
 }
 
 #[derive(Debug)]
@@ -162,28 +103,36 @@ pub enum DonationError {
     OtherError(String),
 }
 
-impl<'r> rocket::response::Responder<'r, 'static> for DonationError {
-    fn respond_to(self, _: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
-        match self {
-            DonationError::InvalidCurrency => Err(Status::BadRequest),
+impl IntoResponse for DonationError {
+    fn into_response(self) -> axum::response::Response {
+        let (status, error_message) = match self {
+            DonationError::InvalidCurrency => (StatusCode::BAD_REQUEST, "Invalid currency"),
             DonationError::StripeError(e) => {
-                eprintln!("Stripe error: {:?}", e);
-                Err(Status::InternalServerError)
+                error!("Stripe error: {:?}", e);
+                (StatusCode::INTERNAL_SERVER_ERROR, "Stripe error occurred")
             },
             DonationError::EnvError(e) => {
-                eprintln!("Environment variable error: {:?}", e);
-                Err(Status::InternalServerError)
+                error!("Environment variable error: {:?}", e);
+                (StatusCode::INTERNAL_SERVER_ERROR, "Environment variable error")
             },
             DonationError::OtherError(e) => {
-                eprintln!("Other error: {:?}", e);
-                Err(Status::InternalServerError)
+                error!("Other error: {:?}", e);
+                (StatusCode::INTERNAL_SERVER_ERROR, "An unexpected error occurred")
             },
-        }
+        };
+
+        let body = Json(ErrorResponse {
+            error: error_message.to_string(),
+            status: status.as_u16(),
+        });
+
+        (status, body).into_response()
     }
 }
 
-#[post("/create-donation", data = "<request>")]
-pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<DonationResponse>, DonationError> {
+async fn create_donation(
+    Json(request): Json<DonationRequest>,
+) -> Result<Json<DonationResponse>, DonationError> {
     info!("Received create-donation request: {:?}", request);
     
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
@@ -238,8 +187,6 @@ pub async fn create_donation(request: Json<DonationRequest>) -> Result<Json<Dona
         .await
         .map_err(DonationError::StripeError)?;
 
-    
-    
     info!("Payment intent created successfully");
     
     let amount_dollars = request.amount / 100;
@@ -271,8 +218,9 @@ pub struct UpdateDonationRequest {
     pub amount: i64,
 }
 
-#[post("/update-donation", data = "<request>")]
-pub async fn update_donation(request: Json<UpdateDonationRequest>) -> Result<Status, DonationError> {
+async fn update_donation(
+    Json(request): Json<UpdateDonationRequest>,
+) -> Result<StatusCode, DonationError> {
     info!("Received update-donation request: {:?}", request);
 
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
@@ -289,11 +237,12 @@ pub async fn update_donation(request: Json<UpdateDonationRequest>) -> Result<Sta
         .map_err(DonationError::StripeError)?;
 
     info!("Payment intent updated successfully");
-    Ok(Status::Ok)
+    Ok(StatusCode::OK)
 }
 
-#[get("/check-payment-status/<payment_intent_id>")]
-pub async fn check_payment_status_route(payment_intent_id: String) -> Result<Status, DonationError> {
+async fn check_payment_status_route(
+    Path(payment_intent_id): Path<String>,
+) -> Result<StatusCode, DonationError> {
     info!("Received check-payment-status request for PaymentIntent ID: {}", payment_intent_id);
 
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
@@ -305,22 +254,19 @@ pub async fn check_payment_status_route(payment_intent_id: String) -> Result<Sta
 
     if intent.status == stripe::PaymentIntentStatus::Succeeded {
         info!("Payment intent succeeded");
-        Ok(Status::Ok)
+        Ok(StatusCode::OK)
     } else {
         error!("Payment intent not successful: {:?}", intent.status);
         Err(DonationError::OtherError("Payment not successful".to_string()))
     }
 }
-pub fn get_routes() -> Vec<Route> {
-    routes![
-        index,
-        get_message,
-        sign_certificate_route,
-        options_sign_certificate,
-        create_donation,
-        options_create_donation,
-        check_payment_status_route,
-        update_donation,
-        options_create_payment_intent
-    ]
+
+pub fn get_routes() -> Router<Arc<Mutex<TlsConfig>>> {
+    Router::new()
+        .route("/", get(index))
+        .route("/message", get(get_message))
+        .route("/sign-certificate", post(sign_certificate_route))
+        .route("/create-donation", post(create_donation))
+        .route("/update-donation", post(update_donation))
+        .route("/check-payment-status/:payment_intent_id", get(check_payment_status_route))
 }
