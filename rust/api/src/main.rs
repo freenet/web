@@ -1,5 +1,5 @@
-use std::{env, time::SystemTime, fs};
-use std::sync::{Arc, Mutex};
+use std::{env, fs};
+use std::sync::Arc;
 use std::net::SocketAddr;
 
 use clap::{Arg, Command};
@@ -13,6 +13,7 @@ use axum::{
     Router,
     http::StatusCode,
     response::IntoResponse,
+    Server,
 };
 use tower_http::trace::TraceLayer;
 use tower_http::cors::CorsLayer;
@@ -45,7 +46,7 @@ async fn health() -> &'static str {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = Command::new("Freenet Certified Donation API")
         .arg(Arg::new("delegate-dir")
             .long("delegate-dir")
@@ -102,14 +103,15 @@ async fn main() {
         let server_config = load_tls_config(&tls_config)?;
         let acceptor = TlsAcceptor::from(Arc::new(server_config));
         let listener = tokio::net::TcpListener::bind(addr).await?;
-        axum_server::from_tcp_rustls(listener, acceptor)
+        axum_tls::bind_rustls(listener, acceptor)
             .serve(app.into_make_service())
             .await?;
     } else {
-        axum::Server::bind(&addr)
+        Server::bind(&addr)
             .serve(app.into_make_service())
             .await?;
     }
+    Ok(())
 }
 
 fn load_tls_config(tls_config: &TlsConfig) -> Result<ServerConfig, Box<dyn std::error::Error>> {
