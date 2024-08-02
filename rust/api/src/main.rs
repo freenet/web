@@ -5,6 +5,8 @@ use std::net::SocketAddr;
 use clap::{Arg, Command};
 use dotenv::dotenv;
 use log::{error, info, LevelFilter};
+use tokio_rustls::rustls::{Certificate, PrivateKey, ServerConfig};
+use tokio_rustls::TlsAcceptor;
 use axum::{
     routing::get,
     Router,
@@ -142,4 +144,32 @@ async fn main() {
     info!("Listening on {}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
+}
+
+async fn reload_tls_config(tls_config: &Arc<Mutex<TlsConfig>>) -> Result<(), Box<dyn std::error::Error>> {
+    let config = tls_config.lock().unwrap();
+    let cert_file = fs::File::open(&config.cert)?;
+    let key_file = fs::File::open(&config.key)?;
+    
+    let cert_chain = rustls_pemfile::certs(&mut std::io::BufReader::new(cert_file))
+        .map(|mut certs| certs.drain(..).map(Certificate).collect())?;
+    let mut keys = rustls_pemfile::pkcs8_private_keys(&mut std::io::BufReader::new(key_file))?;
+
+    if keys.is_empty() {
+        return Err("No PKCS8 private keys found in key file".into());
+    }
+
+    let server_config = ServerConfig::builder()
+        .with_safe_defaults()
+        .with_no_client_auth()
+        .with_single_cert(cert_chain, PrivateKey(keys.remove(0)))?;
+
+    let acceptor = TlsAcceptor::from(Arc::new(server_config));
+    
+    // Here you would update your server's TLS acceptor
+    // This might involve sending a message to your server task to swap out the acceptor
+    // For now, we'll just log that we've created a new acceptor
+    info!("Created new TLS acceptor with updated certificates");
+
+    Ok(())
 }
