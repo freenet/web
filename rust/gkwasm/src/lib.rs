@@ -71,7 +71,7 @@ fn generate_ghost_key_certificate_core(
     blinding_secret_base64: String,
     ec_verifying_key_base64: String,
     ec_signing_key_base64: String
-) -> Result<Object, String> {
+) -> Result<GhostKeyCertificateResult, String> {
     let blind_signature = BlindSignature::from_base64(&blinded_signature_base64)
         .map_err(|_| "Invalid blinded signature".to_string())?;
 
@@ -109,10 +109,10 @@ fn generate_ghost_key_certificate_core(
     let armored_signing_key = ec_signing_key.to_armored_string()
         .map_err(|_| "Failed to armor signing key".to_string())?;
 
-    let return_obj = Object::new();
-    Reflect::set(&return_obj, &JsString::from("armored_ghost_key_cert"), &JsString::from(armored_certificate)).unwrap();
-    Reflect::set(&return_obj, &JsString::from("armored_ghost_key_signing_key"), &JsString::from(armored_signing_key)).unwrap();
-    Ok(return_obj)
+    Ok(GhostKeyCertificateResult {
+        armored_ghost_key_cert: armored_certificate,
+        armored_ghost_key_signing_key: armored_signing_key,
+    })
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -131,7 +131,12 @@ pub fn wasm_generate_ghost_key_certificate(
         ec_verifying_key_base64,
         ec_signing_key_base64,
     ) {
-        Ok(result_obj) => Ok(JsValue::from(result_obj)),
+        Ok(result) => {
+            let return_obj = js_sys::Object::new();
+            js_sys::Reflect::set(&return_obj, &JsValue::from_str("armored_ghost_key_cert"), &JsValue::from_str(&result.armored_ghost_key_cert)).unwrap();
+            js_sys::Reflect::set(&return_obj, &JsValue::from_str("armored_ghost_key_signing_key"), &JsValue::from_str(&result.armored_ghost_key_signing_key)).unwrap();
+            Ok(JsValue::from(return_obj))
+        },
         Err(err) => Err(JsValue::from_str(&format!("Error: {}", err))),
     }
 }
@@ -161,10 +166,15 @@ mod tests {
             result.ec_signing_key,
         ).unwrap();
 
-        let ghost_key_certificate = GhostkeyCertificate::from_armored_string(&Reflect::get(&generated, &JsString::from("armored_ghost_key_cert")).unwrap().as_string().unwrap()).unwrap();
+        let ghost_key_certificate = GhostkeyCertificate::from_armored_string(&generated.armored_ghost_key_cert).unwrap();
         let verified = ghost_key_certificate.verify(&master_verifying_key);
 
         assert!(verified.is_ok(), "Verification failed: {:?}", verified.unwrap_err());
         assert_eq!(verified.unwrap(), "Test Delegate");
     }
+}
+#[derive(Debug)]
+struct GhostKeyCertificateResult {
+    armored_ghost_key_cert: String,
+    armored_ghost_key_signing_key: String,
 }
