@@ -227,7 +227,7 @@ fn analyze_validation_error(stderr: &str, stdout: &str) -> String {
 }
 
 async fn capture_screenshot(client: &Client, dir: &Path, filename: &str) -> Result<()> {
-    let screenshot = client.screenshot(fantoccini::ScreenshotOptions::default()).await?;
+    let screenshot = client.screenshot().await?;
     let path = dir.join(filename);
     std::fs::write(path, &screenshot)?;
     Ok(())
