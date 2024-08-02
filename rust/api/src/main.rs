@@ -112,8 +112,7 @@ async fn main() {
         .merge(routes::get_routes())
         .layer(TraceLayer::new_for_http())
         .layer(CorsLayer::permissive())
-        .fallback(not_found)
-        .with_state(tls_config.clone());
+        .fallback(not_found);
 
     if let Some(tls_config) = tls_config.clone() {
         tokio::spawn(async move {
@@ -132,7 +131,7 @@ async fn main() {
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     info!("Listening on {}", addr);
-    Server::bind(&addr)
+    axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
