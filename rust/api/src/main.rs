@@ -5,7 +5,8 @@ use std::net::SocketAddr;
 use clap::{Arg, Command};
 use dotenv::dotenv;
 use log::{error, info, LevelFilter};
-use tokio_rustls::rustls::{Certificate, PrivateKey, ServerConfig};
+use tokio_rustls::rustls::{Certificate, PrivateKey};
+use tokio_rustls::rustls::ServerConfig;
 use tokio_rustls::TlsAcceptor;
 use axum::{
     routing::get,
@@ -148,12 +149,14 @@ async fn main() {
 
 async fn reload_tls_config(tls_config: &Arc<Mutex<TlsConfig>>) -> Result<(), Box<dyn std::error::Error>> {
     let config = tls_config.lock().unwrap();
-    let cert_file = fs::File::open(&config.cert)?;
-    let key_file = fs::File::open(&config.key)?;
+    let mut cert_file = std::io::BufReader::new(fs::File::open(&config.cert)?);
+    let mut key_file = std::io::BufReader::new(fs::File::open(&config.key)?);
     
-    let cert_chain = rustls_pemfile::certs(&mut std::io::BufReader::new(cert_file))
-        .map(|mut certs| certs.drain(..).map(Certificate).collect())?;
-    let mut keys = rustls_pemfile::pkcs8_private_keys(&mut std::io::BufReader::new(key_file))?;
+    let cert_chain = rustls_pemfile::certs(&mut cert_file)?
+        .into_iter()
+        .map(Certificate)
+        .collect();
+    let mut keys = rustls_pemfile::pkcs8_private_keys(&mut key_file)?;
 
     if keys.is_empty() {
         return Err("No PKCS8 private keys found in key file".into());
