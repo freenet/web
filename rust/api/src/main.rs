@@ -13,6 +13,8 @@ use axum::{
 };
 use tower_http::trace::TraceLayer;
 use tower_http::cors::CorsLayer;
+use tokio::net::TcpListener;
+use axum_server::tls_rustls::RustlsConfig;
 
 mod routes;
 mod handle_sign_cert;
@@ -95,6 +97,21 @@ async fn main() {
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
     info!("Listening on {}", addr);
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    
+    if let Some(tls_config) = tls_config {
+        let config = tls_config.lock().unwrap();
+        let rustls_config = RustlsConfig::from_pem_file(&config.cert, &config.key)
+            .await
+            .expect("Failed to load TLS configuration");
+        
+        info!("Starting server with TLS (HTTPS)");
+        axum_server::bind_rustls(addr, rustls_config)
+            .serve(app.into_make_service())
+            .await
+            .unwrap();
+    } else {
+        info!("Starting server without TLS (HTTP)");
+        let listener = TcpListener::bind(addr).await.unwrap();
+        axum::serve(listener, app).await.unwrap();
+    }
 }
