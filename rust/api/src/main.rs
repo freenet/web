@@ -10,13 +10,12 @@ use axum::{
     Router,
     http::StatusCode,
     response::IntoResponse,
-    serve::Serve,
 };
 use tower_http::trace::TraceLayer;
 use tower_http::cors::CorsLayer;
 use tokio::net::TcpListener;
 use tokio_rustls::rustls::{Certificate, PrivateKey, ServerConfig};
-use tokio_rustls::TlsAcceptor;
+use tokio_rustls::{TlsAcceptor, TlsListener};
 
 mod routes;
 mod handle_sign_cert;
@@ -117,7 +116,7 @@ async fn main() {
         
         info!("Starting server with TLS (HTTPS)");
         let listener = TcpListener::bind(addr).await.unwrap();
-        let incoming_tls = tokio_rustls::TlsListener::new(tls_acceptor, listener);
+        let incoming_tls = TlsListener::new(tls_acceptor, listener);
         
         axum::serve(incoming_tls, app).await.unwrap();
     } else {
