@@ -1,7 +1,6 @@
 use clap::{Command as ClapCommand, Arg, ArgAction};
 
 pub struct CliArgs {
-    pub headless: bool,
     pub wait_on_failure: bool,
     pub wait: bool,
     pub visible: bool,
@@ -24,7 +23,6 @@ pub fn parse_arguments() -> CliArgs {
         .get_matches();
 
     CliArgs {
-        headless: !matches.get_flag("visible"),
         wait_on_failure: matches.get_flag("wait-on-failure"),
         wait: matches.get_flag("wait"),
         visible: matches.get_flag("visible"),
