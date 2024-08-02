@@ -5,8 +5,6 @@ use axum::{
     Router,
 };
 use log::{error, info};
-use std::sync::Arc;
-use tokio::sync::Mutex;
 
 use crate::handle_sign_cert::{SignCertificateRequest, SignCertificateResponse};
 use crate::errors::CertificateError;

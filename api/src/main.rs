@@ -1,11 +1,7 @@
 use axum::{
-    routing::get,
     Router, Server,
-    http::StatusCode,
-    response::IntoResponse,
 };
 use std::net::SocketAddr;
-use tokio;
 
 mod routes;
 mod handle_sign_cert;
