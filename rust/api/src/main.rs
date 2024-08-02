@@ -32,23 +32,6 @@ impl TlsConfig {
         let last_modified = SystemTime::now();
         Self { cert, key, last_modified }
     }
-
-    fn update_if_changed(&mut self) -> bool {
-        let cert_modified = fs::metadata(&self.cert).and_then(|m| m.modified()).ok();
-        let key_modified = fs::metadata(&self.key).and_then(|m| m.modified()).ok();
-
-        if let (Some(cert_time), Some(key_time)) = (cert_modified, key_modified) {
-            let max_time = cert_time.max(key_time);
-            if max_time > self.last_modified {
-                self.last_modified = max_time;
-                true
-            } else {
-                false
-            }
-        } else {
-            false
-        }
-    }
 }
 
 async fn not_found() -> impl IntoResponse {
@@ -109,21 +92,6 @@ async fn main() {
         .layer(TraceLayer::new_for_http())
         .layer(CorsLayer::permissive())
         .fallback(not_found);
-
-    if let Some(tls_config) = tls_config.clone() {
-        tokio::spawn(async move {
-            let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(3600)); // Check every hour
-            loop {
-                interval.tick().await;
-                let mut config = tls_config.lock().unwrap();
-                if config.update_if_changed() {
-                    info!("TLS certificate or key has been updated. Reloading configuration.");
-                    // In a real implementation, you would need to signal the server to reload its TLS config here.
-                    // This might involve restarting the server or using a more sophisticated hot-reload mechanism.
-                }
-            }
-        });
-    }
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
     info!("Listening on {}", addr);
