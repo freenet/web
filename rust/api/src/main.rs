@@ -24,33 +24,15 @@ mod errors;
 
 pub static DELEGATE_DIR: &str = "DELEGATE_DIR";
 
+// TLS configuration struct
 struct TlsConfig {
     cert: String,
     key: String,
-    last_modified: SystemTime,
 }
 
 impl TlsConfig {
     fn new(cert: String, key: String) -> Self {
-        let last_modified = SystemTime::now();
-        Self { cert, key, last_modified }
-    }
-
-    fn update_if_changed(&mut self) -> bool {
-        let cert_modified = fs::metadata(&self.cert).and_then(|m| m.modified()).ok();
-        let key_modified = fs::metadata(&self.key).and_then(|m| m.modified()).ok();
-
-        if let (Some(cert_time), Some(key_time)) = (cert_modified, key_modified) {
-            let max_time = cert_time.max(key_time);
-            if max_time > self.last_modified {
-                self.last_modified = max_time;
-                true
-            } else {
-                false
-            }
-        } else {
-            false
-        }
+        Self { cert, key }
     }
 }
 
@@ -100,7 +82,7 @@ async fn main() {
     
     let tls_config = if let (Some(tls_cert), Some(tls_key)) = (matches.get_one::<String>("tls-cert"), matches.get_one::<String>("tls-key")) {
         info!("TLS certificate and key provided. Starting in HTTPS mode.");
-        Some(Arc::new(Mutex::new(TlsConfig::new(tls_cert.to_string(), tls_key.to_string()))))
+        Some(TlsConfig::new(tls_cert.to_string(), tls_key.to_string()))
     } else {
         info!("No TLS certificate and key provided. Starting in HTTP mode.");
         None
@@ -113,44 +95,26 @@ async fn main() {
         .layer(CorsLayer::permissive())
         .fallback(not_found);
 
-    if let Some(tls_config) = tls_config.clone() {
-        tokio::spawn(async move {
-            let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(3600)); // Check every hour
-            loop {
-                interval.tick().await;
-                let mut config = tls_config.lock().unwrap();
-                if config.update_if_changed() {
-                    info!("TLS certificate or key has been updated. Reloading configuration.");
-                    // Signal the server to reload its TLS config
-                    let (tx, rx) = tokio::sync::oneshot::channel();
-                    tx.send(()).expect("Failed to send reload signal");
-                    let tls_config = tls_config.clone();
-                    tokio::spawn(async move {
-                        if let Err(e) = rx.await {
-                            error!("Failed to receive reload signal: {}", e);
-                        }
-                        // Trigger the actual reload mechanism
-                        info!("TLS config reload triggered");
-                        match reload_tls_config(&tls_config).await {
-                            Ok(_) => info!("TLS config reloaded successfully"),
-                            Err(e) => error!("Failed to reload TLS config: {}", e),
-                        }
-                    });
-                }
-            }
-        });
-    }
-
     let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
     info!("Listening on {}", addr);
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+
+    if let Some(tls_config) = tls_config {
+        let server_config = load_tls_config(&tls_config)?;
+        let acceptor = TlsAcceptor::from(Arc::new(server_config));
+        let listener = tokio::net::TcpListener::bind(addr).await?;
+        axum_server::from_tcp_rustls(listener, acceptor)
+            .serve(app.into_make_service())
+            .await?;
+    } else {
+        axum::Server::bind(&addr)
+            .serve(app.into_make_service())
+            .await?;
+    }
 }
 
-async fn reload_tls_config(tls_config: &Arc<Mutex<TlsConfig>>) -> Result<(), Box<dyn std::error::Error>> {
-    let config = tls_config.lock().unwrap();
-    let mut cert_file = std::io::BufReader::new(fs::File::open(&config.cert)?);
-    let mut key_file = std::io::BufReader::new(fs::File::open(&config.key)?);
+fn load_tls_config(tls_config: &TlsConfig) -> Result<ServerConfig, Box<dyn std::error::Error>> {
+    let mut cert_file = std::io::BufReader::new(fs::File::open(&tls_config.cert)?);
+    let mut key_file = std::io::BufReader::new(fs::File::open(&tls_config.key)?);
     
     let cert_chain = rustls_pemfile::certs(&mut cert_file)?
         .into_iter()
@@ -167,12 +131,5 @@ async fn reload_tls_config(tls_config: &Arc<Mutex<TlsConfig>>) -> Result<(), Box
         .with_no_client_auth()
         .with_single_cert(cert_chain, PrivateKey(keys.remove(0)))?;
 
-    let acceptor = TlsAcceptor::from(Arc::new(server_config));
-    
-    // Here you would update your server's TLS acceptor
-    // This might involve sending a message to your server task to swap out the acceptor
-    // For now, we'll just log that we've created a new acceptor
-    info!("Created new TLS acceptor with updated certificates");
-
-    Ok(())
+    Ok(server_config)
 }
