@@ -5,11 +5,12 @@ use std::sync::Arc;
 use axum::{
     routing::{get, post},
     Router,
-    http::{StatusCode, HeaderMap},
+    http::StatusCode,
     response::{IntoResponse, Json},
-    extract::{State, Path},
+    extract::Path,
 };
-use log::{debug, error, info};
+use log::{error, info};
+use std::sync::Mutex;
 use serde::{Deserialize, Serialize};
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
 use gklib::armorable::Armorable;
@@ -261,7 +262,7 @@ async fn check_payment_status_route(
     }
 }
 
-pub fn get_routes() -> Router<Arc<Mutex<TlsConfig>>> {
+pub fn get_routes() -> Router {
     Router::new()
         .route("/", get(index))
         .route("/message", get(get_message))

@@ -6,11 +6,10 @@ use clap::{Arg, Command};
 use dotenv::dotenv;
 use log::{error, info, LevelFilter};
 use axum::{
-    routing::{get, post},
-    Router, Server,
-    http::{StatusCode, HeaderMap, HeaderValue},
+    routing::get,
+    Router,
+    http::StatusCode,
     response::IntoResponse,
-    extract::State,
 };
 use tower_http::trace::TraceLayer;
 use tower_http::cors::CorsLayer;

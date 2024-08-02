@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use blind_rsa_signatures::BlindedMessage;
-use rocket::serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 
 use gklib::armorable::Armorable;
