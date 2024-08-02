@@ -1,13 +1,7 @@
-use std::{env, fs};
-use std::sync::Arc;
-use std::net::SocketAddr;
-
+use std::{env, fs, sync::Arc, net::SocketAddr, path::PathBuf};
 use clap::{Arg, Command};
 use dotenv::dotenv;
 use log::{error, info, LevelFilter};
-use tokio_rustls::rustls::{Certificate, PrivateKey};
-use tokio_rustls::rustls::ServerConfig;
-use tokio_rustls::TlsAcceptor;
 use axum::{
     routing::get,
     Router,
@@ -17,6 +11,8 @@ use axum::{
 };
 use tower_http::trace::TraceLayer;
 use tower_http::cors::CorsLayer;
+use tokio::net::TcpListener;
+use axum_server::tls_rustls::RustlsConfig;
 
 mod routes;
 mod handle_sign_cert;
@@ -27,12 +23,12 @@ pub static DELEGATE_DIR: &str = "DELEGATE_DIR";
 
 // TLS configuration struct
 struct TlsConfig {
-    cert: String,
-    key: String,
+    cert: PathBuf,
+    key: PathBuf,
 }
 
 impl TlsConfig {
-    fn new(cert: String, key: String) -> Self {
+    fn new(cert: PathBuf, key: PathBuf) -> Self {
         Self { cert, key }
     }
 }
@@ -83,7 +79,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     let tls_config = if let (Some(tls_cert), Some(tls_key)) = (matches.get_one::<String>("tls-cert"), matches.get_one::<String>("tls-key")) {
         info!("TLS certificate and key provided. Starting in HTTPS mode.");
-        Some(TlsConfig::new(tls_cert.to_string(), tls_key.to_string()))
+        Some(TlsConfig::new(PathBuf::from(tls_cert), PathBuf::from(tls_key)))
     } else {
         info!("No TLS certificate and key provided. Starting in HTTP mode.");
         None
@@ -100,10 +96,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Listening on {}", addr);
 
     if let Some(tls_config) = tls_config {
-        let server_config = load_tls_config(&tls_config)?;
-        let acceptor = TlsAcceptor::from(Arc::new(server_config));
-        let listener = tokio::net::TcpListener::bind(addr).await?;
-        axum_tls::bind_rustls(listener, acceptor)
+        let config = RustlsConfig::from_pem_file(
+            tls_config.cert,
+            tls_config.key,
+        ).await?;
+        let listener = TcpListener::bind(addr).await?;
+        axum_server::from_tcp_rustls(listener, config)
             .serve(app.into_make_service())
             .await?;
     } else {
@@ -114,24 +112,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn load_tls_config(tls_config: &TlsConfig) -> Result<ServerConfig, Box<dyn std::error::Error>> {
-    let mut cert_file = std::io::BufReader::new(fs::File::open(&tls_config.cert)?);
-    let mut key_file = std::io::BufReader::new(fs::File::open(&tls_config.key)?);
-    
-    let cert_chain = rustls_pemfile::certs(&mut cert_file)?
-        .into_iter()
-        .map(Certificate)
-        .collect();
-    let mut keys = rustls_pemfile::pkcs8_private_keys(&mut key_file)?;
-
-    if keys.is_empty() {
-        return Err("No PKCS8 private keys found in key file".into());
-    }
-
-    let server_config = ServerConfig::builder()
-        .with_safe_defaults()
-        .with_no_client_auth()
-        .with_single_cert(cert_chain, PrivateKey(keys.remove(0)))?;
-
-    Ok(server_config)
-}
