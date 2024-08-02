@@ -1,4 +1,4 @@
-use std::{env, time::SystemTime, fs};
+use std::{env, time::SystemTime};
 use std::sync::{Arc, Mutex};
 use std::net::SocketAddr;
 
@@ -10,11 +10,13 @@ use axum::{
     Router,
     http::StatusCode,
     response::IntoResponse,
+    serve::Serve,
 };
 use tower_http::trace::TraceLayer;
 use tower_http::cors::CorsLayer;
 use tokio::net::TcpListener;
-use axum_server::tls_rustls::RustlsConfig;
+use tokio_rustls::rustls::{Certificate, PrivateKey, ServerConfig};
+use tokio_rustls::TlsAcceptor;
 
 mod routes;
 mod handle_sign_cert;
@@ -24,13 +26,13 @@ mod errors;
 pub static DELEGATE_DIR: &str = "DELEGATE_DIR";
 
 struct TlsConfig {
-    cert: String,
-    key: String,
+    cert: Vec<u8>,
+    key: Vec<u8>,
     last_modified: SystemTime,
 }
 
 impl TlsConfig {
-    fn new(cert: String, key: String) -> Self {
+    fn new(cert: Vec<u8>, key: Vec<u8>) -> Self {
         let last_modified = SystemTime::now();
         Self { cert, key, last_modified }
     }
@@ -82,7 +84,9 @@ async fn main() {
     
     let tls_config = if let (Some(tls_cert), Some(tls_key)) = (matches.get_one::<String>("tls-cert"), matches.get_one::<String>("tls-key")) {
         info!("TLS certificate and key provided. Starting in HTTPS mode.");
-        Some(Arc::new(Mutex::new(TlsConfig::new(tls_cert.to_string(), tls_key.to_string()))))
+        let cert = tokio::fs::read(tls_cert).await.expect("Failed to read TLS certificate");
+        let key = tokio::fs::read(tls_key).await.expect("Failed to read TLS key");
+        Some(Arc::new(Mutex::new(TlsConfig::new(cert, key))))
     } else {
         info!("No TLS certificate and key provided. Starting in HTTP mode.");
         None
@@ -100,15 +104,22 @@ async fn main() {
     
     if let Some(tls_config) = tls_config {
         let config = tls_config.lock().unwrap();
-        let rustls_config = RustlsConfig::from_pem_file(&config.cert, &config.key)
-            .await
-            .expect("Failed to load TLS configuration");
+        let cert = Certificate(config.cert.clone());
+        let key = PrivateKey(config.key.clone());
+        
+        let server_config = ServerConfig::builder()
+            .with_safe_defaults()
+            .with_no_client_auth()
+            .with_single_cert(vec![cert], key)
+            .expect("Failed to create TLS server config");
+        
+        let tls_acceptor = TlsAcceptor::from(Arc::new(server_config));
         
         info!("Starting server with TLS (HTTPS)");
-        axum_server::bind_rustls(addr, rustls_config)
-            .serve(app.into_make_service())
-            .await
-            .unwrap();
+        let listener = TcpListener::bind(addr).await.unwrap();
+        let incoming_tls = tokio_rustls::TlsListener::new(tls_acceptor, listener);
+        
+        axum::serve(incoming_tls, app).await.unwrap();
     } else {
         info!("Starting server without TLS (HTTP)");
         let listener = TcpListener::bind(addr).await.unwrap();
