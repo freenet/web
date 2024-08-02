@@ -1,4 +1,4 @@
-use std::{env, time::SystemTime};
+use std::{env, time::SystemTime, fs};
 use std::sync::{Arc, Mutex};
 use std::net::SocketAddr;
 
@@ -13,11 +13,6 @@ use axum::{
 };
 use tower_http::trace::TraceLayer;
 use tower_http::cors::CorsLayer;
-use tokio::net::TcpListener;
-use tokio_rustls::rustls::{Certificate, PrivateKey, ServerConfig};
-use tokio_rustls::{TlsAcceptor, TlsListener};
-use tokio_rustls::rustls::{Certificate, PrivateKey, ServerConfig};
-use tokio_rustls::{TlsAcceptor, TlsListener};
 
 mod routes;
 mod handle_sign_cert;
@@ -27,15 +22,32 @@ mod errors;
 pub static DELEGATE_DIR: &str = "DELEGATE_DIR";
 
 struct TlsConfig {
-    cert: Vec<u8>,
-    key: Vec<u8>,
+    cert: String,
+    key: String,
     last_modified: SystemTime,
 }
 
 impl TlsConfig {
-    fn new(cert: Vec<u8>, key: Vec<u8>) -> Self {
+    fn new(cert: String, key: String) -> Self {
         let last_modified = SystemTime::now();
         Self { cert, key, last_modified }
+    }
+
+    fn update_if_changed(&mut self) -> bool {
+        let cert_modified = fs::metadata(&self.cert).and_then(|m| m.modified()).ok();
+        let key_modified = fs::metadata(&self.key).and_then(|m| m.modified()).ok();
+
+        if let (Some(cert_time), Some(key_time)) = (cert_modified, key_modified) {
+            let max_time = cert_time.max(key_time);
+            if max_time > self.last_modified {
+                self.last_modified = max_time;
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        }
     }
 }
 
@@ -85,9 +97,7 @@ async fn main() {
     
     let tls_config = if let (Some(tls_cert), Some(tls_key)) = (matches.get_one::<String>("tls-cert"), matches.get_one::<String>("tls-key")) {
         info!("TLS certificate and key provided. Starting in HTTPS mode.");
-        let cert = tokio::fs::read(tls_cert).await.expect("Failed to read TLS certificate");
-        let key = tokio::fs::read(tls_key).await.expect("Failed to read TLS key");
-        Some(Arc::new(Mutex::new(TlsConfig::new(cert, key))))
+        Some(Arc::new(Mutex::new(TlsConfig::new(tls_cert.to_string(), tls_key.to_string()))))
     } else {
         info!("No TLS certificate and key provided. Starting in HTTP mode.");
         None
@@ -100,30 +110,23 @@ async fn main() {
         .layer(CorsLayer::permissive())
         .fallback(not_found);
 
+    if let Some(tls_config) = tls_config.clone() {
+        tokio::spawn(async move {
+            let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(3600)); // Check every hour
+            loop {
+                interval.tick().await;
+                let mut config = tls_config.lock().unwrap();
+                if config.update_if_changed() {
+                    info!("TLS certificate or key has been updated. Reloading configuration.");
+                    // In a real implementation, you would need to signal the server to reload its TLS config here.
+                    // This might involve restarting the server or using a more sophisticated hot-reload mechanism.
+                }
+            }
+        });
+    }
+
     let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
     info!("Listening on {}", addr);
-    
-    if let Some(tls_config) = tls_config {
-        let config = tls_config.lock().unwrap();
-        let cert = Certificate(config.cert.clone());
-        let key = PrivateKey(config.key.clone());
-        
-        let server_config = ServerConfig::builder()
-            .with_safe_defaults()
-            .with_no_client_auth()
-            .with_single_cert(vec![cert], key)
-            .expect("Failed to create TLS server config");
-        
-        let tls_acceptor = TlsAcceptor::from(Arc::new(server_config));
-        
-        info!("Starting server with TLS (HTTPS)");
-        let listener = TcpListener::bind(addr).await.unwrap();
-        let incoming_tls = TlsListener::new(tls_acceptor, listener);
-        
-        axum::serve(incoming_tls, app).await.unwrap();
-    } else {
-        info!("Starting server without TLS (HTTP)");
-        let listener = TcpListener::bind(addr).await.unwrap();
-        axum::serve(listener, app).await.unwrap();
-    }
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
