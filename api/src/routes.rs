@@ -12,9 +12,11 @@ use crate::errors::CertificateError;
 
 pub async fn sign_certificate_route(
     Json(request): Json<SignCertificateRequest>,
-) -> Result<Json<SignCertificateResponse>, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
     // Implementation goes here
-    todo!()
+    Ok(Json(SignCertificateResponse {
+        blind_signature: "dummy_signature".to_string(),
+    }))
 }
 
 #[derive(serde::Serialize)]
