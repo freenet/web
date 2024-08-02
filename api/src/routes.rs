@@ -12,7 +12,7 @@ use crate::errors::CertificateError;
 
 pub async fn sign_certificate_route(
     Json(request): Json<SignCertificateRequest>,
-) -> impl IntoResponse {
+) -> Result<Json<SignCertificateResponse>, (StatusCode, Json<ErrorResponse>)> {
     // Implementation goes here
     todo!()
 }
