@@ -1,6 +1,4 @@
-use axum::{
-    Router, Server,
-};
+use axum::{Router, Server};
 use std::net::SocketAddr;
 
 mod routes;

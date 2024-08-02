@@ -2,6 +2,7 @@ use axum::{
     extract::Path,
     http::StatusCode,
     response::{IntoResponse, Json},
+    routing::post,
     Router,
 };
 use log::{error, info};
@@ -23,5 +24,5 @@ struct ErrorResponse {
 
 pub fn get_routes() -> Router {
     Router::new()
-        .route("/sign-certificate", axum::routing::post(sign_certificate_route))
+        .route("/sign-certificate", post(sign_certificate_route))
 }
