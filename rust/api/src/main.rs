@@ -55,10 +55,6 @@ async fn not_found() -> impl IntoResponse {
     (StatusCode::NOT_FOUND, "Sorry, this is not a valid path.")
 }
 
-async fn internal_error() -> impl IntoResponse {
-    (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error. Please try again later.")
-}
-
 async fn health() -> &'static str {
     "OK"
 }
