@@ -6,7 +6,7 @@ use gklib::armorable::Armorable;
 use gklib::util::create_keypair;
 use blind_rsa_signatures::{BlindSignature, Options, Secret};
 use gklib::delegate_certificate::DelegateCertificate;
-use gklib::ghostkey_certificate::GhostkeyCertificate;
+use gklib::ghost_key_certificate::GhostkeyCertificate;
 use base64::prelude::*;
 
 #[cfg(target_arch = "wasm32")]
@@ -65,7 +65,7 @@ pub fn wasm_generate_keypair_and_blind(delegate_certificate_base64: String, seed
 }
 
 #[allow(dead_code)]
-fn generate_ghostkey_certificate_core(
+fn generate_ghost_key_certificate_core(
     delegate_certificate_base64: String,
     blinded_signature_base64: String,
     blinding_secret_base64: String,
@@ -98,33 +98,33 @@ fn generate_ghostkey_certificate_core(
         &Options::default(),
     ).map_err(|e| format!("Unblinding operation failed: {}", e))?;
 
-    let ghostkey_certificate = GhostkeyCertificate {
+    let ghost_key_certificate = GhostkeyCertificate {
         delegate: delegate_certificate.clone(),
         verifying_key: ec_verifying_key,
         signature: unblinded_signature,
     };
     
-    let armored_certificate = ghostkey_certificate.to_armored_string()
+    let armored_certificate = ghost_key_certificate.to_armored_string()
         .map_err(|_| "Failed to armor ghostkey certificate".to_string())?;
     let armored_signing_key = ec_signing_key.to_armored_string()
         .map_err(|_| "Failed to armor signing key".to_string())?;
 
     let return_obj = Object::new();
-    Reflect::set(&return_obj, &JsString::from("armored_ghostkey_cert"), &JsString::from(armored_certificate)).unwrap();
-    Reflect::set(&return_obj, &JsString::from("armored_ghostkey_signing_key"), &JsString::from(armored_signing_key)).unwrap();
+    Reflect::set(&return_obj, &JsString::from("armored_ghost_key_cert"), &JsString::from(armored_certificate)).unwrap();
+    Reflect::set(&return_obj, &JsString::from("armored_ghost_key_signing_key"), &JsString::from(armored_signing_key)).unwrap();
     Ok(return_obj)
 }
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
-pub fn wasm_generate_ghostkey_certificate(
+pub fn wasm_generate_ghost_key_certificate(
     delegate_certificate_base64: String,
     blinded_signature_base64: String,
     blinding_secret_base64: String,
     ec_verifying_key_base64: String,
     ec_signing_key_base64: String
 ) -> Result<JsValue, JsValue> {
-    match generate_ghostkey_certificate_core(
+    match generate_ghost_key_certificate_core(
         delegate_certificate_base64,
         blinded_signature_base64,
         blinding_secret_base64,
@@ -153,15 +153,16 @@ mod tests {
         let blinded_signing_key = BlindSignature::from_base64(&result.blinded_signing_key).unwrap();
         let blinded_signature = delegate_signing_key.blind_sign(&mut rng, blinded_signing_key, &Options::default()).unwrap();
 
-        let ghostkey_certificate_base64 = generate_ghostkey_certificate_core(
+        let generated = generate_ghost_key_certificate_core(
             delegate_certificate_base64,
             blinded_signature.to_base64().unwrap(),
             result.blinding_secret,
             result.ec_verifying_key,
+            result.ec_signing_key,
         ).unwrap();
 
-        let ghostkey_certificate = GhostkeyCertificate::from_base64(&ghostkey_certificate_base64).unwrap();
-        let verified = ghostkey_certificate.verify(&master_verifying_key);
+        let ghost_key_certificate = GhostkeyCertificate::from_armored_string(&Reflect::get(&generated, &JsString::from("armored_ghost_key_cert")).unwrap().as_string().unwrap()).unwrap();
+        let verified = ghost_key_certificate.verify(&master_verifying_key);
 
         assert!(verified.is_ok(), "Verification failed: {:?}", verified.unwrap_err());
         assert_eq!(verified.unwrap(), "Test Delegate");
