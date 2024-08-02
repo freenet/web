@@ -47,7 +47,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         result.to_uppercase()
     }
 
-    fn to_armoured_string(&self) -> Result<String, GhostkeyError> {
+    fn to_armored_string(&self) -> Result<String, GhostkeyError> {
         let buf = self
             .to_bytes()
             .map_err(|e| GhostkeyError::IOError(e.to_string()))?;
@@ -70,7 +70,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     }
 
     fn to_file(&self, file_path: &Path) -> Result<(), GhostkeyError> {
-        let pem_content = self.to_armoured_string()?;
+        let pem_content = self.to_armored_string()?;
         let mut file = File::create(file_path).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
         file.write_all(pem_content.as_bytes())
             .map_err(|e| GhostkeyError::IOError(e.to_string()))?;
@@ -234,7 +234,7 @@ mod tests {
             field2: 42,
         };
 
-        let armored = test_struct1.to_armoured_string().unwrap();
+        let armored = test_struct1.to_armored_string().unwrap();
         let decoded_struct1 = TestStruct::from_armored_string(&armored).unwrap();
 
         assert_eq!(test_struct1, decoded_struct1);
@@ -247,7 +247,7 @@ mod tests {
             field2: 42,
         };
 
-        let _armored = test_struct1.to_armoured_string().unwrap();
+        let _armored = test_struct1.to_armored_string().unwrap();
         let mismatched_label = "-----BEGIN TEST_STRUCT-----\n\n-----END TEST_STRUCTS-----\n";
         let decoded_struct1 = TestStruct::from_armored_string(&mismatched_label);
         assert!(decoded_struct1.is_err());

@@ -159,7 +159,7 @@ async function generateAndSignCertificate(paymentIntentId) {
         },
         body: JSON.stringify({ 
           payment_intent_id: paymentIntentId, 
-          blinded_ghostkey_base64: blindedPublicKey
+          blinded_ghost_key_base64: blindedPublicKey
         }),
         credentials: 'same-origin'
       });
@@ -182,8 +182,8 @@ async function generateAndSignCertificate(paymentIntentId) {
     }
 
     // Generate the Ghostkey certificate using WebAssembly
-    console.log("Generating Ghostkey certificate");
-    const ghostkeyCertResult = wasmModule.wasm_generate_ghostkey_certificate(
+    console.log("Generating Ghost Key certificate");
+    const ghostkeyCertResult = wasmModule.wasm_generate_ghost_key_certificate(
       delegateCertificateBase64,
       signData.blind_signature_base64,
       blindingSecret,
@@ -195,8 +195,8 @@ async function generateAndSignCertificate(paymentIntentId) {
       throw ghostkeyCertResult;
     }
 
-    console.log("Ghostkey certificate and signing key generated");
-    displayCertificate(ghostkeyCertResult.armored_ghostkey_cert, ghostkeyCertResult.armored_ghostkey_signing_key);
+    console.log("Ghost Key certificate and signing key generated");
+    displayCertificate(ghostkeyCertResult.armored_ghost_key_cert, ghostkeyCertResult.armored_ghost_key_signing_key);
   } catch (error) {
     console.error("Error in generateAndSignCertificate:", error);
     showError('Error generating certificate: ' + error.message);

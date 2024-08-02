@@ -80,7 +80,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_ghostkey_certificate_creation_and_verification() {
+    fn test_ghost_key_certificate_creation_and_verification() {
         // Create a master key pair
         let (master_signing_key, master_verifying_key) = create_keypair(&mut OsRng).unwrap();
 
@@ -90,18 +90,18 @@ mod tests {
             DelegateCertificate::new(&master_signing_key, &info).unwrap();
 
         // Create a ghostkey certificate
-        let (ghostkey_certificate, _ghostkey_signing_key) =
+        let (ghost_key_certificate, _ghost_key_signing_key) =
             GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
 
         // Verify the ghostkey certificate
-        let verified_info = ghostkey_certificate
+        let verified_info = ghost_key_certificate
             .verify(&master_verifying_key)
             .unwrap();
         assert_eq!(verified_info, info);
     }
 
     #[test]
-    fn test_ghostkey_certificate_invalid_master_key() {
+    fn test_ghost_key_certificate_invalid_master_key() {
         // Create two sets of key pairs
         let (master_signing_key, _) = create_keypair(&mut OsRng).unwrap();
         let (_, wrong_master_verifying_key) = create_keypair(&mut OsRng).unwrap();
@@ -112,11 +112,11 @@ mod tests {
             DelegateCertificate::new(&master_signing_key, &info).unwrap();
 
         // Create a ghostkey certificate
-        let (ghostkey_certificate, _ghostkey_signing_key) =
+        let (ghost_key_certificate, _ghost_key_signing_key) =
             GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
 
         // Try to verify with the wrong master key
-        let result = ghostkey_certificate.verify(&wrong_master_verifying_key);
+        let result = ghost_key_certificate.verify(&wrong_master_verifying_key);
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err().as_ref(),
@@ -125,7 +125,7 @@ mod tests {
     }
 
     #[test]
-    fn test_ghostkey_certificate_tampered_delegate() {
+    fn test_ghost_key_certificate_tampered_delegate() {
         // Create a master key pair
         let (master_signing_key, master_verifying_key) = create_keypair(&mut OsRng).unwrap();
 
@@ -135,14 +135,14 @@ mod tests {
             DelegateCertificate::new(&master_signing_key, &info).unwrap();
 
         // Create a ghostkey certificate
-        let (mut ghostkey_certificate, _ghostkey_signing_key) =
+        let (mut ghost_key_certificate, _ghost_key_signing_key) =
             GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
 
         // Tamper with the delegate certificate
-        ghostkey_certificate.delegate.payload.info = "Tampered Info".to_string();
+        ghost_key_certificate.delegate.payload.info = "Tampered Info".to_string();
 
         // Try to verify the tampered certificate
-        let result = ghostkey_certificate.verify(&master_verifying_key);
+        let result = ghost_key_certificate.verify(&master_verifying_key);
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err().as_ref(),
@@ -151,7 +151,7 @@ mod tests {
     }
 
     #[test]
-    fn test_ghostkey_certificate_tampered_ghostkey() {
+    fn test_ghost_key_certificate_tampered_ghostkey() {
         // Create a master key pair
         let (master_signing_key, master_verifying_key) = create_keypair(&mut OsRng).unwrap();
 
@@ -161,15 +161,15 @@ mod tests {
             DelegateCertificate::new(&master_signing_key, &info).unwrap();
 
         // Create a ghostkey certificate
-        let (mut ghostkey_certificate, _ghostkey_signing_key) =
+        let (mut ghost_key_certificate, _ghost_key_signing_key) =
             GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
 
         // Tamper with the ghostkey verifying key
         let (_, tampered_verifying_key) = create_keypair(&mut OsRng).unwrap();
-        ghostkey_certificate.verifying_key = VerifyingKey::from(tampered_verifying_key);
+        ghost_key_certificate.verifying_key = VerifyingKey::from(tampered_verifying_key);
 
         // Try to verify the tampered certificate
-        let result = ghostkey_certificate.verify(&master_verifying_key);
+        let result = ghost_key_certificate.verify(&master_verifying_key);
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err().as_ref(),

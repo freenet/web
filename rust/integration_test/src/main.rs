@@ -85,7 +85,7 @@ fn parse_arguments() -> (bool, bool, bool, bool) {
 }
 
 async fn setup_environment() -> Result<std::path::PathBuf> {
-    let temp_dir = env::temp_dir().join("ghostkey_test");
+    let temp_dir = env::temp_dir().join("ghost_key_test");
     fs::create_dir_all(&temp_dir)?;
     Ok(temp_dir)
 }
@@ -424,8 +424,8 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, wait: bool, vi
             "return document.querySelector('textarea#combinedKey').value;",
             vec![],
         ).await?.as_str().unwrap_or("").to_string();
-        let temp_dir = env::temp_dir().join("ghostkey_test");
-        let output_file = temp_dir.join("ghostkey_certificate.pem");
+        let temp_dir = env::temp_dir().join("ghost_key_test");
+        let output_file = temp_dir.join("ghost_key_certificate.pem");
         std::fs::write(&output_file, combined_key_content.clone())?;
         print_result(true);
         
@@ -448,17 +448,17 @@ async fn run_browser_test(_headless: bool, wait_on_failure: bool, wait: bool, vi
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             let stdout = String::from_utf8_lossy(&output.stdout);
-            println!("{}", "Ghostkey validation failed.".red());
+            println!("{}", "Ghost Key validation failed.".red());
             println!("Stderr: {}", stderr);
             println!("Stdout: {}", stdout);
             let error_details = analyze_validation_error(&stderr, &stdout);
             println!("Detailed error analysis: {}", error_details);
             print_result(false);
-            return Err(anyhow::anyhow!("Ghostkey validation failed: {}. Aborting test.", error_details));
+            return Err(anyhow::anyhow!("Ghost Key validation failed: {}. Aborting test.", error_details));
         }
 
         print_result(true);
-        println!("Ghostkey certificate {}.", "verified".green());
+        println!("Ghost Key certificate {}.", "verified".green());
         Ok(())
     })().await;
 

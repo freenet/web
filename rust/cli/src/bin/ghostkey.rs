@@ -4,11 +4,11 @@ use colored::Colorize;
 use ed25519_dalek::*;
 use gklib::armorable::Armorable;
 use ghostkey::commands::{
-    generate_delegate_cmd, generate_ghostkey_cmd, generate_master_key_cmd, verify_delegate_cmd,
-    verify_ghostkey_cmd,
+    generate_delegate_cmd, generate_ghost_key_cmd, generate_master_key_cmd, verify_delegate_cmd,
+    verify_ghost_key_cmd,
 };
 use gklib::delegate_certificate::DelegateCertificate;
-use gklib::ghostkey_certificate::GhostkeyCertificate;
+use gklib::ghost_key_certificate::GhostkeyCertificate;
 use log::info;
 use std::path::Path;
 use std::process;
@@ -250,7 +250,7 @@ fn run() -> i32 {
                 return 1;
             }
 
-            generate_ghostkey_cmd(&delegate_certificate, &delegate_signing_key, &output_dir)
+            generate_ghost_key_cmd(&delegate_certificate, &delegate_signing_key, &output_dir)
         }
         Some((CMD_VERIFY_GHOST_KEY, sub_matches)) => {
             let master_verifying_key_file = Path::new(
@@ -277,7 +277,7 @@ fn run() -> i32 {
                     return 1;
                 }
             };
-            verify_ghostkey_cmd(&master_verifying_key, &ghost_certificate)
+            verify_ghost_key_cmd(&master_verifying_key, &ghost_certificate)
         }
         _ => {
             info!("No valid subcommand provided. Use --help for usage information.");

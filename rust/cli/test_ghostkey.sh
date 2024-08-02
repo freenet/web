@@ -69,10 +69,10 @@ run_test "Verify delegate with invalid certificate (should fail)" "cargo run --b
 
 # Test generate-ghost-key
 run_test "Generate ghost key" "cargo run --bin ghostkey -- generate-ghost-key --delegate-dir $temp_dir/delegate-1 --output-dir $temp_dir/ghost-1" 0
-check_files "$temp_dir/ghost-1" "ghostkey_certificate.pem" "ghostkey_signing_key.pem"
+check_files "$temp_dir/ghost-1" "ghost_key_certificate.pem" "ghost_key_signing_key.pem"
 
 # Test verify-ghost-key
-run_test "Verify ghost key" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghostkey_certificate.pem" 0
+run_test "Verify ghost key" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghost_key_certificate.pem" 0
 
 # Generate a second master key
 run_test "Generate second master key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master-2" 0
@@ -82,7 +82,7 @@ check_files "$temp_dir/master-2" "master_signing_key.pem" "master_verifying_key.
 run_test "Verify delegate with wrong master key (should fail)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --delegate-certificate $temp_dir/delegate-1/delegate_certificate.pem" 1
 
 # Test verify-ghost-key with wrong master key (should fail)
-run_test "Verify ghost key with wrong master key (should fail)" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghostkey_certificate.pem" 1
+run_test "Verify ghost key with wrong master key (should fail)" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghost_key_certificate.pem" 1
 
 # Clean up
 echo "Cleaning up temporary directory"

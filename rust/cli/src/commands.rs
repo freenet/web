@@ -1,7 +1,7 @@
 use gklib::armorable::*;
 use gklib::delegate_certificate::DelegateCertificate;
 use gklib::errors::GhostkeyError;
-use gklib::ghostkey_certificate::GhostkeyCertificate;
+use gklib::ghost_key_certificate::GhostkeyCertificate;
 use gklib::util::create_keypair;
 use blind_rsa_signatures::SecretKey as RSASigningKey;
 use colored::Colorize;
@@ -172,39 +172,39 @@ pub fn verify_delegate_cmd(
     }
 }
 
-pub fn generate_ghostkey_cmd(
+pub fn generate_ghost_key_cmd(
     delegate_certificate: &DelegateCertificate,
     delegate_signing_key: &RSASigningKey,
     output_dir: &Path,
 ) -> i32 {
-    let (ghostkey_certificate, ghostkey_signing_key) =
+    let (ghost_key_certificate, ghost_key_signing_key) =
         GhostkeyCertificate::new(delegate_certificate, delegate_signing_key);
-    let ghostkey_certificate_file = output_dir.join("ghostkey_certificate.pem");
-    let ghostkey_signing_key_file = output_dir.join("ghostkey_signing_key.pem");
+    let ghost_key_certificate_file = output_dir.join("ghost_key_certificate.pem");
+    let ghost_key_signing_key_file = output_dir.join("ghost_key_signing_key.pem");
     info!(
         "Writing ghostkey certificate to {}",
-        ghostkey_certificate_file.display()
+        ghost_key_certificate_file.display()
     );
-    if let Err(e) = ghostkey_certificate.to_file(&ghostkey_certificate_file) {
+    if let Err(e) = ghost_key_certificate.to_file(&ghost_key_certificate_file) {
         eprintln!("{} to write ghostkey certificate: {}", "Failed".red(), e);
         return 1;
     }
     println!(
         "{} written {}: {}",
-        "Ghostkey certificate",
+        "Ghost Key certificate",
         "successfully".green(),
-        ghostkey_certificate_file.display().to_string().yellow()
+        ghost_key_certificate_file.display().to_string().yellow()
     );
     info!(
         "Writing ghostkey signing key to {}",
-        ghostkey_signing_key_file.display()
+        ghost_key_signing_key_file.display()
     );
-    if let Err(e) = ghostkey_signing_key.to_file(&ghostkey_signing_key_file) {
+    if let Err(e) = ghost_key_signing_key.to_file(&ghost_key_signing_key_file) {
         eprintln!("{} to write ghostkey signing key: {}", "Failed".red(), e);
         return 1;
     }
     if let Err(e) = fs::set_permissions(
-        &ghostkey_signing_key_file,
+        &ghost_key_signing_key_file,
         fs::Permissions::from_mode(0o600),
     ) {
         eprintln!(
@@ -218,12 +218,12 @@ pub fn generate_ghostkey_cmd(
         "{} written {}: {}",
         "Ghost signing key",
         "successfully".green(),
-        ghostkey_signing_key_file.display().to_string().yellow()
+        ghost_key_signing_key_file.display().to_string().yellow()
     );
     0
 }
 
-pub fn verify_ghostkey_cmd(
+pub fn verify_ghost_key_cmd(
     master_verifying_key: &VerifyingKey,
     ghost_certificate: &GhostkeyCertificate,
 ) -> i32 {

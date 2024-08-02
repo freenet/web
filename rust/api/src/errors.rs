@@ -25,7 +25,7 @@ impl std::fmt::Display for CertificateError {
             CertificateError::KeyError(e) => write!(f, "Key error: {}", e),
             CertificateError::ParseIdError(e) => write!(f, "Parse ID error: {}", e),
             CertificateError::MiscError(e) => write!(f, "Miscellaneous error: {}", e),
-            CertificateError::GhostkeyError(e) => write!(f, "Ghostkey error: {}", e),
+            CertificateError::GhostkeyError(e) => write!(f, "Ghost Key error: {}", e),
         }
     }
 }

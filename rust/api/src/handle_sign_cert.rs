@@ -13,7 +13,7 @@ pub use crate::errors::CertificateError;
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
     payment_intent_id: String,
-    blinded_ghostkey_base64: String,
+    blinded_ghost_key_base64: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -79,7 +79,7 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
     // Sign the certificate
     log::info!("Payment intent verified successfully");
 
-    let blinded_ghostkey = BlindedMessage::from_base64(&request.blinded_ghostkey_base64)
+    let blinded_ghostkey = BlindedMessage::from_base64(&request.blinded_ghost_key_base64)
         .map_err(|e| {
             log::error!("Error in from_base64: {:?}", e);
             CertificateError::MiscError(e.to_string())
