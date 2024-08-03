@@ -1,5 +1,4 @@
-use std::{env, time::SystemTime, fs, path::PathBuf};
-use std::sync::{Arc, Mutex};
+use std::{env, time::SystemTime, path::PathBuf};
 use std::net::SocketAddr;
 
 use clap::{Arg, Command};
