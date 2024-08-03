@@ -108,8 +108,9 @@ async fn main() {
         .layer(CorsLayer::permissive())
         .fallback(not_found);
 
+    let challenge_dir_clone = challenge_dir.clone();
     let challenge_app = Router::new()
-        .fallback(move |uri| serve_http01_challenge(challenge_dir.clone(), uri));
+        .fallback(move |uri| serve_http01_challenge(challenge_dir_clone.clone(), uri));
 
     let (is_https, default_port) = if matches.get_one::<String>("tls-cert").is_some() && matches.get_one::<String>("tls-key").is_some() {
         (true, 443)
