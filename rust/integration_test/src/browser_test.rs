@@ -196,13 +196,11 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
     while start.elapsed() < timeout {
         match client.find(locator.clone()).await {
             Ok(element) => {
-                match element.is_displayed().await {
-                    Ok(true) => return Ok(element),
-                    Ok(false) => println!("Element found but not displayed: {:?}", locator),
-                    Err(e) => println!("Error checking if element is displayed: {:?}", e),
+                if element.is_displayed().await.unwrap_or(false) {
+                    return Ok(element);
                 }
             }
-            Err(e) => println!("Error finding element: {:?}", e),
+            Err(_) => {}
         }
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
