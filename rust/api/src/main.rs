@@ -14,7 +14,6 @@ use axum::{
 use tower_http::trace::TraceLayer;
 use tower_http::cors::CorsLayer;
 use axum_server::tls_rustls::RustlsConfig;
-use futures::FutureExt;
 
 mod routes;
 mod handle_sign_cert;
@@ -142,7 +141,7 @@ async fn main() {
         let http_challenge_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 80);
         info!("Starting HTTP-01 challenge server on {}", http_challenge_addr);
         let challenge_listener = tokio::net::TcpListener::bind(http_challenge_addr).await.unwrap();
-        let challenge_server = axum::serve(challenge_listener, challenge_app).boxed();
+        let challenge_server = tokio::spawn(axum::serve(challenge_listener, challenge_app));
 
         tokio::select! {
             _ = main_server => {},
