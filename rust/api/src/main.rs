@@ -140,10 +140,8 @@ async fn main() {
     if challenge_dir.lock().await.is_some() {
         let http_challenge_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 80);
         info!("Starting HTTP-01 challenge server on {}", http_challenge_addr);
-        let challenge_server = axum::serve(
-            tokio::net::TcpListener::bind(http_challenge_addr).await.unwrap(),
-            challenge_app
-        );
+        let challenge_listener = tokio::net::TcpListener::bind(http_challenge_addr).await.unwrap();
+        let challenge_server = axum::serve(challenge_listener, challenge_app);
 
         tokio::select! {
             _ = main_server => {},
