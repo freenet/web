@@ -19,7 +19,6 @@ dependencies = [
     "build-wasm-release",
     "build-api-release",
     "build-cli-release",
-    "test-ghostkey",
     "build-hugo-release"
 ]
 

@@ -1,5 +1,5 @@
 [package]
-name = "rocket-api"
+name = "ghostkey-api"
 version = "0.1.0"
 edition = "2021"
 
