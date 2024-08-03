@@ -1,7 +1,7 @@
 use std::{env, path::PathBuf};
-use std::net::SocketAddr;
+use std::net::{SocketAddr, IpAddr, Ipv4Addr};
 
-use clap::{Arg, Command};
+use clap::{Arg, Command, value_parser};
 use dotenv::dotenv;
 use log::{error, info, LevelFilter};
 use axum::{
@@ -46,9 +46,15 @@ async fn main() {
             .long("tls-key")
             .value_name("FILE")
             .help("Path to TLS private key file"))
+        .arg(Arg::new("port")
+            .long("port")
+            .value_name("PORT")
+            .help("Sets the port to listen on")
+            .value_parser(value_parser!(u16)))
         .get_matches();
 
     let delegate_dir = matches.get_one::<String>("delegate-dir").unwrap();
+    let user_port = matches.get_one::<u16>("port");
     env::set_var(DELEGATE_DIR, delegate_dir);
 
     env_logger::builder()
@@ -73,11 +79,20 @@ async fn main() {
         .layer(CorsLayer::permissive())
         .fallback(not_found);
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
+    let (is_https, default_port) = if matches.get_one::<String>("tls-cert").is_some() && matches.get_one::<String>("tls-key").is_some() {
+        (true, 443)
+    } else {
+        (false, 8000)
+    };
+
+    let port = user_port.copied().unwrap_or(default_port);
+    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), port);
     info!("Listening on {}", addr);
 
-    if let (Some(tls_cert), Some(tls_key)) = (matches.get_one::<String>("tls-cert"), matches.get_one::<String>("tls-key")) {
+    if is_https {
         info!("TLS certificate and key provided. Starting in HTTPS mode.");
+        let tls_cert = matches.get_one::<String>("tls-cert").unwrap();
+        let tls_key = matches.get_one::<String>("tls-key").unwrap();
         let tls_config = RustlsConfig::from_pem_file(PathBuf::from(tls_cert), PathBuf::from(tls_key)).await.unwrap();
         axum_server::bind_rustls(addr, tls_config)
             .serve(app.into_make_service())
