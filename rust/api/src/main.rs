@@ -1,4 +1,4 @@
-use std::{env, time::SystemTime, path::PathBuf};
+use std::{env, path::PathBuf};
 use std::net::SocketAddr;
 
 use clap::{Arg, Command};
@@ -21,18 +21,6 @@ mod errors;
 
 pub static DELEGATE_DIR: &str = "DELEGATE_DIR";
 
-struct TlsConfig {
-    config: RustlsConfig,
-    last_modified: SystemTime,
-}
-
-impl TlsConfig {
-    async fn new(cert: PathBuf, key: PathBuf) -> Result<Self, Box<dyn std::error::Error>> {
-        let config = RustlsConfig::from_pem_file(cert, key).await?;
-        let last_modified = SystemTime::now();
-        Ok(Self { config, last_modified })
-    }
-}
 
 async fn not_found() -> impl IntoResponse {
     (StatusCode::NOT_FOUND, "Sorry, this is not a valid path.")
@@ -90,8 +78,8 @@ async fn main() {
 
     if let (Some(tls_cert), Some(tls_key)) = (matches.get_one::<String>("tls-cert"), matches.get_one::<String>("tls-key")) {
         info!("TLS certificate and key provided. Starting in HTTPS mode.");
-        let tls_config = TlsConfig::new(PathBuf::from(tls_cert), PathBuf::from(tls_key)).await.unwrap();
-        axum_server::bind_rustls(addr, tls_config.config)
+        let tls_config = RustlsConfig::from_pem_file(PathBuf::from(tls_cert), PathBuf::from(tls_key)).await.unwrap();
+        axum_server::bind_rustls(addr, tls_config)
             .serve(app.into_make_service())
             .await
             .unwrap();
