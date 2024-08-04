@@ -11,7 +11,7 @@ use axum::{
 use log::{error, info};
 use serde::{Deserialize, Serialize};
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
-use gklib::armorable::Armorable;
+use ghostkey_lib::armorable::Armorable;
 
 use crate::delegates::get_delegate;
 use crate::handle_sign_cert::{CertificateError, sign_certificate, SignCertificateRequest, SignCertificateResponse};

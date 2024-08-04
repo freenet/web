@@ -2,11 +2,11 @@ use base64::Engine;
 use js_sys::{JsString, Object, Reflect};
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
-use gklib::armorable::Armorable;
-use gklib::util::create_keypair;
+use ghostkey_lib::armorable::Armorable;
+use ghostkey_lib::util::create_keypair;
 use blind_rsa_signatures::{BlindSignature, Options, Secret};
-use gklib::delegate_certificate::DelegateCertificate;
-use gklib::ghost_key_certificate::GhostkeyCertificate;
+use ghostkey_lib::delegate_certificate::DelegateCertificate;
+use ghostkey_lib::ghost_key_certificate::GhostkeyCertificate;
 use base64::prelude::*;
 
 #[cfg(target_arch = "wasm32")]

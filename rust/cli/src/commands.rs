@@ -1,8 +1,8 @@
-use gklib::armorable::*;
-use gklib::delegate_certificate::DelegateCertificate;
-use gklib::errors::GhostkeyError;
-use gklib::ghost_key_certificate::GhostkeyCertificate;
-use gklib::util::create_keypair;
+use ghostkey_lib::armorable::*;
+use ghostkey_lib::delegate_certificate::DelegateCertificate;
+use ghostkey_lib::errors::GhostkeyError;
+use ghostkey_lib::ghost_key_certificate::GhostkeyCertificate;
+use ghostkey_lib::util::create_keypair;
 use blind_rsa_signatures::SecretKey as RSASigningKey;
 use colored::Colorize;
 use ed25519_dalek::*;

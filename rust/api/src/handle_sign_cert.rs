@@ -5,7 +5,7 @@ use blind_rsa_signatures::BlindedMessage;
 use serde::{Deserialize, Serialize};
 use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 
-use gklib::armorable::Armorable;
+use ghostkey_lib::armorable::Armorable;
 
 use crate::delegates::sign_with_delegate_key;
 pub use crate::errors::CertificateError;
