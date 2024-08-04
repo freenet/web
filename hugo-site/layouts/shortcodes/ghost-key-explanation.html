@@ -1,2 +1,2 @@
 {{ $content := .Site.GetPage "/donate/ghostkey/ghost-key-explanation.md" }}
-{{ $content.Content | safeHTML }}
+{{ $content.Content | markdownify }}

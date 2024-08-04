@@ -1,11 +1,16 @@
-When you make a donation to Freenet, your browser creates a [public-private key pair](https://en.wikipedia.org/wiki/Public-key_cryptography). 
-The **public key** is encrypted, or "blinded," and sent to our server. This ensures that the server 
-cannot associate the key pair with your donation, maintaining your anonymity. The server signs the blinded 
-ublic key to certify your donation without ever seeing the actual key. Your browser then decrypts 
-the signature, delivering a cryptographic certificate that signifies your invested value. This anonymously 
-signed key, or "Ghost Key," can be used to verify sender authenticity in your communications, mitigate 
-spam, and establish a credible identity within the decentralized reputation system—all while you 
-remain anonymous.
+Ghost keys address a crucial challenge on the Internet: establishing trust without sacrificing privacy. With personal 
+data commoditized by big tech, ghost keys are a way to maintain anonymity while tackling serious problems like bots
+and spam.
+
+Here's how it works: when you make a donation to Freenet, your web browser generates a public-private key pair. The 
+public key is then encrypted, or blinded, and sent to our server. The server signs this blinded key and sends it back 
+to your browser, which decrypts the signature, creating a cryptographic certificate that is signed by the server without
+the server ever seeing it. This process ensures that your identity is not linked to your donation, providing a unique 
+certificate that proves you've invested value.
+
+By linking trust to anonymity, ghost keys eliminate the need for cumbersome captchas. They block spam, prevent bots, 
+and secure your interactions, making them a powerful tool for those who value privacy, security, and control over 
+their digital presence.
 
 ### Technical Overview
 
