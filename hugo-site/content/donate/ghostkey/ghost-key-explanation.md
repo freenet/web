@@ -15,9 +15,10 @@ their digital presence.
 ### Technical Overview
 
 1. On completion of a donation, the browser creates an [Ed25519](https://en.wikipedia.org/wiki/EdDSA) key pair.
-2. The **public part** of the key pair is blinded and sent to the server. The server verifies the donation and then signs the blinded key.
-3. The blinded signature is sent back to the browser and unblinded.
-4. The browser presents both the key pair and the unblinded signature to the user.
+2. The **public part** of the key pair is [blinded](https://www.rfc-editor.org/rfc/rfc9474.html) and sent to the server. 
+3. The server verifies the donation and then signs the blinded key with it's RSA key. 
+4. The blinded signature is sent back to the browser and unblinded.
+5. The browser presents both the key pair and the unblinded signature to the user.
 
 The JavaScript code for the browser side of this process can be reviewed [here](/js/donation-success.js).
 l details, making it suitable for both technical and non-technical audiences interested in understanding how ghost keys work.
