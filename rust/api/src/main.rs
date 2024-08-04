@@ -26,13 +26,13 @@ async fn serve_http01_challenge(
     challenge_dir: Arc<Mutex<Option<PathBuf>>>,
     uri: axum::http::Uri,
 ) -> impl IntoResponse {
-    let path = uri.path().trim_start_matches('/');
+    let path = uri.path().trim_start_matches('/').trim_start_matches(".well-known/acme-challenge/");
     let challenge_dir = challenge_dir.lock().await;
     
     if let Some(dir) = &*challenge_dir {
         let file_path = dir.join(path);
         if file_path.is_file() {
-            match tokio::fs::read_to_string(file_path).await {
+            match tokio::fs::read_to_string(&file_path).await {
                 Ok(content) => (StatusCode::OK, content),
                 Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Failed to read challenge file".to_string()),
             }
