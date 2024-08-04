@@ -37,7 +37,8 @@ async fn serve_http01_challenge(
                 Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Failed to read challenge file".to_string()),
             }
         } else {
-            (StatusCode::NOT_FOUND, "Challenge file not found".to_string())
+            let error_message = format!("Challenge file not found at path: {}", file_path.display());
+            (StatusCode::NOT_FOUND, error_message)
         }
     } else {
         (StatusCode::NOT_FOUND, "Challenge directory not configured".to_string())
