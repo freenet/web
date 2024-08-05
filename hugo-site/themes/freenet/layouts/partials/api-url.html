@@ -1,5 +1,3 @@
-{{ if hugo.IsServer }}
-  http://localhost:8000
-{{ else }}
-  https://gkapi.freenet.org
-{{ end }}
+<script>
+window.freenetApiUrl = {{ if hugo.IsServer }}"http://localhost:8000"{{ else }}"https://gkapi.freenet.org"{{ end }};
+</script>
