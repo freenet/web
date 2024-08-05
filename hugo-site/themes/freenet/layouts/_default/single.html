@@ -1,11 +1,33 @@
 {{ define "main" }}
-  <h1>{{ .Title }}</h1>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">{{ .Title }}</h1>
 
-  {{ if eq .Section "news" }}
-    {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
-    {{ $dateHuman := .Date | time.Format ":date_long" }}
-    <p class="date">{{ $dateHuman }}</p>
-  {{ end }}
+      {{ if eq .Section "news" }}
+        {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
+        {{ $dateHuman := .Date | time.Format ":date_long" }}
+        <p class="date">{{ $dateHuman }}</p>
+      {{ end }}
 
-  {{ .Content }}
+      <div class="content">
+        {{ .Content }}
+      </div>
+
+      {{ if .IsSection }}
+        <div>
+          {{ range .Pages }}
+            <h2 class="title is-5">
+              <a href="{{ .RelPermalink }}" style="color: #444444;">{{ .LinkTitle }}</a>
+            </h2>
+            {{ if eq .Section "news" }}
+              <p class="date">{{ .Date.Format "2 January, 2006" }}</p>
+            {{ end }}
+            <div class="content">
+              {{ .Summary }}
+            </div>
+          {{ end }}
+        </div>
+      {{ end }}
+    </div>
+  </section>
 {{ end }}
