@@ -23,10 +23,27 @@ jobs:
           hugo-version: 'latest'
           extended: true
 
-      - name: Build Hugo Site
-        run: |
-          cd hugo-site
-          hugo --minify
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Add WebAssembly target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Install cargo-make
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: --debug cargo-make
+
+      - name: Build Release
+        run: cargo make release
 
       - name: Deploy Hugo Site
         uses: peaceiris/actions-gh-pages@v4
