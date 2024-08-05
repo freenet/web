@@ -152,7 +152,10 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.log("Sending blinded public key for signing");
     let signResponse;
     try {
-      const apiUrl = window.freenetApiUrl || 'http://localhost:8000'; // Fallback to localhost if not set
+      const apiUrl = window.freenetApiUrl;
+      if (!apiUrl) {
+        throw new Error('API URL is not set');
+      }
       signResponse = await fetch(`${apiUrl}/sign-certificate`, {
         method: 'POST',
         headers: { 

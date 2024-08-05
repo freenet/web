@@ -30,14 +30,11 @@
 <script>
   let stripe;
   let elements;
-  const apiUrl = '{{ partial "api-url.html" . }}';
-  
-  // Set global variable for API URL
-  window.freenetApiUrl = apiUrl;
 
   document.addEventListener('DOMContentLoaded', initializeStripe);
 
   async function initializeStripe() {
+    const apiUrl = window.freenetApiUrl;
     try {
       stripe = Stripe('{{ .Site.Params.stripePublishableKey }}');
       const response = await fetch(`${apiUrl}/create-donation`, {
