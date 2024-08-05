@@ -34,7 +34,7 @@
   document.addEventListener('DOMContentLoaded', initializeStripe);
 
   async function initializeStripe() {
-    const apiUrl = window.freenetApiUrl;
+    const apiUrl = window.ghostkeyApiUrl;
     try {
       stripe = Stripe('{{ .Site.Params.stripePublishableKey }}');
       const response = await fetch(`${apiUrl}/create-donation`, {

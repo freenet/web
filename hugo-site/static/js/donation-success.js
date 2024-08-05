@@ -152,7 +152,7 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.log("Sending blinded public key for signing");
     let signResponse;
     try {
-      const apiUrl = window.freenetApiUrl;
+      const apiUrl = window.ghostkeyApiUrl;
       if (!apiUrl) {
         throw new Error('API URL is not set');
       }
