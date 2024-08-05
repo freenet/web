@@ -36,7 +36,7 @@
   async function initializeStripe() {
     const apiUrl = window.ghostkeyApiUrl;
     try {
-      stripe = Stripe('{{ .Site.Params.stripePublishableKey }}');
+      stripe = Stripe(window.stripePublishableKey);
       const response = await fetch(`${apiUrl}/create-donation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
