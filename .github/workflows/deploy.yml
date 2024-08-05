@@ -17,6 +17,16 @@ jobs:
           submodules: true  # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
+      - name: Cache Hugo resources
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-hugo-resources
+        with:
+          path: /tmp/hugo_cache
+          key: ${{ runner.os }}-hugo-${{ hashFiles('**/hugo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-hugo-
+
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
@@ -30,11 +40,28 @@ jobs:
           override: true
           components: rustfmt, clippy
 
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
       - name: Add WebAssembly target
         run: rustup target add wasm32-unknown-unknown
 
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Cache wasm-pack
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/wasm-pack
+          key: ${{ runner.os }}-wasm-pack-${{ hashFiles('**/Cargo.toml') }}
 
       - name: Install cargo-make
         uses: actions-rs/cargo@v1
