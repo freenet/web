@@ -152,7 +152,8 @@ async function generateAndSignCertificate(paymentIntentId) {
     console.log("Sending blinded public key for signing");
     let signResponse;
     try {
-      signResponse = await fetch('http://localhost:8000/sign-certificate', {
+      const apiUrl = '{{ partial "api-url.html" . }}';
+      signResponse = await fetch(`${apiUrl}/sign-certificate`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
