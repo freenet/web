@@ -6,3 +6,7 @@ target
 .env
 .idea
 *.tmp
+
+# Rust-specific ignores
+Cargo.lock
+**/*.rs.bk
