@@ -1,7 +1,8 @@
 <div id="stripe-donation-form" style="max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
-  <form id="payment-form">
+    <form id="payment-form">
     <div id="amount-options" style="margin-bottom: 20px;">
-      <label style="margin-right: 10px;"><input type="radio" name="amount" value="10" required checked> $10</label>
+      <label style="margin-right: 10px;"><input type="radio" name="amount" value="5" required checked> $5</label>
+      <label style="margin-right: 10px;"><input type="radio" name="amount" value="20" required checked> $20</label>
       <label style="margin-right: 10px;"><input type="radio" name="amount" value="50"> $50</label>
       <label style="margin-right: 10px;"><input type="radio" name="amount" value="100"> $100</label>
       <label><input type="radio" name="amount" value="500"> $500</label>
@@ -16,47 +17,62 @@
     <div id="payment-element" style="margin-bottom: 20px;">
       <!-- Stripe Elements will be inserted here -->
     </div>
-    <button id="submit" class="button is-primary" style="width: 100%; padding: 10px; background-color: #0066cc; color: white; border: none; border-radius: 5px;">Donate</button>
+    <div id="payment-message" role="alert" style="color: red; margin-bottom: 10px;"></div>
+    <button id="submit" class="button is-primary" style="width: 100%; padding: 10px; background-color: #0066cc; color: white; border: none; border-radius: 5px;">
+      <div class="spinner hidden" id="spinner"></div>
+      <span id="button-text">Donate</span>
+    </button>
     <div id="error-message" style="margin-top: 20px; color: red;"></div>
   </form>
 </div>
 
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-  const stripe = Stripe('{{ .Site.Params.stripePublishableKey }}');
+  let stripe;
   let elements;
 
   document.addEventListener('DOMContentLoaded', initializeStripe);
 
   async function initializeStripe() {
+    const apiUrl = window.ghostkeyApiUrl;
     try {
-      const checkedAmountInput = document.querySelector('input[name="amount"]:checked');
-      const initialAmount = checkedAmountInput ? checkedAmountInput.value : '10';
-      const initialCurrency = document.getElementById('currency').value || 'usd';
-
-      const response = await fetch('http://127.0.0.1:8000/create-donation', {
+      stripe = Stripe(window.stripePublishableKey);
+      const response = await fetch(`${apiUrl}/create-donation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: parseInt(initialAmount) * 100, currency: initialCurrency })
+        body: JSON.stringify({
+          amount: parseInt(document.querySelector('input[name="amount"]:checked').value) * 100,
+          currency: document.getElementById('currency').value
+        })
       });
-
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('API endpoint not found. Please check your server configuration.');
-        }
-        const errorText = await response.text();
-        throw new Error(`Failed to initialize Stripe: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const data = await response.json();
+      if (!data.client_secret) {
+        throw new Error('The server response did not include a client secret.');
+      }
+      const { client_secret: clientSecret, delegate_certificate_base64 : delegateCertBase64 } = data;
 
-      const { client_secret } = await response.json();
+      localStorage.setItem('delegate_certificate_base64', delegateCertBase64);
+      
+      console.log('Received data from server:', data);
 
-      elements = stripe.elements({ clientSecret: client_secret });
-      const paymentElement = elements.create('payment');
-      paymentElement.mount('#payment-element');
+      const appearance = {
+        theme: 'stripe',
+      };
+      elements = stripe.elements({ appearance, clientSecret });
+
+      const paymentElement = elements.create("payment");
+      paymentElement.mount("#payment-element");
     } catch (error) {
       console.error('Stripe initialization error:', error);
       const messageContainer = document.querySelector('#error-message');
       messageContainer.textContent = '{{ .Get "error-message" }}' || `Error: ${error.message}. Please try again later or contact support.`;
+      // Display the error message
+      messageContainer.style.display = 'block';
+      // Hide the payment form
+      document.querySelector('#payment-form').style.display = 'none';
     }
   }
 
@@ -65,38 +81,43 @@
 
   async function handleSubmit(event) {
     event.preventDefault();
+    setLoading(true);
 
-    const amount = document.querySelector('input[name="amount"]:checked').value;
-    const currency = document.getElementById('currency').value;
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/donate/ghostkey/success`,
+      },
+    });
 
-    try {
-      const response = await fetch('http://127.0.0.1:8000/create-donation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: parseInt(amount) * 100, currency })
-      });
+    if (error.type === "card_error" || error.type === "validation_error") {
+      showMessage(error.message);
+    } else {
+      showMessage("An unexpected error occurred.");
+    }
 
-      if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(errorMessage);
-      }
+    setLoading(false);
+  }
 
-      const { client_secret } = await response.json();
+  function showMessage(messageText) {
+    const messageContainer = document.querySelector("#payment-message");
+    messageContainer.textContent = messageText;
+    messageContainer.style.display = "block";
+    setTimeout(function () {
+      messageContainer.style.display = "none";
+      messageContainer.textContent = "";
+    }, 4000);
+  }
 
-      const { error } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/donate/ghostkey/success`,
-        },
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-      // Payment successful, the page will redirect automatically
-    } catch (error) {
-      const messageContainer = document.querySelector('#error-message');
-      messageContainer.textContent = error.message;
+  function setLoading(isLoading) {
+    if (isLoading) {
+      document.querySelector("#submit").disabled = true;
+      document.querySelector("#spinner").classList.remove("hidden");
+      document.querySelector("#button-text").classList.add("hidden");
+    } else {
+      document.querySelector("#submit").disabled = false;
+      document.querySelector("#spinner").classList.add("hidden");
+      document.querySelector("#button-text").classList.remove("hidden");
     }
   }
 </script>

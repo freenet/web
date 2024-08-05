@@ -1,0 +1,3 @@
+[workspace]
+members = ["api", "cli", "integration_test", "gkwasm", "gklib"]
+resolver = "2"

@@ -1,7 +1,7 @@
 ---
 title: "Ghost Key Donation Success"
 date: 2023-07-10
-draft: true
+draft: false
 ---
 
 Thank you for your Ghost Key donation to Freenet! Your support helps us maintain and improve the 
@@ -22,4 +22,4 @@ Once your Ghost Key certificate is generated, you'll be able to download it. Thi
 
 Remember to save your Ghost Key certificate in a secure location. It's your private proof of donation and cannot be replaced if lost.
 
-Thank you again for supporting Freenet and embracing privacy-preserving technology!
+Thank you again for supporting Freenet and embracing privacy-preserving technology.

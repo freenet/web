@@ -1,0 +1,113 @@
+[config]
+default_to_workspace = false
+
+[tasks.default]
+alias = "dev"
+
+[tasks.dev]
+description = "Build and run in development mode"
+dependencies = [
+    "build-wasm-dev",
+    "build-api-dev",
+    "build-cli-dev",
+    "build-hugo-dev"
+]
+
+[tasks.release]
+description = "Build and run in release mode"
+dependencies = [
+    "build-wasm-release",
+    "build-api-release",
+    "build-cli-release",
+    "build-hugo-release"
+]
+
+[tasks.build-wasm-dev]
+description = "Build WebAssembly in development mode"
+script = """
+cd rust/gkwasm
+wasm-pack build --dev --target web --out-dir ../../hugo-site/static/wasm
+"""
+
+[tasks.build-wasm-release]
+description = "Build WebAssembly in release mode"
+script = """
+cd rust/gkwasm
+wasm-pack build --release --target web --out-dir ../../hugo-site/static/wasm
+"""
+
+[tasks.build-api-dev]
+description = "Build API in development mode"
+script = """
+cd rust/api
+cargo build
+"""
+
+[tasks.build-api-release]
+description = "Build API in release mode"
+script = """
+cd rust/api
+cargo build --release
+"""
+
+[tasks.build-cli-dev]
+description = "Build CLI in development mode"
+script = """
+cd rust/cli
+cargo build
+"""
+
+[tasks.build-cli-release]
+description = "Build CLI in release mode"
+script = """
+cd rust/cli
+cargo build --release
+"""
+
+[tasks.generate-delegate-keys]
+description = "Generate delegate keys"
+script = """
+./rust/cli/generate_delegate_keys.sh --master-key ./path/to/master_signing_key.pem --delegate-dir ./path/to/delegate/dir
+"""
+
+[tasks.test-ghostkey]
+description = "Run ghostkey tests"
+script = """
+./rust/cli/test_ghostkey.sh
+"""
+
+[tasks.build-hugo-dev]
+description = "Build Hugo site in development mode"
+dependencies = ["build-wasm-dev"]
+script = """
+cd hugo-site
+hugo
+"""
+
+[tasks.build-hugo-release]
+description = "Build Hugo site in release mode"
+dependencies = ["build-wasm-release"]
+script = """
+cd hugo-site
+hugo --minify
+"""
+
+[tasks.integration-test]
+description = "Run all tests"
+dependencies = ["dev"]
+script = """
+# Run unit tests for each crate
+cd rust/gklib && cargo test
+cd ../gkwasm && cargo test
+cd ../api && cargo test
+cd ../cli && cargo test
+cd ../..
+
+# Run ghostkey CLI tests
+cd rust/cli
+./test_ghostkey.sh
+cd ../..
+
+# Run integration tests
+cd rust/integration_test && cargo run
+"""
