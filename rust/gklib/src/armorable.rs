@@ -8,7 +8,7 @@ use std::any::type_name;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
-pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
+pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
     fn fingerprint() -> Result<String, GhostkeyError> {
         let hash = Self::calculate_hash();
         Ok(BASE64_STANDARD.encode(&hash.to_be_bytes()))
@@ -34,16 +34,16 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         use std::mem;
 
         for field in std::any::type_name::<Self>().split(',') {
-            let field_type = field.split(':').nth(1).unwrap_or("");
-            let type_id = TypeId::of::<Self>();
-
-            if type_id == TypeId::of::<String>() || type_id == TypeId::of::<&str>() {
+            let _field_type = field.split(':').nth(1).unwrap_or("");
+            
+            if TypeId::of::<Self>() == TypeId::of::<String>() || TypeId::of::<Self>() == TypeId::of::<&str>() {
                 hash = hash.wrapping_mul(31).wrapping_add(7);  // Use a prime number for strings
             } else if mem::size_of::<Self>() <= 8 {  // Assume it's a primitive if size <= 8 bytes
                 hash = hash.wrapping_mul(31).wrapping_add(3);  // Use a different prime for primitives
             } else {
-                // Recursively hash non-primitive fields
-                hash = hash.wrapping_mul(31).wrapping_add(Self::calculate_hash());
+                // For complex types, we can't recursively call calculate_hash() here
+                // Instead, we'll use a different prime number
+                hash = hash.wrapping_mul(31).wrapping_add(11);
             }
         }
 
