@@ -79,32 +79,21 @@ jobs:
             exit 1
           fi
 
-      - name: Verify WebAssembly files in public directory
-        run: |
-          if [ -d hugo-site/public/wasm ]; then
-            echo "wasm directory is present in the public directory"
-          else
-            echo "wasm directory is missing from the public directory"
-            exit 1
-          fi
-          if [ -f hugo-site/public/wasm/gkwasm.js ]; then
-            echo "gkwasm.js is present in the public directory"
-          else
-            echo "gkwasm.js is missing from the public directory"
-            exit 1
-          fi
-          if [ -f hugo-site/public/wasm/gkwasm_bg.wasm ]; then
-            echo "gkwasm_bg.wasm is present in the public directory"
-          else
-            echo "gkwasm_bg.wasm is missing from the public directory"
-            exit 1
-          fi
-
       - name: Ensure WebAssembly files are in the public directory
         run: |
           mkdir -p hugo-site/public/wasm
           cp hugo-site/static/wasm/gkwasm.js hugo-site/public/wasm/
           cp hugo-site/static/wasm/gkwasm_bg.wasm hugo-site/public/wasm/
+
+      - name: Add wasm files to Git
+        run: |
+          cd hugo-site/public
+          git add -f wasm/gkwasm.js wasm/gkwasm_bg.wasm
+          git status
+
+      # Stash changes to avoid conflicts when checking out gh-pages
+      - name: Stash Local Changes
+        run: git stash --include-untracked
 
       - name: Deploy Hugo Site
         env:
@@ -114,9 +103,13 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./hugo-site/public
           cname: freenet.org
-          force_orphan: true
-          keep_files: false
+          force_orphan: false  # Set to false to retain history
+          keep_files: true     # Set to true to keep existing files
           exclude_assets: ''
+
+      # Remove stash (optional step)
+      - name: Restore Local Changes
+        run: git stash pop || echo "No stash to pop"
 
       - name: Verify deployment
         run: |
