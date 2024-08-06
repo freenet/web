@@ -28,6 +28,8 @@ dependencies = ["build-wasm-release"]
 script = """
 cd hugo-site
 hugo --minify
+mkdir -p public/wasm
+cp -r static/wasm/* public/wasm/
 """
 
 [tasks.build-wasm-dev]

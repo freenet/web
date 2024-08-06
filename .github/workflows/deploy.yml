@@ -75,6 +75,21 @@ jobs:
             exit 1
           fi
 
+      - name: Verify WebAssembly files in public directory
+        run: |
+          if [ ! -d hugo-site/public/wasm ]; then
+            echo "wasm directory is missing from the public directory"
+            exit 1
+          fi
+          if [ ! -f hugo-site/public/wasm/gkwasm.js ]; then
+            echo "gkwasm.js is missing from the public directory"
+            exit 1
+          fi
+          if [ ! -f hugo-site/public/wasm/gkwasm_bg.wasm ]; then
+            echo "gkwasm_bg.wasm is missing from the public directory"
+            exit 1
+          fi
+
       - name: Deploy Hugo Site
         env:
           HUGO_ENV: production
