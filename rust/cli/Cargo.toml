@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 description = "A command-line tool for Freenet Ghost Key operations"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/freenet/freenet-core"
+repository = "https://github.com/freenet/web/rust/cli"
 
 [dependencies]
 curve25519-dalek = { version = "4.1.3", features = ["rand_core", "serde"]}
