@@ -52,11 +52,8 @@ jobs:
       - name: Install cargo-make
         run: cargo install --debug cargo-make
 
-      - name: Build Release
-        run: cargo make release
-
-      - name: Build Hugo Site
-        run: cd hugo-site && hugo --minify
+      - name: Build Site
+        run: cargo make build-site
 
       - name: Debug WebAssembly files
         run: |

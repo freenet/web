@@ -22,6 +22,14 @@ dependencies = [
     "build-hugo-release"
 ]
 
+[tasks.build-site]
+description = "Build WebAssembly and Hugo site for deployment"
+dependencies = ["build-wasm-release"]
+script = """
+cd hugo-site
+hugo --minify
+"""
+
 [tasks.build-wasm-dev]
 description = "Build WebAssembly in development mode"
 script = """
