@@ -1,7 +1,7 @@
 .aider*
-public
-hugo-site/resources
+hugo-site/public
 hugo-site/static/wasm/*
+hugo-site/themes/freenet/public/
 /resources
 target
 .env
