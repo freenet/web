@@ -8,8 +8,25 @@ use std::any::type_name;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
+use sha2::{Sha256, Digest};
 
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
+    fn fingerprint(&self) -> Result<String, GhostkeyError> {
+        let mut hasher = Sha256::new();
+        self.update_fingerprint(&mut hasher);
+        let result = hasher.finalize();
+        Ok(BASE64_STANDARD.encode(&result[..5]))
+    }
+
+    fn update_fingerprint(&self, hasher: &mut Sha256) {
+        let type_info = std::any::type_name::<Self>();
+        hasher.update(type_info.as_bytes());
+
+        let serialized = serde_json::to_string(self)
+            .map_err(|e| GhostkeyError::SerializationError(e.to_string()))
+            .unwrap_or_default();
+        hasher.update(serialized.as_bytes());
+    }
     fn to_bytes(&self) -> Result<Vec<u8>, GhostkeyError> {
         let mut buf = Vec::new();
         into_writer(self, &mut buf).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
@@ -251,5 +268,56 @@ mod tests {
         let mismatched_label = "-----BEGIN TEST_STRUCT-----\n\n-----END TEST_STRUCTS-----\n";
         let decoded_struct1 = TestStruct::from_armored_string(&mismatched_label);
         assert!(decoded_struct1.is_err());
+    }
+
+    #[test]
+    fn test_fingerprint() {
+        let test_struct1 = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+        let test_struct2 = TestStruct {
+            field1: "World".to_string(),
+            field2: 24,
+        };
+        let test_struct3 = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+
+        let fingerprint1 = test_struct1.fingerprint().unwrap();
+        let fingerprint2 = test_struct2.fingerprint().unwrap();
+        let fingerprint3 = test_struct3.fingerprint().unwrap();
+
+        assert_eq!(fingerprint1.len(), 8);
+        assert_ne!(fingerprint1, fingerprint2);
+        assert_eq!(fingerprint1, fingerprint3);
+    }
+
+    #[derive(Debug, Serialize, Deserialize, PartialEq)]
+    struct NestedStruct {
+        nested_field: TestStruct,
+    }
+
+    #[test]
+    fn test_nested_fingerprint() {
+        let nested_struct1 = NestedStruct {
+            nested_field: TestStruct {
+                field1: "Hello".to_string(),
+                field2: 42,
+            },
+        };
+        let nested_struct2 = NestedStruct {
+            nested_field: TestStruct {
+                field1: "World".to_string(),
+                field2: 24,
+            },
+        };
+
+        let fingerprint1 = nested_struct1.fingerprint().unwrap();
+        let fingerprint2 = nested_struct2.fingerprint().unwrap();
+
+        assert_eq!(fingerprint1.len(), 8);
+        assert_ne!(fingerprint1, fingerprint2);
     }
 }
