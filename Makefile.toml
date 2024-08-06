@@ -49,7 +49,8 @@ cd rust/gkwasm
 mkdir -p ../../hugo-site/static/wasm
 wasm-pack build --release --target web --out-dir ../../hugo-site/static/wasm
 wasm-bindgen --target web --out-dir ../../hugo-site/static/wasm --out-name gkwasm ../../hugo-site/static/wasm/gkwasm_bg.wasm
-cp ../../hugo-site/static/wasm/gkwasm.js ../../hugo-site/static/wasm/wasm.js
+echo "Contents of ../../hugo-site/static/wasm after wasm-bindgen:"
+ls -l ../../hugo-site/static/wasm
 """
 
 [tasks.build-api-dev]
