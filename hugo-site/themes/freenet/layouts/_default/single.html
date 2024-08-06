@@ -13,7 +13,7 @@
         {{ .Content }}
       </div>
 
-      {{ if .IsSection }}
+      {{ if and .IsSection .Params.list_child_pages }}
         <div>
           {{ range .Pages }}
             <h2 class="title is-5">
