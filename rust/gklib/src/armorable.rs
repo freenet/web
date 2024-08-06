@@ -11,7 +11,7 @@ use std::path::Path;
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     fn fingerprint() -> Result<String, GhostkeyError> {
         let hash = Self::calculate_hash();
-        Ok(BASE64_STANDARD.encode(&hash.to_be_bytes()[..5]))
+        Ok(BASE64_STANDARD.encode(&hash.to_be_bytes()))
     }
 
     fn calculate_hash() -> u32 {
