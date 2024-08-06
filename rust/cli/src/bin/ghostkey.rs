@@ -9,7 +9,7 @@ use ghostkey::commands::{
 };
 use base64::{Engine as _, engine::general_purpose};
 
-const DEFAULT_MASTER_VERIFYING_KEY: &str = "WCBinZei3Yki9ezxKPNLoCar/m6F3Q8nnSrWDaRSxLL6cw==";
+const DEFAULT_MASTER_VERIFYING_KEY_B64: &str = "WCBinZei3Yki9ezxKPNLoCar/m6F3Q8nnSrWDaRSxLL6cw==";
 use ghostkey_lib::delegate_certificate::DelegateCertificate;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificate;
 use log::info;
@@ -207,7 +207,7 @@ fn run() -> i32 {
                     }
                 }
             } else {
-                match VerifyingKey::from_bytes(&general_purpose::STANDARD.decode(DEFAULT_MASTER_VERIFYING_KEY).unwrap()) {
+                match VerifyingKey::from_base64(DEFAULT_MASTER_VERIFYING_KEY_B64) {
                     Ok(key) => key,
                     Err(e) => {
                         println!("{} to parse default master verifying key: {}", "Failed".red(), e);
@@ -270,7 +270,7 @@ fn run() -> i32 {
                     }
                 }
             } else {
-                match VerifyingKey::from_bytes(&general_purpose::STANDARD.decode(DEFAULT_MASTER_VERIFYING_KEY).unwrap()) {
+                match VerifyingKey::from_base64(DEFAULT_MASTER_VERIFYING_KEY_B64) {
                     Ok(key) => key,
                     Err(e) => {
                         eprintln!("{} to parse default master verifying key: {}", "Failed".red(), e);
