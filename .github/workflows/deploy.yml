@@ -12,49 +12,44 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
+      # Checkout the repository
       - uses: actions/checkout@v4
         with:
           submodules: true  # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
-      - name: Cache Hugo resources
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-hugo-resources
-        with:
-          path: /tmp/hugo_cache
-          key: ${{ runner.os }}-hugo-${{ hashFiles('**/hugo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-hugo-
-
+      # Setup Hugo for static site generation
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: 'latest'
           extended: true
 
+      # Setup Rust environment
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
 
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-
+      # Add WebAssembly target for Rust
       - name: Add WebAssembly target
         run: rustup target add wasm32-unknown-unknown
 
+      # Install WebAssembly tools
       - name: Install wasm-pack and wasm-bindgen-cli
         run: |
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
           cargo install wasm-bindgen-cli
 
+      # Install cargo-make for building
       - name: Install cargo-make
         run: cargo install --debug cargo-make
 
+      # Build the site using cargo-make
       - name: Build Site
         run: cargo make build-site
 
+      # Debugging: Check the contents of WebAssembly files
       - name: Debug WebAssembly files
         run: |
           echo "Contents of hugo-site/static/wasm:"
@@ -64,6 +59,7 @@ jobs:
           echo "Contents of hugo-site/public:"
           ls -la hugo-site/public
 
+      # Verify WebAssembly files are in place
       - name: Verify WebAssembly files in build
         run: |
           if [ -f hugo-site/public/wasm/gkwasm.js ]; then
@@ -79,19 +75,20 @@ jobs:
             exit 1
           fi
 
-      # Deploying to gh-pages branch
+      # Deploy the site to the gh-pages branch
       - name: Deploy Hugo Site
         env:
           HUGO_ENV: production
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./hugo-site/public # Ensure this points to the correct directory
+          publish_dir: ./hugo-site/public  # Point to the correct directory
           cname: freenet.org
           force_orphan: true  # Create a new branch for clean deployment
           keep_files: false    # Replace existing files in the gh-pages branch
           exclude_assets: ''
 
+      # Verify deployment by checking the gh-pages branch
       - name: Verify deployment
         run: |
           git fetch origin gh-pages
@@ -100,17 +97,6 @@ jobs:
           ls -la
           echo "Contents of wasm directory in gh-pages branch:"
           ls -la wasm || echo "wasm directory not found"
-          if [ ! -f wasm/gkwasm.js ] || [ ! -f wasm/gkwasm_bg.wasm ]; then
-            echo "WebAssembly files are missing from the gh-pages branch"
-            exit 1
-          fi
-
-      - name: Verify gh-pages branch
-        run: |
-          git fetch origin gh-pages
-          git checkout gh-pages
-          echo "Contents of wasm directory in gh-pages branch:"
-          ls -la wasm
           if [ ! -f wasm/gkwasm.js ] || [ ! -f wasm/gkwasm_bg.wasm ]; then
             echo "WebAssembly files are missing from the gh-pages branch"
             exit 1
