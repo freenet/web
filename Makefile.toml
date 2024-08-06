@@ -30,6 +30,8 @@ cd hugo-site
 hugo --minify
 mkdir -p public/wasm
 cp -r static/wasm/* public/wasm/
+echo "Contents of public/wasm after copying:"
+ls -la public/wasm
 """
 
 [tasks.build-wasm-dev]
