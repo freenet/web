@@ -37,7 +37,9 @@ description = "Build WebAssembly in development mode"
 script = """
 cd rust/gkwasm
 wasm-pack build --dev --target web --out-dir ../../hugo-site/static/wasm
-wasm-bindgen --target web --out-dir ../../hugo-site/static/wasm --out-name gkwasm target/wasm32-unknown-unknown/debug/gkwasm.wasm
+wasm-bindgen --target web --out-dir ../../hugo-site/static/wasm --out-name gkwasm ../../hugo-site/static/wasm/gkwasm_bg.wasm
+echo "Contents of hugo-site/static/wasm after wasm-bindgen:"
+ls -l ../../hugo-site/static/wasm
 """
 
 [tasks.build-wasm-release]
