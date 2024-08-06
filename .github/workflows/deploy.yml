@@ -100,6 +100,12 @@ jobs:
             exit 1
           fi
 
+      - name: Ensure WebAssembly files are in the public directory
+        run: |
+          mkdir -p hugo-site/public/wasm
+          cp hugo-site/static/wasm/gkwasm.js hugo-site/public/wasm/
+          cp hugo-site/static/wasm/gkwasm_bg.wasm hugo-site/public/wasm/
+
       - name: Deploy Hugo Site
         env:
           HUGO_ENV: production
@@ -110,6 +116,7 @@ jobs:
           cname: freenet.org
           force_orphan: true
           keep_files: false
+          exclude_assets: ''
 
       - name: Verify deployment
         run: |
