@@ -55,12 +55,18 @@ jobs:
       - name: Build Release
         run: cargo make release
 
-      - name: Copy WebAssembly files
+      - name: Debug WebAssembly files
         run: |
-          mkdir -p ./hugo-site/public/wasm
-          cp ./hugo-site/static/wasm/* ./hugo-site/public/wasm/
+          echo "Contents of hugo-site/static/wasm:"
+          ls -la hugo-site/static/wasm
+          echo "Contents of hugo-site/public/wasm:"
+          ls -la hugo-site/public/wasm
+          echo "Contents of hugo-site/public:"
+          ls -la hugo-site/public
 
       - name: Deploy Hugo Site
+        env:
+          HUGO_ENV: production
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
