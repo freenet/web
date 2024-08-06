@@ -39,11 +39,11 @@ fn main() {
 fn run() -> i32 {
     let matches = Command::new("Freenet Ghost Key Utility")
         .version("1.0")
-        .author("Your Name <your.email@example.com>")
+        .author("Your Name <ian@freenet.org>")
         .about("Performs various ghost key-related tasks")
         .subcommand(
             Command::new(CMD_GENERATE_MASTER_KEY)
-                .about("Generates a new SERVER_MASTER_KEY and public key")
+                .about("Generate a new master keypair")
                 .arg(
                     Arg::new(ARG_OUTPUT_DIR)
                         .long(ARG_OUTPUT_DIR)
