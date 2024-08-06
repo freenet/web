@@ -103,8 +103,9 @@ jobs:
       - name: Deploy Hugo Site
         env:
           HUGO_ENV: production
-        uses: peaceiris/actions-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./hugo-site/public
           cname: freenet.org
+          force_orphan: true
