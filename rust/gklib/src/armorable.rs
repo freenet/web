@@ -32,9 +32,9 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         
         let mut field_hashes = Vec::new();
         if let serde_reflection::ContainerFormat::Struct(fields) = format {
-            for (field_name, field_format) in fields {
+            for field in fields {
                 let mut field_hash: u32 = 0;
-                for c in field_name.chars() {
+                for c in field.name.chars() {
                     field_hash = field_hash.wrapping_mul(31).wrapping_add(c as u32);
                 }
                 for c in format!("{:?}", field_format).chars() {
