@@ -28,9 +28,7 @@ dependencies = ["build-wasm-release"]
 script = """
 cd hugo-site
 hugo --minify
-mkdir -p public/wasm
-cp -r static/wasm/* public/wasm/
-echo "Contents of public/wasm after copying:"
+echo "Contents of public/wasm after running hugo:"
 ls -la public/wasm
 """
 
