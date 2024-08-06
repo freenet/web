@@ -36,9 +36,8 @@ ls -la public/wasm
 description = "Build WebAssembly in development mode"
 script = """
 cd rust/gkwasm
-wasm-pack build --dev --target web --out-dir ../../hugo-site/static/wasm
-wasm-bindgen --target web --out-dir ../../hugo-site/static/wasm --out-name gkwasm ../../hugo-site/static/wasm/gkwasm_bg.wasm
-echo "Contents of hugo-site/static/wasm after wasm-bindgen:"
+wasm-pack build --dev --target web --out-dir ../../hugo-site/static/wasm --no-typescript
+echo "Contents of hugo-site/static/wasm after wasm-pack build:"
 ls -l ../../hugo-site/static/wasm
 """
 
@@ -47,9 +46,8 @@ description = "Build WebAssembly in release mode"
 script = """
 cd rust/gkwasm
 mkdir -p ../../hugo-site/static/wasm
-wasm-pack build --release --target web --out-dir ../../hugo-site/static/wasm
-wasm-bindgen --target web --out-dir ../../hugo-site/static/wasm --out-name gkwasm ../../hugo-site/static/wasm/gkwasm_bg.wasm
-echo "Contents of hugo-site/static/wasm after wasm-bindgen:"
+wasm-pack build --release --target web --out-dir ../../hugo-site/static/wasm --no-typescript
+echo "Contents of hugo-site/static/wasm after wasm-pack build:"
 ls -l ../../hugo-site/static/wasm
 """
 
