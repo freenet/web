@@ -64,6 +64,17 @@ jobs:
           echo "Contents of hugo-site/public:"
           ls -la hugo-site/public
 
+      - name: Verify WebAssembly files in build
+        run: |
+          if [ ! -f hugo-site/public/wasm/gkwasm.js ]; then
+            echo "gkwasm.js is missing from the build"
+            exit 1
+          fi
+          if [ ! -f hugo-site/public/wasm/gkwasm_bg.wasm ]; then
+            echo "gkwasm_bg.wasm is missing from the build"
+            exit 1
+          fi
+
       - name: Deploy Hugo Site
         env:
           HUGO_ENV: production
