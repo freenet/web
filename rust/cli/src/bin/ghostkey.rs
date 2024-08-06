@@ -38,7 +38,7 @@ fn main() {
 
 fn run() -> i32 {
     let matches = Command::new("Freenet Ghost Key Utility")
-        .version("1.0")
+        .version(env!("CARGO_PKG_VERSION"))
         .author("Your Name <ian@freenet.org>")
         .about("Performs various ghost key-related tasks")
         .subcommand(
