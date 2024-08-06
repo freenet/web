@@ -86,7 +86,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./hugo-site/public # Point to the correct directory
+          publish_dir: ./hugo-site/public # Ensure this points to the correct directory
           cname: freenet.org
           force_orphan: true  # Create a new branch for clean deployment
           keep_files: false    # Replace existing files in the gh-pages branch
