@@ -8,19 +8,20 @@ use std::any::type_name;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
-use sha2::{Sha256, Digest};
-
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     fn fingerprint() -> Result<String, GhostkeyError> {
-        let mut hasher = Sha256::new();
-        Self::update_fingerprint(&mut hasher);
-        let result = hasher.finalize();
-        Ok(BASE64_STANDARD.encode(&result[..5]))
+        let hash = Self::calculate_hash();
+        Ok(BASE64_STANDARD.encode(&hash.to_be_bytes()[..5]))
     }
 
-    fn update_fingerprint(hasher: &mut Sha256) {
+    fn calculate_hash() -> u32 {
+        let mut hash: u32 = 0;
         let type_info = std::any::type_name::<Self>();
-        hasher.update(type_info.as_bytes());
+        
+        // Hash the type name
+        for c in type_info.chars() {
+            hash = hash.wrapping_mul(31).wrapping_add(c as u32);
+        }
 
         // Use serde_reflection to get field names and types
         let registry = serde_reflection::Registry::new();
@@ -30,24 +31,25 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         
         let mut field_hashes = Vec::new();
         for (field_name, field_format) in format.fields() {
-            let mut field_hasher = Sha256::new();
-            field_hasher.update(field_name.as_bytes());
-            field_hasher.update(format!("{:?}", field_format).as_bytes());
-            field_hashes.push(field_hasher.finalize());
+            let mut field_hash: u32 = 0;
+            for c in field_name.chars() {
+                field_hash = field_hash.wrapping_mul(31).wrapping_add(c as u32);
+            }
+            for c in format!("{:?}", field_format).chars() {
+                field_hash = field_hash.wrapping_mul(31).wrapping_add(c as u32);
+            }
+            field_hashes.push(field_hash);
         }
 
         // Sort field hashes to make the result order-independent
         field_hashes.sort();
 
         // XOR all field hashes
-        let mut xor_result = [0u8; 32];
-        for hash in field_hashes {
-            for (xor_byte, hash_byte) in xor_result.iter_mut().zip(hash.iter()) {
-                *xor_byte ^= hash_byte;
-            }
+        for field_hash in field_hashes {
+            hash ^= field_hash;
         }
 
-        hasher.update(&xor_result);
+        hash
     }
     fn to_bytes(&self) -> Result<Vec<u8>, GhostkeyError> {
         let mut buf = Vec::new();
@@ -327,5 +329,12 @@ mod tests {
         let fingerprint2 = DifferentFieldsStruct::fingerprint().unwrap();
 
         assert_ne!(fingerprint1, fingerprint2);
+    }
+
+    #[test]
+    fn test_hash_consistency() {
+        assert_eq!(TestStruct::calculate_hash(), TestStruct::calculate_hash());
+        assert_eq!(NestedStruct::calculate_hash(), NestedStruct::calculate_hash());
+        assert_eq!(DifferentFieldsStruct::calculate_hash(), DifferentFieldsStruct::calculate_hash());
     }
 }
