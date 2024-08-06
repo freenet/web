@@ -79,18 +79,6 @@ jobs:
             exit 1
           fi
 
-      - name: Ensure WebAssembly files are in the public directory
-        run: |
-          mkdir -p hugo-site/public/wasm
-          cp hugo-site/static/wasm/gkwasm.js hugo-site/public/wasm/
-          cp hugo-site/static/wasm/gkwasm_bg.wasm hugo-site/public/wasm/
-
-      - name: Add wasm files to Git
-        run: |
-          cd hugo-site/public
-          git add -f wasm/gkwasm.js wasm/gkwasm_bg.wasm
-          git status
-
       # Stash changes to avoid conflicts when checking out gh-pages
       - name: Stash Local Changes
         run: git stash --include-untracked
@@ -106,10 +94,6 @@ jobs:
           force_orphan: false  # Set to false to retain history
           keep_files: true     # Set to true to keep existing files
           exclude_assets: ''
-
-      # Remove stash (optional step)
-      - name: Restore Local Changes
-        run: git stash pop || echo "No stash to pop"
 
       - name: Verify deployment
         run: |
