@@ -79,7 +79,7 @@ jobs:
             exit 1
           fi
 
-      # Copy the WebAssembly files explicitly to the publish directory
+      # Ensure the files are correctly in the public directory
       - name: Ensure WebAssembly files are in the public directory
         run: |
           mkdir -p hugo-site/public/wasm
@@ -87,8 +87,10 @@ jobs:
           echo "Ensured WebAssembly files are in the public directory:"
           ls -la hugo-site/public/wasm
 
-      - name: Stash Local Changes
-        run: git stash --include-untracked
+      - name: Commit Changes
+        run: |
+          git add hugo-site/public/wasm
+          git commit -m "Prepare WebAssembly files for deployment"
 
       - name: Deploy Hugo Site
         env:
