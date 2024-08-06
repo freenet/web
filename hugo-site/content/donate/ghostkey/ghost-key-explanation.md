@@ -1,3 +1,11 @@
+# Frequently Asked Questions about Ghost Keys
+
+- [What is a Ghost Key?](#what-is-a-ghost-key)
+- [How do Ghost Keys work?](#how-do-ghost-keys-work)
+- [How much should I donate?](#how-much-should-i-donate)
+
+# What is a Ghost Key? {#what-is-a-ghost-key}
+
 Ghost keys address a crucial challenge on the Internet: establishing trust without sacrificing privacy. With personal 
 data commoditized by big tech, ghost keys are a way to maintain anonymity while tackling serious problems like bots
 and spam.
@@ -12,13 +20,17 @@ By linking trust to anonymity, ghost keys eliminate the need for cumbersome capt
 and secure your interactions, making them a powerful tool for those who value privacy, security, and control over 
 their digital presence.
 
-### Technical Overview
+# How do Ghost Keys work? {#how-do-ghost-keys-work}
 
-1. On completion of a donation, the browser creates an [Ed25519](https://en.wikipedia.org/wiki/EdDSA) key pair.
+1. On completion of a donation, the browser creates an [elliptic curve](https://en.wikipedia.org/wiki/EdDSA) key pair.
 2. The **public part** of the key pair is [blinded](https://www.rfc-editor.org/rfc/rfc9474.html) and sent to the server. 
 3. The server verifies the donation and then signs the blinded key with it's RSA key. 
 4. The blinded signature is sent back to the browser and unblinded.
-5. The browser presents both the key pair and the unblinded signature to the user.
+5. The browser presents a certificate to the user along with the private key, proving the donation was made without 
+   revealing the user's identity.
 
-The JavaScript code for the browser side of this process can be reviewed [here](/js/donation-success.js).
-l details, making it suitable for both technical and non-technical audiences interested in understanding how ghost keys work.
+# How much should I donate? {#how-much-should-i-donate}
+
+The minimum donation is $5, but you can donate however much you can afford. The donation amount will be securely
+recorded in your Ghost Key certificate, and in the future it's possible that access and perks on the network will be 
+reserved for those who donate more or who donated sooner.
