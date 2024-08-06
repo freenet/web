@@ -64,19 +64,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./hugo-site/public  # Point to the correct directory
           cname: freenet.org
-          keep_files: false   # Replace existing files in the gh-pages branch
-          disable_nojekyll: true  # Ensure .nojekyll is used
-
-      # Verify deployment
-      - name: Verify deployment
-        run: |
-          git fetch origin gh-pages
-          git checkout gh-pages
-          echo "Contents of root directory in gh-pages branch:"
-          ls -la
-          echo "Contents of wasm directory in gh-pages branch:"
-          ls -la wasm || echo "wasm directory not found"
-          if [ ! -f wasm/gkwasm.js ] || [ ! -f wasm/gkwasm_bg.wasm ]; then
-            echo "WebAssembly files are missing from the gh-pages branch"
-            exit 1
-          fi

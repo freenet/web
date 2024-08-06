@@ -1,5 +1,6 @@
 .aider*
 hugo-site/public
+hugo-site/resources/*
 hugo-site/static/wasm/*
 hugo-site/themes/freenet/public/
 /resources
