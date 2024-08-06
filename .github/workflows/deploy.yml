@@ -55,6 +55,11 @@ jobs:
       - name: Build Release
         run: cargo make release
 
+      - name: Copy WebAssembly files
+        run: |
+          mkdir -p ./hugo-site/public/wasm
+          cp ./hugo-site/static/wasm/* ./hugo-site/public/wasm/
+
       - name: Deploy Hugo Site
         uses: peaceiris/actions-gh-pages@v4
         with:

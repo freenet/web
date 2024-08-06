@@ -34,6 +34,7 @@ wasm-bindgen --target web --out-dir ../../hugo-site/static/wasm --out-name gkwas
 description = "Build WebAssembly in release mode"
 script = """
 cd rust/gkwasm
+mkdir -p ../../hugo-site/static/wasm
 wasm-pack build --release --target web --out-dir ../../hugo-site/static/wasm
 wasm-bindgen --target web --out-dir ../../hugo-site/static/wasm --out-name gkwasm ../../hugo-site/static/wasm/gkwasm_bg.wasm
 cp ../../hugo-site/static/wasm/gkwasm.js ../../hugo-site/static/wasm/wasm.js
