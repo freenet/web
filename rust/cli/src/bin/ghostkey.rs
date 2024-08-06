@@ -7,6 +7,9 @@ use ghostkey::commands::{
     generate_delegate_cmd, generate_ghost_key_cmd, generate_master_key_cmd, verify_delegate_cmd,
     verify_ghost_key_cmd,
 };
+use base64::{Engine as _, engine::general_purpose};
+
+const DEFAULT_MASTER_VERIFYING_KEY: &str = "WCBinZei3Yki9ezxKPNLoCar/m6F3Q8nnSrWDaRSxLL6cw==";
 use ghostkey_lib::delegate_certificate::DelegateCertificate;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificate;
 use log::info;
@@ -92,8 +95,8 @@ fn run() -> i32 {
                 .arg(
                     Arg::new(ARG_MASTER_VERIFYING_KEY)
                         .long(ARG_MASTER_VERIFYING_KEY)
-                        .help("The file containing the master verifying key")
-                        .required(true)
+                        .help("The file containing the master verifying key (optional)")
+                        .required(false)
                         .value_name("FILE"),
                 )
                 .arg(
@@ -195,16 +198,21 @@ fn run() -> i32 {
             result
         }
         Some((CMD_VERIFY_DELEGATE, sub_matches)) => {
-            let master_verifying_key_file = Path::new(
-                sub_matches
-                    .get_one::<String>(ARG_MASTER_VERIFYING_KEY)
-                    .unwrap(),
-            );
-            let master_verifying_key = match VerifyingKey::from_file(master_verifying_key_file) {
-                Ok(key) => key,
-                Err(e) => {
-                    println!("{} to read master verifying key: {}", "Failed".red(), e);
-                    return 1;
+            let master_verifying_key = if let Some(key_file) = sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY) {
+                match VerifyingKey::from_file(Path::new(key_file)) {
+                    Ok(key) => key,
+                    Err(e) => {
+                        println!("{} to read master verifying key: {}", "Failed".red(), e);
+                        return 1;
+                    }
+                }
+            } else {
+                match VerifyingKey::from_bytes(&general_purpose::STANDARD.decode(DEFAULT_MASTER_VERIFYING_KEY).unwrap()) {
+                    Ok(key) => key,
+                    Err(e) => {
+                        println!("{} to parse default master verifying key: {}", "Failed".red(), e);
+                        return 1;
+                    }
                 }
             };
             let delegate_certificate_file = Path::new(
@@ -253,16 +261,21 @@ fn run() -> i32 {
             generate_ghost_key_cmd(&delegate_certificate, &delegate_signing_key, &output_dir)
         }
         Some((CMD_VERIFY_GHOST_KEY, sub_matches)) => {
-            let master_verifying_key_file = Path::new(
-                sub_matches
-                    .get_one::<String>(ARG_MASTER_VERIFYING_KEY)
-                    .unwrap(),
-            );
-            let master_verifying_key = match VerifyingKey::from_file(master_verifying_key_file) {
-                Ok(key) => key,
-                Err(e) => {
-                    eprintln!("{} to read master verifying key: {}", "Failed".red(), e);
-                    return 1;
+            let master_verifying_key = if let Some(key_file) = sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY) {
+                match VerifyingKey::from_file(Path::new(key_file)) {
+                    Ok(key) => key,
+                    Err(e) => {
+                        eprintln!("{} to read master verifying key: {}", "Failed".red(), e);
+                        return 1;
+                    }
+                }
+            } else {
+                match VerifyingKey::from_bytes(&general_purpose::STANDARD.decode(DEFAULT_MASTER_VERIFYING_KEY).unwrap()) {
+                    Ok(key) => key,
+                    Err(e) => {
+                        eprintln!("{} to parse default master verifying key: {}", "Failed".red(), e);
+                        return 1;
+                    }
                 }
             };
             let ghost_certificate_file = Path::new(
