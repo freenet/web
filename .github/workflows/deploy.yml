@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-22.04
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
@@ -55,12 +55,22 @@ jobs:
           echo "Contents of hugo-site/public/wasm:"
           ls -la hugo-site/public/wasm
 
-      # Deploy the site to the gh-pages branch
-      - name: Deploy Hugo Site
-        env:
-          HUGO_ENV: production
-        uses: peaceiris/actions-gh-pages@v4
+      # Upload the built site to GitHub Pages artifact
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: hugo-site/public  # Point to the correct directory
+          path: hugo-site/public  # Point to the correct directory
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-22.04
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      # Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+        with:
           cname: freenet.org
