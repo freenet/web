@@ -23,6 +23,30 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
             hash = hash.wrapping_mul(31).wrapping_add(c as u32);
         }
 
+        // Recursively hash fields
+        hash = Self::hash_fields(hash);
+
+        hash
+    }
+
+    fn hash_fields(mut hash: u32) -> u32 {
+        use std::any::TypeId;
+        use std::mem;
+
+        for field in std::any::type_name::<Self>().split(',') {
+            let field_type = field.split(':').nth(1).unwrap_or("");
+            let type_id = TypeId::of::<Self>();
+
+            if type_id == TypeId::of::<String>() || type_id == TypeId::of::<&str>() {
+                hash = hash.wrapping_mul(31).wrapping_add(7);  // Use a prime number for strings
+            } else if mem::size_of::<Self>() <= 8 {  // Assume it's a primitive if size <= 8 bytes
+                hash = hash.wrapping_mul(31).wrapping_add(3);  // Use a different prime for primitives
+            } else {
+                // Recursively hash non-primitive fields
+                hash = hash.wrapping_mul(31).wrapping_add(Self::calculate_hash());
+            }
+        }
+
         hash
     }
     fn to_bytes(&self) -> Result<Vec<u8>, GhostkeyError> {
