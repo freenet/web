@@ -28,10 +28,26 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
             .serialize(&registry)
             .expect("Failed to serialize type information");
         
+        let mut field_hashes = Vec::new();
         for (field_name, field_format) in format.fields() {
-            hasher.update(field_name.as_bytes());
-            hasher.update(format!("{:?}", field_format).as_bytes());
+            let mut field_hasher = Sha256::new();
+            field_hasher.update(field_name.as_bytes());
+            field_hasher.update(format!("{:?}", field_format).as_bytes());
+            field_hashes.push(field_hasher.finalize());
         }
+
+        // Sort field hashes to make the result order-independent
+        field_hashes.sort();
+
+        // XOR all field hashes
+        let mut xor_result = [0u8; 32];
+        for hash in field_hashes {
+            for (xor_byte, hash_byte) in xor_result.iter_mut().zip(hash.iter()) {
+                *xor_byte ^= hash_byte;
+            }
+        }
+
+        hasher.update(&xor_result);
     }
     fn to_bytes(&self) -> Result<Vec<u8>, GhostkeyError> {
         let mut buf = Vec::new();
