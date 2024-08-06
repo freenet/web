@@ -49,6 +49,12 @@ jobs:
       - name: Build Site
         run: cargo make build-site
 
+      # Verify the contents of the build
+      - name: Verify WebAssembly files in build
+        run: |
+          echo "Contents of hugo-site/public/wasm:"
+          ls -la hugo-site/public/wasm
+
       # Deploy the site to the gh-pages branch
       - name: Deploy Hugo Site
         env:
@@ -59,5 +65,19 @@ jobs:
           publish_dir: ./hugo-site/public  # Point to the correct directory
           cname: freenet.org
           force_orphan: true  # Create a new branch for clean deployment
-          keep_files: false    # Replace existing files in the gh-pages branch
-          exclude_assets: ''
+          keep_files: false   # Replace existing files in the gh-pages branch
+          disable_nojekyll: true  # Ensure .nojekyll is used
+
+      # Verify deployment
+      - name: Verify deployment
+        run: |
+          git fetch origin gh-pages
+          git checkout gh-pages
+          echo "Contents of root directory in gh-pages branch:"
+          ls -la
+          echo "Contents of wasm directory in gh-pages branch:"
+          ls -la wasm || echo "wasm directory not found"
+          if [ ! -f wasm/gkwasm.js ] || [ ! -f wasm/gkwasm_bg.wasm ]; then
+            echo "WebAssembly files are missing from the gh-pages branch"
+            exit 1
+          fi
