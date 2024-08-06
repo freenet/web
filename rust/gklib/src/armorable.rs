@@ -24,21 +24,24 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         }
 
         // Use serde_reflection to get field names and types
-        let registry = serde_reflection::Registry::new();
-        let format = serde_reflection::Samples::of::<Self>()
-            .serialize(&registry)
-            .expect("Failed to serialize type information");
+        let mut tracer = serde_reflection::Tracer::new(serde_reflection::TracerConfig::default());
+        let samples = serde_reflection::Samples::new();
+        let _ = tracer.trace_type::<Self>(&samples).expect("Failed to trace type");
+        let registry = tracer.registry().expect("Failed to get registry");
+        let format = registry.get(std::any::type_name::<Self>()).expect("Failed to get type format");
         
         let mut field_hashes = Vec::new();
-        for (field_name, field_format) in format.fields() {
-            let mut field_hash: u32 = 0;
-            for c in field_name.chars() {
-                field_hash = field_hash.wrapping_mul(31).wrapping_add(c as u32);
+        if let serde_reflection::ContainerFormat::Struct(fields) = format {
+            for (field_name, field_format) in fields {
+                let mut field_hash: u32 = 0;
+                for c in field_name.chars() {
+                    field_hash = field_hash.wrapping_mul(31).wrapping_add(c as u32);
+                }
+                for c in format!("{:?}", field_format).chars() {
+                    field_hash = field_hash.wrapping_mul(31).wrapping_add(c as u32);
+                }
+                field_hashes.push(field_hash);
             }
-            for c in format!("{:?}", field_format).chars() {
-                field_hash = field_hash.wrapping_mul(31).wrapping_add(c as u32);
-            }
-            field_hashes.push(field_hash);
         }
 
         // Sort field hashes to make the result order-independent
