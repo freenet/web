@@ -1,6 +1,7 @@
 .aider*
 public
 hugo-site/resources
+hugo-site/static/wasm/*
 /resources
 target
 .env
