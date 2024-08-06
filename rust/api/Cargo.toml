@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ghostkey-lib = "0.1.0"
+ghostkey_lib = "0.1.0"
 
 curve25519-dalek = "4.1.3"
 ed25519-dalek = { version = "2.1.1", features = ["rand_core", "serde"] }

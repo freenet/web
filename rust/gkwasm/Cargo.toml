@@ -18,7 +18,7 @@ rand = "0.8.5"
 ciborium = "0.2.2"
 curve25519-dalek = { version = "4.1.3", features = ["rand_core", "serde"]}
 ed25519-dalek = { version = "2.1.1", features = ["rand_core", "serde"]}
-ghostkey-lib = "0.1.0"
+ghostkey_lib = "0.1.0"
 rand_chacha = "0.3.1"
 
 [dev-dependencies]
