@@ -55,6 +55,9 @@ jobs:
       - name: Build Release
         run: cargo make release
 
+      - name: Build Hugo Site
+        run: cd hugo-site && hugo --minify
+
       - name: Debug WebAssembly files
         run: |
           echo "Contents of hugo-site/static/wasm:"
