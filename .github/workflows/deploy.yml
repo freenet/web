@@ -34,22 +34,12 @@ jobs:
           extended: true
 
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          override: true
           components: rustfmt, clippy
 
       - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+        uses: Swatinem/rust-cache@v2
 
       - name: Add WebAssembly target
         run: rustup target add wasm32-unknown-unknown
@@ -59,19 +49,8 @@ jobs:
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
           cargo install wasm-bindgen-cli
 
-      - name: Cache wasm-pack and wasm-bindgen-cli
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/wasm-pack
-            ~/.cargo/bin/wasm-bindgen
-          key: ${{ runner.os }}-wasm-tools-${{ hashFiles('**/Cargo.toml') }}
-
       - name: Install cargo-make
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: --debug cargo-make
+        run: cargo install --debug cargo-make
 
       - name: Build Release
         run: cargo make release
