@@ -194,7 +194,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
     }
 }
 
-impl<T: Serialize + for<'de> Deserialize<'de>> Armorable for T {}
+impl<T: Serialize + for<'de> Deserialize<'de> + 'static> Armorable for T {}
 
 #[cfg(test)]
 mod tests {

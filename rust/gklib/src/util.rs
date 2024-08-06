@@ -35,7 +35,7 @@ where
 /// # Note
 ///
 /// This function uses blake3 to hash the data before signing.
-pub fn sign_with_hash<T: Serialize + for<'de> Deserialize<'de>>(
+pub fn sign_with_hash<T: Serialize + for<'de> Deserialize<'de> + 'static>(
     signing_key: &SigningKey,
     data: &T,
 ) -> Result<Signature, Box<GhostkeyError>> {
@@ -61,7 +61,7 @@ pub fn sign_with_hash<T: Serialize + for<'de> Deserialize<'de>>(
 /// # Note
 ///
 /// This function uses blake3 to hash the data before verification.
-pub fn verify_with_hash<T: Serialize + for<'de> Deserialize<'de>>(
+pub fn verify_with_hash<T: Serialize + for<'de> Deserialize<'de> + 'static>(
     verifying_key: &VerifyingKey,
     data: &T,
     signature: &Signature,
