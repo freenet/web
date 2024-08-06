@@ -54,7 +54,7 @@
     {{- end }}
 
     {{- if .Children }}
-      <div class="navbar-item has-dropdown is-hoverable">
+      <div class="navbar-item has-dropdown">
         <a class="navbar-link">{{ $name }}</a>
         <div class="navbar-dropdown">
           {{- partial "inline/menu/walk.html" (dict "page" $page "menuEntries" .Children) }}
@@ -71,3 +71,32 @@
     {{- end }}
   {{- end }}
 {{- end }}
+
+<script>
+document.addEventListener('DOMContentLoaded', (event) => {
+  const dropdowns = document.querySelectorAll('.navbar-item.has-dropdown');
+  
+  dropdowns.forEach(dropdown => {
+    const link = dropdown.querySelector('.navbar-link');
+    
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      dropdowns.forEach(d => {
+        if (d !== dropdown) {
+          d.classList.remove('is-active');
+        }
+      });
+      
+      dropdown.classList.toggle('is-active');
+    });
+  });
+  
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.navbar-item.has-dropdown')) {
+      dropdowns.forEach(d => d.classList.remove('is-active'));
+    }
+  });
+});
+</script>

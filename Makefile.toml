@@ -22,18 +22,33 @@ dependencies = [
     "build-hugo-release"
 ]
 
+[tasks.build-site]
+description = "Build WebAssembly and Hugo site for deployment"
+dependencies = ["build-wasm-release"]
+script = """
+cd hugo-site
+hugo --minify
+echo "Contents of public/wasm after running hugo:"
+ls -la public/wasm
+"""
+
 [tasks.build-wasm-dev]
 description = "Build WebAssembly in development mode"
 script = """
 cd rust/gkwasm
-wasm-pack build --dev --target web --out-dir ../../hugo-site/static/wasm
+wasm-pack build --dev --target web --out-dir ../../hugo-site/static/wasm --no-typescript
+echo "Contents of hugo-site/static/wasm after wasm-pack build:"
+ls -l ../../hugo-site/static/wasm
 """
 
 [tasks.build-wasm-release]
 description = "Build WebAssembly in release mode"
 script = """
 cd rust/gkwasm
-wasm-pack build --release --target web --out-dir ../../hugo-site/static/wasm
+mkdir -p ../../hugo-site/static/wasm
+wasm-pack build --release --target web --out-dir ../../hugo-site/static/wasm --no-typescript
+echo "Contents of hugo-site/static/wasm after wasm-pack build:"
+ls -l ../../hugo-site/static/wasm
 """
 
 [tasks.build-api-dev]

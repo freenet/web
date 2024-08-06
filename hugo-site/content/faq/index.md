@@ -130,7 +130,7 @@ It is important to note that the maintainers of the original Freenet did not
 agree with the decision to rearchitect and rebrand. However, as the architect of
 the Freenet Project, and after over a year of debate, Ian felt this was the
 necessary path forward to ensure the project's continued relevance and success
-in a world very different than when he designed the previous architecture.
+in a world far different than when he designed the previous architecture.
 
 # How does Freenet compare to other decentralized systems? {#how-does-freenet-compare-to-other-decentralized-systems}
 
