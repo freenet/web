@@ -37,9 +37,6 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
                 for c in field.name.chars() {
                     field_hash = field_hash.wrapping_mul(31).wrapping_add(c as u32);
                 }
-                for c in format!("{:?}", field_format).chars() {
-                    field_hash = field_hash.wrapping_mul(31).wrapping_add(c as u32);
-                }
                 field_hashes.push(field_hash);
             }
         }
