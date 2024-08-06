@@ -2,3 +2,6 @@
 members = ["api", "integration_test", "gkwasm"]
 resolver = "2"
 exclude = ["gklib", "cli"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
