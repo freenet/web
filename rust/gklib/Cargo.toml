@@ -18,3 +18,4 @@ rand = "0.8.5"
 rand_core = "0.6"
 sha2 = "0.11.0-pre.4"
 serde-reflection = "0.4.0"
+serde = { version = "1.0", features = ["derive"] }
