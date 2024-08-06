@@ -23,32 +23,6 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
             hash = hash.wrapping_mul(31).wrapping_add(c as u32);
         }
 
-        // Use serde_reflection to get field names and types
-        let mut tracer = serde_reflection::Tracer::new(serde_reflection::TracerConfig::default());
-        let samples = serde_reflection::Samples::new();
-        let _ = tracer.trace_type::<Self>(&samples).expect("Failed to trace type");
-        let registry = tracer.registry().expect("Failed to get registry");
-        let format = registry.get(std::any::type_name::<Self>()).expect("Failed to get type format");
-        
-        let mut field_hashes = Vec::new();
-        if let serde_reflection::ContainerFormat::Struct(fields) = format {
-            for field in fields {
-                let mut field_hash: u32 = 0;
-                for c in field.name.chars() {
-                    field_hash = field_hash.wrapping_mul(31).wrapping_add(c as u32);
-                }
-                field_hashes.push(field_hash);
-            }
-        }
-
-        // Sort field hashes to make the result order-independent
-        field_hashes.sort();
-
-        // XOR all field hashes
-        for field_hash in field_hashes {
-            hash ^= field_hash;
-        }
-
         hash
     }
     fn to_bytes(&self) -> Result<Vec<u8>, GhostkeyError> {
