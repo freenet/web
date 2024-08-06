@@ -1,0 +1,43 @@
+<!doctype html><html lang=en-us dir=ltr><head><meta name=generator content="Hugo 0.131.0"><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Freenet</title>
+<link rel=alternate type=application/rss+xml href=https://freenet.org/feed.xml title=Freenet><link rel=icon href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>F</text></svg>"><link rel=stylesheet href=/fontawesome/css/fontawesome.min.css><link rel=stylesheet href=/fontawesome/css/solid.min.css><link rel=stylesheet href=/fontawesome/css/brands.min.css><link rel=stylesheet href=/bulma.min.css><link rel=stylesheet href=/css/freenet.min.4dde39b1dcee8c61e54e1fd4abe73dba549418977747950975264a0d17389002.css><script src=https://freenet.org/js/main.js></script><script src=/js/nacl.min.js></script><script src=/js/nacl-util.min.js></script><script src=/js/cbor.min.js></script><script>window.ghostkeyApiUrl="https://gkapi.freenet.org",window.stripePublishableKey="pk_live_51PUf6RCCPv9UL23Gw8QzBFY3LxQMWmw2qp9k2MOyJQpaAPF5jpomsZ5K81JDvG8BW05PSqm2LjjGqfaepzHNWk8y007raWcjJX"</script></head><body><div class=container><header><nav class=navbar role=navigation aria-label="main navigation"><div class=navbar-brand><a class="navbar-item logo-container" href=/><img src=/freenet_logo.svg alt="Freenet Logo" class=logo-img id=freenet-logo>
+<span class=logo-text>Freenet</span>
+</a><a role=button class=navbar-burger aria-label=menu aria-expanded=false data-target=freenetNavbar><span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span></a></div><div id=freenetNavbar class=navbar-menu><div class=navbar-start><div class="navbar-item has-dropdown"><a class=navbar-link>Developers</a><div class=navbar-dropdown><a class=navbar-item href=/dev/core/>Core</a>
+<a class=navbar-item href=/dev/apps/>Apps</a></div></div><div class="navbar-item has-dropdown"><a class=navbar-link>Resources</a><div class=navbar-dropdown><a class=navbar-item href=/news/>News</a>
+<a class=navbar-item href=/resources/video-talks/>Video Talks</a>
+<a class=navbar-item href=/faq/>FAQ</a></div></div><a class=navbar-item href=/donate/>Donate</a></div><div class=navbar-end></div></div></nav><script>document.addEventListener("DOMContentLoaded",e=>{const t=document.querySelectorAll(".navbar-item.has-dropdown");t.forEach(e=>{const n=e.querySelector(".navbar-link");n.addEventListener("click",n=>{n.preventDefault(),n.stopPropagation(),t.forEach(t=>{t!==e&&t.classList.remove("is-active")}),e.classList.toggle("is-active")})}),document.addEventListener("click",e=>{e.target.closest(".navbar-item.has-dropdown")||t.forEach(e=>e.classList.remove("is-active"))})})</script></header><main><div class="section content"><section class=section><div class=container><h1 class=title>Declare Your Digital Independence</h1><div class=content><p>The centralization of the internet poses a fundamental threat to individual
+freedom. In 2024, a few corporations control most of our online services and
+infrastructure, wielding immense power with little accountability. They can
+censor content, exploit data, and exclude users from essential services,
+undermining democracy. We need a solution urgently.</p><p>Introducing Freenet—a decentralized replacement for the World Wide Web. Acting
+as a global, shared computing platform, Freenet can be accessed via a standard
+web browser or embedded into software via an API.</p><p>Freenet enables new solutions to old problems like spam,
+<a href=https://en.wikipedia.org/wiki/Denial-of-service_attack>DDoS</a>, keeping private
+data private, and much more.</p><p>Freenet is flexible enough to build entirely decentralized alternatives to
+existing centralized services, such as messaging, social media, email, and
+e-commerce. Every component of every service built on Freenet is interoperable
+by default, ensuring seamless integration and interaction across the platform.
+Services are also scalable by default and secured through modern cryptographic
+techniques, putting control back in the hands of users, not tech oligarchs.</p><h4 id=status-hahahugoshortcode1s0hbhb>Status (<span id=current-date></span>)<script>document.addEventListener("DOMContentLoaded",e=>{const n={year:"numeric",month:"long",day:"numeric"},t=new Date;t.setDate(t.getDate()-1),document.getElementById("current-date").innerText=t.toLocaleDateString("en-GB",n)})</script></h4><p>For the past few weeks we&rsquo;ve been <a href=https://github.com/freenet/freenet-core/pull/1131>working</a>
+on a refactor of part of the transport code to address a bug that would have
+negatively impacted the user experience by preventing peers from connecting to
+each other.</p><p>Once the refactor is complete and the bug is fixed, we should be ready to
+release the next version and start testing the network with a larger group of
+users.</p><h4 id=useful-links>Useful Links</h4><div class=buttons><a class="button is-medium-blue" href=/resources/video-talks/><span class=icon><i class="fas fa-video"></i></span>
+<span>Video Talks</span>
+</a><a class="button is-medium-teal" href=https://docs.freenet.org/><span class=icon><i class="fas fa-book"></i></span>
+<span>User Manual</span>
+</a><a class="button is-medium-purple" href=https://matrix.to/#/#freenet-locutus:matrix.org><span class=icon><i class="fas fa-comments"></i></span>
+<span>Matrix Group Chat</span>
+</a><a class="button is-medium-orange" href=https://github.com/freenet/freenet-core><span class=icon><i class="fab fa-github"></i></span>
+<span>GitHub</span></a></div><h3 id=news>News</h3><ul><li><strong>July 5, 2024</strong> -
+<i class="fas fa-tools"></i>
+<a href=https://freenet.org/news/weekly-dev-meeting-refactoring-connection-handler-for-better-unit-testing/>Weekly Dev Meeting - Refactoring Connection Handler for Better Unit Testing</a></li><li><strong>June 10, 2024</strong> -
+<i class="fas fa-video"></i>
+<a href=https://freenet.org/news/how-freenet-works-video-talk/>How Freenet Works</a></li><li><strong>October 29, 2023</strong> -
+<a href=https://freenet.org/news/882-zero-knowledge-proofs-and-anonymous-reputation-in-freenet/>Zero-Knowledge Proofs and Anonymous Reputation in Freenet</a></li><li><strong>September 7, 2023</strong> -
+<i class="fas fa-video"></i>
+<a href=https://freenet.org/news/building-apps-video-talk/>How to Build Apps on Freenet</a></li><li><strong>August 28, 2023</strong> -
+<a href=https://freenet.org/news/799-proof-of-trust-a-wealth-unbiased-consensus-mechanism-for-distributed-systems/>Proof-of-Trust: A Wealth-Unbiased Consensus Mechanism for Distributed Systems</a></li></ul><p><a href=news>More news&mldr;</a></p></div></div></section></div></main><footer><div class=footer-content style=text-align:center><p>&copy; 2024 Freenet Project Inc. Website source at
+<a href=https://github.com/freenet/web><img src=https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png alt=GitHub style=width:20px;height:20px;vertical-align:middle> <span style=color:#000;font-weight:600>freenet/web</span></a>.</footer></div></body></html>
