@@ -7,7 +7,7 @@ use ed25519_dalek::*;
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone)]
-pub struct DelegateCertificate {
+pub struct DelegateCertificateV1 {
     pub payload: DelegatePayload,
     /// The payload signed by the master signing key
     pub signature: Signature,
@@ -19,7 +19,7 @@ pub struct DelegatePayload {
     pub info: String,
 }
 
-impl DelegateCertificate {
+impl DelegateCertificateV1 {
     pub fn new(
         _master_signing_key: &SigningKey,
         info: &String,
@@ -34,7 +34,7 @@ impl DelegateCertificate {
 
         let signature = sign_with_hash(&_master_signing_key, &payload)?;
 
-        let certificate = DelegateCertificate {
+        let certificate = DelegateCertificateV1 {
             payload,
             signature: Signature::from(signature),
         };
@@ -72,7 +72,7 @@ mod tests {
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
         let (certificate, _delegate_signing_key) =
-            DelegateCertificate::new(&master_signing_key, &info).unwrap();
+            DelegateCertificateV1::new(&master_signing_key, &info).unwrap();
 
         // Verify the certificate
         let verified_info = certificate.verify(&master_verifying_key).unwrap();
@@ -88,7 +88,7 @@ mod tests {
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
         let (certificate, _delegate_signing_key) =
-            DelegateCertificate::new(&master_signing_key, &info).unwrap();
+            DelegateCertificateV1::new(&master_signing_key, &info).unwrap();
 
         // Try to verify with the wrong key
         let result = certificate.verify(&wrong_verifying_key);
@@ -107,7 +107,7 @@ mod tests {
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
         let (mut certificate, _delegate_signing_key) =
-            DelegateCertificate::new(&master_signing_key, &info).unwrap();
+            DelegateCertificateV1::new(&master_signing_key, &info).unwrap();
 
         // Verify the original certificate
         assert!(certificate.verify(&master_verifying_key).is_ok());

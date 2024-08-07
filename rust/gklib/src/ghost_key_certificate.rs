@@ -1,4 +1,4 @@
-use super::delegate_certificate::DelegateCertificate;
+use super::delegate_certificate::DelegateCertificateV1;
 use super::errors::GhostkeyError;
 use super::errors::GhostkeyError::{RSAError, SignatureVerificationError};
 use super::util::{create_keypair, unblinded_rsa_sign};
@@ -11,16 +11,16 @@ use serde::{Deserialize, Serialize};
 use crate::armorable::Armorable;
 
 #[derive(Serialize, Deserialize)]
-pub struct GhostkeyCertificate {
-    pub delegate: DelegateCertificate,
+pub struct GhostkeyCertificateV1 {
+    pub delegate: DelegateCertificateV1,
     pub verifying_key: VerifyingKey,
     /// signing_key signed by the delegate signing key
     pub signature: RSASignature,
 }
 
-impl GhostkeyCertificate {
+impl GhostkeyCertificateV1 {
     pub fn new(
-        delegate_certificate: &DelegateCertificate,
+        delegate_certificate: &DelegateCertificateV1,
         delegate_signing_key: &RSASigningKey,
     ) -> (Self, SigningKey) {
         let delegate_keypair = KeyPair::new(
@@ -87,11 +87,11 @@ mod tests {
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
         let (delegate_certificate, delegate_signing_key) =
-            DelegateCertificate::new(&master_signing_key, &info).unwrap();
+            DelegateCertificateV1::new(&master_signing_key, &info).unwrap();
 
         // Create a ghostkey certificate
         let (ghost_key_certificate, _ghost_key_signing_key) =
-            GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
+            GhostkeyCertificateV1::new(&delegate_certificate, &delegate_signing_key);
 
         // Verify the ghostkey certificate
         let verified_info = ghost_key_certificate
@@ -109,11 +109,11 @@ mod tests {
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
         let (delegate_certificate, delegate_signing_key) =
-            DelegateCertificate::new(&master_signing_key, &info).unwrap();
+            DelegateCertificateV1::new(&master_signing_key, &info).unwrap();
 
         // Create a ghostkey certificate
         let (ghost_key_certificate, _ghost_key_signing_key) =
-            GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
+            GhostkeyCertificateV1::new(&delegate_certificate, &delegate_signing_key);
 
         // Try to verify with the wrong master key
         let result = ghost_key_certificate.verify(&wrong_master_verifying_key);
@@ -131,12 +131,12 @@ mod tests {
 
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
-        let (delegate_certificate, delegate_signing_key): (DelegateCertificate, RSASigningKey) =
-            DelegateCertificate::new(&master_signing_key, &info).unwrap();
+        let (delegate_certificate, delegate_signing_key): (DelegateCertificateV1, RSASigningKey) =
+            DelegateCertificateV1::new(&master_signing_key, &info).unwrap();
 
         // Create a ghostkey certificate
         let (mut ghost_key_certificate, _ghost_key_signing_key) =
-            GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
+            GhostkeyCertificateV1::new(&delegate_certificate, &delegate_signing_key);
 
         // Tamper with the delegate certificate
         ghost_key_certificate.delegate.payload.info = "Tampered Info".to_string();
@@ -158,11 +158,11 @@ mod tests {
         // Create a delegate certificate
         let info = "Test Delegate".to_string();
         let (delegate_certificate, delegate_signing_key) =
-            DelegateCertificate::new(&master_signing_key, &info).unwrap();
+            DelegateCertificateV1::new(&master_signing_key, &info).unwrap();
 
         // Create a ghostkey certificate
         let (mut ghost_key_certificate, _ghost_key_signing_key) =
-            GhostkeyCertificate::new(&delegate_certificate, &delegate_signing_key);
+            GhostkeyCertificateV1::new(&delegate_certificate, &delegate_signing_key);
 
         // Tamper with the ghostkey verifying key
         let (_, tampered_verifying_key) = create_keypair(&mut OsRng).unwrap();
