@@ -1,13 +1,16 @@
-use super::errors::GhostkeyError;
-use super::errors::GhostkeyError::Base64DecodeError;
-use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
-use base64::Engine;
-use ciborium::{de::from_reader, ser::into_writer};
-use serde::{Deserialize, Serialize};
 use std::any::type_name;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
+
+use base64::Engine;
+use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
+use ciborium::{de::from_reader, ser::into_writer};
+use serde::{Deserialize, Serialize};
+
+use super::errors::GhostkeyError;
+use super::errors::GhostkeyError::Base64DecodeError;
+
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
     fn fingerprint() -> Result<String, GhostkeyError> {
         let hash = Self::calculate_hash();
@@ -16,7 +19,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
 
     fn calculate_hash() -> u32 {
         let mut hash: u32 = 0;
-        let type_info = std::any::type_name::<Self>();
+        let type_info = type_name::<Self>();
         
         // Hash the type name
         for c in type_info.chars() {
@@ -27,18 +30,16 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
         hash = Self::hash_fields(hash);
 
         hash
-    }
+    }`
 
     fn hash_fields(mut hash: u32) -> u32 {
         use std::any::TypeId;
-        use std::mem;
-
-        for field in std::any::type_name::<Self>().split(',') {
+        for field in type_name::<Self>().split(',') {
             let _field_type = field.split(':').nth(1).unwrap_or("");
             
             if TypeId::of::<Self>() == TypeId::of::<String>() || TypeId::of::<Self>() == TypeId::of::<&str>() {
                 hash = hash.wrapping_mul(31).wrapping_add(7);  // Use a prime number for strings
-            } else if mem::size_of::<Self>() <= 8 {  // Assume it's a primitive if size <= 8 bytes
+            } else if size_of::<Self>() <= 8 {  // Assume it's a primitive if size <= 8 bytes
                 hash = hash.wrapping_mul(31).wrapping_add(3);  // Use a different prime for primitives
             } else {
                 // For complex types, we can't recursively call calculate_hash() here
@@ -49,6 +50,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
 
         hash
     }
+
     fn to_bytes(&self) -> Result<Vec<u8>, GhostkeyError> {
         let mut buf = Vec::new();
         into_writer(self, &mut buf).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
