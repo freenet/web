@@ -45,7 +45,7 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
     let screenshot_dir = temp_dir.join("screenshots");
     std::fs::create_dir_all(&screenshot_dir)?;
     crate::environment::print_task("Navigating to donation page");
-    c.goto("http://localhost:1313/donate/ghostkey/").await?;
+    c.goto("http://localhost:1313/ghostkey/").await?;
     capture_screenshot(c, &screenshot_dir, "01_donation_page.png").await?;
     crate::environment::print_result(true);
 
@@ -105,7 +105,7 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
         }
 
         let current_url = c.current_url().await?;
-        if current_url.as_str().contains("/donate/ghostkey/success") {
+        if current_url.as_str().contains("/ghostkey/success") {
             crate::environment::print_result(true);
             break;
         }
@@ -129,7 +129,7 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
 
     while start_time.elapsed() < timeout {
         let current_url = c.current_url().await?;
-        if current_url.as_str().contains("/donate/ghostkey/success") {
+        if current_url.as_str().contains("/ghostkey/success") {
             combined_key_result = wait_for_element(c, Locator::Css("textarea#combinedKey"), Duration::from_secs(5)).await;
             if combined_key_result.is_ok() {
                 break;
