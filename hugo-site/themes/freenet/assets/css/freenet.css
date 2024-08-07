@@ -137,7 +137,7 @@ p.page-end-spacer {
     font-weight: bold;
     background-color: transparent;
     border-radius: 4px;
-    background-image: radial-gradient(circle, #007FFF 0%, #00BFFF 50%, #000000 100%);
+    background-image: radial-gradient(circle, #005FBF 0%, #00A080 50%, #000000 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -253,7 +253,7 @@ p.page-end-spacer {
 
     /* Dark mode Ghost Key styling */
     .navbar-item.ghost-key {
-        background-image: radial-gradient(circle, #4da6ff 0%, #00BFFF 50%, #ffffff 100%);
+        background-image: radial-gradient(circle, #3A80BF 0%, #008060 50%, #E0E0E0 100%);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
