@@ -60,14 +60,14 @@
         </div>
       </div>
     {{- else }}
+      {{- if eq $name "Ghost Key" }}
+        {{- $attrs = merge $attrs (dict "class" (printf "%s ghost-key" ($attrs.class | default "navbar-item"))) }}
+      {{- end }}
       <a
         {{- range $k, $v := $attrs }}
           {{- with $v }}
             {{- printf ` %s="%s"` $k . | safeHTMLAttr }}
           {{- end }}
-        {{- end -}}
-        {{- if eq $name "Ghost Key" }}
-          class="navbar-item ghost-key"
         {{- end -}}
       >{{ $name }}</a>
     {{- end }}
