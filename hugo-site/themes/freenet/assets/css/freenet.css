@@ -19,7 +19,11 @@
     font-family: 'Leto', sans-serif !important;
     font-size: 1.5rem !important;
     font-weight: 700 !important;
-    color: #007FFF !important;
+    background: radial-gradient(circle, #000000 0%, #808080 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
 }
 
 /* Override Bulma's navbar-item styles for the logo */
@@ -198,11 +202,19 @@ p.page-end-spacer {
     }
 
     .logo-text {
-        color: #4da6ff !important;
+        background: radial-gradient(circle, #ffffff 0%, #a0a0a0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        color: transparent;
     }
 
     .navbar-item:hover .logo-text {
-        color: #80bfff !important;
+        background: radial-gradient(circle, #ffffff 0%, #c0c0c0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        color: transparent;
     }
 
     .navbar-burger span {
