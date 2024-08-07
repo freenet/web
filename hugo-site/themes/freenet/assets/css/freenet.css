@@ -19,7 +19,7 @@
     font-family: 'Leto', sans-serif !important;
     font-size: 1.5rem !important;
     font-weight: 700 !important;
-    background: radial-gradient(circle, #000000 0%, #808080 100%);
+    background: radial-gradient(circle, #000000 0%, #404040 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -207,7 +207,7 @@ p.page-end-spacer {
     }
 
     .logo-text {
-        background: radial-gradient(circle, #ffffff 0%, #a0a0a0 100%);
+        background: radial-gradient(circle, #ffffff 0%, #707070 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -215,7 +215,7 @@ p.page-end-spacer {
     }
 
     .navbar-item:hover .logo-text {
-        background: radial-gradient(circle, #ffffff 0%, #c0c0c0 100%);
+        background: radial-gradient(circle, #ffffff 0%, #909090 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
