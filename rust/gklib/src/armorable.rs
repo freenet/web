@@ -96,25 +96,29 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
         Self: Sized,
     {
         let struct_name = Self::struct_name();
-        let begin_label = format!("-----BEGIN {}-----", struct_name);
-        let end_label = format!("-----END {}-----", struct_name);
+        let struct_name_no_version = struct_name.trim_end_matches("_V1");
+        
+        let possible_labels = vec![
+            struct_name.clone(),
+            struct_name_no_version.to_string(),
+        ];
 
-        let blocks: Vec<&str> = armored_string.split(&begin_label).collect();
-        let matching_blocks: Vec<&str> = blocks
-            .into_iter()
-            .filter(|block| block.contains(&end_label))
-            .collect();
+        for label in possible_labels {
+            let begin_label = format!("-----BEGIN {}-----", label);
+            let end_label = format!("-----END {}-----", label);
 
-        if matching_blocks.is_empty() {
-            return Err(GhostkeyError::DecodingError(format!(
-                "No matching block found for {}",
-                struct_name
-            )));
-        }
+            let blocks: Vec<&str> = armored_string.split(&begin_label).collect();
+            let matching_blocks: Vec<&str> = blocks
+                .into_iter()
+                .filter(|block| block.contains(&end_label))
+                .collect();
 
-        for block in matching_blocks {
-            if let Ok(result) = Self::decode_block(block, &end_label) {
-                return Ok(result);
+            if !matching_blocks.is_empty() {
+                for block in matching_blocks {
+                    if let Ok(result) = Self::decode_block(block, &end_label) {
+                        return Ok(result);
+                    }
+                }
             }
         }
 
