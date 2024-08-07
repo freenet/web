@@ -40,7 +40,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
         
         // Check for an existing version suffix
         if let Some(version_index) = upper_name.rfind('_') {
-            let (base_name, version) = upper_name.split_at(version_index);
+            let (_, version) = upper_name.split_at(version_index);
             if version.starts_with("_V") && version[2..].chars().all(|c| c.is_digit(10)) {
                 return upper_name;
             }
@@ -107,7 +107,8 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
 
             if let Some(block) = armored_string.split(&begin_label).nth(1) {
                 if let Some(content) = block.split(&end_label).next() {
-                    if let Ok(result) = Self::decode_block(content, &end_label) {
+                    let trimmed_content = content.trim();
+                    if let Ok(result) = Self::decode_block(trimmed_content) {
                         return Ok(result);
                     }
                 }
@@ -120,13 +121,12 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
         )))
     }
 
-    fn decode_block(block: &str, end_label: &str) -> Result<Self, GhostkeyError>
+    fn decode_block(block: &str) -> Result<Self, GhostkeyError>
     where
         Self: Sized,
     {
         let base64_encoded = block
             .lines()
-            .take_while(|line| !line.contains(end_label))
             .filter(|line| !line.starts_with("-----"))
             .collect::<Vec<&str>>()
             .join("");
