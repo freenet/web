@@ -27,7 +27,11 @@
         <div class="navbar-start">
           {{- partial "inline/menu/walk.html" (dict "page" $page "menuEntries" .) }}
         </div>
-        <div class="navbar-end"></div>
+        <div class="navbar-end">
+          <a href="/ghostkey" class="navbar-item">
+            <strong>Get Ghost Key</strong>
+          </a>
+        </div>
       </div>
     </nav>
   {{- end }}
