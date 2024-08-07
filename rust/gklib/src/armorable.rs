@@ -36,18 +36,18 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
             struct_name
         };
 
-        // Check for an existing version suffix and add "V1" if missing
-        let version_suffix = if let Some(suffix) = name.split('V').last() {
-            if suffix.chars().all(|c| c.is_digit(10)) {
-                format!("V{}", suffix)
-            } else {
-                "V1".to_string()
+        let upper_name = Self::camel_case_to_upper(name);
+        
+        // Check for an existing version suffix
+        if let Some(version_index) = upper_name.rfind('_') {
+            let (base_name, version) = upper_name.split_at(version_index);
+            if version.starts_with("_V") && version[2..].chars().all(|c| c.is_digit(10)) {
+                return upper_name;
             }
-        } else {
-            "V1".to_string()
-        };
+        }
 
-        format!("{}_{}", Self::camel_case_to_upper(name), version_suffix)
+        // Add V1 if no version is present
+        format!("{}_V1", upper_name)
     }
 
     fn camel_case_to_upper(s: &str) -> String {
@@ -96,26 +96,18 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
         Self: Sized,
     {
         let struct_name = Self::struct_name();
-        let struct_name_no_version = struct_name.trim_end_matches("_V1");
-        
         let possible_labels = vec![
             struct_name.clone(),
-            struct_name_no_version.to_string(),
+            struct_name.trim_end_matches("_V1").to_string(),
         ];
 
         for label in possible_labels {
             let begin_label = format!("-----BEGIN {}-----", label);
             let end_label = format!("-----END {}-----", label);
 
-            let blocks: Vec<&str> = armored_string.split(&begin_label).collect();
-            let matching_blocks: Vec<&str> = blocks
-                .into_iter()
-                .filter(|block| block.contains(&end_label))
-                .collect();
-
-            if !matching_blocks.is_empty() {
-                for block in matching_blocks {
-                    if let Ok(result) = Self::decode_block(block, &end_label) {
+            if let Some(block) = armored_string.split(&begin_label).nth(1) {
+                if let Some(content) = block.split(&end_label).next() {
+                    if let Ok(result) = Self::decode_block(content, &end_label) {
                         return Ok(result);
                     }
                 }
