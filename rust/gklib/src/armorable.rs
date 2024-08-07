@@ -12,45 +12,6 @@ use super::errors::GhostkeyError;
 use super::errors::GhostkeyError::Base64DecodeError;
 
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
-    fn fingerprint() -> Result<String, GhostkeyError> {
-        let hash = Self::calculate_hash();
-        Ok(BASE64_STANDARD.encode(&hash.to_be_bytes()))
-    }
-
-    fn calculate_hash() -> u32 {
-        let mut hash: u32 = 0;
-        let type_info = type_name::<Self>();
-        
-        // Hash the type name
-        for c in type_info.chars() {
-            hash = hash.wrapping_mul(31).wrapping_add(c as u32);
-        }
-
-        // Recursively hash fields
-        hash = Self::hash_fields(hash);
-
-        hash
-    }`
-
-    fn hash_fields(mut hash: u32) -> u32 {
-        use std::any::TypeId;
-        for field in type_name::<Self>().split(',') {
-            let _field_type = field.split(':').nth(1).unwrap_or("");
-            
-            if TypeId::of::<Self>() == TypeId::of::<String>() || TypeId::of::<Self>() == TypeId::of::<&str>() {
-                hash = hash.wrapping_mul(31).wrapping_add(7);  // Use a prime number for strings
-            } else if size_of::<Self>() <= 8 {  // Assume it's a primitive if size <= 8 bytes
-                hash = hash.wrapping_mul(31).wrapping_add(3);  // Use a different prime for primitives
-            } else {
-                // For complex types, we can't recursively call calculate_hash() here
-                // Instead, we'll use a different prime number
-                hash = hash.wrapping_mul(31).wrapping_add(11);
-            }
-        }
-
-        hash
-    }
-
     fn to_bytes(&self) -> Result<Vec<u8>, GhostkeyError> {
         let mut buf = Vec::new();
         into_writer(self, &mut buf).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
@@ -294,47 +255,4 @@ mod tests {
         assert!(decoded_struct1.is_err());
     }
 
-    #[test]
-    fn test_fingerprint() {
-        let fingerprint1 = TestStruct::fingerprint().unwrap();
-        let fingerprint2 = TestStruct::fingerprint().unwrap();
-
-        assert_eq!(fingerprint1.len(), 8);
-        assert_eq!(fingerprint1, fingerprint2);
-    }
-
-    #[derive(Debug, Serialize, Deserialize, PartialEq)]
-    struct NestedStruct {
-        nested_field: TestStruct,
-    }
-
-    #[test]
-    fn test_nested_fingerprint() {
-        let fingerprint1 = NestedStruct::fingerprint().unwrap();
-        let fingerprint2 = TestStruct::fingerprint().unwrap();
-
-        assert_eq!(fingerprint1.len(), 8);
-        assert_ne!(fingerprint1, fingerprint2);
-    }
-
-    #[derive(Debug, Serialize, Deserialize, PartialEq)]
-    struct DifferentFieldsStruct {
-        field_a: String,
-        field_b: i32,
-    }
-
-    #[test]
-    fn test_different_fields_fingerprint() {
-        let fingerprint1 = TestStruct::fingerprint().unwrap();
-        let fingerprint2 = DifferentFieldsStruct::fingerprint().unwrap();
-
-        assert_ne!(fingerprint1, fingerprint2);
-    }
-
-    #[test]
-    fn test_hash_consistency() {
-        assert_eq!(TestStruct::calculate_hash(), TestStruct::calculate_hash());
-        assert_eq!(NestedStruct::calculate_hash(), NestedStruct::calculate_hash());
-        assert_eq!(DifferentFieldsStruct::calculate_hash(), DifferentFieldsStruct::calculate_hash());
-    }
 }
