@@ -66,6 +66,9 @@
             {{- printf ` %s="%s"` $k . | safeHTMLAttr }}
           {{- end }}
         {{- end -}}
+        {{- if eq $name "Ghost Key" }}
+          class="navbar-item ghost-key"
+        {{- end -}}
       >{{ $name }}</a>
     {{- end }}
   {{- end }}

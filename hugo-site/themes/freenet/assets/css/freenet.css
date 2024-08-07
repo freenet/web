@@ -128,6 +128,16 @@ p.page-end-spacer {
     display: inline-block; /* Fit the content width */
 }
 
+/* Ghost Key styling */
+.navbar-item.ghost-key {
+    color: #00C853 !important;
+    font-weight: bold;
+}
+
+.navbar-item.ghost-key:hover {
+    color: #00E676 !important;
+}
+
 /* Burger menu color */
 .navbar-burger span {
     background-color: #007FFF;
@@ -221,5 +231,14 @@ p.page-end-spacer {
 
     .navbar-brand-with-border {
         border-bottom-color: #3a3a3a;
+    }
+
+    /* Dark mode Ghost Key styling */
+    .navbar-item.ghost-key {
+        color: #00E676 !important;
+    }
+
+    .navbar-item.ghost-key:hover {
+        color: #69F0AE !important;
     }
 }
