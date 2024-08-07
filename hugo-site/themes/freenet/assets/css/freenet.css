@@ -135,12 +135,17 @@ p.page-end-spacer {
 /* Ghost Key styling */
 .navbar-item.ghost-key {
     font-weight: bold;
-    background-color: rgba(0, 127, 255, 0.1);
+    background-color: transparent;
     border-radius: 4px;
+    background-image: linear-gradient(to right, #007FFF, #00BFFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .navbar-item.ghost-key:hover {
-    background-color: rgba(0, 127, 255, 0.2);
+    background-color: transparent;
+    opacity: 0.8;
 }
 
 /* Burger menu color */
@@ -248,10 +253,13 @@ p.page-end-spacer {
 
     /* Dark mode Ghost Key styling */
     .navbar-item.ghost-key {
-        background-color: rgba(77, 166, 255, 0.2);
+        background-image: linear-gradient(to right, #4da6ff, #80bfff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
     }
 
     .navbar-item.ghost-key:hover {
-        background-color: rgba(77, 166, 255, 0.3);
+        opacity: 0.8;
     }
 }
