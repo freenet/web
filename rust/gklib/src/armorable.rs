@@ -3,8 +3,8 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
 
-use base64::Engine;
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
+use base64::Engine;
 use ciborium::{de::from_reader, ser::into_writer};
 use serde::{Deserialize, Serialize};
 
@@ -35,7 +35,19 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
         } else {
             struct_name
         };
-        Self::camel_case_to_upper(name)
+
+        // Check for an existing version suffix and add "V1" if missing
+        let version_suffix = if let Some(suffix) = name.split('V').last() {
+            if suffix.chars().all(|c| c.is_digit(10)) {
+                format!("V{}", suffix)
+            } else {
+                "V1".to_string()
+            }
+        } else {
+            "V1".to_string()
+        };
+
+        format!("{}_{}", Self::camel_case_to_upper(name), version_suffix)
     }
 
     fn camel_case_to_upper(s: &str) -> String {
@@ -195,7 +207,7 @@ mod tests {
 
     #[test]
     fn test_struct_name() {
-        assert_eq!(TestStruct::struct_name(), "TEST_STRUCT");
+        assert_eq!(TestStruct::struct_name(), "TEST_STRUCT_V1");
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -205,7 +217,7 @@ mod tests {
 
     #[test]
     fn test_serializable_struct_name() {
-        assert_eq!(SerializableTestStruct::struct_name(), "TEST_STRUCT");
+        assert_eq!(SerializableTestStruct::struct_name(), "TEST_STRUCT_V1");
     }
 
     #[test]
@@ -255,4 +267,53 @@ mod tests {
         assert!(decoded_struct1.is_err());
     }
 
+    // New tests for versioning scenarios
+
+    #[derive(Debug, Serialize, Deserialize, PartialEq)]
+    struct TestStructV2 {
+        field1: String,
+        field2: i32,
+    }
+
+    #[test]
+    fn test_struct_name_with_version() {
+        assert_eq!(TestStructV2::struct_name(), "TEST_STRUCT_V2");
+    }
+
+    #[test]
+    fn test_struct_no_version_implicit_v1() {
+        let test_struct1 = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+
+        let armored = test_struct1.to_armored_string().unwrap();
+        assert!(armored.contains("TEST_STRUCT_V1"));
+    }
+
+    #[test]
+    fn test_struct_with_version_label_implicit_v1() {
+        let test_struct_v1 = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+
+        let armored = "-----BEGIN TEST_STRUCT-----\nSGVsbG8=\n-----END TEST_STRUCT-----\n";
+
+        let decoded_struct_v1 = TestStruct::from_armored_string(&armored).unwrap();
+        assert_eq!(test_struct_v1, decoded_struct_v1);
+    }
+
+    #[test]
+    fn test_struct_v1_label_with_version() {
+        let test_struct_v1 = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+
+        let armored = "-----BEGIN TEST_STRUCT_V1-----\nSGVsbG8=\n-----END TEST_STRUCT_V1-----\n";
+
+        let decoded_struct_v1 = TestStruct::from_armored_string(&armored).unwrap();
+        assert_eq!(test_struct_v1, decoded_struct_v1);
+    }
 }
