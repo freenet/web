@@ -108,8 +108,9 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
             if let Some(block) = armored_string.split(&begin_label).nth(1) {
                 if let Some(content) = block.split(&end_label).next() {
                     let trimmed_content = content.trim();
-                    if let Ok(result) = Self::decode_block(trimmed_content) {
-                        return Ok(result);
+                    match Self::decode_block(trimmed_content) {
+                        Ok(result) => return Ok(result),
+                        Err(_) => continue, // Try the next label if decoding fails
                     }
                 }
             }
@@ -294,9 +295,10 @@ mod tests {
             field2: 42,
         };
 
-        let armored = "-----BEGIN TEST_STRUCT-----\nSGVsbG8=\n-----END TEST_STRUCT-----\n";
+        let armored = test_struct_v1.to_armored_string().unwrap();
+        let armored_no_version = armored.replace("TEST_STRUCT_V1", "TEST_STRUCT");
 
-        let decoded_struct_v1 = TestStruct::from_armored_string(&armored).unwrap();
+        let decoded_struct_v1 = TestStruct::from_armored_string(&armored_no_version).unwrap();
         assert_eq!(test_struct_v1, decoded_struct_v1);
     }
 
@@ -307,7 +309,7 @@ mod tests {
             field2: 42,
         };
 
-        let armored = "-----BEGIN TEST_STRUCT_V1-----\nSGVsbG8=\n-----END TEST_STRUCT_V1-----\n";
+        let armored = test_struct_v1.to_armored_string().unwrap();
 
         let decoded_struct_v1 = TestStruct::from_armored_string(&armored).unwrap();
         assert_eq!(test_struct_v1, decoded_struct_v1);
