@@ -8,8 +8,6 @@ layout: "single"
 
 {{< stripe-donation-form error-message="The Ghost Key back-end isn't currently running, please notify webmaster@freenet.org" >}}
 
-<p>Note: Our donation process has been updated. You'll be redirected to a secure Stripe page to complete your donation.</p>
-
 {{< spacer >}}
 
 <div id="certificateSection" style="display: none;">

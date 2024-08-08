@@ -69,7 +69,7 @@ theme = "freenet"
     weight = 10
 
   [[menu.main]]
-    name = "Get Ghost Key"
+    name = "Ghost Key"
     url = "/ghostkey/"
     weight = 11
 
