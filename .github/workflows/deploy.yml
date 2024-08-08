@@ -5,9 +5,15 @@ on:
     branches:
       - main  # Deploy when pushing to main
   pull_request:
+    branches:
+      - main
 
 jobs:
+  integration-test:
+    uses: ./.github/workflows/integration-test.yml
+
   build:
+    needs: integration-test
     runs-on: ubuntu-22.04
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
