@@ -13,10 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install Hugo
-        run: |
-          sudo apt-get update
-          sudo apt-get install hugo
+      # Setup Hugo for static site generation
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+          extended: true
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
