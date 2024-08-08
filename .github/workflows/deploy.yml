@@ -10,7 +10,7 @@ on:
 
 jobs:
   integration-test:
-    uses: ./.github/workflows/integration-test.yml
+    uses: ./.github/workflows/integration-test.yml@${{ github.ref }}
 
   build:
     needs: integration-test
