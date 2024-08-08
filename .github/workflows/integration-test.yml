@@ -13,6 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install Hugo
+        run: |
+          apt install hugo
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
