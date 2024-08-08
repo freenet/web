@@ -26,6 +26,12 @@ jobs:
           command: install
           args: --debug cargo-make
 
+      - name: Install wasm-pack and wasm-bindgen-cli
+        run: |
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          cargo install wasm-pack
+          cargo install wasm-bindgen-cli
+
       - name: Install Chrome
         run: |
           sudo apt-get update
