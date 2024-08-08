@@ -1,10 +1,10 @@
 name: Integration Tests
 
 on:
-#  pull_request:
-#    branches: [main]
-#  push:
-#    branches: [main]
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
   workflow_call:
 
 jobs:
@@ -40,11 +40,10 @@ jobs:
           cargo install -f wasm-bindgen-cli
 
       - name: Install Chromedriver
-        run: |
-          sudo apt-get install -y chromium-chromedriver
-
-      - name: Run integration tests
-        run: cargo make integration-test
+        uses: nanasess/setup-chromedriver@v2
+        with:
+          # Optional: do not specify to match Chrome's version
+          chromedriver-version: '88.0.4324.96'
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v2
