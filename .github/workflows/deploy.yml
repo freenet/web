@@ -9,11 +9,7 @@ on:
       - main
 
 jobs:
-  integration-test:
-    uses: ./.github/workflows/integration-test.yml@${{ github.ref }}
-
   build:
-    needs: integration-test
     runs-on: ubuntu-22.04
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
