@@ -26,10 +26,16 @@ jobs:
           command: install
           args: --debug cargo-make
 
-      - name: Install Chrome
+      - name: Install wasm-pack and wasm-bindgen-cli
+        run: |
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          cargo install -f wasm-pack
+          cargo install -f wasm-bindgen-cli
+
+      - name: Install Chromedriver
         run: |
           sudo apt-get update
-          sudo apt-get install -y chromium-browser
+          sudo apt-get install -y chromium-chromedriver
 
       - name: Run integration tests
         run: cargo make integration-test
