@@ -15,7 +15,8 @@ jobs:
 
       - name: Install Hugo
         run: |
-          apt install hugo
+          sudo apt-get update
+          sudo apt-get install hugo
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -38,7 +39,6 @@ jobs:
 
       - name: Install Chromedriver
         run: |
-          sudo apt-get update
           sudo apt-get install -y chromium-chromedriver
 
       - name: Run integration tests
