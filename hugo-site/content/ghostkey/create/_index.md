@@ -2,8 +2,8 @@
 title: "Donate to Freenet and Get a Ghost Key"
 date: 2024-07-10
 draft: false
-url: "/ghostkey/"
 layout: "single"
+aliases: ["/ghostkey/"]
 ---
 
 {{< stripe-donation-form error-message="The Ghost Key back-end isn't currently running, please notify webmaster@freenet.org" >}}
