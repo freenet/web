@@ -36,8 +36,26 @@ fn main() {
 fn run() -> i32 {
     let matches = Command::new("Freenet Ghost Key Utility")
         .version(env!("CARGO_PKG_VERSION"))
-        .author("Your Name <ian@freenet.org>")
-        .about("Performs various ghost key-related tasks")
+        .author("Ian Clarke <ian@freenet.org>")
+        .about("Utility for generating and verifying Freenet ghost keys")
+        .subcommand(
+            Command::new(CMD_VERIFY_GHOST_KEY)
+                .about("Verifies a ghost key certificate")
+                .arg(
+                    Arg::new(ARG_MASTER_VERIFYING_KEY)
+                        .long(ARG_MASTER_VERIFYING_KEY)
+                        .help("Override the master verifying key")
+                        .required(false)
+                        .value_name("FILE"),
+                )
+                .arg(
+                    Arg::new(ARG_GHOST_CERTIFICATE)
+                        .long(ARG_GHOST_CERTIFICATE)
+                        .help("The file containing the ghost key certificate")
+                        .required(true)
+                        .value_name("FILE"),
+                ),
+        )
         .subcommand(
             Command::new(CMD_GENERATE_MASTER_KEY)
                 .about("Generate a new master keypair")
@@ -120,24 +138,6 @@ fn run() -> i32 {
                         .help("The directory to output the ghost key files")
                         .required(true)
                         .value_name("DIR"),
-                ),
-        )
-        .subcommand(
-            Command::new(CMD_VERIFY_GHOST_KEY)
-                .about("Verifies a ghost key certificate using the master verifying key")
-                .arg(
-                    Arg::new(ARG_MASTER_VERIFYING_KEY)
-                        .long(ARG_MASTER_VERIFYING_KEY)
-                        .help("Override the master verifying key")
-                        .required(false)
-                        .value_name("FILE"),
-                )
-                .arg(
-                    Arg::new(ARG_GHOST_CERTIFICATE)
-                        .long(ARG_GHOST_CERTIFICATE)
-                        .help("The file containing the ghost key certificate")
-                        .required(true)
-                        .value_name("FILE"),
                 ),
         )
         .get_matches();
