@@ -1,6 +1,6 @@
 [package]
 name = "ghostkey"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "A command-line tool for Freenet Ghost Key operations"
 license = "MIT OR Apache-2.0"
@@ -28,7 +28,7 @@ typenum = "1.17.0"
 sha3 = "0.11.0-pre.3"
 signature = "2.2.0"
 blind-rsa-signatures = "0.15.1"
-ghostkey_lib = "0.1.0"
+ghostkey_lib = "0.1.2"
 
 [[bin]]
 name = "ghostkey"
