@@ -1,12 +1,11 @@
 use base64::Engine;
-use js_sys::{JsString, Object, Reflect};
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use ghostkey_lib::armorable::Armorable;
 use ghostkey_lib::util::create_keypair;
 use blind_rsa_signatures::{BlindSignature, Options, Secret};
-use ghostkey_lib::delegate_certificate::DelegateCertificate;
-use ghostkey_lib::ghost_key_certificate::GhostkeyCertificate;
+use ghostkey_lib::delegate_certificate::DelegateCertificateV1;
+use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use base64::prelude::*;
 
 #[cfg(target_arch = "wasm32")]
@@ -30,7 +29,7 @@ fn generate_keypair_and_blind_core(delegate_certificate_base64: String, seed: Ve
     let mut rng = ChaCha20Rng::from_seed(seed.try_into().expect("Seed must be 32 bytes"));
     let (ec_signing_key, ec_verifying_key) = create_keypair(&mut rng).map_err(|_| "Failed to create keypair".to_string())?;
 
-    let delegate_certificate = DelegateCertificate::from_base64(&delegate_certificate_base64)
+    let delegate_certificate = DelegateCertificateV1::from_base64(&delegate_certificate_base64)
         .map_err(|e| format!("Invalid delegate certificate: {}", e))?;
 
     let verifying_key_bytes = Armorable::to_bytes(&ec_verifying_key)
@@ -75,7 +74,7 @@ fn generate_ghost_key_certificate_core(
     let blind_signature = BlindSignature::from_base64(&blinded_signature_base64)
         .map_err(|_| "Invalid blinded signature".to_string())?;
 
-    let delegate_certificate = DelegateCertificate::from_base64(&delegate_certificate_base64)
+    let delegate_certificate = DelegateCertificateV1::from_base64(&delegate_certificate_base64)
         .map_err(|e| format!("Invalid delegate certificate: {}", e))?;
 
     let delegate_verifying_key = &delegate_certificate.clone().payload.delegate_verifying_key;
@@ -98,7 +97,7 @@ fn generate_ghost_key_certificate_core(
         &Options::default(),
     ).map_err(|e| format!("Unblinding operation failed: {}", e))?;
 
-    let ghost_key_certificate = GhostkeyCertificate {
+    let ghost_key_certificate = GhostkeyCertificateV1 {
         delegate: delegate_certificate.clone(),
         verifying_key: ec_verifying_key,
         signature: unblinded_signature,
@@ -149,7 +148,7 @@ mod tests {
     fn test_round_trip() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
         let (master_signing_key, master_verifying_key) = create_keypair(&mut rng).unwrap();
-        let (delegate_certificate, delegate_signing_key) = DelegateCertificate::new(&master_signing_key, &"Test Delegate".to_string()).unwrap();
+        let (delegate_certificate, delegate_signing_key) = DelegateCertificateV1::new(&master_signing_key, &"Test Delegate".to_string()).unwrap();
 
         let delegate_certificate_base64 = delegate_certificate.to_base64().unwrap();
         let seed = [0u8; 32].to_vec();
@@ -166,8 +165,8 @@ mod tests {
             result.ec_signing_key,
         ).unwrap();
 
-        let ghost_key_certificate = GhostkeyCertificate::from_armored_string(&generated.armored_ghost_key_cert).unwrap();
-        let verified = ghost_key_certificate.verify(&master_verifying_key);
+        let ghost_key_certificate = GhostkeyCertificateV1::from_armored_string(&generated.armored_ghost_key_cert).unwrap();
+        let verified = ghost_key_certificate.verify(&Some(master_verifying_key));
 
         assert!(verified.is_ok(), "Verification failed: {:?}", verified.unwrap_err());
         assert_eq!(verified.unwrap(), "Test Delegate");
