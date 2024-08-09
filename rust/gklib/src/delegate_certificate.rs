@@ -21,7 +21,7 @@ pub struct DelegatePayload {
 
 impl DelegateCertificateV1 {
     pub fn new(
-        _master_signing_key: &SigningKey,
+        master_signing_key: &SigningKey,
         info: &String,
     ) -> Result<(Self, RSASigningKey), Box<GhostkeyError>> {
         let delegate_keypair = RSAKeyPair::generate(&mut OsRng, 2048)
@@ -32,7 +32,7 @@ impl DelegateCertificateV1 {
             info: info.clone(),
         };
 
-        let signature = sign_with_hash(&_master_signing_key, &payload)?;
+        let signature = sign_with_hash(&master_signing_key, &payload)?;
 
         let certificate = DelegateCertificateV1 {
             payload,

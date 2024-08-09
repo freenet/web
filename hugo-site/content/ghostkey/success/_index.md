@@ -18,7 +18,9 @@ donation without revealing your identity. Please wait a moment while we process 
 
 ## What's Next?
 
-Once your Ghost Key certificate is generated, you'll be able to download it. This certificate can be used to prove your donation status within the Freenet network, potentially unlocking certain features or privileges, all while keeping your identity concealed.
+Once your Ghost Key certificate is generated, you'll be able to download it. This certificate can be used to prove 
+your donation status within the Freenet network, potentially unlocking certain features or privileges, all while 
+keeping your identity concealed.
 
 Remember to save your Ghost Key certificate in a secure location. It's your private proof of donation and cannot be replaced if lost.
 

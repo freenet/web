@@ -70,8 +70,21 @@ theme = "freenet"
 
   [[menu.main]]
     name = "Ghost Key"
-    url = "/ghostkey/"
     weight = 11
+
+  [[menu.main]]
+    name = "Get Your Key"
+    url = "/ghostkey/create"
+    parent = "Ghost Key"
+
+  [[menu.main]]
+    name = "Use your Key"
+    url = "/ghostkey/use"
+    parent = "Ghost Key"
+
+  [[menu.main]]
+    name = "Developers"
+    url = "/ghostkey/dev/"
 
 [params]
   stripePublishableKeyTest = "pk_test_51PUf6RCCPv9UL23G0yLdnS51VCStEcnqzd2AftFWiXAOjFOgonYRRBL6F5eKOCrr2yuEHCBDqqYa8H0w7ouRyW6d00awdNMKsf"

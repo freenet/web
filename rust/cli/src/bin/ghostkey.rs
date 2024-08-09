@@ -8,8 +8,6 @@ use ghostkey::commands::{
     verify_ghost_key_cmd,
 };
 use base64::{Engine as _, engine::general_purpose};
-
-const DEFAULT_MASTER_VERIFYING_KEY_B64: &str = "WCBinZei3Yki9ezxKPNLoCar/m6F3Q8nnSrWDaRSxLL6cw==";
 use ghostkey_lib::delegate_certificate::DelegateCertificate;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificate;
 use log::info;
