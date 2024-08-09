@@ -8,7 +8,6 @@ use colored::Colorize;
 use ed25519_dalek::*;
 use log::info;
 use std::fs;
-use std::io::Read;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use rand_core::OsRng;
