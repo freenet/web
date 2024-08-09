@@ -1,7 +1,7 @@
 use ghostkey_lib::armorable::*;
-use ghostkey_lib::delegate_certificate::DelegateCertificate;
+use ghostkey_lib::delegate_certificate::DelegateCertificateV1;
 use ghostkey_lib::errors::GhostkeyError;
-use ghostkey_lib::ghost_key_certificate::GhostkeyCertificate;
+use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use ghostkey_lib::util::create_keypair;
 use blind_rsa_signatures::SecretKey as RSASigningKey;
 use colored::Colorize;
@@ -85,7 +85,7 @@ pub fn generate_delegate_cmd(
     ignore_permissions: bool,
 ) -> i32 {
     let (delegate_certificate, delegate_signing_key) =
-        match DelegateCertificate::new(&master_signing_key, &info) {
+        match DelegateCertificateV1::new(&master_signing_key, &info) {
             Ok(result) => result,
             Err(e) => {
                 eprintln!("{} to create delegate certificate: {}", "Failed".red(), e);
@@ -156,8 +156,8 @@ pub fn generate_delegate_cmd(
 }
 
 pub fn verify_delegate_cmd(
-    master_verifying_key: &VerifyingKey,
-    delegate_certificate: &DelegateCertificate,
+    master_verifying_key: &Option<VerifyingKey>,
+    delegate_certificate: &DelegateCertificateV1,
 ) -> i32 {
     match delegate_certificate.verify(master_verifying_key) {
         Ok(info) => {
@@ -173,12 +173,12 @@ pub fn verify_delegate_cmd(
 }
 
 pub fn generate_ghost_key_cmd(
-    delegate_certificate: &DelegateCertificate,
+    delegate_certificate: &DelegateCertificateV1,
     delegate_signing_key: &RSASigningKey,
     output_dir: &Path,
 ) -> i32 {
     let (ghost_key_certificate, ghost_key_signing_key) =
-        GhostkeyCertificate::new(delegate_certificate, delegate_signing_key);
+        GhostkeyCertificateV1::new(delegate_certificate, delegate_signing_key);
     let ghost_key_certificate_file = output_dir.join("ghost_key_certificate.pem");
     let ghost_key_signing_key_file = output_dir.join("ghost_key_signing_key.pem");
     info!(
@@ -224,8 +224,8 @@ pub fn generate_ghost_key_cmd(
 }
 
 pub fn verify_ghost_key_cmd(
-    master_verifying_key: &VerifyingKey,
-    ghost_certificate: &GhostkeyCertificate,
+    master_verifying_key: &Option<VerifyingKey>,
+    ghost_certificate: &GhostkeyCertificateV1,
 ) -> i32 {
     match ghost_certificate.verify(&master_verifying_key.clone()) {
         Ok(info) => {

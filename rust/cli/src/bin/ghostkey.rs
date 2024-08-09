@@ -7,9 +7,8 @@ use ghostkey::commands::{
     generate_delegate_cmd, generate_ghost_key_cmd, generate_master_key_cmd, verify_delegate_cmd,
     verify_ghost_key_cmd,
 };
-use base64::{Engine as _, engine::general_purpose};
-use ghostkey_lib::delegate_certificate::DelegateCertificate;
-use ghostkey_lib::ghost_key_certificate::GhostkeyCertificate;
+use ghostkey_lib::delegate_certificate::DelegateCertificateV1;
+use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use log::info;
 use std::path::Path;
 use std::process;
@@ -196,22 +195,16 @@ fn run() -> i32 {
             result
         }
         Some((CMD_VERIFY_DELEGATE, sub_matches)) => {
-            let master_verifying_key = if let Some(key_file) = sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY) {
+            let master_verifying_key : Option<VerifyingKey> = if let Some(key_file) = sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY) {
                 match VerifyingKey::from_file(Path::new(key_file)) {
-                    Ok(key) => key,
+                    Ok(key) => Some(key),
                     Err(e) => {
                         println!("{} to read master verifying key: {}", "Failed".red(), e);
                         return 1;
                     }
                 }
             } else {
-                match VerifyingKey::from_base64(DEFAULT_MASTER_VERIFYING_KEY_B64) {
-                    Ok(key) => key,
-                    Err(e) => {
-                        println!("{} to parse default master verifying key: {}", "Failed".red(), e);
-                        return 1;
-                    }
-                }
+                None
             };
             let delegate_certificate_file = Path::new(
                 sub_matches
@@ -219,7 +212,7 @@ fn run() -> i32 {
                     .unwrap(),
             );
             let delegate_certificate =
-                match DelegateCertificate::from_file(delegate_certificate_file) {
+                match DelegateCertificateV1::from_file(delegate_certificate_file) {
                     Ok(cert) => cert,
                     Err(e) => {
                         println!("{} to read delegate certificate: {}", "Failed".red(), e);
@@ -233,7 +226,7 @@ fn run() -> i32 {
             let delegate_certificate_file =
                 Path::new(delegate_dir).join("delegate_certificate.pem");
             let delegate_certificate =
-                match DelegateCertificate::from_file(&delegate_certificate_file) {
+                match DelegateCertificateV1::from_file(&delegate_certificate_file) {
                     Ok(cert) => cert,
                     Err(e) => {
                         eprintln!("{} to read delegate certificate: {}", "Failed".red(), e);
@@ -259,29 +252,23 @@ fn run() -> i32 {
             generate_ghost_key_cmd(&delegate_certificate, &delegate_signing_key, &output_dir)
         }
         Some((CMD_VERIFY_GHOST_KEY, sub_matches)) => {
-            let master_verifying_key = if let Some(key_file) = sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY) {
+            let master_verifying_key : Option<VerifyingKey> = if let Some(key_file) = sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY) {
                 match VerifyingKey::from_file(Path::new(key_file)) {
-                    Ok(key) => key,
+                    Ok(key) => Some(key),
                     Err(e) => {
                         eprintln!("{} to read master verifying key: {}", "Failed".red(), e);
                         return 1;
                     }
                 }
             } else {
-                match VerifyingKey::from_base64(DEFAULT_MASTER_VERIFYING_KEY_B64) {
-                    Ok(key) => key,
-                    Err(e) => {
-                        eprintln!("{} to parse default master verifying key: {}", "Failed".red(), e);
-                        return 1;
-                    }
-                }
+                None
             };
             let ghost_certificate_file = Path::new(
                 sub_matches
                     .get_one::<String>(ARG_GHOST_CERTIFICATE)
                     .unwrap(),
             );
-            let ghost_certificate = match GhostkeyCertificate::from_file(ghost_certificate_file) {
+            let ghost_certificate = match GhostkeyCertificateV1::from_file(ghost_certificate_file) {
                 Ok(cert) => cert,
                 Err(e) => {
                     eprintln!("{} to read ghost key certificate: {}", "Failed".red(), e);
