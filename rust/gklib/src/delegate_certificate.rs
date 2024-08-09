@@ -6,6 +6,9 @@ use blind_rsa_signatures::{
 use ed25519_dalek::*;
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
+use crate::armorable::Armorable;
+use crate::FREENET_MASTER_VERIFYING_KEY_BASE64;
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct DelegateCertificateV1 {
     pub payload: DelegatePayload,
@@ -43,11 +46,14 @@ impl DelegateCertificateV1 {
     }
 
     /// Verifies the delegate certificate using the master verifying key. If the verification is
-    /// successful, the info field of the payload is returned.
+    /// successful, the info field of the payload is returned. Uses Freenet master verifying key
+    /// if no key is provided.
     pub fn verify(
         &self,
-        &master_verifying_key: &VerifyingKey,
+        &master_verifying_key: &Option<VerifyingKey>,
     ) -> Result<String, Box<GhostkeyError>> {
+        let master_verifying_key = master_verifying_key.unwrap_or(VerifyingKey::from_base64(FREENET_MASTER_VERIFYING_KEY_BASE64).unwrap());
+        
         let verification = verify_with_hash(&master_verifying_key, &self.payload, &self.signature)?;
         if verification {
             Ok(self.payload.info.clone())
@@ -75,7 +81,7 @@ mod tests {
             DelegateCertificateV1::new(&master_signing_key, &info).unwrap();
 
         // Verify the certificate
-        let verified_info = certificate.verify(&master_verifying_key).unwrap();
+        let verified_info = certificate.verify(&Some(master_verifying_key)).unwrap();
         assert_eq!(verified_info, info);
     }
 
@@ -91,7 +97,7 @@ mod tests {
             DelegateCertificateV1::new(&master_signing_key, &info).unwrap();
 
         // Try to verify with the wrong key
-        let result = certificate.verify(&wrong_verifying_key);
+        let result = certificate.verify(&Some(wrong_verifying_key));
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err().as_ref(),
@@ -110,13 +116,13 @@ mod tests {
             DelegateCertificateV1::new(&master_signing_key, &info).unwrap();
 
         // Verify the original certificate
-        assert!(certificate.verify(&master_verifying_key).is_ok());
+        assert!(certificate.verify(&Some(master_verifying_key)).is_ok());
 
         // Tamper with the payload
         certificate.payload.info = "Tampered Info".to_string();
 
         // Verify the tampered certificate
-        let result = certificate.verify(&master_verifying_key);
+        let result = certificate.verify(&Some(master_verifying_key));
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err().as_ref(),

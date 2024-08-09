@@ -44,7 +44,7 @@ impl GhostkeyCertificateV1 {
 
     pub fn verify(
         &self,
-        master_verifying_key: &VerifyingKey,
+        master_verifying_key: &Option<VerifyingKey>,
     ) -> Result<String, Box<GhostkeyError>> {
         // Verify delegate certificate
         let info = self
@@ -95,7 +95,7 @@ mod tests {
 
         // Verify the ghostkey certificate
         let verified_info = ghost_key_certificate
-            .verify(&master_verifying_key)
+            .verify(&Some(master_verifying_key))
             .unwrap();
         assert_eq!(verified_info, info);
     }
@@ -116,7 +116,7 @@ mod tests {
             GhostkeyCertificateV1::new(&delegate_certificate, &delegate_signing_key);
 
         // Try to verify with the wrong master key
-        let result = ghost_key_certificate.verify(&wrong_master_verifying_key);
+        let result = ghost_key_certificate.verify(&Some(wrong_master_verifying_key));
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err().as_ref(),
@@ -142,7 +142,7 @@ mod tests {
         ghost_key_certificate.delegate.payload.info = "Tampered Info".to_string();
 
         // Try to verify the tampered certificate
-        let result = ghost_key_certificate.verify(&master_verifying_key);
+        let result = ghost_key_certificate.verify(&Some(master_verifying_key));
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err().as_ref(),
@@ -169,7 +169,7 @@ mod tests {
         ghost_key_certificate.verifying_key = VerifyingKey::from(tampered_verifying_key);
 
         // Try to verify the tampered certificate
-        let result = ghost_key_certificate.verify(&master_verifying_key);
+        let result = ghost_key_certificate.verify(&Some(master_verifying_key));
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err().as_ref(),
