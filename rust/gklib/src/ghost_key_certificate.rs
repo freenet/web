@@ -10,7 +10,7 @@ use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
 use crate::armorable::Armorable;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct GhostkeyCertificateV1 {
     pub delegate: DelegateCertificateV1,
     pub verifying_key: VerifyingKey,

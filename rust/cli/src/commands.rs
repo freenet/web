@@ -174,14 +174,14 @@ pub fn verify_delegate_cmd(
 }
 
 pub fn sign_message_cmd(
-    ghost_certificate: &GhostkeyCertificateV1,
+    ghost_certificate: GhostkeyCertificateV1,
     ghost_signing_key: &SigningKey,
     message: &[u8],
     output_file: &Path,
 ) -> i32 {
     let signature = ghost_signing_key.sign(message);
     let signed_message = SignedMessage {
-        certificate: ghost_certificate.clone(),
+        certificate: ghost_certificate,
         message: message.to_vec(),
         signature,
     };
