@@ -1,15 +1,17 @@
-use super::errors::GhostkeyError;
-use super::errors::GhostkeyError::Base64DecodeError;
-use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
-use base64::Engine;
-use ciborium::{de::from_reader, ser::into_writer};
-use serde::{Deserialize, Serialize};
 use std::any::type_name;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
 
-pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
+use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
+use base64::Engine;
+use ciborium::{de::from_reader, ser::into_writer};
+use serde::{Deserialize, Serialize};
+
+use super::errors::GhostkeyError;
+use super::errors::GhostkeyError::Base64DecodeError;
+
+pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
     fn to_bytes(&self) -> Result<Vec<u8>, GhostkeyError> {
         let mut buf = Vec::new();
         into_writer(self, &mut buf).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
@@ -33,7 +35,19 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         } else {
             struct_name
         };
-        Self::camel_case_to_upper(name)
+
+        let upper_name = Self::camel_case_to_upper(name);
+        
+        // Check for an existing version suffix
+        if let Some(version_index) = upper_name.rfind('_') {
+            let (_, version) = upper_name.split_at(version_index);
+            if version.starts_with("_V") && version[2..].chars().all(|c| c.is_digit(10)) {
+                return upper_name;
+            }
+        }
+
+        // Add V1 if no version is present
+        format!("{}_V1", upper_name)
     }
 
     fn camel_case_to_upper(s: &str) -> String {
@@ -82,25 +96,23 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         Self: Sized,
     {
         let struct_name = Self::struct_name();
-        let begin_label = format!("-----BEGIN {}-----", struct_name);
-        let end_label = format!("-----END {}-----", struct_name);
+        let possible_labels = vec![
+            struct_name.clone(),
+            struct_name.trim_end_matches("_V1").to_string(),
+        ];
 
-        let blocks: Vec<&str> = armored_string.split(&begin_label).collect();
-        let matching_blocks: Vec<&str> = blocks
-            .into_iter()
-            .filter(|block| block.contains(&end_label))
-            .collect();
+        for label in possible_labels {
+            let begin_label = format!("-----BEGIN {}-----", label);
+            let end_label = format!("-----END {}-----", label);
 
-        if matching_blocks.is_empty() {
-            return Err(GhostkeyError::DecodingError(format!(
-                "No matching block found for {}",
-                struct_name
-            )));
-        }
-
-        for block in matching_blocks {
-            if let Ok(result) = Self::decode_block(block, &end_label) {
-                return Ok(result);
+            if let Some(block) = armored_string.split(&begin_label).nth(1) {
+                if let Some(content) = block.split(&end_label).next() {
+                    let trimmed_content = content.trim();
+                    match Self::decode_block(trimmed_content) {
+                        Ok(result) => return Ok(result),
+                        Err(_) => continue, // Try the next label if decoding fails
+                    }
+                }
             }
         }
 
@@ -110,13 +122,12 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
         )))
     }
 
-    fn decode_block(block: &str, end_label: &str) -> Result<Self, GhostkeyError>
+    fn decode_block(block: &str) -> Result<Self, GhostkeyError>
     where
         Self: Sized,
     {
         let base64_encoded = block
             .lines()
-            .take_while(|line| !line.contains(end_label))
             .filter(|line| !line.starts_with("-----"))
             .collect::<Vec<&str>>()
             .join("");
@@ -155,7 +166,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> {
     }
 }
 
-impl<T: Serialize + for<'de> Deserialize<'de>> Armorable for T {}
+impl<T: Serialize + for<'de> Deserialize<'de> + 'static> Armorable for T {}
 
 #[cfg(test)]
 mod tests {
@@ -193,7 +204,7 @@ mod tests {
 
     #[test]
     fn test_struct_name() {
-        assert_eq!(TestStruct::struct_name(), "TEST_STRUCT");
+        assert_eq!(TestStruct::struct_name(), "TEST_STRUCT_V1");
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -203,7 +214,7 @@ mod tests {
 
     #[test]
     fn test_serializable_struct_name() {
-        assert_eq!(SerializableTestStruct::struct_name(), "TEST_STRUCT");
+        assert_eq!(SerializableTestStruct::struct_name(), "TEST_STRUCT_V1");
     }
 
     #[test]
@@ -251,5 +262,56 @@ mod tests {
         let mismatched_label = "-----BEGIN TEST_STRUCT-----\n\n-----END TEST_STRUCTS-----\n";
         let decoded_struct1 = TestStruct::from_armored_string(&mismatched_label);
         assert!(decoded_struct1.is_err());
+    }
+
+    // New tests for versioning scenarios
+
+    #[derive(Debug, Serialize, Deserialize, PartialEq)]
+    struct TestStructV2 {
+        field1: String,
+        field2: i32,
+    }
+
+    #[test]
+    fn test_struct_name_with_version() {
+        assert_eq!(TestStructV2::struct_name(), "TEST_STRUCT_V2");
+    }
+
+    #[test]
+    fn test_struct_no_version_implicit_v1() {
+        let test_struct1 = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+
+        let armored = test_struct1.to_armored_string().unwrap();
+        assert!(armored.contains("TEST_STRUCT_V1"));
+    }
+
+    #[test]
+    fn test_struct_with_version_label_implicit_v1() {
+        let test_struct_v1 = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+
+        let armored = test_struct_v1.to_armored_string().unwrap();
+        let armored_no_version = armored.replace("TEST_STRUCT_V1", "TEST_STRUCT");
+
+        let decoded_struct_v1 = TestStruct::from_armored_string(&armored_no_version).unwrap();
+        assert_eq!(test_struct_v1, decoded_struct_v1);
+    }
+
+    #[test]
+    fn test_struct_v1_label_with_version() {
+        let test_struct_v1 = TestStruct {
+            field1: "Hello".to_string(),
+            field2: 42,
+        };
+
+        let armored = test_struct_v1.to_armored_string().unwrap();
+
+        let decoded_struct_v1 = TestStruct::from_armored_string(&armored).unwrap();
+        assert_eq!(test_struct_v1, decoded_struct_v1);
     }
 }

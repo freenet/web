@@ -14,6 +14,8 @@
       <excludeFolder url="file://$MODULE_DIR$/rocket-api/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/api/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/target" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/cli/target" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/gklib/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

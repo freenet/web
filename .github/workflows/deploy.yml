@@ -1,10 +1,12 @@
 name: Freenet Deploy
 
 on:
-  push:
-    branches:
-      - main  # Deploy when pushing to main
-  pull_request:
+#  push:
+#    branches:
+#      - main  # Deploy when pushing to main
+#  pull_request:
+#    branches:
+#      - main
 
 jobs:
   build:
@@ -39,6 +41,7 @@ jobs:
       - name: Install wasm-pack and wasm-bindgen-cli
         run: |
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          cargo install wasm-pack
           cargo install wasm-bindgen-cli
 
       # Install cargo-make for building

@@ -2,7 +2,6 @@
 title: "Donate to Freenet and Get a Ghost Key"
 date: 2024-07-10
 draft: false
-url: "/donate/ghostkey/"
 layout: "single"
 ---
 

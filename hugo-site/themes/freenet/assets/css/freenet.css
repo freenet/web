@@ -11,7 +11,7 @@
 }
 
 .logo-img {
-    max-height: 3.75rem !important;
+    max-height: 2.75rem !important;
 }
 
 .logo-text {
@@ -19,7 +19,11 @@
     font-family: 'Leto', sans-serif !important;
     font-size: 1.5rem !important;
     font-weight: 700 !important;
-    color: #007FFF !important;
+    background: radial-gradient(circle, #000000 0%, #404040 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
 }
 
 /* Override Bulma's navbar-item styles for the logo */
@@ -128,6 +132,22 @@ p.page-end-spacer {
     display: inline-block; /* Fit the content width */
 }
 
+/* Ghost Key styling */
+.navbar-item.ghost-key {
+    font-weight: bold;
+    background-color: transparent;
+    border-radius: 4px;
+    background-image: radial-gradient(circle, #005FBF 0%, #003D99 50%, #000000 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.navbar-item.ghost-key:hover {
+    background-color: transparent;
+    opacity: 0.8;
+}
+
 /* Burger menu color */
 .navbar-burger span {
     background-color: #007FFF;
@@ -187,11 +207,19 @@ p.page-end-spacer {
     }
 
     .logo-text {
-        color: #4da6ff !important;
+        background: radial-gradient(circle, #ffffff 0%, #707070 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        color: transparent;
     }
 
     .navbar-item:hover .logo-text {
-        color: #80bfff !important;
+        background: radial-gradient(circle, #ffffff 0%, #909090 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        color: transparent;
     }
 
     .navbar-burger span {
@@ -221,5 +249,17 @@ p.page-end-spacer {
 
     .navbar-brand-with-border {
         border-bottom-color: #3a3a3a;
+    }
+
+    /* Dark mode Ghost Key styling */
+    .navbar-item.ghost-key {
+        background-image: radial-gradient(circle, #3A80BF 0%, #0060BF 50%, #E0E0E0 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .navbar-item.ghost-key:hover {
+        opacity: 0.8;
     }
 }

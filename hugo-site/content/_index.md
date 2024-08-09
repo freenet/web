@@ -43,7 +43,7 @@ by default, ensuring seamless integration and interaction across the platform.
 Services are also scalable by default and secured through modern cryptographic
 techniques, putting control back in the hands of users, not tech oligarchs.
 
-#### Status {{<yesterday-date>}}
+#### Status Update
 
 For the past few weeks we've been [working](https://github.com/freenet/freenet-core/pull/1131) 
 on a refactor of part of the transport code to address a bug that would have 
