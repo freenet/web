@@ -2,6 +2,19 @@
 
 A command-line interface for managing ghost keys and certificates in the Freenet ecosystem.
 
+## What are Ghost Keys?
+
+Ghost keys are a cryptographic mechanism used in the Freenet ecosystem to provide anonymous, unlinkable donations. They allow donors to prove they have made a donation without revealing their identity or linking multiple donations together. Ghost keys are created through a multi-step process involving master keys, delegate certificates, and finally the ghost key itself.
+
+## Purpose of Ghost Keys
+
+1. **Anonymity**: Donors can prove they've made a donation without revealing their identity.
+2. **Unlinkability**: Multiple donations from the same donor cannot be linked together.
+3. **Verifiability**: The system can verify that a donation has been made without knowing who made it.
+4. **Fraud Prevention**: The cryptographic nature of ghost keys makes it difficult to forge donation proofs.
+
+This CLI tool provides the necessary utilities to manage the entire lifecycle of ghost keys, from generating master keys to creating and verifying ghost key certificates.
+
 ## Features
 
 - Generate master keys
