@@ -367,7 +367,7 @@ fn run() -> i32 {
                 message.as_bytes().to_vec()
             };
             let output_file = Path::new(sub_matches.get_one::<String>("output").unwrap());
-            sign_message_cmd(&ghost_certificate, &ghost_signing_key, &message_content, output_file)
+            sign_message_cmd(ghost_certificate, &ghost_signing_key, &message_content, output_file)
         }
         Some((CMD_VERIFY_SIGNED_MESSAGE, sub_matches)) => {
             let signed_message_file = Path::new(sub_matches.get_one::<String>("signed_message").unwrap());
