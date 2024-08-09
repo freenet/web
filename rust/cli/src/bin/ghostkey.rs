@@ -5,19 +5,22 @@ use ed25519_dalek::*;
 use ghostkey_lib::armorable::Armorable;
 use ghostkey::commands::{
     generate_delegate_cmd, generate_ghost_key_cmd, generate_master_key_cmd, verify_delegate_cmd,
-    verify_ghost_key_cmd,
+    verify_ghost_key_cmd, sign_message_cmd, verify_signed_message_cmd,
 };
 use ghostkey_lib::delegate_certificate::DelegateCertificateV1;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use log::info;
 use std::path::Path;
 use std::process;
+use std::fs;
 
 const CMD_GENERATE_MASTER_KEY: &str = "generate-master-key";
 const CMD_GENERATE_DELEGATE: &str = "generate-delegate";
 const CMD_VERIFY_DELEGATE: &str = "verify-delegate";
 const CMD_GENERATE_GHOST_KEY: &str = "generate-ghost-key";
 const CMD_VERIFY_GHOST_KEY: &str = "verify-ghost-key";
+const CMD_SIGN_MESSAGE: &str = "sign-message";
+const CMD_VERIFY_SIGNED_MESSAGE: &str = "verify-signed-message";
 
 const ARG_OUTPUT_DIR: &str = "output-dir";
 const ARG_IGNORE_PERMISSIONS: &str = "ignore-permissions";
@@ -138,6 +141,63 @@ fn run() -> i32 {
                         .help("The directory to output the ghost key files")
                         .required(true)
                         .value_name("DIR"),
+                ),
+        )
+        .subcommand(
+            Command::new(CMD_SIGN_MESSAGE)
+                .about("Signs a message using a ghost key")
+                .arg(
+                    Arg::new("ghost_certificate")
+                        .long("ghost-certificate")
+                        .help("The file containing the ghost key certificate")
+                        .required(true)
+                        .value_name("FILE"),
+                )
+                .arg(
+                    Arg::new("ghost_signing_key")
+                        .long("ghost-signing-key")
+                        .help("The file containing the ghost signing key")
+                        .required(true)
+                        .value_name("FILE"),
+                )
+                .arg(
+                    Arg::new("message")
+                        .long("message")
+                        .help("The message to sign (either a file path or a string)")
+                        .required(true)
+                        .value_name("MESSAGE"),
+                )
+                .arg(
+                    Arg::new("output")
+                        .long("output")
+                        .help("The file to output the signed message")
+                        .required(true)
+                        .value_name("FILE"),
+                ),
+        )
+        .subcommand(
+            Command::new(CMD_VERIFY_SIGNED_MESSAGE)
+                .about("Verifies a signed message")
+                .arg(
+                    Arg::new("signed_message")
+                        .long("signed-message")
+                        .help("The file containing the signed message")
+                        .required(true)
+                        .value_name("FILE"),
+                )
+                .arg(
+                    Arg::new("master_verifying_key")
+                        .long("master-verifying-key")
+                        .help("The file containing the master verifying key")
+                        .required(false)
+                        .value_name("FILE"),
+                )
+                .arg(
+                    Arg::new("output")
+                        .long("output")
+                        .help("The file to output the verified message (if not provided, the message will be printed to stdout)")
+                        .required(false)
+                        .value_name("FILE"),
                 ),
         )
         .get_matches();
@@ -276,6 +336,54 @@ fn run() -> i32 {
                 }
             };
             verify_ghost_key_cmd(&master_verifying_key, &ghost_certificate)
+        }
+        Some((CMD_SIGN_MESSAGE, sub_matches)) => {
+            let ghost_certificate_file = Path::new(sub_matches.get_one::<String>("ghost_certificate").unwrap());
+            let ghost_certificate = match GhostkeyCertificateV1::from_file(ghost_certificate_file) {
+                Ok(cert) => cert,
+                Err(e) => {
+                    eprintln!("{} to read ghost key certificate: {}", "Failed".red(), e);
+                    return 1;
+                }
+            };
+            let ghost_signing_key_file = Path::new(sub_matches.get_one::<String>("ghost_signing_key").unwrap());
+            let ghost_signing_key = match SigningKey::from_file(ghost_signing_key_file) {
+                Ok(key) => key,
+                Err(e) => {
+                    eprintln!("{} to read ghost signing key: {}", "Failed".red(), e);
+                    return 1;
+                }
+            };
+            let message = sub_matches.get_one::<String>("message").unwrap();
+            let message_content = if Path::new(message).is_file() {
+                match fs::read(message) {
+                    Ok(content) => content,
+                    Err(e) => {
+                        eprintln!("{} to read message file: {}", "Failed".red(), e);
+                        return 1;
+                    }
+                }
+            } else {
+                message.as_bytes().to_vec()
+            };
+            let output_file = Path::new(sub_matches.get_one::<String>("output").unwrap());
+            sign_message_cmd(&ghost_certificate, &ghost_signing_key, &message_content, output_file)
+        }
+        Some((CMD_VERIFY_SIGNED_MESSAGE, sub_matches)) => {
+            let signed_message_file = Path::new(sub_matches.get_one::<String>("signed_message").unwrap());
+            let master_verifying_key = if let Some(key_file) = sub_matches.get_one::<String>("master_verifying_key") {
+                match VerifyingKey::from_file(Path::new(key_file)) {
+                    Ok(key) => Some(key),
+                    Err(e) => {
+                        eprintln!("{} to read master verifying key: {}", "Failed".red(), e);
+                        return 1;
+                    }
+                }
+            } else {
+                None
+            };
+            let output_file = sub_matches.get_one::<String>("output").map(|s| Path::new(s));
+            verify_signed_message_cmd(signed_message_file, &master_verifying_key, output_file)
         }
         _ => {
             info!("No valid subcommand provided. Use --help for usage information.");

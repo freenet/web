@@ -84,6 +84,28 @@ run_test "Verify delegate with wrong master key (should fail)" "cargo run --bin 
 # Test verify-ghost-key with wrong master key (should fail)
 run_test "Verify ghost key with wrong master key (should fail)" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghost_key_certificate.pem" 1
 
+# Test sign-message
+echo "Test message" > $temp_dir/test_message.txt
+run_test "Sign message" "cargo run --bin ghostkey -- sign-message --ghost-certificate $temp_dir/ghost-1/ghost_key_certificate.pem --ghost-signing-key $temp_dir/ghost-1/ghost_key_signing_key.pem --message $temp_dir/test_message.txt --output $temp_dir/signed_message.pem" 0
+
+# Test verify-signed-message
+run_test "Verify signed message" "cargo run --bin ghostkey -- verify-signed-message --signed-message $temp_dir/signed_message.pem --master-verifying-key $temp_dir/master-1/master_verifying_key.pem" 0
+
+# Test verify-signed-message with wrong master key (should fail)
+run_test "Verify signed message with wrong master key (should fail)" "cargo run --bin ghostkey -- verify-signed-message --signed-message $temp_dir/signed_message.pem --master-verifying-key $temp_dir/master-2/master_verifying_key.pem" 1
+
+# Test verify-signed-message with output to file
+run_test "Verify signed message with output to file" "cargo run --bin ghostkey -- verify-signed-message --signed-message $temp_dir/signed_message.pem --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --output $temp_dir/verified_message.txt" 0
+
+# Verify the content of the output file
+if cmp -s "$temp_dir/test_message.txt" "$temp_dir/verified_message.txt"; then
+    echo -e "${GREEN}Verified message matches original message${NC}"
+    ((pass_count++))
+else
+    echo -e "${RED}Verified message does not match original message${NC}"
+    ((fail_count++))
+fi
+
 # Clean up
 echo "Cleaning up temporary directory"
 rm -rf "$temp_dir"

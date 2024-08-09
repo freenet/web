@@ -8,9 +8,11 @@ use colored::Colorize;
 use ed25519_dalek::*;
 use log::info;
 use std::fs;
+use std::io::Read;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use rand_core::OsRng;
+use crate::signed_message::SignedMessage;
 
 pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i32 {
     let (signing_key, verifying_key) = match create_keypair(&mut OsRng) {
@@ -167,6 +169,84 @@ pub fn verify_delegate_cmd(
         }
         Err(e) => {
             eprintln!("{} to verify delegate certificate: {}", "Failed".red(), e);
+            1
+        }
+    }
+}
+
+pub fn sign_message_cmd(
+    ghost_certificate: &GhostkeyCertificateV1,
+    ghost_signing_key: &SigningKey,
+    message: &[u8],
+    output_file: &Path,
+) -> i32 {
+    let signature = ghost_signing_key.sign(message);
+    let signed_message = SignedMessage {
+        certificate: ghost_certificate.clone(),
+        message: message.to_vec(),
+        signature,
+    };
+
+    match signed_message.to_file(output_file) {
+        Ok(_) => {
+            println!(
+                "{} written {}",
+                "Signed message",
+                "successfully".green()
+            );
+            0
+        }
+        Err(e) => {
+            eprintln!("{} to write signed message: {}", "Failed".red(), e);
+            1
+        }
+    }
+}
+
+pub fn verify_signed_message_cmd(
+    signed_message_file: &Path,
+    master_verifying_key: &Option<VerifyingKey>,
+    output_file: Option<&Path>,
+) -> i32 {
+    let signed_message = match SignedMessage::from_file(signed_message_file) {
+        Ok(sm) => sm,
+        Err(e) => {
+            eprintln!("{} to read signed message: {}", "Failed".red(), e);
+            return 1;
+        }
+    };
+
+    match signed_message.certificate.verify(master_verifying_key) {
+        Ok(info) => {
+            println!("Ghost certificate {}", "verified".green());
+            println!("Info: {}", info.blue());
+
+            let verifying_key = signed_message.certificate.verifying_key;
+            match verifying_key.verify(&signed_message.message, &signed_message.signature) {
+                Ok(_) => {
+                    println!("Signature {}", "verified".green());
+                    match output_file {
+                        Some(file) => {
+                            if let Err(e) = fs::write(file, &signed_message.message) {
+                                eprintln!("{} to write message to file: {}", "Failed".red(), e);
+                                return 1;
+                            }
+                            println!("Message written to {}", file.display());
+                        }
+                        None => {
+                            println!("Message: {}", String::from_utf8_lossy(&signed_message.message));
+                        }
+                    }
+                    0
+                }
+                Err(e) => {
+                    eprintln!("{} to verify signature: {}", "Failed".red(), e);
+                    1
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("{} to verify ghost certificate: {}", "Failed".red(), e);
             1
         }
     }
