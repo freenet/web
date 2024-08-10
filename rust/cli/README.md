@@ -1,6 +1,7 @@
 # Ghostkey CLI
 
-A command-line interface for managing ghost keys and certificates in the Freenet ecosystem.
+A command-line interface for managing [ghost keys](https://freenet.org/ghostkey/) and certificates in the
+[Freenet](https://freenet.org/) ecosystem.
 
 ## What are Ghost Keys?
 
@@ -9,9 +10,7 @@ Ghost keys are a cryptographic mechanism used in the Freenet ecosystem to provid
 ## Purpose of Ghost Keys
 
 1. **Anonymity**: Donors can prove they've made a donation without revealing their identity.
-2. **Unlinkability**: Multiple donations from the same donor cannot be linked together.
-3. **Verifiability**: The system can verify that a donation has been made without knowing who made it.
-4. **Fraud Prevention**: The cryptographic nature of ghost keys makes it difficult to forge donation proofs.
+2. **Verifiability**: The system can verify that a donation has been made without knowing who made it.
 
 This CLI tool provides the necessary utilities to manage the entire lifecycle of ghost keys, from generating master keys to creating and verifying ghost key certificates.
 
@@ -52,21 +51,25 @@ ghostkey <subcommand> --help
 ## Examples
 
 1. Generate a master key:
+
    ```
    ghostkey generate-master-key --output-dir ./master-keys
    ```
 
 2. Create a delegate certificate:
+
    ```
    ghostkey generate-delegate --master-signing-key ./master-keys/master_signing_key.pem --info "Test Delegate" --output-dir ./delegate
    ```
 
 3. Generate a ghost key:
+
    ```
    ghostkey generate-ghost-key --delegate-dir ./delegate --output-dir ./ghost-key
    ```
 
 4. Sign a message:
+
    ```
    ghostkey sign-message --ghost-certificate ./ghost-key/ghost_key_certificate.pem --ghost-signing-key ./ghost-key/ghost_key_signing_key.pem --message ./message.txt --output ./signed_message.pem
    ```

@@ -1,6 +1,7 @@
 # Ghostkey Library (ghostkey_lib)
 
-A Rust library for creating and managing ghost key certificates in the Freenet ecosystem.
+A Rust library for creating and managing [ghost keys and certificates](https://freenet.org/ghostkey/)
+in the [Freenet](https://freenet.org/) ecosystem.
 
 ## Features
 
@@ -21,7 +22,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ghostkey_lib = "0.1.0"
+ghostkey_lib = "0.1.2" # Replace with the latest version
 ```
 
 Example usage:
@@ -51,4 +52,4 @@ assert_eq!(verified_info, info);
 
 ## License
 
-[Insert your chosen license here]
+`ghostkey_lib` is released under the [GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.html).

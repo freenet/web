@@ -5,14 +5,16 @@ Let's modify the process so that the message to be blinded and signed is an Ed25
 #### Blinding the Public Key in JavaScript
 
 1. **Install the required packages:**
+
    ```bash
    npm install tweetnacl tweetnacl-util
    ```
 
 2. **Blinding the public key:**
+
    ```javascript
-   const nacl = require('tweetnacl');
-   const naclUtil = require('tweetnacl-util');
+   const nacl = require("tweetnacl");
+   const naclUtil = require("tweetnacl-util");
 
    // Generate key pair
    const keyPair = nacl.sign.keyPair();
@@ -26,7 +28,7 @@ Let's modify the process so that the message to be blinded and signed is an Ed25
    // Calculate blinded public key (XOR with blinding factor)
    const blindedPublicKey = new Uint8Array(32);
    for (let i = 0; i < 32; i++) {
-       blindedPublicKey[i] = publicKey[i] ^ blindingFactor[i];
+     blindedPublicKey[i] = publicKey[i] ^ blindingFactor[i];
    }
 
    const blindedPublicKeyBase64 = naclUtil.encodeBase64(blindedPublicKey);
@@ -41,6 +43,7 @@ Let's modify the process so that the message to be blinded and signed is an Ed25
 ### Rust: Signing the Blinded Public Key with Ed25519
 
 1. **Add dependencies to your `Cargo.toml`:**
+
    ```toml
    [dependencies]
    ed25519-dalek = "1.0"
@@ -49,6 +52,7 @@ Let's modify the process so that the message to be blinded and signed is an Ed25
    ```
 
 2. **Signing the blinded public key:**
+
    ```rust
    use ed25519_dalek::{Keypair, Signature, Signer};
    use rand::rngs::OsRng;
@@ -74,6 +78,7 @@ Let's modify the process so that the message to be blinded and signed is an Ed25
 ### JavaScript: Unblinding the Signature
 
 1. **Unblinding the signature:**
+
    ```javascript
    const signatureBase64 = "signature_base64_here";
    const signatureBytes = naclUtil.decodeBase64(signatureBase64);
@@ -81,10 +86,10 @@ Let's modify the process so that the message to be blinded and signed is an Ed25
    // Calculate the unblinded signature (XOR with blinding factor)
    const unblindedSignature = new Uint8Array(64);
    for (let i = 0; i < 32; i++) {
-       unblindedSignature[i] = signatureBytes[i] ^ blindingFactor[i];
+     unblindedSignature[i] = signatureBytes[i] ^ blindingFactor[i];
    }
    for (let i = 32; i < 64; i++) {
-       unblindedSignature[i] = signatureBytes[i]; // Leave the second half unchanged
+     unblindedSignature[i] = signatureBytes[i]; // Leave the second half unchanged
    }
 
    console.log("Unblinded Signature (Base64):", naclUtil.encodeBase64(unblindedSignature));

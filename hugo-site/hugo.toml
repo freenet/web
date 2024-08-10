@@ -10,7 +10,7 @@ theme = "freenet"
 
 # Configure RSS feed
 [outputFormats.RSS]
-  mediatype = "application/rss+xml"
+  mediaType = "application/rss+xml"
   baseName = "feed"
 
 [services.rss]
@@ -73,17 +73,17 @@ theme = "freenet"
     weight = 11
 
   [[menu.main]]
-    name = "Get Your Key"
+    name = "Get Your Ghost Key"
     url = "/ghostkey/create"
     parent = "Ghost Key"
 
   [[menu.main]]
-    name = "Use your Key"
+    name = "Command Line Tool"
     url = "/ghostkey/use"
     parent = "Ghost Key"
 
   [[menu.main]]
-    name = "Developers"
+    name = "Rust Library"
     url = "/ghostkey/dev/"
 
 [params]

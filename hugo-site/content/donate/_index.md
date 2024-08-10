@@ -4,12 +4,10 @@ date: 2024-06-24
 draft: false
 ---
 
-Founded in 2001, Freenet is a 501c3 non-profit organization dedicated to
-the development and propagation of technologies for open and democratic
-information distribution over the Internet. We advocate for unrestricted
-exchange of intellectual, scientific, literary, social, artistic,
-creative, human rights, and cultural expressions, free from interference
-by state, private, or special interests.
+Founded in 2001, Freenet is a 501c3 non-profit organization dedicated to the development and propagation of technologies
+for open and democratic information distribution over the Internet. We advocate for unrestricted exchange of
+intellectual, scientific, literary, social, artistic, creative, human rights, and cultural expressions, free from
+interference by state, private, or special interests.
 
 #### Donate via PayPal or Credit Card
 
@@ -17,9 +15,8 @@ by state, private, or special interests.
 
 #### Donate via Cryptocurrency
 
-Freenet is **not** a cryptocurrency, but we do accept cryptocurrency
-donations. For large donations (over \$5,000) please contact us before
-sending. For smaller donations, please use the following wallets:
+Freenet is **not** a cryptocurrency, but we do accept cryptocurrency donations. For large donations (over \$5,000)
+please contact us before sending. For smaller donations, please use the following wallets:
 
 | Cryptocurrency | Address                                      |
 | -------------- | -------------------------------------------- |

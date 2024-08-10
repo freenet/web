@@ -15,18 +15,18 @@ layout: "single"
 # What is a Ghost Key? {#what-is-a-ghost-key}
 
 Ghost keys address a crucial challenge on the Internet: establishing trust without sacrificing privacy. With personal
-data commoditized by big tech, ghost keys are a way to maintain anonymity while tackling serious problems like bots
-and spam.
+data commoditized by big tech, ghost keys are a way to maintain anonymity while tackling serious problems like bots and
+spam.
 
 Here's how it works: when you make a donation to Freenet, your web browser generates a public-private key pair. The
-public key is then encrypted, or blinded, and sent to our server. The server signs this blinded key and sends it back
-to your browser, which decrypts the signature, creating a cryptographic certificate that is signed by the server without
+public key is then encrypted, or blinded, and sent to our server. The server signs this blinded key and sends it back to
+your browser, which decrypts the signature, creating a cryptographic certificate that is signed by the server without
 the server ever seeing it. This process ensures that your identity is not linked to your donation, providing a unique
 certificate that proves you've invested value.
 
-By linking trust to anonymity, ghost keys eliminate the need for cumbersome captchas. They block spam, prevent bots,
-and secure your interactions, making them a powerful tool for those who value privacy, security, and control over
-their digital presence.
+By linking trust to anonymity, ghost keys eliminate the need for cumbersome captchas. They block spam, prevent bots, and
+secure your interactions, making them a powerful tool for those who value privacy, security, and control over their
+digital presence.
 
 # How do Ghost Keys work? {#how-do-ghost-keys-work}
 

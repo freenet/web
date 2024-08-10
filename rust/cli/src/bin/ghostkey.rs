@@ -43,7 +43,7 @@ fn run() -> i32 {
         .about("Utility for generating and verifying Freenet ghost keys")
         .subcommand(
             Command::new(CMD_VERIFY_GHOST_KEY)
-                .about("Verifies a ghost key certificate")
+                .about("Verifies a ghost certificate")
                 .arg(
                     Arg::new(ARG_MASTER_VERIFYING_KEY)
                         .long(ARG_MASTER_VERIFYING_KEY)
@@ -54,7 +54,7 @@ fn run() -> i32 {
                 .arg(
                     Arg::new(ARG_GHOST_CERTIFICATE)
                         .long(ARG_GHOST_CERTIFICATE)
-                        .help("The file containing the ghost key certificate")
+                        .help("The file containing the ghost certificate")
                         .required(true)
                         .value_name("FILE"),
                 ),
@@ -149,7 +149,7 @@ fn run() -> i32 {
                 .arg(
                     Arg::new("ghost_certificate")
                         .long("ghost-certificate")
-                        .help("The file containing the ghost key certificate")
+                        .help("The file containing the ghost certificate")
                         .required(true)
                         .value_name("FILE"),
                 )
@@ -331,7 +331,7 @@ fn run() -> i32 {
             let ghost_certificate = match GhostkeyCertificateV1::from_file(ghost_certificate_file) {
                 Ok(cert) => cert,
                 Err(e) => {
-                    eprintln!("{} to read ghost key certificate: {}", "Failed".red(), e);
+                    eprintln!("{} to read ghost certificate: {}", "Failed".red(), e);
                     return 1;
                 }
             };
@@ -342,7 +342,7 @@ fn run() -> i32 {
             let ghost_certificate = match GhostkeyCertificateV1::from_file(ghost_certificate_file) {
                 Ok(cert) => cert,
                 Err(e) => {
-                    eprintln!("{} to read ghost key certificate: {}", "Failed".red(), e);
+                    eprintln!("{} to read ghost certificate: {}", "Failed".red(), e);
                     return 1;
                 }
             };

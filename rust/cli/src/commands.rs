@@ -313,7 +313,7 @@ pub fn verify_ghost_key_cmd(
             0
         }
         Err(e) => {
-            eprintln!("{} to verify ghost key certificate: {}", "Failed".red(), e);
+            eprintln!("{} to verify ghost certificate: {}", "Failed".red(), e);
             1
         }
     }
