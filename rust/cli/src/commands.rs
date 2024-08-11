@@ -179,6 +179,14 @@ pub fn sign_message_cmd(
     message: &[u8],
     output_file: &Path,
 ) -> i32 {
+    if ghost_signing_key.verifying_key() != ghost_certificate.verifying_key {
+        eprintln!(
+            "{}: The signing key does not match the ghost certificate",
+            "Error".red()
+        );
+        return 1;
+    }
+    
     let signature = ghost_signing_key.sign(message);
     let signed_message = SignedMessage {
         certificate: ghost_certificate,
@@ -256,6 +264,14 @@ pub fn generate_ghost_key_cmd(
     delegate_signing_key: &RSASigningKey,
     output_dir: &Path,
 ) -> i32 {
+    if delegate_signing_key.public_key().unwrap() != delegate_certificate.payload.delegate_verifying_key {
+        eprintln!(
+            "{}: The signing key does not match the delegate certificate",
+            "Error".red()
+        );
+        return 1;
+    }
+    
     let (ghost_key_certificate, ghost_key_signing_key) =
         GhostkeyCertificateV1::new(delegate_certificate, delegate_signing_key);
     let ghost_key_certificate_file = output_dir.join("ghost_key_certificate.pem");
