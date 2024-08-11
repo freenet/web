@@ -1,5 +1,15 @@
 <a href="{{ .Get "href" }}" class="button" style="
-  background: linear-gradient(135deg, #339966, #66cc99);
+  background: linear-gradient(135deg, 
+    {{ if eq (.Get "color") "#339966" }}
+      #339966, #66cc99
+    {{ else if eq (.Get "color") "#3366cc" }}
+      #3366cc, #66ccff
+    {{ else if eq (.Get "color") "#cc6633" }}
+      #cc6633, #ff9966
+    {{ else }}
+      #339966, #66cc99
+    {{ end }}
+  );
   color: #ffffff;
   font-weight: bold;
   text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
