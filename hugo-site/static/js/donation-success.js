@@ -249,7 +249,7 @@ function displayCertificate(armoredCertificate, armoredSigningKey) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'freenet_ghost_key.txt';
+        a.download = 'freenet_ghost_key.pem';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
