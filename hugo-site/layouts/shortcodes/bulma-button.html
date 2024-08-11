@@ -8,28 +8,6 @@
   {{ $gradientStart = "#6633cc" }}
   {{ $gradientEnd = "#9966ff" }}
 {{ end }}
-<a href="{{ .Get "href" }}" class="button" style="
-  background: white;
-  background-image: linear-gradient(white, white), linear-gradient(135deg, {{ $gradientStart }}, {{ $gradientEnd }});
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
-  color: transparent;
-  font-weight: bold;
-  border: 2px solid transparent;
-  padding: 10px 22px;
-  border-radius: 6px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  display: inline-block;
-  text-decoration: none;
-  position: relative;
-  overflow: hidden;
-">
-  <span style="
-    background-image: linear-gradient(135deg, {{ $gradientStart }}, {{ $gradientEnd }});
-    -webkit-background-clip: text;
-    color: transparent;
-    position: relative;
-    z-index: 1;
-  ">{{ .Inner }}</span>
+<a href="{{ .Get "href" }}" class="bulma-button custom-button" data-gradient-start="{{ $gradientStart }}" data-gradient-end="{{ $gradientEnd }}">
+  {{ .Inner }}
 </a>

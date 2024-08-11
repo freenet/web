@@ -263,3 +263,44 @@ p.page-end-spacer {
         opacity: 0.8;
     }
 }
+/* Custom button styles */
+.bulma-button.custom-button {
+  background: white;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  color: transparent;
+  font-weight: bold;
+  border: 2px solid transparent;
+  padding: 10px 22px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: inline-block;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.bulma-button.custom-button::before {
+  content: attr(data-content);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .bulma-button.custom-button {
+    background: #1e1e1e;
+    background-image: linear-gradient(#1e1e1e, #1e1e1e), linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  }
+}
