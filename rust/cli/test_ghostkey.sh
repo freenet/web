@@ -106,6 +106,12 @@ else
     ((fail_count++))
 fi
 
+# Test sign-message with mismatched key (should fail)
+run_test "Sign message with mismatched key (should fail)" "cargo run --bin ghostkey -- sign-message --ghost-certificate $temp_dir/ghost-1/ghost_key_certificate.pem --ghost-signing-key $temp_dir/delegate-1/delegate_signing_key.pem --message $temp_dir/test_message.txt --output $temp_dir/signed_message_mismatched.pem" 1
+
+# Test generate-ghost-key with mismatched key (should fail)
+run_test "Generate ghost key with mismatched key (should fail)" "cargo run --bin ghostkey -- generate-ghost-key --delegate-dir $temp_dir/delegate-1 --output-dir $temp_dir/ghost-2" 1
+
 # Clean up
 echo "Cleaning up temporary directory"
 rm -rf "$temp_dir"
