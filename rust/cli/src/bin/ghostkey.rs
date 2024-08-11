@@ -36,11 +36,10 @@ fn main() {
 }
 
 fn run() -> i32 {
-    let matches = Command::new("👻🔑 Freenet Ghost Key Utility")
+    let app = Command::new("👻🔑 Freenet Ghost Key Utility")
         .version(env!("CARGO_PKG_VERSION"))
         .author("Ian Clarke <ian@freenet.org>")
         .about("Utility for generating and verifying Freenet ghost keys")
-        .after_help("Run 'ghostkey <COMMAND> -h' for more information on a specific command.")
         .subcommand(
             Command::new(CMD_VERIFY_GHOST_KEY)
                 .about("Verifies a ghost certificate")
@@ -59,8 +58,6 @@ fn run() -> i32 {
                         .value_name("FILE"),
                 ),
         )
-        .subcommand_required(true)
-        .arg_required_else_help(true)
         .subcommand(
             Command::new(CMD_GENERATE_MASTER_KEY)
                 .about("Generate a new master keypair")
@@ -201,10 +198,12 @@ fn run() -> i32 {
                         .required(false)
                         .value_name("FILE"),
                 ),
-        )
-        .get_matches();
+        );
 
-    match matches.subcommand() {
+    let matches = app.clone().get_matches();
+
+    if matches.args_present() {
+        match matches.subcommand() {
         Some((CMD_GENERATE_MASTER_KEY, sub_matches)) => {
             let output_dir = Path::new(sub_matches.get_one::<String>(ARG_OUTPUT_DIR).unwrap());
 
@@ -389,14 +388,15 @@ fn run() -> i32 {
         }
         _ => {
             println!("👻🔑 Welcome to the Freenet Ghost Key Utility!");
-            println!("Use 'ghostkey -h' for detailed usage information.");
             println!("Available commands:");
-            if let Some((name, sub_matches)) = matches.subcommand() {
-                if let Some(cmd) = Command::new("ghostkey").get_subcommands().find(|c| c.get_name() == name) {
-                    println!("  {} - {}", name, cmd.get_about().unwrap_or_default());
-                }
-            }
+            app.print_long_help().unwrap();
             0
         }
+    }
+    } else {
+        println!("👻🔑 Welcome to the Freenet Ghost Key Utility!");
+        println!("Available commands:");
+        app.print_long_help().unwrap();
+        0
     }
 }
