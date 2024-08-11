@@ -1,18 +1,23 @@
 # Ghostkey CLI
 
-A command-line interface for managing [ghost keys](https://freenet.org/ghostkey/) and certificates in the
-[Freenet](https://freenet.org/) ecosystem.
+A command-line interface for managing [ghost keys](https://freenet.org/ghostkey/) and certificates
+in the [Freenet](https://freenet.org/) ecosystem.
 
 ## What are Ghost Keys?
 
-Ghost keys are a cryptographic mechanism used in the Freenet ecosystem to provide anonymous, unlinkable donations. They allow donors to prove they have made a donation without revealing their identity or linking multiple donations together. Ghost keys are created through a multi-step process involving master keys, delegate certificates, and finally the ghost key itself.
+Ghost keys are a cryptographic mechanism used in the Freenet ecosystem to provide anonymous,
+unlinkable donations. They allow donors to prove they have made a donation without revealing their
+identity or linking multiple donations together. Ghost keys are created through a multi-step process
+involving master keys, delegate certificates, and finally the ghost key itself.
 
 ## Purpose of Ghost Keys
 
 1. **Anonymity**: Donors can prove they've made a donation without revealing their identity.
-2. **Verifiability**: The system can verify that a donation has been made without knowing who made it.
+2. **Verifiability**: The system can verify that a donation has been made without knowing who made
+   it.
 
-This CLI tool provides the necessary utilities to manage the entire lifecycle of ghost keys, from generating master keys to creating and verifying ghost key certificates.
+This CLI tool provides the necessary utilities to manage the entire lifecycle of ghost keys, from
+generating master keys to creating and verifying ghost key certificates.
 
 ## Features
 
@@ -24,7 +29,8 @@ This CLI tool provides the necessary utilities to manage the entire lifecycle of
 
 ## Installation
 
-To install the Ghostkey CLI, you need to have Rust and Cargo installed on your system. Then, you can build and install the CLI using:
+To install the Ghostkey CLI, you need to have Rust and Cargo installed on your system. Then, you can
+build and install the CLI using:
 
 ```
 cargo install --path .
@@ -91,4 +97,5 @@ This script will run through various scenarios to ensure the CLI is functioning 
 
 ## License
 
-This project is licensed under the [GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.html).
+This project is licensed under the
+[GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.html).

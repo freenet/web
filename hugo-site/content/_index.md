@@ -22,29 +22,33 @@ links:
     color: "is-medium-orange"
 ---
 
-The centralization of the internet poses a fundamental threat to individual freedom. In 2024, a few corporations control
-most of our online services and infrastructure, wielding immense power with little accountability. They can censor
-content, exploit data, and exclude users from essential services, undermining democracy. We need a solution urgently.
+The centralization of the internet poses a fundamental threat to individual freedom. In 2024, a few
+corporations control most of our online services and infrastructure, wielding immense power with
+little accountability. They can censor content, exploit data, and exclude users from essential
+services, undermining democracy. We need a solution urgently.
 
-Introducing Freenet—a decentralized replacement for the World Wide Web. Acting as a global, shared computing platform,
-Freenet can be accessed via a standard web browser or embedded into software via an API.
+Introducing Freenet—a decentralized replacement for the World Wide Web. Acting as a global, shared
+computing platform, Freenet can be accessed via a standard web browser or embedded into software via
+an API.
 
-Freenet enables new solutions to old problems like spam, [DDoS](https://en.wikipedia.org/wiki/Denial-of-service_attack),
-keeping private data private, and much more.
+Freenet enables new solutions to old problems like spam,
+[DDoS](https://en.wikipedia.org/wiki/Denial-of-service_attack), keeping private data private, and
+much more.
 
-Freenet is flexible enough to build entirely decentralized alternatives to existing centralized services, such as
-messaging, social media, email, and e-commerce. Every component of every service built on Freenet is interoperable by
-default, ensuring seamless integration and interaction across the platform. Services are also scalable by default and
-secured through modern cryptographic techniques, putting control back in the hands of users, not tech oligarchs.
+Freenet is flexible enough to build entirely decentralized alternatives to existing centralized
+services, such as messaging, social media, email, and e-commerce. Every component of every service
+built on Freenet is interoperable by default, ensuring seamless integration and interaction across
+the platform. Services are also scalable by default and secured through modern cryptographic
+techniques, putting control back in the hands of users, not tech oligarchs.
 
 #### Status Update
 
-For the past few weeks we've been [working](https://github.com/freenet/freenet-core/pull/1131) on a refactor of part of
-the transport code to address a bug that would have negatively impacted the user experience by preventing peers from
-connecting to each other.
+For the past few weeks we've been [working](https://github.com/freenet/freenet-core/pull/1131) on a
+refactor of part of the transport code to address a bug that would have negatively impacted the user
+experience by preventing peers from connecting to each other.
 
-Once the refactor is complete and the bug is fixed, we should be ready to release the next version and start testing the
-network with a larger group of users.
+Once the refactor is complete and the bug is fixed, we should be ready to release the next version
+and start testing the network with a larger group of users.
 
 #### Useful Links
 

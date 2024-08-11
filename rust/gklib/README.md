@@ -1,7 +1,8 @@
 # Ghostkey Library (ghostkey_lib)
 
-A Rust library for creating and managing [ghost keys and certificates](https://freenet.org/ghostkey/)
-in the [Freenet](https://freenet.org/) ecosystem.
+A Rust library for creating and managing
+[ghost keys and certificates](https://freenet.org/ghostkey/) in the [Freenet](https://freenet.org/)
+ecosystem.
 
 ## Features
 
@@ -52,4 +53,5 @@ assert_eq!(verified_info, info);
 
 ## License
 
-`ghostkey_lib` is released under the [GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.html).
+`ghostkey_lib` is released under the
+[GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.html).

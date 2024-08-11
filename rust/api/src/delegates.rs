@@ -4,17 +4,17 @@ use blind_rsa_signatures::{BlindedMessage, BlindSignature, Options, SecretKey as
 use rand_core::OsRng;
 
 use ghostkey_lib::armorable::*;
-use ghostkey_lib::delegate_certificate::DelegateCertificate;
+use ghostkey_lib::delegate_certificate::DelegateCertificateV1;
 
 use crate::handle_sign_cert::CertificateError;
 
-pub(crate) fn get_delegate(amount: u64) -> Result<(DelegateCertificate, RSASigningKey), CertificateError> {
+pub(crate) fn get_delegate(amount: u64) -> Result<(DelegateCertificateV1, RSASigningKey), CertificateError> {
     let delegate_dir = PathBuf::from(std::env::var("DELEGATE_DIR").map_err(|e| {
         log::error!("DELEGATE_DIR environment variable not set: {}", e);
         CertificateError::KeyError("DELEGATE_DIR environment variable not set".to_string())
     })?);
     let cert_path = delegate_dir.join(format!("delegate_certificate_{}.pem", amount));
-    let cert = DelegateCertificate::from_file(&cert_path)
+    let cert = DelegateCertificateV1::from_file(&cert_path)
         .map_err(|e| CertificateError::KeyError(format!("Unable to read certificate from {}: {}", cert_path.display(), e)))?;
 
     let signing_key_path = delegate_dir.join(format!("delegate_signing_key_{}.pem", amount));

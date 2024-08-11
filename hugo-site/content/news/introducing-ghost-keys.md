@@ -1,44 +1,46 @@
-**Title:** Introducing Ghost Keys  
-**Date:** 2024-08-11  
-**Tags:** [ "front-page" ]
++++
+title = "Introducing Ghost Keys"
+date = 2024-08-11
+tags = [ "front-page"]
++++
 
-### There is No Negative Trust on the Internet
+### There Is No Negative Trust on the Internet
 
-On May 3rd, 1978, Gary Thuerk, a marketing manager at Digital Equipment Corporation, sent the first spam email to 400
-recipients. The message, an invitation to a product demonstration of the DEC-20 computer, was met with swift and
-negative reactions.
+On May 3rd, 1978, Gary Thuerk, a marketing manager at Digital Equipment Corporation, sent the first
+spam email to 400 people. It was an invitation to a product demonstration of the DEC-20 computer.
+The response was immediate and negative.
 
-Nearly half a century later, this fundamental flaw in internet design—where there is no mechanism for negative trust—has
-evolved into a significant problem. Sophisticated AI-driven spam and bots now manipulate us through social media,
-exploiting the absence of a system that could enforce accountability or distinguish between trustworthy and
-untrustworthy entities.
+Fast forward nearly 50 years, and the same flaw in the internet’s design has led to much bigger
+problems. Today, we’re dealing with AI-driven bots that not only flood us with spam but also
+manipulate social and political discourse on a massive scale.
 
-To counter this, online services rely on captchas—a cumbersome, often frustrating solution that poses accessibility
-challenges and does little to stop advanced bots. More insidiously, the lack of negative trust has allowed monopolistic
-online services to limit interoperability through restrictive APIs, locking in users and stifling competition.
+This flaw has also given major platforms an excuse to limit interoperability through APIs—a
+convenient way to lock users into their ecosystems and keep competitors out.
 
-### Enter Ghost Keys: Trust Without Sacrificing Privacy
+The result? Innovation has stalled, and manipulation and control are now the norm.
 
-Ghost Keys offer a revolutionary solution by providing a way to establish trust online without compromising privacy. In
-a digital landscape where personal data is often commodified, Ghost Keys enable you to prove your identity and intent
-securely and anonymously, without exposing personal details.
+### Ghost Keys: Anonymous and Verifiable Identities
 
-Here’s how Ghost Keys work:
+Ghost Keys offer a way to address these issues by enabling anonymous yet verifiable identities
+online. They help solve the problem of trust in decentralized environments without compromising user
+privacy.
 
-1. **Key Generation:** When you make a donation to Freenet, your web browser generates an elliptic curve key pair.
-2. **Blinding the Public Key:** The public part of the key pair is blinded, meaning it is encrypted in a way that
-   obscures its content from the server.
-3. **Server-Side Signing:** The blinded key is sent to the server, which verifies the donation and signs the blinded key
-   with its RSA key.
-4. **Unblinding and Certificate Creation:** The blinded signature is returned to your browser, which unblinds it to
-   create a cryptographic certificate. This certificate, along with the private key, serves as proof of your donation
-   without linking your identity to it.
+When you donate to Freenet, your browser generates a public-private key pair. The public key is
+blinded and sent to our server for signing. Once your donation is confirmed, the server signs the
+blinded public key and sends it back. Your browser then unblinds the key, creating a signed public
+key that proves your donation. This signed key, along with other data, forms a certificate you can
+store securely.
 
-By linking trust to anonymity, Ghost Keys eliminate the need for captchas, block spam, and prevent bots—all while
-preserving your privacy. Whether you're using Freenet or engaging in other online activities, Ghost Keys provide a
-powerful tool for those who value security and control over their digital presence.
+This identity is tied to a real action—it has a cost, which makes it less likely to be abused.
+Unlike throwaway accounts, Ghost Keys are designed to be persistent and valuable because they aren't
+free to create. This makes them ideal for reputation systems, where having "skin in the game"
+matters.
 
----
+While Ghost Keys don’t come with ready-made applications, they offer a strong foundation for
+developers to build on. We’ve also developed a command line tool that lets you use your Ghost Key
+certificate and private key to sign messages and verify signatures. There’s a Rust library available
+for the same functionality. These tools are just the beginning as we explore broader uses for Ghost
+Keys in establishing trust and identity across the web.
 
-This version retains the reference to "no negative trust on the internet" and emphasizes its importance in understanding
-the broader issue. It should resonate well with both those familiar with the concept and those curious to learn more.
+Ghost Keys aim to rebuild trust online in a way that’s both decentralized and resistant to
+manipulation while preserving user anonymity.

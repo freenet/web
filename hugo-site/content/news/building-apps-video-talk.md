@@ -4,8 +4,8 @@ date = 2023-09-07
 tags = ["video-talk", "front-page"]
 +++
 
-Ian Clarke explains how to build apps on Freenet, including the basic components of Freenet's architecture like
-contracts, delegates, and user interfaces.
+Ian Clarke explains how to build apps on Freenet, including the basic components of Freenet's
+architecture like contracts, delegates, and user interfaces.
 
 {{< youtube id="yBtyNIqZios?si=KL2x2ovRspGYKMeR" >}}
 
