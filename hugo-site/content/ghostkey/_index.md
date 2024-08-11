@@ -7,15 +7,12 @@ layout: "single"
 
 {{< bulma-button href="/ghostkey/create/" color="#339966" >}}Get Your Ghost Key{{< /bulma-button >}}
 
-# Get Your Ghost Key
-
-
-
-# Frequently Asked Questions about Ghost Keys
+### Learn More
 
 - [What is a Ghost Key?](#what-is-a-ghost-key)
 - [How do Ghost Keys work?](#how-do-ghost-keys-work)
 - [How much should I donate?](#how-much-should-i-donate)
+- [What can I do with my Ghost Key?](/ghostkey/what-can-i-do-with-my-ghost-key/)
 
 # What is a Ghost Key? {#what-is-a-ghost-key}
 
@@ -49,4 +46,10 @@ privacy, security, and control over their digital presence.
 
 The minimum donation is $5, but you can donate however much you can afford. The donation amount will
 be securely recorded in your Ghost Key certificate, and in the future it's possible that access and
-perks on the network will be reserved for those who donate more or who donated sooner.
+perks on the network will be reserved for those who donate more or who donated earlier. Think of it
+like a "founding member" club.
+
+# What can I do with my Ghost Key? {#what-can-i-do-with-my-ghost-key}
+
+When you first receive your Ghost Key it's very important that you store it securely, perhaps as
+a secure note in a password manager you trust. 

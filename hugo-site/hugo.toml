@@ -71,16 +71,7 @@ theme = "freenet"
   [[menu.main]]
     name = "Ghost Key"
     weight = 11
-
-  [[menu.main]]
-    name = "Create"
-    url = "/ghostkey/create"
-    parent = "Ghost Key"
-
-  [[menu.main]]
-    name = "Use"
-    url = "/ghostkey/cli"
-    parent = "Ghost Key"
+    url= "/ghostkey/"
 
 
 [params]
