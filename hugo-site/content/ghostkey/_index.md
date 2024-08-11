@@ -5,7 +5,8 @@ draft: false
 layout: "single"
 ---
 
-{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate Here to Get Your Ghost Key{{< /bulma-button >}}
+{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate Here to Get Your Ghost
+Key{{< /bulma-button >}}
 
 ### Learn More
 
@@ -52,13 +53,13 @@ like a "founding member" club.
 
 # How do I store my Ghost Key? {#how-do-i-store-my-ghost-key}
 
-When you first receive your Ghost Key it's very important that you store it securely, perhaps as
-a secure note in a password manager you trust.
+When you first receive your Ghost Key it's very important that you store it securely, perhaps as a
+secure note in a password manager you trust.
 
 # How do I use my Ghost Key? {#how-do-i-use-my-ghost-key}
 
-You can use our [command line tool](https://crates.io/crates/ghostkey) to verify your Ghost Key
-and use it to sign and verify messages. Here is how to install and use it:
+You can use our [command line tool](https://crates.io/crates/ghostkey) to verify your Ghost Key and
+use it to sign and verify messages. Here is how to install and use it:
 
 ```bash
 # If necessary install Rust
@@ -69,7 +70,7 @@ $ cargo install ghostkey
 
 # Verify it's working
 $ ghostkey -h
-Utility for generating and verifying Freenet ghost keys. Use 'ghostkey <subcommand> -h' 
+Utility for generating and verifying Freenet ghost keys. Use 'ghostkey <subcommand> -h'
 for help on specific subcommands.
 
 Usage: ghostkey [COMMAND]

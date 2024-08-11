@@ -26,10 +26,11 @@ online. They help solve the problem of trust in decentralized environments witho
 privacy.
 
 When you donate to Freenet, your browser generates a public-private key pair. The public key is
-blinded and sent to our server for signing. Once your donation is confirmed, the server signs the
-blinded public key and sends it back. Your browser then unblinds the key, creating a signed public
-key that proves your donation. This signed key, along with other data, forms a certificate you can
-store securely.
+blinded and sent to our server for signing. Crucially, _the blinding mechanism means the server
+never sees your actual public key and thus can never connect it to your donation_. Once your
+donation is confirmed, the server signs the blinded public key and sends it back. Your browser then
+unblinds the key, creating a signed public key that proves your donation. This signed key, along
+with other data, forms a certificate you can store securely.
 
 This identity is tied to a real action—it has a cost, which makes it less likely to be abused.
 Unlike throwaway accounts, Ghost Keys are designed to be persistent and valuable because they aren't
