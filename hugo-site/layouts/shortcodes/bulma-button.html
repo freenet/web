@@ -4,9 +4,9 @@
 {{ if eq $color "#3366cc" }}
   {{ $gradientStart = "#3366cc" }}
   {{ $gradientEnd = "#66ccff" }}
-{{ else if eq $color "#cc6633" }}
-  {{ $gradientStart = "#cc6633" }}
-  {{ $gradientEnd = "#ff9966" }}
+{{ else if eq $color "#6633cc" }}
+  {{ $gradientStart = "#6633cc" }}
+  {{ $gradientEnd = "#9966ff" }}
 {{ end }}
 <a href="{{ .Get "href" }}" class="button" style="
   background: linear-gradient(135deg, {{ $gradientStart }}, {{ $gradientEnd }});
