@@ -4,9 +4,7 @@ date = 2024-08-11
 tags = [ "front-page"]
 +++
 
-### There Is No Negative Trust on the Internet
-
-#### The Flaw in the Internet’s Design
+#### There Is No Negative Trust on the Internet
 
 On May 3rd, 1978, Gary Thuerk, a marketing manager at Digital Equipment Corporation, sent the first
 spam email to 400 people. It was an invitation to a product demonstration of the DEC-20 computer.
