@@ -41,8 +41,8 @@ jobs:
       - name: Install wasm-pack and wasm-bindgen-cli
         run: |
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-          cargo install wasm-pack
-          cargo install wasm-bindgen-cli
+          cargo install --force wasm-pack
+          cargo install --force wasm-bindgen-cli
 
       # Install cargo-make for building
       - name: Install cargo-make
