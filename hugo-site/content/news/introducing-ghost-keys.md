@@ -75,4 +75,5 @@ Ghost Keys aim to rebuild trust online in a way that’s both decentralized and 
 manipulation while preserving user anonymity. By starting with donations and moving towards
 decentralized possibilities, we’re laying the groundwork for a future where trust is securely
 established, and the absence of negative trust is no longer a vulnerability but a strength.
- #### 
+
+{{< bulma-button href="/ghostkey/" color="#339966" >}}Get Your Ghost Key{{< /bulma-button >}}
