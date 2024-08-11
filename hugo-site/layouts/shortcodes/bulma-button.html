@@ -1,6 +1,6 @@
+{{ $color := .Get "color" | default "#339966" }}
 <a href="{{ .Get "href" }}" class="button" style="
   background: linear-gradient(135deg, 
-    {{ $color := .Get "color" | default "#339966" }}
     {{ if eq $color "#339966" }}
       #339966, #66cc99
     {{ else if eq $color "#3366cc" }}
