@@ -234,7 +234,10 @@ function displayCertificate(armoredCertificate, armoredSigningKey) {
       copyButton.addEventListener('click', function() {
         combinedKeyTextarea.select();
         document.execCommand('copy');
-        alert('Ghost Key certificate and signing key copied to clipboard!');
+        copyButton.textContent = 'Copied!';
+        setTimeout(() => {
+          copyButton.textContent = 'Copy';
+        }, 2000);
       });
     }
 
