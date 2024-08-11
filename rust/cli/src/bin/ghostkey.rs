@@ -37,11 +37,10 @@ fn main() {
 }
 
 fn run() -> i32 {
-    let matches = Command::new("👻🔑 Freenet Ghost Key Utility")
+    let matches = Command::new("Freenet Ghost Key Utility")
         .version(env!("CARGO_PKG_VERSION"))
         .author("Ian Clarke <ian@freenet.org>")
         .about("Utility for generating and verifying Freenet ghost keys")
-        .after_help("Run 'ghostkey <COMMAND> -h' for more information on a specific command.")
         .subcommand(
             Command::new(CMD_VERIFY_GHOST_KEY)
                 .about("Verifies a ghost certificate")
@@ -60,8 +59,6 @@ fn run() -> i32 {
                         .value_name("FILE"),
                 ),
         )
-        .subcommand_required(true)
-        .arg_required_else_help(true)
         .subcommand(
             Command::new(CMD_GENERATE_MASTER_KEY)
                 .about("Generate a new master keypair")
@@ -389,12 +386,7 @@ fn run() -> i32 {
             verify_signed_message_cmd(signed_message_file, &master_verifying_key, output_file)
         }
         _ => {
-            println!("👻🔑 Welcome to the Freenet Ghost Key Utility!");
-            println!("Use 'ghostkey -h' for detailed usage information.");
-            println!("Available commands:");
-            for (name, cmd) in matches.get_subcommands() {
-                println!("  {} - {}", name, cmd.get_about().unwrap_or(""));
-            }
+            info!("No valid subcommand provided. Use --help for usage information.");
             0
         }
     }
