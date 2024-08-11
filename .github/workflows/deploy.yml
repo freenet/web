@@ -1,12 +1,12 @@
 name: Freenet Deploy
 
 on:
-#  push:
-#    branches:
-#      - main  # Deploy when pushing to main
-#  pull_request:
-#    branches:
-#      - main
+  push:
+    branches:
+      - main  # Deploy when pushing to main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
