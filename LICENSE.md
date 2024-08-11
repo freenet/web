@@ -1,6 +1,9 @@
-Note: The GNU Affero GPL license pertains to all of this repository EXCEPT the
-Rust Ghost Key library crate (rust/gklib), which is under the GNU Lesser
-General Public License (see below).
+freenet/web Licenses Overview
+=============================
+
+The GNU Affero General Public License V3 pertains to all of this repository 
+EXCEPT the Rust Ghost Key library crate (rust/gklib), which is under the GNU 
+Lesser General Public License V3. Both licenses are presented here.
 
 GNU Affero General Public License
 =================================
