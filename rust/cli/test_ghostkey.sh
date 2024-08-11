@@ -104,6 +104,10 @@ run_test "Verify message content" "cmp -s \"$temp_dir/test_message.txt\" \"$temp
 run_test "Generate another ghost key" "cargo run --bin ghostkey -- generate-ghost-key --delegate-dir $temp_dir/delegate-1 --output-dir $temp_dir/ghost-2" 0
 run_test "Sign message with mismatched ghost signing key" "cargo run --bin ghostkey -- sign-message --ghost-certificate $temp_dir/ghost-1/ghost_key_certificate.pem --ghost-signing-key $temp_dir/ghost-2/ghost_key_signing_key.pem --message $temp_dir/test_message.txt --output $temp_dir/signed_message_mismatched.pem" 1
 
+# Test generate-ghost-key with mismatched delegate signing key (should fail)
+run_test "Generate another delegate" "cargo run --bin ghostkey -- generate-delegate --master-signing-key $temp_dir/master-1/master_signing_key.pem --info 'Test Delegate 2' --output-dir $temp_dir/delegate-2" 0
+run_test "Generate ghost key with mismatched delegate signing key" "cargo run --bin ghostkey -- generate-ghost-key --delegate-certificate $temp_dir/delegate-1/delegate_certificate.pem --delegate-signing-key $temp_dir/delegate-2/delegate_signing_key.pem --output-dir $temp_dir/ghost-3" 1
+
 # Clean up
 echo "Cleaning up temporary directory"
 rm -rf "$temp_dir"
