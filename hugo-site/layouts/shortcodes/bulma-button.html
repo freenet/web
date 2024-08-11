@@ -8,7 +8,7 @@
   {{ $gradientStart = "#6633cc" }}
   {{ $gradientEnd = "#9966ff" }}
 {{ end }}
-{{ $style := printf "background: linear-gradient(135deg, %s, %s); color: #ffffff; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); border: none; padding: 12px 24px; border-radius: 6px; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" $gradientStart $gradientEnd }}
+{{ $style := printf "background: linear-gradient(135deg, %s, %s); background-color: %s; color: #ffffff; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); border: none; padding: 12px 24px; border-radius: 6px; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" $gradientStart $gradientEnd $gradientStart }}
 <a href="{{ .Get "href" }}" class="button" style="{{ $style }}">
   {{ .Inner }}
 </a>
