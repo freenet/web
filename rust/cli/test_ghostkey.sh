@@ -98,13 +98,7 @@ run_test "Verify signed message with wrong master key (should fail)" "cargo run 
 run_test "Verify signed message with output to file" "cargo run --bin ghostkey -- verify-signed-message --signed-message $temp_dir/signed_message.pem --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --output $temp_dir/verified_message.txt" 0
 
 # Verify the content of the output file
-if cmp -s "$temp_dir/test_message.txt" "$temp_dir/verified_message.txt"; then
-    echo -e "${GREEN}Verified message matches original message${NC}"
-    ((pass_count++))
-else
-    echo -e "${RED}Verified message does not match original message${NC}"
-    ((fail_count++))
-fi
+run_test "Verify message content" "cmp -s \"$temp_dir/test_message.txt\" \"$temp_dir/verified_message.txt\"" 0
 
 # Clean up
 echo "Cleaning up temporary directory"
