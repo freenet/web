@@ -40,7 +40,7 @@ fn run() -> i32 {
     let matches = Command::new("Freenet Ghost Key Utility")
         .version(env!("CARGO_PKG_VERSION"))
         .author("Ian Clarke <ian@freenet.org>")
-        .about("Utility for generating and verifying Freenet ghost keys")
+        .about("Utility for generating and verifying Freenet ghost keys. Use 'ghostkey <subcommand> -h' for help on specific subcommands.")
         .subcommand(
             Command::new(CMD_VERIFY_GHOST_KEY)
                 .about("Verifies a ghost certificate")
