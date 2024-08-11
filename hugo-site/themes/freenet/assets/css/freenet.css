@@ -265,35 +265,32 @@ p.page-end-spacer {
 }
 /* Custom button styles */
 .bulma-button.custom-button {
-  background: white;
-  background-image: linear-gradient(white, white), linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
-  color: black;
+  --gradient-start: var(--gradient-start, #339966);
+  --gradient-end: var(--gradient-end, #66cc99);
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  color: white;
   font-weight: bold;
-  border: 2px solid transparent;
+  border: none;
   padding: 10px 22px;
   border-radius: 6px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   display: inline-block;
   text-decoration: none;
   position: relative;
 }
 
 .bulma-button.custom-button:hover {
-  background-image: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-  color: white;
+  background: linear-gradient(135deg, var(--gradient-end), var(--gradient-start));
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
 
 @media (prefers-color-scheme: dark) {
   .bulma-button.custom-button {
-    background: #1e1e1e;
-    background-image: linear-gradient(#1e1e1e, #1e1e1e), linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-    color: white;
+    box-shadow: 0 2px 4px rgba(255,255,255,0.1);
   }
   
   .bulma-button.custom-button:hover {
-    background-image: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    box-shadow: 0 4px 6px rgba(255,255,255,0.2);
   }
 }
