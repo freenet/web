@@ -1,20 +1,19 @@
 ---
-title: "Ghost Keys"
+title: "Freenet Ghost Key"
 date: 2024-07-10
 draft: false
 layout: "single"
 ---
 
-{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Get Your Ghost Key{{< /bulma-button >}}
-{{< bulma-button href="https://crates.io/crates/ghostkey" color="#3366cc" >}}Command Line Tool{{< /bulma-button >}}
-{{< bulma-button href="https://crates.io/crates/ghostkey_lib" color="#6633cc" >}}Ghost Key Library{{< /bulma-button >}}
+{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate Here to Get Your Ghost Key{{< /bulma-button >}}
 
 ### Learn More
 
 - [What is a Ghost Key?](#what-is-a-ghost-key)
 - [How do Ghost Keys work?](#how-do-ghost-keys-work)
 - [How much should I donate?](#how-much-should-i-donate)
-- [What can I do with my Ghost Key?](#what-can-i-do-with-my-ghost-key)
+- [How do I store my Ghost Key?](#how-do-i-store-my-ghost-key)
+- [How do I use my Ghost Key?](#how-do-i-use-my-ghost-key)
 
 # What is a Ghost Key? {#what-is-a-ghost-key}
 
@@ -51,7 +50,45 @@ be securely recorded in your Ghost Key certificate, and in the future it's possi
 perks on the network will be reserved for those who donate more or who donated earlier. Think of it
 like a "founding member" club.
 
-# What can I do with my Ghost Key? {#what-can-i-do-with-my-ghost-key}
+# How do I store my Ghost Key? {#how-do-i-store-my-ghost-key}
 
 When you first receive your Ghost Key it's very important that you store it securely, perhaps as
 a secure note in a password manager you trust.
+
+# How do I use my Ghost Key? {#how-do-i-use-my-ghost-key}
+
+You can use our [command line tool](https://crates.io/crates/ghostkey) to verify your Ghost Key
+and use it to sign and verify messages. Here is how to install and use it:
+
+```bash
+# If necessary install Rust
+$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Install the Ghost Key command line tool
+$ cargo install ghostkey
+
+# Verify it's working
+$ ghostkey -h
+Utility for generating and verifying Freenet ghost keys. Use 'ghostkey <subcommand> -h' 
+for help on specific subcommands.
+
+Usage: ghostkey [COMMAND]
+
+Commands:
+  verify-ghost-key       Verifies a ghost certificate
+  generate-master-key    Generate a new master keypair
+  generate-delegate      Generates a new delegate signing key and certificate
+  verify-delegate        Verifies a delegate key certificate using the master verifying key
+  generate-ghost-key     Generates a ghost key from a delegate signing key
+  sign-message           Signs a message using a ghost key
+  verify-signed-message  Verifies a signed message
+  help                   Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
+
+$ ghostkey verify-ghost-key --ghost-certificate ~/Downloads/ghost-key-cert.pem
+Ghost certificate verified
+Info: {"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07-30 15:39:26"}
+```

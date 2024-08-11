@@ -12,17 +12,10 @@ without revealing your identity. Please wait a moment while we process your info
 
 {{< donation-success >}}
 
-## What is a Ghost Key?
-
-{{< include "../ghost-key-explanation.md" >}}
-
 ## What's Next?
 
-Once your Ghost Key certificate is generated, you'll be able to download it. This certificate can be
-used to prove your donation status within the Freenet network, potentially unlocking certain
-features or privileges, all while keeping your identity concealed.
+Copy or download your Ghost certificate and key and put it somewhere safe, such as a secure note
+in a password manager you trust. You can use your Ghost Key to prove your donation to Freenet
+without revealing your identity.
 
-Remember to save your Ghost Key certificate in a secure location. It's your private proof of
-donation and cannot be replaced if lost.
-
-Thank you again for supporting Freenet and embracing privacy-preserving technology.
+{{< bulma-button href="/ghostkey/" color="#339966" >}}Ghost Key FAQ{{< /bulma-button >}}
