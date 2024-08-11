@@ -12,7 +12,7 @@ layout: "single"
 - [What is a Ghost Key?](#what-is-a-ghost-key)
 - [How do Ghost Keys work?](#how-do-ghost-keys-work)
 - [How much should I donate?](#how-much-should-i-donate)
-- [What can I do with my Ghost Key?](/ghostkey/what-can-i-do-with-my-ghost-key/)
+- [What can I do with my Ghost Key?](#what-can-i-do-with-my-ghost-key)
 
 # What is a Ghost Key? {#what-is-a-ghost-key}
 
@@ -52,4 +52,4 @@ like a "founding member" club.
 # What can I do with my Ghost Key? {#what-can-i-do-with-my-ghost-key}
 
 When you first receive your Ghost Key it's very important that you store it securely, perhaps as
-a secure note in a password manager you trust. 
+a secure note in a password manager you trust.
