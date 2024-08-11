@@ -56,10 +56,10 @@ pub fn wasm_generate_keypair_and_blind(delegate_certificate_base64: String, seed
     match generate_keypair_and_blind_core(delegate_certificate_base64, seed) {
         Ok(result) => {
             let return_obj = Object::new();
-            Reflect::set(&return_obj, &JsString::from("ec_signing_key"), &JsString::from(&result.ec_signing_key)).unwrap();
-            Reflect::set(&return_obj, &JsString::from("ec_verifying_key"), &JsString::from(&result.ec_verifying_key)).unwrap();
-            Reflect::set(&return_obj, &JsString::from("blinded_signing_key"), &JsString::from(&result.blinded_signing_key)).unwrap();
-            Reflect::set(&return_obj, &JsString::from("blinding_secret"), &JsString::from(&result.blinding_secret)).unwrap();
+            Reflect::set(&return_obj, &JsString::from("ec_signing_key"), &JsString::from(result.ec_signing_key)).unwrap();
+            Reflect::set(&return_obj, &JsString::from("ec_verifying_key"), &JsString::from(result.ec_verifying_key)).unwrap();
+            Reflect::set(&return_obj, &JsString::from("blinded_signing_key"), &JsString::from(result.blinded_signing_key)).unwrap();
+            Reflect::set(&return_obj, &JsString::from("blinding_secret"), &JsString::from(result.blinding_secret)).unwrap();
             return_obj.into()
         }
         Err(err) => JsValue::from_str(&err),
