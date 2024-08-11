@@ -391,8 +391,10 @@ fn run() -> i32 {
             println!("👻🔑 Welcome to the Freenet Ghost Key Utility!");
             println!("Use 'ghostkey -h' for detailed usage information.");
             println!("Available commands:");
-            if let Some((name, cmd)) = matches.subcommand() {
-                println!("  {} - {}", name, cmd.get_about().unwrap_or(""));
+            for (name, _) in matches.get_subcommands() {
+                if let Some(cmd) = Command::new("ghostkey").get_subcommands().find(|c| c.get_name() == name) {
+                    println!("  {} - {}", name, cmd.get_about().unwrap_or(""));
+                }
             }
             0
         }
