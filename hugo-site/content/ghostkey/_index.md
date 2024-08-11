@@ -1,10 +1,13 @@
 ---
-title: "Get Your Ghost Key"
+title: "Ghost Keys"
 date: 2024-07-10
 draft: false
-url: "/ghostkey/"
 layout: "single"
 ---
+
+# Get Your Ghost Key
+
+
 
 # Frequently Asked Questions about Ghost Keys
 
