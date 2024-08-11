@@ -2,7 +2,7 @@ use ghostkey_lib::armorable::*;
 use ghostkey_lib::delegate_certificate::DelegateCertificateV1;
 use ghostkey_lib::errors::GhostkeyError;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
-use ghostkey_lib::util::{create_keypair, verify_key_pair};
+use ghostkey_lib::util::create_keypair;
 use blind_rsa_signatures::SecretKey as RSASigningKey;
 use colored::Colorize;
 use ed25519_dalek::*;
@@ -173,21 +173,12 @@ pub fn verify_delegate_cmd(
     }
 }
 
-fn verify_key_pair(certificate: &impl Armorable, signing_key: &impl Armorable) -> Result<(), GhostkeyError> {
-    verify_key_pair(certificate, signing_key)
-        .map_err(|_| GhostkeyError::KeyMismatch("The signing key does not match the certificate's verifying key".into()))
-}
-
 pub fn sign_message_cmd(
     ghost_certificate: GhostkeyCertificateV1,
     ghost_signing_key: &SigningKey,
     message: &[u8],
     output_file: &Path,
 ) -> i32 {
-    if let Err(e) = verify_key_pair(&ghost_certificate, ghost_signing_key) {
-        eprintln!("{}: {}", "Error".red(), e);
-        return 1;
-    }
     let signature = ghost_signing_key.sign(message);
     let signed_message = SignedMessage {
         certificate: ghost_certificate,
@@ -265,10 +256,6 @@ pub fn generate_ghost_key_cmd(
     delegate_signing_key: &RSASigningKey,
     output_dir: &Path,
 ) -> i32 {
-    if let Err(e) = verify_key_pair(delegate_certificate, delegate_signing_key) {
-        eprintln!("{}: {}", "Error".red(), e);
-        return 1;
-    }
     let (ghost_key_certificate, ghost_key_signing_key) =
         GhostkeyCertificateV1::new(delegate_certificate, delegate_signing_key);
     let ghost_key_certificate_file = output_dir.join("ghost_key_certificate.pem");
