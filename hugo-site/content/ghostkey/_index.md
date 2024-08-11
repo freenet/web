@@ -5,6 +5,8 @@ draft: false
 layout: "single"
 ---
 
+{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Get Your Ghost Key{{< /bulma-button >}}
+
 # Get Your Ghost Key
 
 
