@@ -8,4 +8,6 @@
   {{ $gradientStart = "#6633cc" }}
   {{ $gradientEnd = "#9966ff" }}
 {{ end }}
-<a href="{{ .Get "href" }}" class="bulma-button custom-button" data-gradient-start="{{ $gradientStart }}" data-gradient-end="{{ $gradientEnd }}" data-content="{{ .Inner }}">{{ .Inner }}</a>
+<a href="{{ .Get "href" }}" class="bulma-button custom-button" style="--gradient-start: {{ $gradientStart }}; --gradient-end: {{ $gradientEnd }};">
+  <span>{{ .Inner }}</span>
+</a>

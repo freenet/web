@@ -275,9 +275,13 @@ p.page-end-spacer {
   border-radius: 6px;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
   position: relative;
+  min-height: 2.5em;
+  min-width: 120px;
 }
 
 .bulma-button.custom-button:hover {
@@ -296,12 +300,8 @@ p.page-end-spacer {
 }
 
 /* Ensure button text is visible */
-.bulma-button.custom-button::after {
-  content: attr(data-content);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
+.bulma-button.custom-button span {
+  position: relative;
   z-index: 1;
+  color: white;
 }
