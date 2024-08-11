@@ -6,6 +6,8 @@ layout: "single"
 ---
 
 {{< bulma-button href="/ghostkey/create/" color="#339966" >}}Get Your Ghost Key{{< /bulma-button >}}
+{{< bulma-button href="https://crates.io/crates/ghostkey" color="#3366cc" >}}Command Line Tool{{< /bulma-button >}}
+{{< bulma-button href="https://crates.io/crates/ghostkey_lib" color="#cc6633" >}}Ghost Key Library{{< /bulma-button >}}
 
 ### Learn More
 
