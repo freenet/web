@@ -36,7 +36,7 @@ fn main() {
 }
 
 fn run() -> i32 {
-    let app = Command::new("👻🔑 Freenet Ghost Key Utility")
+    let mut app = Command::new("👻🔑 Freenet Ghost Key Utility")
         .version(env!("CARGO_PKG_VERSION"))
         .author("Ian Clarke <ian@freenet.org>")
         .about("Utility for generating and verifying Freenet ghost keys")
