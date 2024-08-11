@@ -37,14 +37,13 @@ Unlike throwaway accounts, Ghost Keys are designed to be persistent and valuable
 free to create. This makes them ideal for reputation systems, where having "skin in the game"
 matters.
 
-#### Why Donations Are Appropriate
+#### Why Donations?
 
 Given that Freenet is a decentralized project, one might question why we rely on donations, which
-are inherently centralized. The answer lies in three key factors:
+are inherently centralized. There are three key reasons:
 
-1. **Anonymity**: Although donations involve a central process, they are designed to be anonymous,
-   which aligns with the privacy principles at the core of Freenet. The anonymity mitigates the
-   centralization aspect, ensuring that user privacy remains protected.
+1. **Anonymity**: Although donations involve a central process, they are anonymous thanks to the
+   blind signature process.
 
 2. **Funding for a Larger Mission**: Donations provide essential funding to Freenet, which not only
    developed Ghost Keys but is also tackling the much broader challenge of decentralizing virtually
