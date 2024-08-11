@@ -260,10 +260,26 @@ pub fn verify_signed_message_cmd(
 }
 
 pub fn generate_ghost_key_cmd(
-    delegate_certificate: &DelegateCertificateV1,
-    delegate_signing_key: &RSASigningKey,
+    delegate_certificate_path: &Path,
+    delegate_signing_key_path: &Path,
     output_dir: &Path,
 ) -> i32 {
+    let delegate_certificate = match DelegateCertificateV1::from_file(delegate_certificate_path) {
+        Ok(cert) => cert,
+        Err(e) => {
+            eprintln!("{} to read delegate certificate: {}", "Failed".red(), e);
+            return 1;
+        }
+    };
+
+    let delegate_signing_key = match RSASigningKey::from_file(delegate_signing_key_path) {
+        Ok(key) => key,
+        Err(e) => {
+            eprintln!("{} to read delegate signing key: {}", "Failed".red(), e);
+            return 1;
+        }
+    };
+
     if delegate_signing_key.public_key().unwrap() != delegate_certificate.payload.delegate_verifying_key {
         eprintln!(
             "{}: The signing key does not match the delegate certificate",
