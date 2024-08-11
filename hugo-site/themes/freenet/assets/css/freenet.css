@@ -294,3 +294,14 @@ p.page-end-spacer {
     box-shadow: 0 4px 6px rgba(255,255,255,0.2);
   }
 }
+
+/* Ensure button text is visible */
+.bulma-button.custom-button::after {
+  content: attr(data-content);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  z-index: 1;
+}
