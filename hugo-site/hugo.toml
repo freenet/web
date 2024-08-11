@@ -73,18 +73,15 @@ theme = "freenet"
     weight = 11
 
   [[menu.main]]
-    name = "Get Your Ghost Key"
+    name = "Create"
     url = "/ghostkey/create"
     parent = "Ghost Key"
 
   [[menu.main]]
-    name = "Command Line Tool"
-    url = "/ghostkey/use"
+    name = "Use"
+    url = "/ghostkey/cli"
     parent = "Ghost Key"
 
-  [[menu.main]]
-    name = "Rust Library"
-    url = "/ghostkey/dev/"
 
 [params]
   stripePublishableKeyTest = "pk_test_51PUf6RCCPv9UL23G0yLdnS51VCStEcnqzd2AftFWiXAOjFOgonYRRBL6F5eKOCrr2yuEHCBDqqYa8H0w7ouRyW6d00awdNMKsf"
