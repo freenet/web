@@ -393,7 +393,7 @@ fn run() -> i32 {
             println!("Available commands:");
             if let Some((name, sub_matches)) = matches.subcommand() {
                 if let Some(cmd) = Command::new("ghostkey").get_subcommands().find(|c| c.get_name() == name) {
-                    println!("  {} - {}", name, cmd.get_about().unwrap_or(&"").to_string());
+                    println!("  {} - {}", name, cmd.get_about().unwrap_or_default());
                 }
             }
             0
