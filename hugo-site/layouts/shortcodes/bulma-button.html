@@ -1,16 +1,15 @@
 {{ $color := .Get "color" | default "#339966" }}
+{{ $gradientStart := "#339966" }}
+{{ $gradientEnd := "#66cc99" }}
+{{ if eq $color "#3366cc" }}
+  {{ $gradientStart = "#3366cc" }}
+  {{ $gradientEnd = "#66ccff" }}
+{{ else if eq $color "#cc6633" }}
+  {{ $gradientStart = "#cc6633" }}
+  {{ $gradientEnd = "#ff9966" }}
+{{ end }}
 <a href="{{ .Get "href" }}" class="button" style="
-  background: linear-gradient(135deg, 
-    {{ if eq $color "#339966" }}
-      #339966, #66cc99
-    {{ else if eq $color "#3366cc" }}
-      #3366cc, #66ccff
-    {{ else if eq $color "#cc6633" }}
-      #cc6633, #ff9966
-    {{ else }}
-      #339966, #66cc99
-    {{ end }}
-  );
+  background: linear-gradient(135deg, {{ $gradientStart }}, {{ $gradientEnd }});
   color: #ffffff;
   font-weight: bold;
   text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
