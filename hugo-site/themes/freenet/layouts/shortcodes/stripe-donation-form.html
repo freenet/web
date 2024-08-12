@@ -140,12 +140,11 @@
     event.preventDefault();
     setLoading(true);
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
+    const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/ghostkey/success`,
       },
-      redirect: 'if_required',
     });
 
     if (error) {
@@ -154,30 +153,8 @@
       } else {
         showMessage("An unexpected error occurred. Please try again.");
       }
-    } else if (paymentIntent) {
-      switch (paymentIntent.status) {
-        case 'requires_payment_method':
-          showMessage("Your payment was not successful. Please check your payment details and try again. If the problem persists, try a different payment method.");
-          // Optionally, you could reset the payment form here to allow the user to try again
-          elements.getElement('payment').clear();
-          break;
-        case 'requires_action':
-          showMessage("Additional authentication is required. Please complete the authentication process.");
-          const { error: confirmError } = await stripe.confirmCardPayment(paymentIntent.client_secret);
-          if (confirmError) {
-            showMessage("Payment failed: " + confirmError.message);
-          } else {
-            window.location.href = `${window.location.origin}/ghostkey/success?payment_intent=${paymentIntent.id}`;
-          }
-          break;
-        case 'succeeded':
-          window.location.href = `${window.location.origin}/ghostkey/success?payment_intent=${paymentIntent.id}`;
-          break;
-        default:
-          showMessage(`Unexpected payment status: ${paymentIntent.status}. Please contact support.`);
-      }
     } else {
-      showMessage("An unexpected error occurred. Please try again or contact support.");
+      // Payment succeeded, Stripe will redirect to the success page
     }
 
     setLoading(false);
