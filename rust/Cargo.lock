@@ -1083,9 +1083,9 @@ dependencies = [
 
 [[package]]
 name = "ghostkey_lib"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64f3af7f71bef7acc994666e39b5acb4088714c4c11e73fae1e38cf9e2128527"
+checksum = "b0dddbbbf9bd7f463d7cf9fda88ac8d0b0a1119e777028ea7bf2b134dd5a3a5b"
 dependencies = [
  "base64 0.22.1",
  "blind-rsa-signatures",

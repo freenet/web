@@ -61,17 +61,14 @@ others they haven't directly interacted with, strengthening the decentralized na
 Given that Freenet is a decentralized project, one might question why we rely on donations, which
 are inherently centralized. There are three key reasons:
 
-1. **Anonymity**: Although donations involve a central process, they are anonymous thanks to the
+1. **Anonymity**: Although the donation itself relies on a centralized system, they are anonymous thanks to the
    blind signature process.
 
 2. **Funding for a Larger Mission**: Donations provide essential funding to Freenet, which not only
    developed Ghost Keys but is also tackling the much broader challenge of decentralizing virtually
-   all internet services. Without this funding, progress on these ambitious goals would be severely
-   hampered.
+   all internet services. It's a great cause.
 
-3. **Simplicity**: Donations are a straightforward and easily understood method for supporting
-   Freenet. They allow people to contribute without needing to understand more complex or
-   experimental funding mechanisms.
+3. **Simplicity**: Donations are straightforward and easily understood.
 
 While donations are our current method of support, we’re actively exploring decentralized
 alternatives for the future. For example, we plan to implement a system called
