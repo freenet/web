@@ -31,6 +31,7 @@
     display: inline-block;
     margin-right: 10px;
     margin-bottom: 10px;
+    color: #000000; /* Always dark text */
   }
   .donation-amount-label input[type="radio"] {
     margin-right: 5px;
@@ -43,9 +44,6 @@
     #stripe-donation-form {
       color: #000000;
     }
-    .donation-amount-label {
-      color: #000000;
-    }
   }
   @media (prefers-color-scheme: dark) {
     #stripe-donation-form {
@@ -53,8 +51,10 @@
       border-color: #444;
       color: #ffffff;
     }
-    .donation-amount-label {
-      color: #ffffff;
+    #amount-options {
+      background-color: #f9f9f9;
+      padding: 10px;
+      border-radius: 5px;
     }
   }
 </style>
