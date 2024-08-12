@@ -60,7 +60,7 @@ secure note in a password manager you trust.
 You can use our [command line tool](https://crates.io/crates/ghostkey) to verify your Ghost Key and
 use it to sign and verify messages. Here is how to install and use it:
 
-```bash
+```
 # If necessary install Rust
 $ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
