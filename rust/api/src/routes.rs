@@ -153,7 +153,6 @@ async fn create_donation(
         statement_descriptor: Some("Freenet Donation"),
         statement_descriptor_suffix: Some("Thank You"),
         payment_method_types: Some(vec!["card".to_string()]),
-        setup_future_usage: Some(stripe::SetupFutureUsage::Off),
         capture_method: None,
         confirm: None,
         confirmation_method: None,
@@ -165,9 +164,9 @@ async fn create_donation(
         on_behalf_of: None,
         payment_method: None,
         payment_method_data: None,
-        payment_method_options: Some(stripe::PaymentIntentPaymentMethodOptions {
-            card: Some(stripe::PaymentIntentPaymentMethodOptionsCard {
-                request_three_d_secure: Some(stripe::PaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::Automatic),
+        payment_method_options: Some(stripe::CreatePaymentIntentPaymentMethodOptions {
+            card: Some(stripe::CreatePaymentIntentPaymentMethodOptionsCard {
+                request_three_d_secure: Some(stripe::CreatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::Automatic),
                 ..Default::default()
             }),
             ..Default::default()
