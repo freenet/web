@@ -4,6 +4,8 @@ date = 2024-08-11
 tags = [ "front-page"]
 +++
 
+![Ghost Key Illustration](/img/ghost-key-illustration.webp)
+
 #### There Is No Negative Trust on the Internet
 
 On May 3rd, 1978, Gary Thuerk, a marketing manager at Digital Equipment Corporation, sent the first
