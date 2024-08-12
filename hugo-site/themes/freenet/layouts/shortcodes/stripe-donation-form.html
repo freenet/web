@@ -60,9 +60,21 @@
       const appearance = {
         theme: 'stripe',
       };
-      elements = stripe.elements({ appearance, clientSecret });
+      elements = stripe.elements({ 
+        appearance, 
+        clientSecret,
+        loader: 'auto',
+      });
 
-      const paymentElement = elements.create("payment");
+      const paymentElementOptions = {
+        layout: "tabs",
+        linkAuthenticationElement: {
+          type: "auto",
+          visibility: "never",
+        },
+      };
+
+      const paymentElement = elements.create("payment", paymentElementOptions);
       paymentElement.mount("#payment-element");
     } catch (error) {
       console.error('Stripe initialization error:', error);
