@@ -154,18 +154,28 @@
       } else {
         showMessage("An unexpected error occurred.");
       }
-    } else if (paymentIntent && paymentIntent.status === 'requires_payment_method') {
-      showMessage("Your payment was not successful, please try again.");
-    } else if (paymentIntent && paymentIntent.status === 'requires_action') {
-      // In case 3D Secure authentication is required
-      const { error: confirmError } = await stripe.confirmCardPayment(paymentIntent.client_secret);
-      if (confirmError) {
-        showMessage("Payment failed: " + confirmError.message);
-      } else {
-        window.location.href = `${window.location.origin}/ghostkey/success?payment_intent=${paymentIntent.id}`;
+    } else if (paymentIntent) {
+      switch (paymentIntent.status) {
+        case 'requires_payment_method':
+          showMessage("Your payment was not successful, please try again.");
+          break;
+        case 'requires_action':
+          // In case 3D Secure authentication is required
+          const { error: confirmError } = await stripe.confirmCardPayment(paymentIntent.client_secret);
+          if (confirmError) {
+            showMessage("Payment failed: " + confirmError.message);
+          } else {
+            window.location.href = `${window.location.origin}/ghostkey/success?payment_intent=${paymentIntent.id}`;
+          }
+          break;
+        case 'succeeded':
+          window.location.href = `${window.location.origin}/ghostkey/success?payment_intent=${paymentIntent.id}`;
+          break;
+        default:
+          showMessage(`Unexpected payment status: ${paymentIntent.status}. Please contact support.`);
       }
-    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-      window.location.href = `${window.location.origin}/ghostkey/success?payment_intent=${paymentIntent.id}`;
+    } else {
+      showMessage("An unexpected error occurred. Please try again or contact support.");
     }
 
     setLoading(false);
