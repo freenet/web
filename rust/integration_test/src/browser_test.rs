@@ -49,8 +49,13 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
     capture_screenshot(c, &screenshot_dir, "01_donation_page.png").await?;
     crate::environment::print_result(true);
 
-    crate::environment::print_task("Filling out donation form");
+    crate::environment::print_task("Waiting for donation form to load");
     let _form = wait_for_element(c, Locator::Id("payment-form"), Duration::from_secs(30)).await?;
+    // Wait for Stripe to finish initializing
+    wait_for_element(c, Locator::Css("#payment-element iframe"), Duration::from_secs(30)).await?;
+    crate::environment::print_result(true);
+
+    crate::environment::print_task("Filling out donation form");
     let amount_radio = wait_for_element(c, Locator::Css("#amount-options input[name='amount'][value='20']"), Duration::from_secs(10)).await?;
     if !amount_radio.is_selected().await? {
         amount_radio.click().await?;
