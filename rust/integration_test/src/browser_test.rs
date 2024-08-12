@@ -45,7 +45,7 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
     let screenshot_dir = temp_dir.join("screenshots");
     std::fs::create_dir_all(&screenshot_dir)?;
     crate::environment::print_task("Navigating to donation page");
-    c.goto("http://localhost:1313/ghostkey/").await?;
+    c.goto("http://localhost:1313/ghostkey/create/").await?;
     capture_screenshot(c, &screenshot_dir, "01_donation_page.png").await?;
     crate::environment::print_result(true);
 
