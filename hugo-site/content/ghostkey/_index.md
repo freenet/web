@@ -32,16 +32,20 @@ By linking trust to anonymity, ghost keys eliminate the need for cumbersome capt
 spam, prevent bots, and secure your interactions, making them a powerful tool for those who value
 privacy, security, and control over their digital presence.
 
-# How do Ghost Keys work? {#how-do-ghost-keys-work}
+# How Do Ghost Keys Work? {#how-do-ghost-keys-work}
 
-1. On completion of a donation, the browser creates an
+1. After a donation is completed the browser generates an
    [elliptic curve](https://en.wikipedia.org/wiki/EdDSA) key pair.
-2. The **public part** of the key pair is [blinded](https://www.rfc-editor.org/rfc/rfc9474.html) and
-   sent to the server.
-3. The server verifies the donation and then signs the blinded key with it's RSA key.
-4. The blinded signature is sent back to the browser and unblinded.
-5. The browser presents a certificate to the user along with the private key, proving the donation
-   was made without revealing the user's identity.
+2. The **public key** is [blinded](https://www.rfc-editor.org/rfc/rfc9474.html) and sent to the
+   server.
+3. The server verifies the donation and signs the blinded public key with its RSA key.
+4. The server then sends the blinded signature back to the browser, which unblinds it.
+5. The browser combines the unblinded signature with a certificate that authenticates the server's
+   signing key (known as the delegate key), the donation amount, and the date the delegate key was
+   created.
+6. Finally, the browser presents this certificate to the user along with a corresponding signing
+   key, proving the donation was made without revealing the user's identity.
+7. The user stores this certificate and signing key safely
 
 # How much should I donate? {#how-much-should-i-donate}
 
