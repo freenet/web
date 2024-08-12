@@ -23,7 +23,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ghostkey_lib = "0.1.2" # Replace with the latest version
+ghostkey_lib = "0.1.3" # Replace with the latest version
 ```
 
 Example usage:

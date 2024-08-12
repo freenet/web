@@ -5,10 +5,10 @@ in the [Freenet](https://freenet.org/) ecosystem.
 
 ## What are Ghost Keys?
 
-Ghost keys are a cryptographic mechanism used in the Freenet ecosystem to provide anonymous,
-unlinkable donations. They allow donors to prove they have made a donation without revealing their
-identity or linking multiple donations together. Ghost keys are created through a multi-step process
-involving master keys, delegate certificates, and finally the ghost key itself.
+Ghost keys are a cryptographic mechanism used in Freenet to provide anonymous, unlinkable donations.
+They allow donors to prove they have made a donation without revealing their identity or linking
+multiple donations together. Ghost keys are created through a multi-step process involving master
+keys, delegate certificates, and finally the ghost key itself.
 
 ## Purpose of Ghost Keys
 
@@ -80,14 +80,6 @@ ghostkey <subcommand> --help
    ```
    ghostkey verify-signed-message --signed-message ./signed_message.pem --master-verifying-key ./master-keys/master_verifying_key.pem
    ```
-
-## Testing
-
-To run the test suite for the Ghostkey CLI, use:
-
-```
-./test_ghostkey.sh
-```
 
 This script will run through various scenarios to ensure the CLI is functioning correctly.
 
