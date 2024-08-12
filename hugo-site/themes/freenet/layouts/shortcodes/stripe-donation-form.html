@@ -1,10 +1,10 @@
 <div id="stripe-donation-form" style="max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
     <form id="payment-form">
     <div id="amount-options" style="margin-bottom: 20px;">
-      <label class="donation-amount-label"><input type="radio" name="amount" value="5" required><span>$5</span></label>
-      <label class="donation-amount-label"><input type="radio" name="amount" value="20" checked><span>$20</span></label>
-      <label class="donation-amount-label"><input type="radio" name="amount" value="50"><span>$50</span></label>
-      <label class="donation-amount-label"><input type="radio" name="amount" value="100"><span>$100</span></label>
+      <label class="donation-amount-label"><input type="radio" name="amount" value="5" required> $5</label>
+      <label class="donation-amount-label"><input type="radio" name="amount" value="20" checked> $20</label>
+      <label class="donation-amount-label"><input type="radio" name="amount" value="50"> $50</label>
+      <label class="donation-amount-label"><input type="radio" name="amount" value="100"> $100</label>
     </div>
     <div style="margin-bottom: 20px;">
       <select id="currency" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
@@ -29,45 +29,32 @@
 <style>
   .donation-amount-label {
     display: inline-block;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-    border: 1px solid #ccc;
-    margin-bottom: 5px;
+    margin-right: 10px;
+    margin-bottom: 10px;
   }
   .donation-amount-label input[type="radio"] {
-    display: none;
-  }
-  .donation-amount-label input[type="radio"]:checked + span {
-    font-weight: bold;
+    margin-right: 5px;
   }
   #stripe-donation-form {
     background-color: #f9f9f9;
     border: 1px solid #ccc;
   }
   @media (prefers-color-scheme: light) {
-    .donation-amount-label {
-      background-color: #ffffff;
+    #stripe-donation-form {
       color: #000000;
     }
-    .donation-amount-label:hover,
-    .donation-amount-label input[type="radio"]:checked + span {
-      background-color: #e0e0e0;
+    .donation-amount-label {
+      color: #000000;
     }
   }
   @media (prefers-color-scheme: dark) {
     #stripe-donation-form {
       background-color: #2a2a2a;
       border-color: #444;
+      color: #ffffff;
     }
     .donation-amount-label {
-      background-color: #3a3a3a;
       color: #ffffff;
-      border-color: #555;
-    }
-    .donation-amount-label:hover,
-    .donation-amount-label input[type="radio"]:checked + span {
-      background-color: #4a4a4a;
     }
   }
 </style>
