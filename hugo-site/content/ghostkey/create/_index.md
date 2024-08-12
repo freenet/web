@@ -5,9 +5,13 @@ draft: false
 layout: "single"
 ---
 
-Use your credit card to donate to Freenet, after you make your donation you can copy your ghost key
-and certificate from your browser. The ghost key is a cryptographic key that proves you've donated to Freenet,
-you must keep it secret (particularly the key part).
+After you donate to Freenet, you'll receive a [Ghost Key](/ghostkey/)—a cryptographic key certified
+by Freenet. The key is generated in your browser, then "blinded" before being sent to our server.
+The server signs the blinded key without ever seeing the unblinded version, ensuring that your
+donation remains anonymous. Your browser then unblinds the signature, creating a signed certificate.
+
+It's important to store this certificate securely, such as in a secure note within your password
+manager. If you'd like to learn more about Ghost Keys before making a donation, learn more [here](/ghostkey/).
 
 We use [Stripe](https://stripe.com/) for credit card processing.
 
@@ -16,8 +20,6 @@ We use [Stripe](https://stripe.com/) for credit card processing.
 {{< stripe-donation-form error-message="The Ghost Key back-end isn't currently running, please notify webmaster@freenet.org" >}}
 
 {{< spacer >}}
-
-{{< bulma-button href="/ghostkey/" color="#339966" >}}Learn More About Ghost Keys{{< /bulma-button >}}
 
 <div id="certificateSection" style="display: none;">
   <h2>Your Ghost Key</h2>

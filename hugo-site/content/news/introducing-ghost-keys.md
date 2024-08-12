@@ -57,11 +57,13 @@ are inherently centralized. There are three key reasons:
    experimental funding mechanisms.
 
 While donations are our current method of support, we’re actively exploring decentralized
-alternatives for the future. For example, we plan to implement a system called [Proof of Trust](https://freenet.
+alternatives for the future. For example, we plan to implement a system called [Proof
+of Trust](https://freenet.
 org/news/799-proof-of-trust-a-wealth-unbiased-consensus-mechanism-for-distributed-systems/), which
-offers a decentralized way to build trust without relying on Proof of Work or Proof of Stake. This system is based on the difficulty of finding others with
-whom you can play a game that requires mutual trust. The point is that donations offer a firm basis
-on which to build, but they won’t be the only option as we continue to innovate.
+offers a decentralized way to build trust without relying on Proof of Work or Proof of Stake. This
+system is based on the difficulty of finding others with whom you can play a game that requires
+mutual trust. The point is that donations offer a firm basis on which to build, but they won’t be
+the only option as we continue to innovate.
 
 #### Looking Forward: The Future of Ghost Keys and Decentralized Trust
 
