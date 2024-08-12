@@ -165,7 +165,13 @@ async fn create_donation(
         on_behalf_of: None,
         payment_method: None,
         payment_method_data: None,
-        payment_method_options: None,
+        payment_method_options: Some(stripe::PaymentIntentPaymentMethodOptions {
+            card: Some(stripe::PaymentIntentPaymentMethodOptionsCard {
+                request_three_d_secure: Some(stripe::PaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::Automatic),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
         receipt_email: None,
         return_url: None,
         shipping: None,
