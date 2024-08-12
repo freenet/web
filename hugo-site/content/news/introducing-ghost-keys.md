@@ -10,7 +10,7 @@ On May 3rd, 1978, Gary Thuerk, a marketing manager at Digital Equipment Corporat
 spam email to 400 people. It was an invitation to a product demonstration of the DEC-20 computer.
 The response was immediate and negative.
 
-Fast forward nearly 50 years, and the same flaw in the internet’s design has led to much bigger
+Fast-forward nearly 50 years, and the same flaw in the internet’s design has led to much bigger
 problems. Today, we’re dealing with AI-driven bots that not only flood us with spam but also
 manipulate social and political discourse on a massive scale.
 
