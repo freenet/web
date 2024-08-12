@@ -1,13 +1,21 @@
 ---
-title: "Donate to Freenet and Get a Ghost Key"
+title: "Get Your Ghost Key"
 date: 2024-07-10
 draft: false
 layout: "single"
 ---
 
+Use your credit card to donate to Freenet, after you make your donation you can copy your ghost key
+and certificate from your browser. The ghost key is a cryptographic key that proves you've donated to Freenet,
+you must keep it secret (particularly the key part).
+
+{{< spacer >}}
+
 {{< stripe-donation-form error-message="The Ghost Key back-end isn't currently running, please notify webmaster@freenet.org" >}}
 
 {{< spacer >}}
+
+{{< bulma-button href="/ghostkey/" color="#339966" >}}Learn More About Ghost Keys{{< /bulma-button >}}
 
 <div id="certificateSection" style="display: none;">
   <h2>Your Ghost Key</h2>
