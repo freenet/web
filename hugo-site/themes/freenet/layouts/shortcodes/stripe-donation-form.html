@@ -1,10 +1,10 @@
 <div id="stripe-donation-form" style="max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
     <form id="payment-form">
     <div id="amount-options" style="margin-bottom: 20px;">
-      <label style="margin-right: 10px;"><input type="radio" name="amount" value="5" required checked> $5</label>
-      <label style="margin-right: 10px;"><input type="radio" name="amount" value="20" required checked> $20</label>
-      <label style="margin-right: 10px;"><input type="radio" name="amount" value="50"> $50</label>
-      <label style="margin-right: 10px;"><input type="radio" name="amount" value="100"> $100</label>
+      <label class="donation-amount-label" style="margin-right: 10px;"><input type="radio" name="amount" value="5" required checked> $5</label>
+      <label class="donation-amount-label" style="margin-right: 10px;"><input type="radio" name="amount" value="20" required checked> $20</label>
+      <label class="donation-amount-label" style="margin-right: 10px;"><input type="radio" name="amount" value="50"> $50</label>
+      <label class="donation-amount-label" style="margin-right: 10px;"><input type="radio" name="amount" value="100"> $100</label>
     </div>
     <div style="margin-bottom: 20px;">
       <select id="currency" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
@@ -26,6 +26,17 @@
 </div>
 
 <script src="https://js.stripe.com/v3/"></script>
+<style>
+  .donation-amount-label {
+    color: #000000;
+  }
+  @media (prefers-color-scheme: dark) {
+    .donation-amount-label {
+      color: #ffffff;
+    }
+  }
+</style>
+
 <script>
   let stripe;
   let elements;
