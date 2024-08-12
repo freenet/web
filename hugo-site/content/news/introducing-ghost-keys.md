@@ -9,23 +9,23 @@ tags = [ "front-page"]
 #### There Is No Negative Trust on the Internet
 
 On May 3rd, 1978, Gary Thuerk, a marketing manager at Digital Equipment Corporation, sent the first
-spam email to 400 people. It was an invitation to a product demonstration of the DEC-20 computer.
-The response was immediate and negative.
+spam email to 400 people. It was an invitation to a product demonstration for the DEC-20 computer,
+and the reaction was immediate and negative.
 
-Fast-forward nearly 50 years, and the same flaw in the internet’s design has led to much bigger
-problems. Today, we’re dealing with AI-driven bots that not only flood us with spam but also
-manipulate social and political discourse on a massive scale.
+Nearly 50 years later, the same underlying flaw in the internet's design has led to far greater
+problems. Today, AI-driven bots not only inundate us with spam but also manipulate social and
+political discourse on a massive scale.
 
-This flaw is symptomatic of a deeper issue: the internet was built without a system for establishing
-negative trust. While positive interactions can be amplified, there's no effective mechanism to
-recognize and counteract malicious behavior in real-time. This lack of negative trust has allowed
-manipulation, misinformation, and centralized control to thrive unchecked.
+This flaw highlights a deeper issue: when new internet identities can be created without any cost,
+there is no mechanism for negative trust. Bad reputations don't stick. This allows bad actors to
+exploit the system with almost no consequences.
 
 #### Introducing Ghost Keys: Anonymous and Verifiable Identities
 
-Ghost Keys offer a way to address these issues by enabling anonymous yet verifiable identities
-online. They help solve the problem of trust in decentralized environments without compromising user
-privacy.
+Ghost Keys offer a solution to these challenges by allowing users to certify a new identity through
+a real-world action, a small donation to [Freenet](https://freenet.org/). This approach lets users
+establish trust online without compromising their privacy. Ghost Keys effectively address the trust
+issue in decentralized environments while maintaining user anonymity.
 
 When you donate to Freenet, your browser generates a public-private key pair. The public key is
 blinded and sent to our server for signing. Crucially, _the blinding mechanism means the server
