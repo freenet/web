@@ -22,9 +22,9 @@ exploit the system with almost no consequences.
 
 #### Introducing Ghost Keys: Anonymous and Verifiable Identities
 
-Ghost Keys offer a solution to these challenges by allowing users to certify a new identity through
+Ghost Keys offer a novel solution to these challenges by allowing users to certify a new identity through
 a real-world action, a small donation to [Freenet](https://freenet.org/). This approach lets users
-establish trust online without compromising their privacy. Ghost Keys effectively address the trust
+establish trust online without compromising their privacy, and effectively addresses the trust
 issue in decentralized environments while maintaining user anonymity.
 
 When you donate to Freenet, your browser generates a public-private key pair. The public key is
@@ -32,7 +32,7 @@ blinded and sent to our server for signing. Crucially, _the blinding mechanism m
 never sees your actual public key and thus can never connect it to your donation_. Once your
 donation is confirmed, the server signs the blinded public key and sends it back. Your browser then
 unblinds the key, creating a signed public key that proves your donation. This signed key, along
-with other data, forms a certificate you can store securely.
+with other data, forms a certificate you can then store securely.
 
 This identity is tied to a real action—it has a cost, which makes it less likely to be abused.
 Unlike throwaway accounts, Ghost Keys are designed to be persistent and valuable because they aren't
@@ -70,7 +70,7 @@ are inherently centralized. There are three key reasons:
 
 3. **Simplicity**: Donations are straightforward and easily understood.
 
-While donations are our current method of support, we’re actively exploring decentralized
+While donations are Freenet's current method of support, we’re actively exploring decentralized
 alternatives for the future. For example, we plan to implement a system called
 [Proof of Trust](/news/799-proof-of-trust-a-wealth-unbiased-consensus-mechanism-for-distributed-systems/),
 which offers a decentralized way to build trust without relying on Proof of Work or Proof of Stake.
