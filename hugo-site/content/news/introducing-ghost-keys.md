@@ -39,6 +39,23 @@ Unlike throwaway accounts, Ghost Keys are designed to be persistent and valuable
 free to create. This makes them ideal for reputation systems, where having "skin in the game"
 matters.
 
+#### Why Ghost Keys Are Essential for Freenet
+
+As a decentralized system, Freenet must address the same vulnerabilities that plague the broader
+internet, such as spam and identity fraud, without relying on centralized authorities. Ghost Keys
+provide a cryptographically verifiable identity solution that is perfectly aligned with Freenet's
+decentralized ethos. Since Ghost Keys are created through a real-world action (a donation) and can
+be verified without any centralized service, they offer a robust foundation for establishing trust
+within the Freenet network.
+
+Looking ahead, Ghost Keys will serve as the cornerstone of a powerful decentralized reputation
+mechanism. This system will build on the concept of a "web of trust," where trust can be extended
+transitively across the network. For example, if User A trusts User B, and User B trusts User C,
+then User A will inherit a degree of trust for User C.
+
+At scale, this will create a trust network that empowers users to assess the trustworthiness of
+others they haven't directly interacted with, strengthening the decentralized nature of Freenet.
+
 #### Why Donations?
 
 Given that Freenet is a decentralized project, one might question why we rely on donations, which
@@ -57,15 +74,14 @@ are inherently centralized. There are three key reasons:
    experimental funding mechanisms.
 
 While donations are our current method of support, we’re actively exploring decentralized
-alternatives for the future. For example, we plan to implement a system called [Proof
-of Trust](https://freenet.
-org/news/799-proof-of-trust-a-wealth-unbiased-consensus-mechanism-for-distributed-systems/), which
-offers a decentralized way to build trust without relying on Proof of Work or Proof of Stake. This
-system is based on the difficulty of finding others with whom you can play a game that requires
+alternatives for the future. For example, we plan to implement a system called
+[Proof of Trust](/news/799-proof-of-trust-a-wealth-unbiased-consensus-mechanism-for-distributed-systems/),
+which offers a decentralized way to build trust without relying on Proof of Work or Proof of Stake.
+This system is based on the difficulty of finding others with whom you can play a game that requires
 mutual trust. The point is that donations offer a firm basis on which to build, but they won’t be
 the only option as we continue to innovate.
 
-#### Looking Forward: The Future of Ghost Keys and Decentralized Trust
+#### Command Line Tool and Rust Library
 
 Ghost Keys offer a strong foundation for developers to build on. We’ve also developed a
 [command line tool](https://crates.io/crates/ghostkey) that lets you use your Ghost Key certificate

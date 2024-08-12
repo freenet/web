@@ -11,8 +11,7 @@ The server signs the blinded key without ever seeing the unblinded version, ensu
 donation remains anonymous. Your browser then unblinds the signature, creating a signed certificate.
 
 It's important to store this certificate securely, such as in a secure note within your password
-manager. If you'd like to learn more about Ghost Keys before making a donation, learn more
-[here](/ghostkey/).
+manager. Learn more about Ghost Keys [here](/ghostkey/).
 
 We use [Stripe](https://stripe.com/) for credit card processing.
 
