@@ -155,6 +155,7 @@ async fn create_donation(
         payment_method_types: Some(vec!["card".to_string()]),
         capture_method: None,
         confirm: None,
+        setup_future_usage: None,
         confirmation_method: None,
         customer: None,
         error_on_requires_action: None,
