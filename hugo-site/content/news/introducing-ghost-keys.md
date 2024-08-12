@@ -1,5 +1,5 @@
 +++
-title = "Introducing Freenet's Ghost Keys"
+title = "Introducing Ghost Keys"
 date = 2024-08-11
 tags = [ "front-page"]
 +++
