@@ -253,33 +253,24 @@ async fn update_donation(
     }))
 }
 
-async fn webhook_handler(
-    headers: axum::http::HeaderMap,
-    body: String,
+async fn check_payment_status_route(
+    Path(payment_intent_id): Path<String>,
 ) -> Result<StatusCode, DonationError> {
-    info!("Received webhook");
+    info!("Received check-payment-status request for PaymentIntent ID: {}", payment_intent_id);
 
-    let secret_key = std::env::var("STRIPE_WEBHOOK_SECRET").map_err(DonationError::EnvError)?;
-    let signature = headers.get("Stripe-Signature").ok_or(DonationError::OtherError("Missing Stripe-Signature header".to_string()))?;
+    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
+    let client = Client::new(&secret_key);
 
-    let event = stripe::Webhook::construct_event(
-        &body,
-        signature.to_str().map_err(|_| DonationError::OtherError("Invalid Stripe-Signature header".to_string()))?,
-        &secret_key,
-    ).map_err(|e| DonationError::StripeError(e))?;
+    let payment_intent_id = PaymentIntentId::from_str(&payment_intent_id).map_err(|_| DonationError::InvalidCurrency)?;
 
-    match event.type_ {
-        stripe::EventType::PaymentIntentSucceeded => {
-            if let stripe::EventObject::PaymentIntent(payment_intent) = event.data.object {
-                info!("Payment intent succeeded: {}", payment_intent.id);
-                // Process the successful payment (e.g., update database, send confirmation email)
-            }
-            Ok(StatusCode::OK)
-        },
-        _ => {
-            info!("Unhandled event type: {}", event.type_);
-            Ok(StatusCode::OK)
-        }
+    let intent = stripe::PaymentIntent::retrieve(&client, &payment_intent_id, &[]).await.map_err(DonationError::StripeError)?;
+
+    if intent.status == stripe::PaymentIntentStatus::Succeeded {
+        info!("Payment intent succeeded");
+        Ok(StatusCode::OK)
+    } else {
+        error!("Payment intent not successful: {:?}", intent.status);
+        Err(DonationError::OtherError("Payment not successful".to_string()))
     }
 }
 
@@ -290,5 +281,5 @@ pub fn get_routes() -> Router {
         .route("/sign-certificate", post(sign_certificate_route))
         .route("/create-donation", post(create_donation))
         .route("/update-donation", post(update_donation))
-        .route("/webhook", post(webhook_handler))
+        .route("/check-payment-status/:payment_intent_id", get(check_payment_status_route))
 }

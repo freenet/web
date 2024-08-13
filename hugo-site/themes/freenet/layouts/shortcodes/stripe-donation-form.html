@@ -175,8 +175,7 @@
         showMessage("An unexpected error occurred. Please try again.");
       }
     } else {
-      // Payment is being processed, Stripe will redirect to the success page
-      showMessage("Payment is being processed. Please wait...");
+      // Payment succeeded, Stripe will redirect to the success page
     }
 
     setLoading(false);
