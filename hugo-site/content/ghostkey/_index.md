@@ -5,7 +5,8 @@ draft: false
 layout: "single"
 ---
 
-{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost Key{{< /bulma-button >}}
+{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost
+Key{{< /bulma-button >}}
 
 ### Learn More
 

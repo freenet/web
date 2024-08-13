@@ -11,23 +11,17 @@ The server signs the blinded key without ever seeing the unblinded version, ensu
 donation remains anonymous. Your browser then unblinds the signature, creating a signed certificate.
 
 It's important to store this certificate securely, such as in a secure note within your password
-manager. Learn more about Ghost Keys [here](/ghostkey/).
+manager. You can read an article about Ghost Keys [here](/news/introducing-ghost-keys/).
+
+We offer a $1 donation option to ensure that Ghost Keys are accessible to everyone, especially those
+with limited means. This is the lowest amount we can offer without credit card processing fees
+consuming most of the donation. However, if you're able to contribute more, we encourage you to do
+so. Your generosity directly supports the ongoing development of Freenet, helping us build a more
+private, secure, and decentralized internet. Your donation amount will be recorded in the Ghost Key
+certificate and could provide additional benefits in the future.
 
 We use [Stripe](https://stripe.com/) for credit card processing.
 
 {{< spacer >}}
 
-{{< stripe-donation-form error-message="The Ghost Key back-end isn't currently running, please notify webmaster@freenet.org" >}}
-
-{{< spacer >}}
-
-<div id="certificateSection" style="display: none;">
-  <h2>Your Ghost Key</h2>
-  <p>Below is your Ghost Key. Please copy and save it securely.</p>
-  <textarea id="combinedKey" rows="10" cols="72" readonly></textarea>
-  <button id="copyCombinedKey">Copy Ghost Key</button>
-</div>
-
-<div id="errorMessage" style="display: none; color: red;"></div>
-
-{{< include "ghost-key-explanation.md" >}}
+{{< stripe-donation-form error-message="The Ghost Key service is down, please notify webmaster@freenet.org" >}}

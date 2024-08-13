@@ -22,9 +22,9 @@ exploit the system with almost no consequences.
 
 #### Introducing Ghost Keys: Anonymous and Verifiable Identities
 
-Ghost Keys offer a novel solution to these challenges by allowing users to certify a new identity through
-a real-world action, a small donation to [Freenet](https://freenet.org/). This approach lets users
-establish trust online without compromising their privacy, and effectively addresses the trust
+Ghost Keys offer a novel solution to these challenges by allowing users to certify a new identity
+through a real-world action, a small donation to [Freenet](https://freenet.org/). This approach lets
+users establish trust online without compromising their privacy, and effectively addresses the trust
 issue in decentralized environments while maintaining user anonymity.
 
 When you donate to Freenet, your browser generates a public-private key pair. The public key is
@@ -61,8 +61,8 @@ others they haven't directly interacted with, strengthening the decentralized na
 Given that Freenet is a decentralized project, one might question why we rely on donations, which
 are inherently centralized. There are three key reasons:
 
-1. **Anonymity**: Although the donation itself relies on a centralized system, they are anonymous thanks to the
-   blind signature process.
+1. **Anonymity**: Although the donation itself relies on a centralized system, they are anonymous
+   thanks to the blind signature process.
 
 2. **Funding for a Larger Mission**: Donations provide essential funding to Freenet, which not only
    developed Ghost Keys but is also tackling the much broader challenge of decentralizing virtually
@@ -92,4 +92,5 @@ manipulation while preserving user anonymity. By starting with donations and mov
 decentralized possibilities, we’re laying the groundwork for a future where trust is securely
 established, and the absence of negative trust is no longer a vulnerability but a strength.
 
-{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost Key{{< /bulma-button >}}
+{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost
+Key{{< /bulma-button >}}
