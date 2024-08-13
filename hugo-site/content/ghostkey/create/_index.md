@@ -14,11 +14,9 @@ It's important to store this certificate securely, such as in a secure note with
 manager. You can read an article about Ghost Keys [here](/news/introducing-ghost-keys/).
 
 We offer a $1 donation option to ensure that Ghost Keys are accessible to everyone, especially those
-with limited means. This is the lowest amount we can offer without credit card processing fees
-consuming most of the donation. However, if you're able to contribute more, we encourage you to do
-so. Your generosity directly supports the ongoing development of Freenet, helping us build a more
-private, secure, and decentralized internet. Your donation amount will be recorded in the Ghost Key
-certificate and could provide additional benefits in the future.
+with limited means. Your generosity directly supports the ongoing development of Freenet, helping us
+build a more private, secure, and decentralized internet. Your donation amount will be recorded in
+the Ghost Key certificate and could provide additional benefits in the future.
 
 We use [Stripe](https://stripe.com/) for credit card processing.
 
