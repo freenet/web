@@ -5,10 +5,10 @@ draft: false
 layout: "single"
 ---
 
-After you donate to Freenet, you'll receive a [Ghost Key](/ghostkey/)—a cryptographic key certified
-by Freenet. The key is generated in your browser, then "blinded" before being sent to our server.
-The server signs the blinded key without ever seeing the unblinded version, ensuring that your
-donation remains anonymous. Your browser then unblinds the signature, creating a signed certificate.
+After you donate to Freenet, you'll receive a certified [Ghost Key](/ghostkey/)—a cryptographic key.
+The key is generated in your browser, then "blinded" before being sent to our server. The server
+signs the blinded key without ever seeing the unblinded version, ensuring that your donation remains
+anonymous. Your browser then unblinds the signature, creating a signed certificate.
 
 It's important to store this certificate securely, such as in a secure note within your password
 manager. You can read an article about Ghost Keys [here](/news/introducing-ghost-keys/).
