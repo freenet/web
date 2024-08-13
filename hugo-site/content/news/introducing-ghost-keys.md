@@ -92,4 +92,4 @@ manipulation while preserving user anonymity. By starting with donations and mov
 decentralized possibilities, we’re laying the groundwork for a future where trust is securely
 established, and the absence of negative trust is no longer a vulnerability but a strength.
 
-{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Get Your Ghost Key{{< /bulma-button >}}
+{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost Key{{< /bulma-button >}}
