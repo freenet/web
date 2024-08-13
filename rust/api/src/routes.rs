@@ -221,7 +221,7 @@ pub struct UpdateDonationRequest {
 
 async fn update_donation(
     Json(request): Json<UpdateDonationRequest>,
-) -> Result<StatusCode, DonationError> {
+) -> Result<Json<DonationResponse>, DonationError> {
     info!("Received update-donation request: {:?}", request);
 
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
@@ -233,12 +233,24 @@ async fn update_donation(
         ..Default::default()
     };
 
-    stripe::PaymentIntent::update(&client, &payment_intent_id, params)
+    let updated_intent = stripe::PaymentIntent::update(&client, &payment_intent_id, params)
         .await
         .map_err(DonationError::StripeError)?;
 
     info!("Payment intent updated successfully");
-    Ok(StatusCode::OK)
+
+    let amount_dollars = request.amount / 100;
+    
+    let (delegate_certificate, _) = get_delegate(amount_dollars as u64).map_err(|e| {
+        error!("Error getting delegate: {:?}", e);
+        DonationError::OtherError("Error getting delegate".to_string())
+    })?;
+    
+    Ok(Json(DonationResponse {
+        client_secret: updated_intent.client_secret.unwrap_or_default(),
+        payment_intent_id: updated_intent.id.to_string(),
+        delegate_certificate_base64: delegate_certificate.to_base64().unwrap(),
+    }))
 }
 
 async fn check_payment_status_route(

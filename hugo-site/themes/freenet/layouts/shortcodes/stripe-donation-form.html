@@ -63,6 +63,7 @@
 <script>
   let stripe;
   let elements;
+  let paymentIntentId;
 
   document.addEventListener('DOMContentLoaded', initializeStripe);
 
@@ -70,33 +71,14 @@
     const apiUrl = window.ghostkeyApiUrl;
     try {
       stripe = Stripe(window.stripePublishableKey);
-      const response = await fetch(`${apiUrl}/create-donation`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: parseInt(document.querySelector('input[name="amount"]:checked').value) * 100,
-          currency: document.getElementById('currency').value
-        })
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      if (!data.client_secret) {
-        throw new Error('The server response did not include a client secret.');
-      }
-      const { client_secret: clientSecret, delegate_certificate_base64 : delegateCertBase64 } = data;
-
-      localStorage.setItem('delegate_certificate_base64', delegateCertBase64);
-      
-      console.log('Received data from server:', data);
+      await createOrUpdatePaymentIntent();
 
       const appearance = {
         theme: 'stripe',
       };
       elements = stripe.elements({ 
         appearance, 
-        clientSecret,
+        clientSecret: localStorage.getItem('clientSecret'),
         loader: 'auto',
       });
 
@@ -110,6 +92,57 @@
 
       const paymentElement = elements.create("payment", paymentElementOptions);
       paymentElement.mount("#payment-element");
+
+      // Add event listeners for amount and currency changes
+      document.querySelectorAll('input[name="amount"]').forEach(radio => {
+        radio.addEventListener('change', createOrUpdatePaymentIntent);
+      });
+      document.getElementById('currency').addEventListener('change', createOrUpdatePaymentIntent);
+    } catch (error) {
+      console.error('Stripe initialization error:', error);
+      const messageContainer = document.querySelector('#error-message');
+      messageContainer.textContent = '{{ .Get "error-message" }}' || `Error: ${error.message}. Please try again later or contact support.`;
+      messageContainer.style.display = 'block';
+      document.querySelector('#payment-form').style.display = 'none';
+    }
+  }
+
+  async function createOrUpdatePaymentIntent() {
+    const apiUrl = window.ghostkeyApiUrl;
+    const amount = parseInt(document.querySelector('input[name="amount"]:checked').value) * 100;
+    const currency = document.getElementById('currency').value;
+
+    try {
+      const response = await fetch(`${apiUrl}/${paymentIntentId ? 'update-donation' : 'create-donation'}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          currency,
+          payment_intent_id: paymentIntentId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!data.client_secret) {
+        throw new Error('The server response did not include a client secret.');
+      }
+
+      const { client_secret: clientSecret, payment_intent_id, delegate_certificate_base64 : delegateCertBase64 } = data;
+
+      localStorage.setItem('clientSecret', clientSecret);
+      localStorage.setItem('delegate_certificate_base64', delegateCertBase64);
+      paymentIntentId = payment_intent_id;
+
+      console.log('Received data from server:', data);
+
+      if (elements) {
+        elements.update({ clientSecret });
+      }
     } catch (error) {
       console.error('Stripe initialization error:', error);
       const messageContainer = document.querySelector('#error-message');
