@@ -3,8 +3,9 @@
 set -e
 
 # Default values
-DEFAULT_AMOUNTS=(5 20 50 100)
-DEFAULT_DELEGATE_DIR="$HOME/.config/ghostkey/delegates"
+DEFAULT_AMOUNTS=(1 5 20 50 100)
+TODAYS_DATE=$(date +%Y%m%d)
+DEFAULT_DELEGATE_DIR="$HOME/code/freenet/keys/mnt/ghostkey-${TODAYS_DATE}/delegates"
 OVERWRITE=false
 
 # Function to display usage information
