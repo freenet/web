@@ -25,15 +25,20 @@ dependencies = [
 [tasks.build-site]
 description = "Build WebAssembly and Hugo site for deployment"
 script = """
-WASM_HASH=$(find rust/gkwasm rust/gklib -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1)
-CACHE_HASH=$(cat hugo-site/static/wasm/.hash 2>/dev/null || echo "")
+if [ -n "$GITHUB_ACTIONS" ]; then
+    WASM_HASH=$(find rust/gkwasm rust/gklib -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1)
+    CACHE_HASH=$(cat hugo-site/static/wasm/.hash 2>/dev/null || echo "")
 
-if [ ! -d "hugo-site/static/wasm" ] || [ -z "$(ls -A hugo-site/static/wasm)" ] || [ "$WASM_HASH" != "$CACHE_HASH" ]; then
-    echo "WebAssembly files not found in cache or source files changed, rebuilding..."
-    cargo make build-wasm-release
-    echo "$WASM_HASH" > hugo-site/static/wasm/.hash
+    if [ ! -d "hugo-site/static/wasm" ] || [ -z "$(ls -A hugo-site/static/wasm)" ] || [ "$WASM_HASH" != "$CACHE_HASH" ]; then
+        echo "WebAssembly files not found in cache or source files changed, rebuilding..."
+        cargo make build-wasm-release
+        echo "$WASM_HASH" > hugo-site/static/wasm/.hash
+    else
+        echo "Using cached WebAssembly files"
+    fi
 else
-    echo "Using cached WebAssembly files"
+    echo "Building WebAssembly files..."
+    cargo make build-wasm-release
 fi
 cd hugo-site
 hugo --minify
