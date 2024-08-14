@@ -55,13 +55,11 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
     wait_for_element(c, Locator::Css("#payment-element iframe"), Duration::from_secs(30)).await?;
     crate::environment::print_result(true);
 
-    crate::environment::print_task("Filling out donation form");
+    crate::environment::print_task("Selecting donation amount");
     let amount_radio = wait_for_element(c, Locator::Css("#amount-options input[name='amount'][value='20']"), Duration::from_secs(10)).await?;
     if !amount_radio.is_selected().await? {
         amount_radio.click().await?;
     }
-    let currency_select = wait_for_element(c, Locator::Id("currency"), Duration::from_secs(10)).await?;
-    currency_select.select_by_value("usd").await?;
     crate::environment::print_result(true);
 
     crate::environment::print_task("Filling out Stripe payment form");
