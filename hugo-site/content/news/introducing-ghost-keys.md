@@ -85,6 +85,16 @@ Ghost Keys offer a strong foundation for developers to build on. We’ve also de
 and private key to sign messages and verify signatures. There’s also
 [a Rust library](https://crates.io/crates/ghostkey_lib).
 
+Installing and using the command line tool is simple:
+
+```
+# Install the Ghost Key command line tool (you'll need cargo and Rust)
+$ cargo install ghostkey
+$ ghostkey verify-ghost-key --ghost-certificate ~/Downloads/ghost-key-cert.pem
+Ghost certificate verified
+Info: {"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07-30 15:39:26"}
+```
+
 Ghost Keys aim to rebuild trust online in a way that’s both decentralized and resistant to
 manipulation while preserving user anonymity. By starting with donations and moving towards
 decentralized possibilities, we’re laying the groundwork for a future where trust is securely
