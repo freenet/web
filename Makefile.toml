@@ -24,8 +24,13 @@ dependencies = [
 
 [tasks.build-site]
 description = "Build WebAssembly and Hugo site for deployment"
-dependencies = ["build-wasm-release"]
 script = """
+if [ ! -d "hugo-site/static/wasm" ] || [ -z "$(ls -A hugo-site/static/wasm)" ]; then
+    echo "WebAssembly files not found in cache, rebuilding..."
+    cargo make build-wasm-release
+else
+    echo "Using cached WebAssembly files"
+fi
 cd hugo-site
 hugo --minify
 echo "Contents of public/wasm after running hugo:"
