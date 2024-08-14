@@ -83,9 +83,7 @@ the only option as we continue to innovate.
 Ghost Keys offer a strong foundation for developers to build on. We’ve also developed a
 [command line tool](https://crates.io/crates/ghostkey) that lets you use your Ghost Key certificate
 and private key to sign messages and verify signatures. There’s also
-[a Rust library](https://crates.io/crates/ghostkey_lib) available for the same functionality. These
-tools are just the beginning as we explore broader uses for Ghost Keys in establishing trust and
-identity across the web.
+[a Rust library](https://crates.io/crates/ghostkey_lib).
 
 Ghost Keys aim to rebuild trust online in a way that’s both decentralized and resistant to
 manipulation while preserving user anonymity. By starting with donations and moving towards
