@@ -48,6 +48,18 @@ jobs:
       - name: Install cargo-make
         run: cargo install --debug cargo-make
 
+      # Cache WebAssembly files
+      - name: Cache WebAssembly files
+        uses: actions/cache@v3
+        with:
+          path: hugo-site/static/wasm
+          key: ${{ runner.os }}-wasm-${{ hashFiles('rust/gkwasm/**', 'rust/gklib/**') }}
+
+      # Build WebAssembly if cache miss or files changed
+      - name: Build WebAssembly
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
+        run: cargo make build-wasm-release
+
       # Build the site using cargo-make
       - name: Build Site
         run: cargo make build-site
