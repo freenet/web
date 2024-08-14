@@ -29,7 +29,6 @@ struct Message {
 
 #[derive(Deserialize, Debug)]
 pub struct DonationRequest {
-    pub currency: String,
     pub amount: i64,
 }
 
@@ -136,10 +135,7 @@ async fn create_donation(
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(&secret_key);
 
-    let currency = Currency::from_str(&request.currency).map_err(|_| {
-        error!("Invalid currency: {}", request.currency);
-        DonationError::InvalidCurrency
-    })?;
+    let currency = Currency::USD;
 
     let mut metadata = HashMap::new();
     metadata.insert("donation_type".to_string(), "freenet".to_string());

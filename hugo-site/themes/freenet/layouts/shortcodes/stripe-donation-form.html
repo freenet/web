@@ -7,13 +7,6 @@
         <label class="donation-amount-label"><input type="radio" name="amount" value="50"> $50</label>
         <label class="donation-amount-label"><input type="radio" name="amount" value="100"> $100</label>
     </div>
-    <div style="margin-bottom: 20px;">
-      <select id="currency" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
-        <option value="usd">USD</option>
-        <option value="eur">EUR</option>
-        <option value="gbp">GBP</option>
-      </select>
-    </div>
     <div id="payment-element" style="margin-bottom: 20px;">
       <!-- Stripe Elements will be inserted here -->
     </div>
@@ -97,7 +90,6 @@
       document.querySelectorAll('input[name="amount"]').forEach(radio => {
         radio.addEventListener('change', createOrUpdatePaymentIntent);
       });
-      document.getElementById('currency').addEventListener('change', createOrUpdatePaymentIntent);
     } catch (error) {
       console.error('Stripe initialization error:', error);
       const messageContainer = document.querySelector('#error-message');
@@ -110,7 +102,7 @@
   async function createOrUpdatePaymentIntent() {
     const apiUrl = window.ghostkeyApiUrl;
     const amount = parseInt(document.querySelector('input[name="amount"]:checked').value) * 100;
-    const currency = document.getElementById('currency').value;
+    const currency = 'usd';
 
     try {
       const response = await fetch(`${apiUrl}/${paymentIntentId ? 'update-donation' : 'create-donation'}`, {
