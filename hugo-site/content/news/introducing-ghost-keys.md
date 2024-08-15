@@ -95,8 +95,11 @@ Ghost certificate verified
 Info: {"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07-30 15:39:26"}
 ```
 
-Ghost Keys aim to rebuild trust online in a way that’s both decentralized and resistant to
-manipulation while preserving user anonymity.
+Ghost Keys provide a significant advancement in addressing the challenge of trust in decentralized
+systems. By anchoring identities to real-world actions while preserving privacy, Ghost Keys offer a
+scalable solution to the issue of negative trust on the internet. Aligned with Freenet's
+decentralized principles, they form a foundation for more resilient reputation systems free from
+reliance on centralized authorities.
 
 {{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost
 Key{{< /bulma-button >}}
