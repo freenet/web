@@ -96,9 +96,7 @@ Info: {"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07-3
 ```
 
 Ghost Keys aim to rebuild trust online in a way that’s both decentralized and resistant to
-manipulation while preserving user anonymity. By starting with donations and moving towards
-decentralized possibilities, we’re laying the groundwork for a future where trust is securely
-established, and the absence of negative trust is no longer a vulnerability but a strength.
+manipulation while preserving user anonymity.
 
 {{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost
 Key{{< /bulma-button >}}
