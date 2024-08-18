@@ -28,7 +28,7 @@ activities.
 Ghost Keys offer a unique approach to addressing these issues by providing a way to certify
 identities through a real-world action—a small donation to [Freenet](https://freenet.org/). This
 allows users to establish trust without compromising privacy, offering a solution particularly
-suited to decentralized environments.
+suited to decentralized systems.
 
 When you donate to Freenet, your browser generates a public-private key pair. The public key is
 blinded and sent to our server for signing. Importantly, this blinding ensures that the server never
@@ -120,5 +120,10 @@ scalable, decentralized solution to the absence of negative trust on the interne
 foundation of a more resilient reputation system that aligns with Freenet's decentralized principles
 and vision for the future.
 
-{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost
-Key{{< /bulma-button >}}
+#### What's next?
+
+* [Frequently Asked Questions](/ghostkey/) - includes more technical details
+* [Command Line Tool](https://crates.io/crates/ghostkey) - quick to install using cargo
+* [Rust Library](https://crates.io/crates/ghostkey_lib) - for developers who want to integrate Ghost Keys into their projects
+
+{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost Key{{< /bulma-button >}}
