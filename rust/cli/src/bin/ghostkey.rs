@@ -47,7 +47,7 @@ fn run() -> i32 {
                 .arg(
                     Arg::new(ARG_MASTER_VERIFYING_KEY)
                         .long(ARG_MASTER_VERIFYING_KEY)
-                        .help("Override the master verifying key")
+                        .help("Optionally override the master verifying key")
                         .required(false)
                         .value_name("FILE"),
                 )
@@ -113,7 +113,7 @@ fn run() -> i32 {
                 .arg(
                     Arg::new(ARG_MASTER_VERIFYING_KEY)
                         .long(ARG_MASTER_VERIFYING_KEY)
-                        .help("Override the master verifying key")
+                        .help("Optionally override the master verifying key")
                         .required(false)
                         .value_name("FILE"),
                 )
@@ -188,7 +188,7 @@ fn run() -> i32 {
                 .arg(
                     Arg::new("master_verifying_key")
                         .long("master-verifying-key")
-                        .help("The file containing the master verifying key")
+                        .help("Optionally override the master verifying key")
                         .required(false)
                         .value_name("FILE"),
                 )
