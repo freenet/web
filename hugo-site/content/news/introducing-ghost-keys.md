@@ -93,7 +93,19 @@ $ cargo install ghostkey
 $ ghostkey verify-ghost-key --ghost-certificate ~/Downloads/ghost-key-cert.pem
 Ghost certificate verified
 Info: {"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07-30 15:39:26"}
+
+# Sign a message
+$ ghostkey sign-message --ghost-certificate ~/Downloads/ghost-key-cert.pem --ghost-signing-key ~/Downloads/ghost-key-signing-key.pem --message "Hello, World!" --output signed_message.txt
+
+# Verify a signed message
+$ ghostkey verify-signed-message --signed-message signed_message.txt
+Ghost certificate verified
+Info: {"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07-30 15:39:26"}
+Signature verified
+Message: Hello, World!
 ```
+
+This demonstrates how to sign a message using your Ghost Key certificate and signing key, and then verify the signed message. The verification process checks both the Ghost Key certificate and the signature on the message.
 
 Ghost Keys provide a significant advancement in addressing the challenge of trust in decentralized
 systems. By anchoring identities to real-world actions while preserving privacy, Ghost Keys offer a
