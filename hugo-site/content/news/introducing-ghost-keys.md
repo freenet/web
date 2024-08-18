@@ -121,7 +121,4 @@ foundation of a more resilient reputation system that aligns with Freenet's dece
 and vision for the future.
 
 {{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost
-Key{{< /bulma-button >}} eas that simplify complex concepts, highlights future potential, and
-focuses on the technical merit and broader implications of Ghost Keys without sounding overly
-commercial. It keeps the tone factual and aligned with an audience that appreciates technical depth
-and the importance of decentralized systems.
+Key{{< /bulma-button >}}
