@@ -50,10 +50,10 @@ identity solution that aligns with Freenet's decentralized principles. Because G
 to a real-world action (a donation) and can be verified without any centralized service, they
 provide a solid foundation for trust within the network.
 
-Looking ahead, Ghost Keys will play a central role in a decentralized reputation system for Freenet.
-This system will be built on the idea of a "web of trust," where trust can be extended across the
-network. For example, if User A trusts User B, and User B trusts User C, then User A will have a
-certain level of trust for User C, even without direct interaction.
+Looking ahead, Ghost Keys are the first step in building a decentralized reputation system for
+Freenet. This system will be built on the idea of a "web of trust," where trust can be extended
+across the network. For example, if User A trusts User B, and User B trusts User C, then User A will
+have a certain level of trust for User C, even without direct interaction.
 
 As this system scales, it will create a decentralized trust network that allows users to assess the
 credibility of others without relying on a centralized authority—an essential step for strengthening
