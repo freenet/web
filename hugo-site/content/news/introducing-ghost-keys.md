@@ -2,7 +2,7 @@
 title = "Introducing Ghost Keys"
 date = 2024-08-13
 author = "Ian Clarke"
-author_link = "/faq/#who-is-behind-freenet"
+author_link = "https://x.com/sanity"
 tags = [ "front-page"]
 +++
 
