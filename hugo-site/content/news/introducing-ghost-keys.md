@@ -122,8 +122,8 @@ and vision for the future.
 
 #### What's next?
 
-* [Frequently Asked Questions](/ghostkey/) - includes more technical details
-* [Command Line Tool](https://crates.io/crates/ghostkey) - quick to install using cargo
-* [Rust Library](https://crates.io/crates/ghostkey_lib) - for developers who want to integrate Ghost Keys into their projects
+* [Frequently Asked Questions](/ghostkey/) - Includes more technical details
+* [Command Line Tool](https://crates.io/crates/ghostkey) - Quick to install using cargo
+* [Rust Library](https://crates.io/crates/ghostkey_lib) - For developers who want to integrate Ghost Keys into their projects
 
 {{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost Key{{< /bulma-button >}}
