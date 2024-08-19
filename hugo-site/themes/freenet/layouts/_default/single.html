@@ -4,12 +4,14 @@
 
   {{ if eq .Section "news" }}
     <div class="news-meta">
-      {{ if .Params.author }}
-        <p class="author"><span class="icon"><i class="fas fa-user"></i></span> By {{ .Params.author }}</p>
-      {{ end }}
       {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
       {{ $dateHuman := .Date | time.Format ":date_long" }}
-      <p class="date"><span class="icon"><i class="fas fa-calendar-alt"></i></span> Published on {{ $dateHuman }}</p>
+      <p>
+        {{ if .Params.author }}
+          <span class="author"><span class="icon"><i class="fas fa-user"></i></span> By {{ .Params.author }}</span>
+        {{ end }}
+        <span class="date"><span class="icon"><i class="fas fa-calendar-alt"></i></span> Published on {{ $dateHuman }}</span>
+      </p>
     </div>
   {{ end }}
 

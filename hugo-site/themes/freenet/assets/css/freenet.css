@@ -42,43 +42,32 @@
 
 .news-meta {
     margin: 1rem 0; /* Add vertical margin */
-    padding: 0.5rem 1rem; /* Add padding */
-    background-color: #f5f5f5; /* Light background color */
-    border-radius: 4px; /* Rounded corners */
+}
+
+.news-meta p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #666;
 }
 
 .news-meta .author,
 .news-meta .date {
-    font-size: 0.9rem;
-    margin: 0.25rem 0;
-    line-height: 1.4;
+    display: inline-block;
+    margin-right: 1rem;
 }
 
 .news-meta .author {
-    color: #363636;
     font-weight: 600;
 }
 
-.news-meta .date {
-    color: #4a4a4a;
-}
-
 .news-meta .icon {
-    margin-right: 0.5rem;
-    color: #7a7a7a;
+    margin-right: 0.25rem;
+    color: #999;
 }
 
 /* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
-    .news-meta {
-        background-color: #2c2c2c;
-    }
-
-    .news-meta .author {
-        color: #e0e0e0;
-    }
-
-    .news-meta .date {
+    .news-meta p {
         color: #b0b0b0;
     }
 
