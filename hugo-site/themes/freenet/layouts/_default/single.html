@@ -8,7 +8,7 @@
       {{ $dateHuman := .Date | time.Format ":date_long" }}
       <p>
         {{ if .Params.author }}
-          <span class="author"><span class="icon"><i class="fas fa-user"></i></span> By 
+          <span class="author"><span class="icon"><i class="fas fa-user"></i></span> by
           {{ if .Params.author_link }}
             <a href="{{ .Params.author_link }}">{{ .Params.author }}</a>
           {{ else }}
