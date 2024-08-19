@@ -50,7 +50,7 @@ privacy, security, and control over their digital presence.
 
 # How much should I donate? {#how-much-should-i-donate}
 
-The minimum donation is $5, but you can donate however much you can afford. The donation amount will
+The minimum donation is just $1, but you can donate however much you can afford. The donation amount will
 be securely recorded in your Ghost Key certificate, and in the future it's possible that access and
 perks on the network will be reserved for those who donate more or who donated earlier. Think of it
 like a "founding member" club.
