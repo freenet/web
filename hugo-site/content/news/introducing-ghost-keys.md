@@ -1,6 +1,7 @@
 +++
 title = "Introducing Ghost Keys"
 date = 2024-08-13
+author = "Ian Clarke"
 tags = [ "front-page"]
 +++
 
@@ -127,3 +128,7 @@ and vision for the future.
 
 {{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost
 Key{{< /bulma-button >}}
+
+<p></p>
+
+*With gratitude to Steven Starr for his help in crafting this article.*
