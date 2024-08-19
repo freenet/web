@@ -10,7 +10,7 @@
         {{ if .Params.author }}
           <span class="author"><span class="icon"><i class="fas fa-user"></i></span> By {{ .Params.author }}</span>
         {{ end }}
-        <span class="date"><span class="icon"><i class="fas fa-calendar-alt"></i></span> Published on {{ $dateHuman }}</span>
+        <span class="date"><span class="icon"><i class="fas fa-calendar-alt"></i></span> {{ $dateHuman }}</span>
       </p>
     </div>
   {{ end }}
