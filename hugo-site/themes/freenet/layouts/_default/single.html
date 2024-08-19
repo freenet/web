@@ -3,12 +3,14 @@
   <h1 class="title">{{ .Title }}</h1>
 
   {{ if eq .Section "news" }}
-    {{ if .Params.author }}
-      <p class="author">By {{ .Params.author }}</p>
-    {{ end }}
-    {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
-    {{ $dateHuman := .Date | time.Format ":date_long" }}
-    <p class="date">{{ $dateHuman }}</p>
+    <div class="news-meta">
+      {{ if .Params.author }}
+        <p class="author"><span class="icon"><i class="fas fa-user"></i></span> {{ .Params.author }}</p>
+      {{ end }}
+      {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
+      {{ $dateHuman := .Date | time.Format ":date_long" }}
+      <p class="date"><span class="icon"><i class="fas fa-calendar-alt"></i></span> {{ $dateHuman }}</p>
+    </div>
   {{ end }}
 
   <div class="content">
