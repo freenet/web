@@ -41,43 +41,49 @@
 }
 
 .news-meta {
-    margin-left: 1rem; /* Indent the entire news-meta section */
-    border-left: 3px solid #e0e0e0; /* Add a left border */
-    padding-left: 1rem; /* Add some padding to the left of the content */
+    margin: 1rem 0; /* Add vertical margin */
+    padding: 0.5rem 1rem; /* Add padding */
+    background-color: #f5f5f5; /* Light background color */
+    border-radius: 4px; /* Rounded corners */
 }
 
 .news-meta .author,
 .news-meta .date {
-    font-size: 0.875rem; /* Equivalent to Bulma's is-size-7 */
-    margin: 0.5rem 0; /* Add some vertical spacing */
-    line-height: 1.4; /* Slightly increased line height for better readability */
+    font-size: 0.9rem;
+    margin: 0.25rem 0;
+    line-height: 1.4;
 }
 
 .news-meta .author {
-    color: #4a4a4a; /* Darker color for the author */
-    font-weight: 600; /* Make the author name slightly bolder */
+    color: #363636;
+    font-weight: 600;
 }
 
 .news-meta .date {
-    color: #7a7a7a; /* Lighter grey for the date */
+    color: #4a4a4a;
 }
 
 .news-meta .icon {
-    margin-right: 0.5rem; /* Add some space between the icon and the text */
+    margin-right: 0.5rem;
+    color: #7a7a7a;
 }
 
 /* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
     .news-meta {
-        border-left-color: #4a4a4a; /* Darker border color for dark mode */
+        background-color: #2c2c2c;
     }
 
     .news-meta .author {
-        color: #c0c0c0; /* Lighter color for the author in dark mode */
+        color: #e0e0e0;
     }
 
     .news-meta .date {
-        color: #a0a0a0; /* Slightly lighter grey for the date in dark mode */
+        color: #b0b0b0;
+    }
+
+    .news-meta .icon {
+        color: #909090;
     }
 }
 
