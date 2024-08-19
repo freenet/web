@@ -2,6 +2,8 @@
 title = "Zero-Knowledge Proofs and Anonymous Reputation in Freenet"
 date = 2023-10-29
 tags = ["front-page"]
+author = "Ian Clarke"
+author_link = "https://x.com/sanity"
 +++
 
 Zero-knowledge proofs are one of the most significant developments in cryptography since the

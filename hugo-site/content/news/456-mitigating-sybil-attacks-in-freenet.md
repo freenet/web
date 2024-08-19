@@ -2,6 +2,8 @@
 title = "Mitigating Sybil attacks in Freenet"
 date = 2022-06-26
 tags = ["front-page"]
+author = "Ian Clarke"
+author_link = "https://x.com/sanity"
 +++
 
 Every node in the Locutus network has a _location_, a floating-point value between 0.0 and 1.0
