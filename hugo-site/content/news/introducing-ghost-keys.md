@@ -29,11 +29,11 @@ allows users to establish trust without compromising privacy, offering a solutio
 suited to decentralized systems.
 
 When you donate to Freenet, your browser generates a public-private key pair. The public key is
-blinded and sent to our server for signing. Importantly, this blinding ensures that the server never
-sees your actual public key, so it can't connect it to your donation. Once your donation is
-confirmed, the server signs the blinded public key and sends it back. Your browser then unblinds it,
-producing a signed public key that proves your donation. This signed key, along with other data,
-forms a certificate that you can store securely.
+[blinded](https://en.wikipedia.org/wiki/Blind_signature) and sent to our server for signing.
+Importantly, this blinding ensures that the server never sees your actual public key, so it can't
+connect it to your donation. Once your donation is confirmed, the server signs the blinded public
+key and sends it back. Your browser then unblinds it, producing a signed public key that proves your
+donation. This signed key, along with other data, forms a certificate that you can store securely.
 
 This identity is backed by a real-world action—giving it "skin in the game." Unlike throwaway
 accounts, Ghost Keys are designed to be persistent and valuable because they aren't free to create.
@@ -120,8 +120,10 @@ and vision for the future.
 
 #### What's next?
 
-* [Frequently Asked Questions](/ghostkey/) - Includes more technical details
-* [Command Line Tool](https://crates.io/crates/ghostkey) - Quick to install using cargo
-* [Rust Library](https://crates.io/crates/ghostkey_lib) - For developers who want to integrate Ghost Keys into their projects
+- [Frequently Asked Questions](/ghostkey/) - Includes more technical details
+- [Command Line Tool](https://crates.io/crates/ghostkey) - Quick to install using cargo
+- [Rust Library](https://crates.io/crates/ghostkey_lib) - For developers who want to integrate Ghost
+  Keys into their projects
 
-{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost Key{{< /bulma-button >}}
+{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost
+Key{{< /bulma-button >}}
