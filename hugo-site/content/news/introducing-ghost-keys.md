@@ -1,7 +1,8 @@
 +++
 title = "Introducing Ghost Keys"
 date = 2024-08-13
-author = "<a href=\"/faq/#who-is-behind-freenet\">Ian Clarke</a>"
+author = "Ian Clarke"
+author_link = "/faq/#who-is-behind-freenet"
 tags = [ "front-page"]
 +++
 
