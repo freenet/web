@@ -131,4 +131,4 @@ Key{{< /bulma-button >}}
 
 <p></p>
 
-*With gratitude to Steven Starr for his help with this article.*
+🙏 *With gratitude to Steven Starr for his help with this article.*
