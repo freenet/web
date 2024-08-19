@@ -4,8 +4,6 @@ date = 2024-08-13
 tags = [ "front-page"]
 +++
 
-### Introducing Ghost Keys
-
 <img src="/img/ghost-key-illustration.webp" alt="Ghost Key Illustration" style="float: right; width: 250px; height: 250px; margin-left: 20px;">
 
 #### There Is No Negative Trust on the Internet
