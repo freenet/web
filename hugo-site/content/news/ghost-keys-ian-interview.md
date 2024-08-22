@@ -10,3 +10,8 @@ Internet's foundational flaws and delve into the future of decentralized, Cypher
 reputation systems.
 
 {{< youtube id="_RowDLJ17W0?si=JIv_c8iBgNov1-xG" >}}
+
+### Also available on
+
+- [Rumble](https://rumble.com/v5bzb99-ghost-keys-and-cypherpunk-reputation-systems-w-ian-clarke-of-freenet.html)
+- [𝕏](https://x.com/FUTO_Tech/status/1826681160669561021)
