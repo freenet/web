@@ -9,13 +9,15 @@ layout: "single"
 Key{{< /bulma-button >}}
 
 ### Learn More
+
 - [What is a Ghost Key?](#what-is-a-ghost-key)
 - [How do Ghost Keys work?](#how-do-ghost-keys-work)
 - [How much should I donate?](#how-much-should-i-donate)
 - [How do I store my Ghost Key?](#how-do-i-store-my-ghost-key)
 - [How do I use my Ghost Key?](#how-do-i-use-my-ghost-key)
 
-You can also read an [introductory article about Ghost Keys](/news/introducing-ghost-keys/).
+You can also read an [introductory article about Ghost Keys](/news/introducing-ghost-keys/), or
+[watch a discussion](https://youtu.be/_RowDLJ17W0?si=JIv_c8iBgNov1-xG) about it.
 
 # What is a Ghost Key? {#what-is-a-ghost-key}
 
