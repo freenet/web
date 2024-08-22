@@ -17,7 +17,7 @@ Key{{< /bulma-button >}}
 - [How do I use my Ghost Key?](#how-do-i-use-my-ghost-key)
 
 You can also read an [introductory article about Ghost Keys](/news/introducing-ghost-keys/), or
-[watch a discussion](https://youtu.be/_RowDLJ17W0?si=JIv_c8iBgNov1-xG) about it.
+[watch a discussion](/news/ghost-keys-ian-interview/) about it.
 
 # What is a Ghost Key? {#what-is-a-ghost-key}
 
