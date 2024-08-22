@@ -3,7 +3,7 @@ title = "Introducing Ghost Keys"
 date = 2024-08-18
 author = "Ian Clarke"
 author_link = "https://x.com/sanity"
-tags = [ "front-page"]
+tags = []
 +++
 
 <img src="/img/ghost-key-illustration.webp" alt="Ghost Key Illustration" style="float: right; width: 250px; height: 250px; margin-left: 20px;">
