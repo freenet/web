@@ -6,7 +6,11 @@ author = "Ian Clarke"
 author_link = "https://x.com/sanity"
 +++
 
-Every node in the Locutus network has a _location_, a floating-point value between 0.0 and 1.0
+<img src="/img/mitigating-sybil-attacks.webp" alt="Mitigating Sybil Attacks Illustration" style="float: right; width: 
+250px; 
+height: 250px; margin-left: 20px;">
+
+Every node in the Freenet network has a _location_, a floating-point value between 0.0 and 1.0
 representing its position in the small-world network. These are arranged in a ring so positions 0.0
 and 1.0 are the same. Each contract also has a location that is deterministically derived from the
 contract's code and parameters through a hash function.
@@ -19,7 +23,7 @@ A [Sybil attack](https://en.wikipedia.org/wiki/Sybil_attack) is where an attacke
 number of identities in a system and uses it to gain a disproportionately large influence which they
 then use for nefarious purposes.
 
-In Locutus, such an attack might involve trying to control all or most peers close to a specific
+In Freenet, such an attack might involve trying to control all or most peers close to a specific
 location. This could then be used to drop or ignore get requests or updates for contract states
 close to that location.
 
