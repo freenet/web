@@ -6,6 +6,8 @@ author = "Ian Clarke"
 author_link = "https://x.com/sanity"
 +++
 
+<img src="/img/proof-of-trust.webp" alt="Proof of Trust Illustration" style="float: right; width: 250px; height: 250px; margin-left: 20px;">
+
 Traditional approaches to rate-limiting the creation of things like coins, tokens, and identities in
 distributed networks rely on computational (proof-of-work) or financial barriers (proof-of-stake) as
 a source of scarcity. While effective in some contexts, these methods are wasteful and unfairly
