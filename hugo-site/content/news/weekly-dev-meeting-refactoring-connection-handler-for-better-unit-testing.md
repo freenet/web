@@ -1,63 +1,65 @@
 +++
 tags = ["dev-meeting", "front-page"]
-title = "Weekly Dev Meeting - Refactoring Connection Handler for Better Unit Testing" 
-date = 2024-07-05
+title = "Weekly Dev Meeting - Friday, August 30th, 2024" 
+date = 2024-08-30
 +++
 
-This week we've been focussed on a crucial refactoring task to improve how we manage network
-connections. The goal is to make it easier to isolate bugs by separating the connection handling
-logic from the transport layer so they can be tested independently.
+**Key Progress:**
 
-**What's Changing:**
+- **Major Refactor Completed:**
 
-1. **Decoupling Connection Handling:**
+  - Refactor focused on initial connections between nodes via the gateway.
+  - Addressed numerous issues that were causing problems in the network.
+  - Integration testing has been improved, leading to faster feedback for changes.
 
-- We’re separating the connection handling code from the transport layer. This change allows us to
-  test connection states on their own, without involving the transport mechanisms.
-- With this separation, we can emulate connections and test different states more accurately,
-  pinpointing problems faster.
+- **Integration Testing Improvements:**
+  - Fixed various errors in integration code that were causing issues during testing.
+  - Adjustments have sped up the testing process significantly, allowing for quicker iterations.
 
-2. **Enhanced Testing and Debugging:**
+**Current Blockers:**
 
-- By isolating the connection handling, Nacho has created a series of unit tests to cover various
-  connection scenarios, such as establishing, rejecting, and accepting connections.
-- This approach helps us identify areas needing improvement and ensures our changes lead to a more
-  stable system.
+- **Transport Layer Issues:**
+  - There is a problem with the handshake process between the gateway and peers.
+  - The gateway and peers are not correctly syncing on the use of symmetric and asymmetric keys
+    during communication.
+  - Ignacio is currently diagnosing this issue, which appears to be the last major blocker.
 
-3. **Clearer Error Handling:**
+**Other Developments:**
 
-- The refactor also simplifies error handling. By separating concerns, it’s easier to see if issues
-  come from the connection handling or the transport layer, making debugging more straightforward.
+- **Ghost Keys:**
 
-4. **Streamlined Codebase:**
+  - Discussion of "Ghost Keys," an independent system Ian has been working on, which focuses on
+    anonymous, verifiable identities.
+  - Ian mentioned the importance of naming, noting that "Ghost Keys" has resonated well with people
+    and sparked interest.
+  - The system is largely independent of Freenet but has been in discussion for some time.
 
-- We've removed redundant and tangled code, simplifying the codebase and reducing potential failure
-  points.
+- **Group Chat System:**
+  - Ian has been developing a group chat system, with a focus on using macros to handle complex
+    contract operations.
+  - The discussion revealed challenges with field dependencies within the chat room contract,
+    particularly regarding the correct application of deltas.
+  - Ian is considering integrating elements from an existing experimental approach within Freenet’s
+    standard library to streamline development and reduce redundancy.
 
-#### Next Steps:
+**Next Steps:**
 
-1. **Completing the Refactor:**
+- **Focus on Transport Layer Fixes:**
 
-- Nacho is close to finishing this refactor. The plan is to replace all the old connection handling
-  code with the new modular implementation.
-- This change will make the system easier to maintain and test, setting us up well for future
-  enhancements.
+  - Once the handshake issue is resolved, the network should be able to establish reliable
+    connections.
+  - After this, any remaining issues should be minor and more easily addressed.
 
-2. **Focusing on Transport Layer Issues:**
+- **Continue Development of Group Chat System:**
+  - Ian will review existing experimental approaches to potentially integrate them into the group
+    chat system.
+  - The goal is to create a more robust and efficient contract framework that can serve as an
+    example for more complex systems in the future.
 
-- Once the refactor is done, we'll turn our attention to fixing any remaining transport layer
-  issues. With the connection handling logic isolated, identifying and addressing these issues
-  should be more manageable.
-- We'll add more unit tests for the transport layer to cover all edge cases and ensure it works
-  reliably.
+**Conclusion:**
 
-3. **Preparing for the Next Release:**
-
-- If the transport layer is stable after the refactor, we’ll move forward with a release. This
-  update will include the recent improvements and ensure our core network functionalities are solid.
-
-#### Conclusion
-
-This refactor should be the last step before launching the Freenet network. By modularizing the
-connection handling, we can test more thoroughly and fix issues more quickly, leading to a more
-stable platform.
+- The network is moving closer to a stable release.
+- The team is hopeful that these final issues can be resolved quickly, allowing users to begin
+  starting up nodes and participating in the network.
+- Parallel developments, like the Ghost Keys system and the group chat project, are also
+  progressing, contributing to the broader ecosystem Freenet aims to support.
