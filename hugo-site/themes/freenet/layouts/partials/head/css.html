@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="{{ "fontawesome/css/solid.min.css" | relURL }}">
 <link rel="stylesheet" href="{{ "fontawesome/css/brands.min.css" | relURL }}">
 <link rel="stylesheet" href="{{ "bulma.min.css" | relURL }}">
-{{ $freenetCSS := resources.Get "css/freenet.css" | resources.ToCSS }}
+{{ $freenetCSS := resources.Get "css/freenet.css" | toCSS }}
 {{ if hugo.IsProduction }}
   {{ $freenetCSS = $freenetCSS | resources.Minify | resources.Fingerprint }}
 {{ else }}
