@@ -4,8 +4,6 @@ title = "Weekly Dev Meeting - Finalizing Peer Connections and Preparing for Alph
 date = 2024-09-06
 +++
 
-**Freenet Development Update Summary (September 6, 2024)**
-
 **What's Working:**
 
 - **Peer-to-Peer Connectivity**: Gateways and peers can now successfully connect and communicate
