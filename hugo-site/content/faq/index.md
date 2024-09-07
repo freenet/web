@@ -175,7 +175,7 @@ development team consists of Nacho Duart and Hector Alberto Santos Rodriguez.
 
 # What is the status of Freenet? {#what-is-the-status-of-freenet}
 
-As of June 2024, we are very close to getting the network up; see our
+As of September 2024, we are very close to getting the network up; see our
 [news page](https://freenet.org/news) for regular status updates. In the meantime you can already
 [experiment](https://docs.freenet.org/tutorial.html) with building a decentralized app to test on
 your own computer.
