@@ -77,8 +77,7 @@ While donations are the current method for supporting Freenet, we're actively ex
 decentralized alternatives. One example is
 [Proof of Trust](/news/799-proof-of-trust-a-wealth-unbiased-consensus-mechanism-for-distributed-systems/),
 a system that could help build decentralized trust without relying on Proof of Work or Proof of
-Stake. These methods won't replace donations overnight but will expand the options available for
-supporting Freenet in the future.
+Stake.
 
 #### Command Line Tool and Rust Library
 
