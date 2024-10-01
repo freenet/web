@@ -1,5 +1,5 @@
 +++
-tags = ["dev-meeting", "front-page"]
+tags = ["dev-meeting"]
 title = "Weekly Dev Meeting - Refactoring Connection Handler for Better Unit Testing" 
 date = 2024-07-05
 +++

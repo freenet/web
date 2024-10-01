@@ -1,5 +1,5 @@
 +++
-tags = ["dev-meeting", "front-page"]
+tags = ["dev-meeting"]
 title = "Weekly Dev Meeting - Finalizing Peer Connections and Preparing for Alpha Release" 
 date = 2024-09-06
 +++
