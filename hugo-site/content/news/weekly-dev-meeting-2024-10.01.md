@@ -1,6 +1,6 @@
 +++
 tags = ["dev-meeting", "front-page"]
-title = "Weekly Dev Meeting 2024-10-01" 
+title = "Weekly Dev Meeting - Transport working well, progress on Freenet Chat" 
 date = 2024-10-01
 +++
 

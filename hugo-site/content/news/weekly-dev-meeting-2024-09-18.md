@@ -1,6 +1,6 @@
 +++
 tags = ["dev-meeting"]
-title = "Weekly Dev Meeting 2024-09-18" 
+title = "Weekly Dev Meeting" 
 date = 2024-09-18
 +++
 
