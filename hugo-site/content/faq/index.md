@@ -166,12 +166,11 @@ this need for trust by distributing control, ensuring the sovereignty of each us
 Freenet was started by Ian Clarke in 1999 and grew out of his undergraduate [paper](/pdf/DDISRS.pdf)
 "A Distributed Decentralized Information Storage and Retrieval System."
 
-To further the goals of the project, Ian Clarke and Steven Starr co-founded The Freenet 501c3
-non-profit in 2001.
+To further the goals of the project, Ian Clarke and Steven Starr co-founded The Freenet Project, a
+501c3 non-profit in 2001.
 
-In 2024, the Freenet non-profit board of directors consists of Ian Clarke, Steven Starr, and Michael
-Grube, with Ian serving as President and Steven as Chief Strategy Officer. Along with Ian, the
-development team consists of Nacho Duart and Hector Alberto Santos Rodriguez.
+In 2024, The Freenet Project non-profit board of directors consists of Ian Clarke, Steven Starr, and
+Michael Grube. Ian and Steven are actively involved in the day-to-day operations of the project.
 
 # What is the status of Freenet? {#what-is-the-status-of-freenet}
 
