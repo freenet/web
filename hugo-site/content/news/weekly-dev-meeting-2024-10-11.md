@@ -6,7 +6,7 @@ date = 2024-10-11
 
 - **Current Progress:**
 
-  - Significant cleanup has been done, focusing on resolving issues with transporters and
+  - Significant cleanup has been done, focusing on resolving issues with the transport layer and
     dependencies.
   - Transport layer is working well, and the remaining issues are expected to be fixed
     within the next few days.
