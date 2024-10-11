@@ -8,7 +8,7 @@ date = 2024-10-11
 
   - Significant cleanup has been done, focusing on resolving issues with transporters and
     dependencies.
-  - Most transporters are functioning properly, and the remaining issues are expected to be fixed
+  - Transport layer is working well, and the remaining issues are expected to be fixed
     within the next few days.
   - The handshake handler has been thoroughly tested, with only minor remaining issues that are
     actively being addressed.
@@ -27,7 +27,7 @@ date = 2024-10-11
   - The release is tentatively expected within the next few weeks, but this depends on the success
     of network simulations and live testing.
   - A cautious approach is being taken to minimize risks in real-world conditions, with connectivity
-    between peers being the highest area of concern.
+    between non-gateway peers being the highest area of concern.
 
 - **Technical Highlights:**
   - WebAssembly has been used to maintain a highly responsive user interface, which is key for the
