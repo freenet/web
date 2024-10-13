@@ -64,14 +64,20 @@ theme = "freenet"
     parent = "Resources"
 
   [[menu.main]]
-    name = "Donate"
-    url = "/donate/"
+    name = "Contribute"
     weight = 10
 
   [[menu.main]]
-    name = "Ghost Key"
+    name = "Donate"
+    url = "/donate/"
     weight = 11
+    parent = "Contribute"
+
+  [[menu.main]]
+    name = "Get Ghost Key"
+    weight = 12
     url= "/ghostkey/"
+    parent = "Contribute"
 
 
 [params]
