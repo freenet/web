@@ -1,5 +1,5 @@
 ---
-title: "Building Freenet Apps"
+title: "App Development"
 date: 2024-06-24
 draft: false
 ---
