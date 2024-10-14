@@ -8,8 +8,8 @@ date = 2024-10-11
 
   - Significant cleanup has been done, focusing on resolving issues with the transport layer and
     dependencies.
-  - Transport layer is working well, and the remaining issues are expected to be fixed
-    within the next few days.
+  - Transport layer is working well, and the remaining issues are expected to be fixed within the
+    next few days.
   - The handshake handler has been thoroughly tested, with only minor remaining issues that are
     actively being addressed.
   - A new monitoring and logging tool is almost ready and will be integrated soon.
