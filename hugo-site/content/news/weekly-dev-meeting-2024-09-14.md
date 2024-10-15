@@ -1,6 +1,6 @@
 +++
 tags = ["dev-meeting"]
-title = "Weekly Dev Meeting - Finalizing Peer Connections and Preparing for Alpha Release" 
+title = "Weekly Dev Meeting - Gateways and Peer Connections" 
 date = 2024-09-14
 +++
 
