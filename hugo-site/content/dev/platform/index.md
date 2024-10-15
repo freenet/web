@@ -6,9 +6,9 @@ draft: false
 
 ## Introduction
 
-This section is dedicated to the development of the Freenet platform itself, ensuring its
-robustness, scalability, and efficiency. Whether you're an experienced developer or a newcomer,
-you'll find essential resources and updates here.
+The Freenet Platform, or Freenet Core, is the software that runs on a user's computer, enabling it
+to participate in the Freenet network. This section provides resources for developers contributing
+to the core software or who would like to learn more about it.
 
 ## Useful Links
 
