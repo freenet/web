@@ -1,4 +1,4 @@
-# The https://freenet.org/ website source
+# The [freenet.org](https://freenet.org/) website source code
 
 ## Directory overview
 
