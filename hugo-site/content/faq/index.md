@@ -14,6 +14,7 @@ draft: false
 - [Why was Freenet rearchitected and rebranded?](#why-was-freenet-rearchitected-and-rebranded)
 - [How does Freenet compare to other decentralized systems?](#how-does-freenet-compare-to-other-decentralized-systems)
 - [Who is behind Freenet?](#who-is-behind-freenet)
+- [How does Freenet handle undesirable or harmful content, such as spam or illegal material?](#how-does-freenet-handle-undesirable-or-harmful-content-such-as-spam-or-illegal-material)
 - [What is the status of Freenet?](#what-is-the-status-of-freenet)
 - [Can I follow Freenet on social media?](#can-i-follow-freenet-on-social-media)
 - [How can I financially support Freenet development?](#how-can-i-financially-support-freenet-development)
@@ -171,6 +172,25 @@ To further the goals of the project, Ian Clarke and Steven Starr co-founded The 
 
 In 2024, The Freenet Project non-profit board of directors consists of Ian Clarke, Steven Starr, and
 Michael Grube. Ian and Steven are actively involved in the day-to-day operations of the project.
+
+# How does Freenet handle undesirable or harmful content, such as spam or illegal material? {#how-does-freenet-handle-undesirable-or-harmful-content-such-as-spam-or-illegal-material}
+
+To address undesirable or harmful content like spam or illegal material, Freenet is building a
+decentralized reputation system inspired by the original
+[Web of Trust](https://github.com/hyphanet/plugin-WebOfTrust/blob/master/developer-documentation/core-developers-manual/OadSFfF-version1.2-non-print-edition.pdf),
+but with key improvements.
+
+This system enables users to collaboratively filter harmful content, putting control directly in
+their hands to shape their experience according to their own preferences.
+
+Freenet’s [Ghost Keys](https://freenet.org/ghostkey) allow users to establish reputations privately,
+a foundational step toward a decentralized reputation system that respects privacy.
+
+It’s also important to note that Freenet serves as a communication medium rather than a storage
+medium and is not designed for distributing large files like video.
+
+While no filtering solution is perfect, especially with today’s centralized systems, we believe a
+decentralized approach offers a more effective, privacy-respecting path forward.
 
 # What is the status of Freenet? {#what-is-the-status-of-freenet}
 

@@ -4,9 +4,8 @@ WARNING: This file is publicly readable, do NOT put anything secret in here.
 
 ## letsencrypt
 
-Verify that certificate was automatically renewed by root cron job on vega by looking at write 
-times of cert files:
-
+Verify that certificate was automatically renewed by root cron job on vega by looking at write times
+of cert files:
 
 ```
 root@vega:/home/gkapi# cd /etc/letsencrypt/live/gkapi.freenet.org/
