@@ -177,7 +177,8 @@ Michael Grube. Ian and Steven are actively involved in the day-to-day operations
 
 To address undesirable or harmful content like spam or illegal material, Freenet is building a
 decentralized reputation system inspired by the original
-[Web of Trust](https://github.com/hyphanet/plugin-WebOfTrust/blob/master/developer-documentation/core-developers-manual/OadSFfF-version1.2-non-print-edition.pdf),
+[Web of Trust plugin](https://github.com/hyphanet/plugin-WebOfTrust/blob/master/developer-documentation/core-developers
+-manual/OadSFfF-version1.2-non-print-edition.pdf),
 but with key improvements.
 
 This system enables users to collaboratively filter harmful content, putting control directly in
