@@ -57,14 +57,19 @@ For a much more detailed explanation please see our
 
 Freenet was initially developed by Ian Clarke at the University of Edinburgh in 1999 as a
 decentralized system for information storage and retrieval, offering users the ability to publish or
-retrieve information anonymously.
+retrieve information anonymously. The 2001 paper,
+["Freenet: A distributed anonymous information storage and retrieval system"](https://scholar.google.com/scholar?cluster=17926651926152536224&hl=en&as_sdt=0,44),
+which describes the foundational work led by Ian Clarke and contributions from a team of volunteers,
+has been cited over 3,700 times. This places it among the most frequently cited computer science
+papers of its year, reflecting its broad influence on the fields of distributed computing,
+peer-to-peer networking, and online anonymity.
 
 In 2019, Ian began work on a successor to the original Freenet, which was internally known as
 "Locutus." This project, a redesign from the ground up, incorporated lessons learned from the
 original Freenet's development and operation, and adapted to today's challenges. In March 2023, the
 original version of Freenet was separated into its
 [own project](https://www.hyphanet.org/pages/about.html), and what was known as "Locutus" was
-officially branded as "Freenet."
+officially renamed to "Freenet."
 
 # How do the previous and current versions of Freenet differ? {#how-do-the-previous-and-current-versions-of-freenet-differ}
 
