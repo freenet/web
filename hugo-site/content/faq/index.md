@@ -207,19 +207,7 @@ advocate for unrestricted exchange of intellectual, scientific, literary, social
 creative, human rights, and cultural expressions, free from interference by state, private, or
 special interests.
 
-#### Donate via PayPal or Credit Card
+You can [donate via credit card or cryptocurrency](/donate), or donate through our [Ghost Key](/ghostkey/)
+mechanism to establish a verifiable cryptographic identity.
 
-[![Donate with
-PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/donate?hosted_button_id=EQ9E7DPHB6ETY)
-
-#### Donate via Cryptocurrency
-
-Freenet is **not** a cryptocurrency, but we do accept cryptocurrency donations. For large donations
-(over \$5,000) please contact us before sending. For smaller donations, please use the following
-wallets:
-
-| Cryptocurrency | Address                                        |
-| -------------- | ---------------------------------------------- |
-| Bitcoin        | `3M3fbA7RDYdvYeaoR69cDCtVJqEodo9vth`           |
-| Zcash          | `t1VHw1PHgzvMqEEd31ZBt3Vyy2UrG4J8utB`          |
-| Ethereum       | `0x79158A5Dbd9C0737CB2741181we7BD2759f5b9a9Ae` |
+If you are in a position to make a larger contribution or grant please email Ian at {{< email-protect >}}.
