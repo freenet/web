@@ -99,7 +99,7 @@ a:hover {
 /* Responsive padding for mobile */
 @media screen and (max-width: 768px) {
     .container {
-        padding: 0 8px;
+        padding: 0 4px;
     }
 }
 
