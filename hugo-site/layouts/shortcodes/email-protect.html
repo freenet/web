@@ -1,4 +1,4 @@
-{{ $id := delimit (shuffle (seq 1 9999)) "" }}
+{{ $id := now.UnixNano }}
 <span id="protected-email-{{$id}}"></span>
 <script>
   (function(){
