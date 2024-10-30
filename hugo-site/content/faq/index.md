@@ -173,11 +173,7 @@ To further the goals of the project, Ian Clarke and Steven Starr co-founded The 
 In 2024, The Freenet Project non-profit board of directors consists of Ian Clarke, Steven Starr, and
 Michael Grube. Ian and Steven are actively involved in the day-to-day operations of the project.
 
-Here’s a revised version, keeping it free from corporate jargon:
-
----
-
-**How does Freenet handle harmful content?** {#how-does-freenet-handle-harmful-content}
+# How does Freenet handle harmful content? {#how-does-freenet-handle-harmful-content}
 
 Freenet addresses unwanted or harmful content with a decentralized reputation system, inspired by
 the original
@@ -191,10 +187,6 @@ reputation system that respects privacy.
 
 No filtering approach is perfect, especially in centralized systems, but we think a decentralized
 method can work as well or better.
-
----
-
-Let me know if this better captures the tone you’re aiming for!
 
 # What is the status of Freenet? {#what-is-the-status-of-freenet}
 
