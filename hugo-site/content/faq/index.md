@@ -182,8 +182,8 @@ but with important improvements.
 
 This system will allow users to collaboratively filter content, putting them in direct control to
 shape their experience according to their own preferences. Freenet’s
-[Ghost Keys](https://freenet.org/ghostkey) also allow users to establish reputations privately,
-laying the foundation for a decentralized reputation system that respects privacy.
+[Ghost Keys](https://freenet.org/ghostkey) allow users to establish reputations privately, laying
+the foundation for a decentralized reputation system that respects privacy.
 
 No filtering approach is perfect, especially in centralized systems, but we think a decentralized
 method can work as well or better.
