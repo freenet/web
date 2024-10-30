@@ -93,7 +93,14 @@ a:hover {
 
 /* Container padding adjustments */
 .container {
-    padding: 0 16px; /* Default padding for small screens */
+    padding: 0 16px;
+}
+
+/* Responsive padding for mobile */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 0 8px;
+    }
 }
 
 /* Heading colors */
