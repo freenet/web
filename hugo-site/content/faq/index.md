@@ -176,7 +176,7 @@ Michael Grube. Ian and Steven are actively involved in the day-to-day operations
 # How does Freenet handle harmful content? {#how-does-freenet-handle-harmful-content}
 
 Freenet will address harmful content with a decentralized reputation system, inspired by the
-original Freenet's very successful [Web of Trust plugin](https://github. com/hyphanet/plugin-WebOfTrust/blob/master/developer-documentation/core-developers-manual/OadSFfF-version1.2-non-print-edition.pdf)
+original Freenet's very effective [Web of Trust plugin](https://github. com/hyphanet/plugin-WebOfTrust/blob/master/developer-documentation/core-developers-manual/OadSFfF-version1.2-non-print-edition.pdf)
 but generalized and improved.
 
 This system will allow users to collaboratively filter content, putting them in direct control to
