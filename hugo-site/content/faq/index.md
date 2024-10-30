@@ -210,4 +210,4 @@ special interests.
 You can [donate via credit card or cryptocurrency](/donate), or donate through our [Ghost Key](/ghostkey/)
 mechanism to establish a verifiable cryptographic identity.
 
-If you are in a position to make a larger contribution or grant please email Ian at {{< email-protect >}}.
+If you are in a position to make a larger contribution or grant please email Ian at{{< email-protect >}}.
