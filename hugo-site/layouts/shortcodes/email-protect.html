@@ -1,8 +1,10 @@
-{{ $id := now.UnixNano }}<script>(function(){
-    const encoded = "vna@serrarg.bet";
+{{ $email := .Get 0 }}
+{{ $text := .Get 1 | default $email }}
+{{ $encoded := $email | strings.ToLower | strings.Rot13 }}
+<script>(function(){
     const decode = str => str.replace(/[a-zA-Z]/g, c => 
         String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26)
     );
-    const email = decode(encoded);
-    document.write(`<a href="mailto:${email}">${email}</a>`);
+    const email = decode("{{ $encoded }}");
+    document.write(`<a href="mailto:${email}">${decode("{{ $text | strings.Rot13 }}")}</a>`);
 })();</script>
