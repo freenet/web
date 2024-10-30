@@ -1,6 +1,6 @@
 {{ $email := .Get 0 }}
 {{ $text := .Get 1 | default $email }}
-<noscript>[Enable JavaScript to see email]</noscript>
+<span class="email-protect"></span>
 <script type="text/javascript">
 (function(){
     const rot13 = str => str.replace(/[a-zA-Z]/g, c => {
@@ -9,8 +9,28 @@
         const base = isUpperCase ? 65 : 97;
         return String.fromCharCode(base + (charCode - base + 13) % 26);
     });
-    const email = rot13("{{ $email }}");
-    const text = rot13("{{ $text }}");
-    document.write(`<a href="mailto:${email}">${text}</a>`);
+    const encodedEmail = "{{ $email }}".split('').map(c => {
+        if (c.match(/[a-zA-Z]/)) {
+            const charCode = c.charCodeAt(0);
+            const isUpperCase = c <= 'Z';
+            const base = isUpperCase ? 65 : 97;
+            return String.fromCharCode(base + (charCode - base + 13) % 26);
+        }
+        return c;
+    }).join('');
+    const encodedText = "{{ $text }}".split('').map(c => {
+        if (c.match(/[a-zA-Z]/)) {
+            const charCode = c.charCodeAt(0);
+            const isUpperCase = c <= 'Z';
+            const base = isUpperCase ? 65 : 97;
+            return String.fromCharCode(base + (charCode - base + 13) % 26);
+        }
+        return c;
+    }).join('');
+    const email = rot13(encodedEmail);
+    const text = rot13(encodedText);
+    document.querySelector('.email-protect').outerHTML = 
+        `<a href="mailto:${email}">${text}</a>`;
 })();
 </script>
+<noscript>[Enable JavaScript to see email]</noscript>
