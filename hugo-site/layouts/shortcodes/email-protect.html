@@ -1,7 +1,8 @@
 {{ $email := .Get 0 }}
 {{ $text := .Get 1 | default $email }}
-<span id="email-protect-{{ sha256 $email }}" class="email-protect"></span>
-<script>(function(){
+<noscript>[Enable JavaScript to see email]</noscript>
+<script type="text/javascript">
+(function(){
     const rot13 = str => str.replace(/[a-zA-Z]/g, c => {
         const charCode = c.charCodeAt(0);
         const isUpperCase = c <= 'Z';
@@ -10,6 +11,6 @@
     });
     const email = rot13("{{ $email }}");
     const text = rot13("{{ $text }}");
-    document.getElementById('email-protect-{{ sha256 $email }}').innerHTML = 
-        `<a href="mailto:${email}">${text}</a>`;
-})();</script>
+    document.write(`<a href="mailto:${email}">${text}</a>`);
+})();
+</script>
