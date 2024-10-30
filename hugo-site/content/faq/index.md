@@ -176,7 +176,8 @@ Michael Grube. Ian and Steven are actively involved in the day-to-day operations
 # How does Freenet handle harmful content? {#how-does-freenet-handle-harmful-content}
 
 Freenet will address harmful content with a decentralized reputation system, inspired by the
-original Freenet's very effective [Web of Trust plugin](https://github. com/hyphanet/plugin-WebOfTrust/blob/master/developer-documentation/core-developers-manual/OadSFfF-version1.2-non-print-edition.pdf)
+original Freenet's very effective
+[Web of Trust plugin](https://github.com/hyphanet/plugin-WebOfTrust/blob/master/developer-documentation/core-developers-manual/OadSFfF-version1.2-non-print-edition.pdf)
 but generalized and improved.
 
 This system will allow users to collaboratively filter content, putting them in direct control to
@@ -207,7 +208,9 @@ advocate for unrestricted exchange of intellectual, scientific, literary, social
 creative, human rights, and cultural expressions, free from interference by state, private, or
 special interests.
 
-You can [donate via credit card or cryptocurrency](/donate), or donate through our [Ghost Key](/ghostkey/)
-mechanism to establish a verifiable cryptographic identity.
+You can [donate via credit card or cryptocurrency](/donate), or donate through our
+[Ghost Key](/ghostkey/) mechanism to establish a verifiable cryptographic identity.
 
-If you are in a position to make a larger contribution or grant please email Ian at {{< email-protect "ian@freenet.org" "Ian Clarke" >}}.
+If you are in a position to make a larger contribution or grant please
+{{< email-protect "ian@freenet.org" "email Ian" >}} or reach out to him on
+[𝕏](https://x.com/sanity).
