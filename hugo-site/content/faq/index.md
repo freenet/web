@@ -14,7 +14,7 @@ draft: false
 - [Why was Freenet rearchitected and rebranded?](#why-was-freenet-rearchitected-and-rebranded)
 - [How does Freenet compare to other decentralized systems?](#how-does-freenet-compare-to-other-decentralized-systems)
 - [Who is behind Freenet?](#who-is-behind-freenet)
-- [How does Freenet handle undesirable or harmful content, such as spam or illegal material?](#how-does-freenet-handle-harmful-content)
+- [How does Freenet handle harmful content?](#how-does-freenet-handle-harmful-content)
 - [What is the status of Freenet?](#what-is-the-status-of-freenet)
 - [Can I follow Freenet on social media?](#can-i-follow-freenet-on-social-media)
 - [How can I financially support Freenet development?](#how-can-i-financially-support-freenet-development)
