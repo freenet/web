@@ -58,7 +58,7 @@ For a much more detailed explanation please see our
 Freenet was initially developed by Ian Clarke at the University of Edinburgh in 1999 as a
 decentralized system for information storage and retrieval, offering users the ability to publish or
 retrieve information anonymously. The 2001 paper,
-["Freenet: A distributed anonymous information storage and retrieval system"](https://scholar.google.com/scholar?cluster=17926651926152536224&hl=en&as_sdt=0,44),
+["Freenet: A distributed anonymous information storage and retrieval system"](https://scholar.google.com/scholar?cluster=17926651926152536224&hl=en&as_sdt=0,44) ([PDF](/pdf/ADAISARS.pdf)),
 which describes the foundational work led by Ian Clarke and contributions from a team of volunteers,
 has been cited over 3,700 times. This places it among the most frequently cited computer science
 papers of its year, reflecting its broad influence on the fields of distributed computing,
