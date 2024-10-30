@@ -1,5 +1,6 @@
 {{ $email := .Get 0 }}
 {{ $text := .Get 1 | default $email }}
+<span id="email-protect-{{ sha256 $email }}" class="email-protect"></span>
 <script>(function(){
     const rot13 = str => str.replace(/[a-zA-Z]/g, c => {
         const charCode = c.charCodeAt(0);
@@ -9,5 +10,6 @@
     });
     const email = rot13("{{ $email }}");
     const text = rot13("{{ $text }}");
-    document.write(`<a href="mailto:${email}">${text}</a>`);
+    document.getElementById('email-protect-{{ sha256 $email }}').innerHTML = 
+        `<a href="mailto:${email}">${text}</a>`;
 })();</script>
