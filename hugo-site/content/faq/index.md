@@ -173,24 +173,29 @@ To further the goals of the project, Ian Clarke and Steven Starr co-founded The 
 In 2024, The Freenet Project non-profit board of directors consists of Ian Clarke, Steven Starr, and
 Michael Grube. Ian and Steven are actively involved in the day-to-day operations of the project.
 
-# How does Freenet handle undesirable or harmful content, such as spam or illegal material? {#how-does-freenet-handle-undesirable-or-harmful-content-such-as-spam-or-illegal-material}
+Here’s a revised version, keeping it free from corporate jargon:
 
-To address undesirable or harmful content like spam or illegal material, Freenet is building a
-decentralized reputation system inspired by the original
-[Web of Trust plugin](https://github.com/hyphanet/plugin-WebOfTrust/blob/master/developer-documentation/core-developers-manual/OadSFfF-version1.2-non-print-edition.pdf),
-but with key improvements.
+---
 
-This system enables users to collaboratively filter harmful content, putting control directly in
-their hands to shape their experience according to their own preferences.
+**How does Freenet manage undesirable or harmful content, like spam or illegal material?**
+{#how-does-freenet-handle-undesirable-or-harmful-content-such-as-spam-or-illegal-material}
 
-Freenet’s [Ghost Keys](https://freenet.org/ghostkey) allow users to establish reputations privately,
-a foundational step toward a decentralized reputation system that respects privacy.
+Freenet addresses unwanted or harmful content with a decentralized reputation system, inspired by
+the original
+[Web of Trust plugin](https://github.com/hyphanet/plugin-WebOfTrust/blob/master/developer-documentation/core-developers-manual/OadSFfF-version1.2-non-print-edition.pdf)
+but with important improvements.
 
-It’s also important to note that Freenet serves as a communication medium rather than a storage
-medium and is not designed for distributing large files like video.
+This system lets users collaboratively filter content, putting them in direct control to shape their
+experience according to their own preferences. Freenet’s [Ghost Keys](https://freenet.org/ghostkey)
+also allow users to establish reputations privately, laying the foundation for a decentralized
+reputation system that respects privacy.
 
-While no filtering solution is perfect, especially with today’s centralized systems, we believe a
-decentralized approach offers a more effective, privacy-respecting path forward.
+No filtering approach is perfect, especially in centralized systems, but we think a decentralized
+method can work as well or better.
+
+---
+
+Let me know if this better captures the tone you’re aiming for!
 
 # What is the status of Freenet? {#what-is-the-status-of-freenet}
 
