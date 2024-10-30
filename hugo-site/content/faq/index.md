@@ -212,5 +212,5 @@ You can [donate via credit card or cryptocurrency](/donate), or donate through o
 [Ghost Key](/ghostkey/) mechanism to establish a verifiable cryptographic identity.
 
 If you are in a position to make a larger contribution or grant please
-{{< email-protect "gro.tenerf@nai" "email Ian" >}} or reach out to him on
+{{< email-protect "gro.teneerf@nai" "email Ian" >}} or reach out to him on
 [𝕏](https://x.com/sanity).

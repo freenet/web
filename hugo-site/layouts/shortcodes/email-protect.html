@@ -4,9 +4,8 @@
 <script type="text/javascript">
 (function(){
     const email = "{{ $email }}".split('').reverse().join('');
-    const text = "{{ $text }}".split('').reverse().join('');
     document.querySelector('.email-protect').outerHTML = 
-        `<a href="mailto:${email}">${text}</a>`;
+        `<a href="mailto:${email}">${"{{ $text }}"}</a>`;
 })();
 </script>
 <noscript>[Enable JavaScript to see email]</noscript>
