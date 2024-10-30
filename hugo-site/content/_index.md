@@ -22,24 +22,22 @@ links:
     color: "is-medium-orange"
 ---
 
-The centralization of the internet poses a fundamental threat to individual freedom. In 2024, a few
-corporations control most of our online services and infrastructure, wielding immense power with
-little accountability. They can censor content, exploit data, and exclude users from essential
-services, undermining democracy. We need a solution urgently.
+Freenet is the internet as it should have been—fully decentralized, designed to put you back in
+control. Imagine a global shared computer where you can communicate and collaborate freely, without
+reliance on big tech. Freenet gives you the tools to take charge of your online life.
 
-Introducing Freenet—a decentralized replacement for the World Wide Web. Acting as a global, shared
-computing platform, Freenet can be accessed via a standard web browser or embedded into software via
-an API.
+This peer-to-peer network transforms users’ computers into a resilient, distributed system,
+automatically scaling services without cloud servers, safeguarding data with cryptography. Every
+peer contributes to a fault-tolerant collective, ensuring services are always available without a
+single points of failure.
 
-Freenet enables new solutions to old problems like spam,
-[DDoS](https://en.wikipedia.org/wiki/Denial-of-service_attack), keeping private data private, and
-much more.
+The web is a series of siloed services, but every system built on Freenet is fully interoperable by
+default. We haven't reinvented wheels unnecessarily, apps can be built with popular existing web
+frameworks and are accessed through any web browser.
 
-Freenet is flexible enough to build entirely decentralized alternatives to existing centralized
-services, such as messaging, social media, email, and e-commerce. Every component of every service
-built on Freenet is interoperable by default, ensuring seamless integration and interaction across
-the platform. Services are also scalable by default and secured through modern cryptographic
-techniques, putting control back in the hands of users, not tech oligarchs.
+#### Current Status (29th Oct, 2024)
+
+We're currently tying up loose ends prior to our alpha release.
 
 #### Useful Links
 
