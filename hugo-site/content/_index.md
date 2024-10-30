@@ -1,5 +1,5 @@
 ---
-title: "Declare Your Digital Independence"
+title: "Reboot the Internet"
 date: 2024-06-11T00:00:00Z
 draft: false
 layout: "single"
