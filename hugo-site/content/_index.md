@@ -22,9 +22,9 @@ links:
     color: "is-medium-orange"
 ---
 
-Freenet is the internet as it should have been—fully decentralized, designed to put you back in
-control. Imagine a global shared computer where you can communicate and collaborate freely, without
-reliance on big tech. Freenet lets you regain your digital independence.
+Freenet is the internet as it should be—fully decentralized, designed to put you back in control.
+Imagine a global shared computer where you can communicate and collaborate freely, without reliance
+on big tech. Freenet lets you regain your digital independence.
 
 Freenet is a peer-to-peer network that transforms users’ computers into a resilient, distributed
 platform on which anyone can build decentralized services. Every peer contributes to a
