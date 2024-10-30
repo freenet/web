@@ -28,8 +28,7 @@ reliance on big tech. Freenet lets you regain your digital independence.
 
 Freenet is a peer-to-peer network that transforms users’ computers into a resilient, distributed
 platform on which anyone can build decentralized services. Every peer contributes to a
-fault-tolerant collective, ensuring services are always available without a single points of
-failure.
+fault-tolerant collective, ensuring services are always available and robust.
 
 The web is a series of siloed services, but every system built on Freenet is fully interoperable by
 default. We haven't reinvented wheels unnecessarily, apps can be built with popular existing web
