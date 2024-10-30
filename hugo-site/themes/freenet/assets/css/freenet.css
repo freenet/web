@@ -108,6 +108,15 @@ h1, h2, h3, h4, h5, h6 {
     color: #000000;
 }
 
+/* Responsive heading sizes */
+@media screen and (max-width: 768px) {
+    .content h1,
+    h1 {
+        font-size: 1.75rem !important;  /* About 30% smaller than Bulma's default */
+        line-height: 1.3;
+    }
+}
+
 
 /* Remove start element */
 .rMStart {
