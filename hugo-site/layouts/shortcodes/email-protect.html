@@ -1,1 +1,8 @@
-{{ $id := now.UnixNano }}<script>(function(){const encoded="vna@serrarg.bet";const decode=str=>str.replace(/[a-zA-Z]/g,c=>String.fromCharCode((c<='Z'?90:122)>=(c=c.charCodeAt(0)+13)?c:c-26));const email=decode(encoded);document.write(`<a href="mailto:${email}">${email}</a>`)})();</script>
+{{ $id := now.UnixNano }}<script>(function(){
+    const encoded = "vna@serrarg.bet";
+    const decode = str => str.replace(/[a-zA-Z]/g, c => 
+        String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26)
+    );
+    const email = decode(encoded);
+    document.write(`<a href="mailto:${email}">${email}</a>`);
+})();</script>
