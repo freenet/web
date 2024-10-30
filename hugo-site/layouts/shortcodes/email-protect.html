@@ -3,10 +3,8 @@
 <span class="email-protect"></span>
 <script type="text/javascript">
 (function(){
-    const encodedEmail = "{{ $email }}".split('').reverse().join('');
-    const encodedText = "{{ $text }}".split('').reverse().join('');
-    const email = encodedEmail.split('').reverse().join('');
-    const text = encodedText.split('').reverse().join('');
+    const email = "{{ $email }}".split('').reverse().join('');
+    const text = "{{ $text }}".split('').reverse().join('');
     document.querySelector('.email-protect').outerHTML = 
         `<a href="mailto:${email}">${text}</a>`;
 })();
