@@ -1,10 +1,13 @@
 {{ $email := .Get 0 }}
 {{ $text := .Get 1 | default $email }}
 <script>(function(){
-    const rot13 = str => str.replace(/[a-zA-Z]/g, c => 
-        String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26)
-    );
-    const email = rot13("{{ $email | lower }}");
-    const text = rot13("{{ $text | lower }}"); 
+    const rot13 = str => str.replace(/[a-zA-Z]/g, c => {
+        const charCode = c.charCodeAt(0);
+        const isUpperCase = c <= 'Z';
+        const base = isUpperCase ? 65 : 97;
+        return String.fromCharCode(base + (charCode - base + 13) % 26);
+    });
+    const email = rot13("{{ $email }}");
+    const text = rot13("{{ $text }}");
     document.write(`<a href="mailto:${email}">${text}</a>`);
 })();</script>
