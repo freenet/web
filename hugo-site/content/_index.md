@@ -31,8 +31,8 @@ platform on which anyone can build decentralized services. Every peer contribute
 fault-tolerant collective, ensuring services are always available and robust.
 
 The web is a series of siloed services, but every system built on Freenet is fully interoperable by
-default. We haven't reinvented wheels unnecessarily, Freenet apps can be built with popular web
-frameworks and are accessed through any web browser just like the web.
+default. Freenet apps can be built with popular web frameworks and are accessed through any web
+browser just like the web.
 
 #### Current Status (29th Oct, 2024)
 
