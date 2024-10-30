@@ -176,9 +176,9 @@ Michael Grube. Ian and Steven are actively involved in the day-to-day operations
 # How does Freenet handle undesirable or harmful content, such as spam or illegal material? {#how-does-freenet-handle-undesirable-or-harmful-content-such-as-spam-or-illegal-material}
 
 To address undesirable or harmful content like spam or illegal material, Freenet is building a
-decentralized reputation system inspired by the original [Web of Trust
-plugin](https://github.com/hyphanet/plugin-WebOfTrust/blob/master/developer-documentation/core-developers
--manual/OadSFfF-version1.2-non-print-edition.pdf), but with key improvements.
+decentralized reputation system inspired by the original
+[Web of Trust plugin](https://github.com/hyphanet/plugin-WebOfTrust/blob/master/developer-documentation/core-developers-manual/OadSFfF-version1.2-non-print-edition.pdf),
+but with key improvements.
 
 This system enables users to collaboratively filter harmful content, putting control directly in
 their hands to shape their experience according to their own preferences.
