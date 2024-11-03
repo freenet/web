@@ -80,7 +80,11 @@
     }
 }
 
-/* Global body font and color */
+/* Global HTML and body styling */
+html {
+    background-color: #F8FAFC;
+}
+
 body {
     font-family: Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif;
     color: #000000;
