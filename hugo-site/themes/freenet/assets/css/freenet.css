@@ -36,6 +36,10 @@
 }
 
 /* Box and date styling */
+.box {
+    background-color: #F8FAFC;
+}
+
 .box h2 {
     margin-bottom: 0.25rem; /* Reduced bottom margin */
 }
@@ -170,6 +174,11 @@ p.page-end-spacer {
         background-color: #cc5e00;
         color: #ffffff;
     }
+}
+
+/* Navbar styling */
+.navbar {
+    background-color: #F8FAFC;
 }
 
 /* Navbar brand with border */
