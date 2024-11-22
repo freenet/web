@@ -30,8 +30,8 @@ Freenet is a peer-to-peer network that transforms users’ computers into a resi
 platform on which anyone can build decentralized services. Every peer contributes to a
 fault-tolerant collective, ensuring services are always available and robust.
 
-Today's web is a series of siloed services, but every system built on Freenet is fully interoperable by
-default. Freenet apps can be built with popular web frameworks, accessed through any browser just 
+Today's web is a series of siloed services, but every system built on Freenet is fully interoperable
+by default. Freenet apps can be built with popular web frameworks, accessed through any browser just
 like the web.
 
 #### Current Status (29th Oct, 2024)
