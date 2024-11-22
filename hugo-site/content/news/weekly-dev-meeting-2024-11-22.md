@@ -1,10 +1,8 @@
 +++
 tags = ["dev-meeting", "front-page"]
-title = "Weekly Dev Meeting - WebSocket Stability and Final Testing Nearing Completion"
+title = "Weekly Dev Update - WebSocket Stability and Final Testing Nearing Completion"
 date = 2024-11-22
 +++
-
-### Freenet Weekly Development Update - November 22, 2024
 
 **This Week's Progress**  
 We focused on stabilizing network operations after recent updates. Most major issues have been
