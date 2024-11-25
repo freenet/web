@@ -219,16 +219,22 @@ waitForD3().then(() => {
     initializeNetwork();
     draw();
     
+    const startBtn = document.getElementById('startScaleBtn');
+    const resetBtn = document.getElementById('resetScaleBtn');
+    
     // Add button handlers
-    document.getElementById('startScaleBtn').addEventListener('click', () => {
-        document.getElementById('startScaleBtn').disabled = true;
-        document.getElementById('startScaleBtn').textContent = '⏳ Simulation Running...';
+    startBtn.addEventListener('click', () => {
+        startBtn.disabled = true;
+        startBtn.textContent = '⏳ Simulation Running...';
+        resetBtn.style.display = 'inline-block';
+        numPeers = 30;
+        averagePathLengths = [];
         simulate();
     });
     
-    document.getElementById('resetScaleBtn').addEventListener('click', () => {
-        document.getElementById('startScaleBtn').disabled = false;
-        document.getElementById('startScaleBtn').textContent = '▶️ Start Network Scaling Simulation';
+    resetBtn.addEventListener('click', () => {
+        startBtn.disabled = false;
+        startBtn.textContent = '▶️ Start Network Scaling Simulation';
         reset();
     });
 });
