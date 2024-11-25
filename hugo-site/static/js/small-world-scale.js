@@ -215,9 +215,7 @@ waitForD3().then(() => {
         simulate();
     }
 
-    // Add button handler
+    // Add button handlers
+    document.getElementById('startScaleBtn').addEventListener('click', simulate);
     document.getElementById('resetScaleBtn').addEventListener('click', reset);
-    
-    // Start simulation
-    simulate();
 });
