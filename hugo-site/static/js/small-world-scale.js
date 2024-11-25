@@ -220,6 +220,15 @@ waitForD3().then(() => {
     draw();
     
     // Add button handlers
-    document.getElementById('startScaleBtn').addEventListener('click', simulate);
-    document.getElementById('resetScaleBtn').addEventListener('click', reset);
+    document.getElementById('startScaleBtn').addEventListener('click', () => {
+        document.getElementById('startScaleBtn').disabled = true;
+        document.getElementById('startScaleBtn').textContent = '⏳ Simulation Running...';
+        simulate();
+    });
+    
+    document.getElementById('resetScaleBtn').addEventListener('click', () => {
+        document.getElementById('startScaleBtn').disabled = false;
+        document.getElementById('startScaleBtn').textContent = '▶️ Start Network Scaling Simulation';
+        reset();
+    });
 });
