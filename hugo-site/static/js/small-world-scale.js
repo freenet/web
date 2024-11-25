@@ -229,11 +229,9 @@ waitForD3().then(() => {
     
     startBtn.addEventListener('click', () => {
         if (!isSimulating) {
-            // Start simulation
+            // Resume/start simulation
             isSimulating = true;
             startBtn.textContent = '⏸️ Pause';
-            numPeers = 30;
-            averagePathLengths = [];
             simulate();
         } else {
             // Pause simulation
