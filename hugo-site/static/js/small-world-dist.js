@@ -1,9 +1,19 @@
-// Import D3.js if not already available
-if (typeof d3 === 'undefined') {
-    const script = document.createElement('script');
-    script.src = "https://d3js.org/d3.v7.min.js";
-    document.head.appendChild(script);
+// Wait for D3.js to be available
+function waitForD3() {
+    return new Promise((resolve) => {
+        if (typeof d3 !== 'undefined') {
+            resolve();
+        } else {
+            const script = document.createElement('script');
+            script.src = "https://d3js.org/d3.v7.min.js";
+            script.onload = () => resolve();
+            document.head.appendChild(script);
+        }
+    });
 }
+
+// Initialize after D3 is loaded
+waitForD3().then(() => {
 
 const canvas1 = document.getElementById('networkCanvas1');
 const ctx1 = canvas1.getContext('2d');
@@ -143,10 +153,11 @@ function updateHistogram() {
         .text('Frequency');
 }
 
-// Initialize visualization
-initializeNetwork();
+    // Initialize visualization
+    initializeNetwork();
 
-// Add resize handler
-window.addEventListener('resize', () => {
-    updateHistogram();
+    // Add resize handler
+    window.addEventListener('resize', () => {
+        updateHistogram();
+    });
 });
