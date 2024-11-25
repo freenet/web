@@ -20,7 +20,7 @@ waitForD3().then(() => {
 
     // Parameters
     let numPeers = 30;
-    const maxPeers = 200;
+    const maxPeers = 10000;
     const radius = Math.min(width, height) * 0.4;
     const connectionProbability = (distance) => 1 / (distance + 1);
     
