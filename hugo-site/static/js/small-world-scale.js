@@ -215,6 +215,10 @@ waitForD3().then(() => {
         simulate();
     }
 
+    // Initialize network but don't start simulation
+    initializeNetwork();
+    draw();
+    
     // Add button handlers
     document.getElementById('startScaleBtn').addEventListener('click', simulate);
     document.getElementById('resetScaleBtn').addEventListener('click', reset);
