@@ -16,19 +16,19 @@ A small world network has a unique property: most nodes are not directly connect
 
 The visualization below shows this pattern. The nodes are arranged in a circle, with connections colored based on their length. Notice how the link distribution follows a specific pattern:
 
-{{< partial "small-world-viz.html" >}}
+{{< partial "partials/small-world-viz.html" >}}
 
 ## Greedy Routing in Small World Networks
 
 One of the most interesting properties of small world networks is how efficiently they can route messages using only local information. At each step, a node simply passes the message to its neighbor that's closest to the final destination. This "greedy" strategy works remarkably well:
 
-{{< partial "small-world-routing-viz.html" >}}
+{{< partial "partials/small-world-routing-viz.html" >}}
 
 ## How Do Small World Networks Scale?
 
 As we add more nodes to a small world network, how does the average path length between nodes grow? The visualization below shows this relationship:
 
-{{< partial "small-world-scale-viz.html" >}}
+{{< partial "partials/small-world-scale-viz.html" >}}
 
 The remarkable thing about small world networks is that the average path length grows logarithmically with the network size. This means that even in very large networks, most nodes can reach each other in relatively few steps.
 
