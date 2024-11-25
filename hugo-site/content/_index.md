@@ -34,10 +34,6 @@ Today's web is a series of siloed services, but every system built on Freenet is
 by default. Freenet apps can be built with popular web frameworks, accessed through any browser just
 like the web.
 
-#### Current Status (29th Oct, 2024)
-
-We're currently tying up loose ends prior to our alpha release.
-
 #### Useful Links
 
 {{< buttons >}}
