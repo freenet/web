@@ -1,0 +1,33 @@
+<div class="visualization-container">
+    <div class="network-view">
+        <canvas id="routingCanvas" width="800" height="800"></canvas>
+    </div>
+    <div class="control-panel buttons are-small">
+        <button id="newRouteBtn" class="button is-primary">New Route</button>
+    </div>
+</div>
+
+<script src="/js/small-world-routing.js"></script>
+
+<style>
+    .visualization-container {
+        margin: 2em 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .network-view {
+        border: 1px solid #ddd;
+        padding: 1em;
+        border-radius: 4px;
+    }
+    
+    canvas {
+        border: 1px solid #eee;
+    }
+    
+    .control-panel {
+        margin-top: 1em;
+    }
+</style>

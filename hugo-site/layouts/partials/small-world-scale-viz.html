@@ -1,0 +1,37 @@
+<div class="visualization-container">
+    <div class="network-view">
+        <canvas id="scaleCanvas" width="800" height="800"></canvas>
+        <div id="scaleChart" class="box" style="margin-top: 20px;">
+            <h3 class="title is-4">Average Path Length vs Network Size</h3>
+            <svg width="800" height="400"></svg>
+        </div>
+    </div>
+    <div class="control-panel buttons are-small">
+        <button id="resetScaleBtn" class="button is-primary">Reset</button>
+    </div>
+</div>
+
+<script src="/js/small-world-scale.js"></script>
+
+<style>
+    .visualization-container {
+        margin: 2em 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .network-view {
+        border: 1px solid #ddd;
+        padding: 1em;
+        border-radius: 4px;
+    }
+    
+    canvas {
+        border: 1px solid #eee;
+    }
+    
+    .control-panel {
+        margin-top: 1em;
+    }
+</style>
