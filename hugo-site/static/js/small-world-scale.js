@@ -188,8 +188,9 @@ waitForD3().then(() => {
     }
 
     function simulate() {
-        if (numPeers > maxPeers) {
-            cancelAnimationFrame(animationFrame);
+        if (numPeers > maxPeers || !isSimulating) {
+            isSimulating = false;
+            startBtn.textContent = '▶️ Start';
             return;
         }
 
@@ -205,7 +206,7 @@ waitForD3().then(() => {
         updateChart();
         
         numPeers += 10;
-        animationFrame = requestAnimationFrame(simulate);
+        animationFrameId = requestAnimationFrame(simulate);
     }
 
     function reset() {
@@ -223,18 +224,33 @@ waitForD3().then(() => {
     const resetBtn = document.getElementById('resetScaleBtn');
     
     // Add button handlers
+    let isSimulating = false;
+    let animationFrameId = null;
+    
     startBtn.addEventListener('click', () => {
-        startBtn.disabled = true;
-        startBtn.textContent = '⏳ Simulation Running...';
-        resetBtn.style.display = 'inline-block';
-        numPeers = 30;
-        averagePathLengths = [];
-        simulate();
+        if (!isSimulating) {
+            // Start simulation
+            isSimulating = true;
+            startBtn.textContent = '⏸️ Pause';
+            numPeers = 30;
+            averagePathLengths = [];
+            simulate();
+        } else {
+            // Pause simulation
+            isSimulating = false;
+            startBtn.textContent = '▶️ Start';
+            cancelAnimationFrame(animationFrameId);
+        }
     });
     
     resetBtn.addEventListener('click', () => {
-        startBtn.disabled = false;
-        startBtn.textContent = '▶️ Start Network Scaling Simulation';
-        reset();
+        // Reset everything
+        isSimulating = false;
+        startBtn.textContent = '▶️ Start';
+        cancelAnimationFrame(animationFrameId);
+        numPeers = 30;
+        averagePathLengths = [];
+        initializeNetwork();
+        draw();
     });
 });

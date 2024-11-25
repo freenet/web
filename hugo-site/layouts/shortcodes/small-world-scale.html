@@ -1,13 +1,13 @@
 <div class="visualization-container">
+    <div class="buttons has-addons is-centered" style="margin: 1rem;">
+        <button id="startScaleBtn" class="button is-medium is-primary">▶️ Start</button>
+        <button id="resetScaleBtn" class="button is-medium">Reset</button>
+    </div>
     <div style="display: flex; flex-direction: row;">
         <canvas id="networkCanvas3" width="500" height="500"></canvas>
         <div id="scalingChart" style="width: 500px; height: 500px;">
             <svg width="500" height="500"></svg>
         </div>
-    </div>
-    <div class="control-panel" style="text-align: center; margin: 20px 0; padding: 10px; background-color: #f5f5f5; border-radius: 4px;">
-        <button id="startScaleBtn" class="button is-large is-primary is-fullwidth" style="margin-bottom: 10px; font-size: 1.25em;">▶️ Start Network Scaling Simulation</button>
-        <button id="resetScaleBtn" class="button is-secondary" style="display: none;">Reset</button>
     </div>
 </div>
 <script src="/js/small-world-scale.js"></script>
