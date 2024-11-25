@@ -78,9 +78,14 @@ waitForD3().then(() => {
     function calculateAveragePathLength() {
         let totalLength = 0;
         let pathCount = 0;
-
-        for (let i = 0; i < peers.length; i++) {
-            for (let j = i + 1; j < peers.length; j++) {
+        
+        // Sample only a subset of paths for larger networks
+        const sampleSize = numPeers > 100 ? 200 : numPeers * 2;
+        
+        for (let k = 0; k < sampleSize; k++) {
+            const i = Math.floor(Math.random() * peers.length);
+            const j = Math.floor(Math.random() * peers.length);
+            if (i !== j) {
                 const path = findShortestPath(peers[i], peers[j]);
                 if (path) {
                     totalLength += path.length - 1;
@@ -194,8 +199,11 @@ waitForD3().then(() => {
             return;
         }
 
+        // Only redraw network every 3 iterations
         initializeNetwork();
-        draw();
+        if (numPeers % 30 === 0) {
+            draw();
+        }
         
         const avgPathLength = calculateAveragePathLength();
         averagePathLengths.push({
@@ -205,7 +213,8 @@ waitForD3().then(() => {
         
         updateChart();
         
-        numPeers += 10;
+        // Increase step size
+        numPeers += 20;
         animationFrameId = requestAnimationFrame(simulate);
     }
 
