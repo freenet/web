@@ -60,8 +60,8 @@ waitForD3().then(() => {
     
     function createSmallWorldLinks() {
         const links = [];
-        const k = 4; // Each node connects to k nearest neighbors
-        const beta = 0.2; // Probability of rewiring
+        const k = 8; // Each node connects to k nearest neighbors
+        const beta = 0.3; // Probability of rewiring
         
         // First ensure each node is connected to its immediate neighbors
         for (let i = 0; i < numNodes; i++) {
@@ -137,33 +137,44 @@ waitForD3().then(() => {
     }
     
     function findPath(network, start, end) {
+        const path = [start];
         const visited = new Set([start]);
-        const queue = [[start]];
+        let current = start;
         let steps = 0;
         
-        while (queue.length > 0 && steps < maxHops) {
-            const path = queue.shift();
-            const node = path[path.length - 1];
-            
-            if (node === end) {
-                return path;
-            }
-            
-            // Find neighbors
+        while (current !== end && steps < maxHops) {
+            // Get all unvisited neighbors
             const neighbors = network.links
-                .filter(l => l.source === node || l.target === node)
-                .map(l => l.source === node ? l.target : l.source)
+                .filter(l => l.source === current || l.target === current)
+                .map(l => l.source === current ? l.target : l.source)
                 .filter(n => !visited.has(n));
             
-            for (const neighbor of neighbors) {
-                visited.add(neighbor);
-                queue.push([...path, neighbor]);
+            if (neighbors.length === 0) {
+                return null; // Dead end
             }
             
+            // Calculate geometric distances to target
+            const distances = neighbors.map(n => {
+                const dx = network.nodes[n].x - network.nodes[end].x;
+                const dy = network.nodes[n].y - network.nodes[end].y;
+                return {
+                    node: n,
+                    distance: Math.sqrt(dx * dx + dy * dy)
+                };
+            });
+            
+            // Choose closest neighbor to target
+            const nextNode = distances.reduce((a, b) => 
+                a.distance < b.distance ? a : b
+            ).node;
+            
+            current = nextNode;
+            path.push(current);
+            visited.add(current);
             steps++;
         }
         
-        return null; // Path not found within hop limit
+        return steps < maxHops ? path : null;
     }
     
     function drawNetwork(ctx, network, path = null) {
