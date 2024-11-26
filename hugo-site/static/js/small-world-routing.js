@@ -95,7 +95,7 @@ async function initVisualization() {
         // Draw the complete path up to current segment
         if (currentPath.length > 1) {
             // Draw the completed segments
-            ctx.strokeStyle = 'rgba(51, 153, 102, 0.6)'; // Using Ghost Key green
+            ctx.strokeStyle = 'rgba(0, 127, 255, 0.6)'; // Using primary blue
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(currentPath[0].x, currentPath[0].y);
@@ -115,8 +115,8 @@ async function initVisualization() {
             const x = start.x + (end.x - start.x) * animationProgress;
             const y = start.y + (end.y - start.y) * animationProgress;
             
-            ctx.fillStyle = '#1f5c3d'; // Darker Ghost Key green
-            ctx.strokeStyle = '#339966'; // Lighter Ghost Key green
+            ctx.fillStyle = '#0052cc'; // Darker blue
+            ctx.strokeStyle = '#007FFF'; // Primary blue
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, 2 * Math.PI);
             ctx.fill();
@@ -126,16 +126,16 @@ async function initVisualization() {
         // Draw nodes
         peers.forEach(peer => {
             if (peer === sourceNode) {
-                ctx.fillStyle = '#339966'; // Lighter Ghost Key green
-                ctx.strokeStyle = '#1f5c3d'; // Darker Ghost Key green
+                ctx.fillStyle = '#007FFF'; // Primary blue
+                ctx.strokeStyle = '#0052cc'; // Darker blue
                 ctx.lineWidth = 2;
             } else if (peer === targetNode) {
                 ctx.fillStyle = '#007FFF'; // Website link color
                 ctx.strokeStyle = '#0052cc'; // Darker shade of link color
                 ctx.lineWidth = 2;
             } else {
-                ctx.fillStyle = '#66cc99'; // Lighter Ghost Key green
-                ctx.strokeStyle = 'rgba(31, 92, 61, 0.2)'; // Darker Ghost Key green with transparency
+                ctx.fillStyle = '#4da6ff'; // Light blue
+                ctx.strokeStyle = 'rgba(0, 82, 204, 0.2)'; // Dark blue with transparency
                 ctx.lineWidth = 1;
             }
             ctx.beginPath();
