@@ -12,17 +12,10 @@ function waitForD3() {
     });
 }
 
-// Wait for both D3 and DOM to be ready
-Promise.all([
-    waitForD3(),
-    new Promise(resolve => {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', resolve);
-        } else {
-            resolve();
-        }
-    })
-]).then(() => {
+// Initialize after everything is loaded
+window.addEventListener('load', async () => {
+    try {
+        await waitForD3();
     const canvas = document.getElementById('networkCanvas2');
     if (!canvas) {
         console.error('Canvas element not found');
@@ -264,27 +257,15 @@ Promise.all([
         }
     }
 
-    function initializeUI() {
-        return new Promise((resolve, reject) => {
-            const playPauseBtn = document.getElementById('routingPlayPauseBtn');
-            if (!playPauseBtn) {
-                reject(new Error('Play/Pause button not found'));
-                return;
-            }
-            
-            playPauseBtn.addEventListener('click', togglePlayPause);
-            resolve();
-        });
+    // Initialize everything in sequence
+    const playPauseBtn = document.getElementById('routingPlayPauseBtn');
+    if (!playPauseBtn) {
+        console.error('Play/Pause button not found');
+        return;
     }
 
-    // Initialize everything in sequence
-    try {
-        initializeNetwork();
-        draw();
-        await initializeUI();
-        // Start playing
-        togglePlayPause();
-    } catch (error) {
-        console.error('Failed to initialize:', error);
-    }
+    initializeNetwork();
+    draw();
+    playPauseBtn.addEventListener('click', togglePlayPause);
+    togglePlayPause(); // Start playing
 });
