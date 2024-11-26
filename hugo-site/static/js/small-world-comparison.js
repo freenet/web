@@ -34,7 +34,7 @@ waitForD3().then(() => {
         randomNetwork.stats = { success: 0, attempts: 0, totalPathLength: 0 };
         
         // Create nodes in a ring layout
-        const radius = Math.min(smallWorldCanvas.width, smallWorldCanvas.height) * 0.45;
+        const radius = Math.min(smallWorldCanvas.width, smallWorldCanvas.height) * 0.315; // 0.45 * 0.7 = 0.315 (30% smaller)
         const nodes = d3.range(numNodes).map(i => {
             const angle = (i / numNodes) * 2 * Math.PI;
             return {
