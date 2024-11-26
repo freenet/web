@@ -206,22 +206,30 @@ async function initVisualization() {
         currentPathSegment = 0;
         animationProgress = 0;
 
-        // Calculate segment lengths
+        // Calculate segment lengths and total path length
         const segmentLengths = [];
+        let totalLength = 0;
         for (let i = 0; i < path.length - 1; i++) {
             const dx = path[i+1].x - path[i].x;
             const dy = path[i+1].y - path[i].y;
-            segmentLengths[i] = Math.sqrt(dx * dx + dy * dy);
+            const length = Math.sqrt(dx * dx + dy * dy);
+            segmentLengths[i] = length;
+            totalLength += length;
         }
 
-        const baseSpeed = 0.005; // Adjust this to control overall animation speed
+        const pixelsPerSecond = 200; // Constant speed in pixels per second
+        let lastTime = performance.now();
 
-        function animate() {
+        function animate(currentTime) {
             if (!isPlaying) return;
             
-            // Adjust speed based on current segment length
-            const speed = baseSpeed * (200 / segmentLengths[currentPathSegment]);
-            animationProgress += speed;
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+            
+            // Calculate progress based on constant speed
+            const progressPerMs = pixelsPerSecond / 1000;
+            const progressThisFrame = (deltaTime * progressPerMs) / segmentLengths[currentPathSegment];
+            animationProgress += progressThisFrame;
             
             if (animationProgress >= 1) {
                 animationProgress = 0;
@@ -234,6 +242,7 @@ async function initVisualization() {
                         if (!isPlaying) return;
                         animationProgress = 0;
                         currentPathSegment = 0;
+                        lastTime = performance.now();
                         animationFrame = requestAnimationFrame(animate);
                     }, 1000);
                     return;
