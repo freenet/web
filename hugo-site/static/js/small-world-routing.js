@@ -16,7 +16,7 @@ function waitForD3() {
 window.addEventListener('load', async () => {
     try {
         await waitForD3();
-    const canvas = document.getElementById('networkCanvas2');
+        const canvas = document.getElementById('networkCanvas2');
     if (!canvas) {
         console.error('Canvas element not found');
         return;
