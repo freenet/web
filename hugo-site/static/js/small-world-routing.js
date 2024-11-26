@@ -249,13 +249,15 @@ waitForD3().then(() => {
         }
     }
 
-    // Initialize
-    initializeNetwork();
-    draw();
+    // Initialize once DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeNetwork();
+        draw();
 
-    // Add button handler
-    document.getElementById('routingPlayPauseBtn').addEventListener('click', togglePlayPause);
-    
-    // Start playing
-    togglePlayPause();
+        // Add button handler
+        document.getElementById('routingPlayPauseBtn').addEventListener('click', togglePlayPause);
+        
+        // Start playing
+        togglePlayPause();
+    });
 });
