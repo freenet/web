@@ -235,7 +235,7 @@ waitForD3().then(() => {
         statsDiv.innerHTML = '';
         
         // Create SVG
-        const margin = {top: 20, right: 50, bottom: 30, left: 50};
+        const margin = {top: 40, right: 50, bottom: 30, left: 50};
         const width = 300 - margin.left - margin.right;
         const height = 350 - margin.top - margin.bottom;
         
@@ -292,7 +292,17 @@ waitForD3().then(() => {
             .attr('width', x.bandwidth() / 2)
             .attr('y', d => yPath(d === 'Small World' ? swAvgPath : rnAvgPath))
             .attr('height', d => height - yPath(d === 'Small World' ? swAvgPath : rnAvgPath))
-            .attr('fill', '#007FFF');
+            .attr('fill', '#4292c6');
+
+        // Add grid lines
+        svg.append('g')
+            .attr('class', 'grid')
+            .call(d3.axisLeft(yPath)
+                .tickSize(-width)
+                .tickFormat('')
+            )
+            .style('stroke-dasharray', '2,2')
+            .style('stroke-opacity', 0.2);
             
         svg.selectAll('.success-bar')
             .data(['Small World', 'Random'])
@@ -303,35 +313,60 @@ waitForD3().then(() => {
             .attr('width', x.bandwidth() / 2)
             .attr('y', d => ySuccess(d === 'Small World' ? swSuccess : rnSuccess))
             .attr('height', d => height - ySuccess(d === 'Small World' ? swSuccess : rnSuccess))
-            .attr('fill', '#0052cc');
+            .attr('fill', '#08519c');
+
+        // Add value labels on bars
+        svg.selectAll('.path-label')
+            .data(['Small World', 'Random'])
+            .enter()
+            .append('text')
+            .attr('class', 'path-label')
+            .attr('x', d => x(d) + x.bandwidth()/4)
+            .attr('y', d => yPath(d === 'Small World' ? swAvgPath : rnAvgPath) - 5)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '10px')
+            .text(d => (d === 'Small World' ? swAvgPath : rnAvgPath).toFixed(1));
+
+        svg.selectAll('.success-label')
+            .data(['Small World', 'Random'])
+            .enter()
+            .append('text')
+            .attr('class', 'success-label')
+            .attr('x', d => x(d) + 3*x.bandwidth()/4)
+            .attr('y', d => ySuccess(d === 'Small World' ? swSuccess : rnSuccess) - 5)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '10px')
+            .text(d => (d === 'Small World' ? swSuccess : rnSuccess).toFixed(1) + '%');
             
-        // Legend
+        // Legend with better spacing and alignment
         const legend = svg.append('g')
-            .attr('transform', `translate(0,-15)`);
+            .attr('transform', `translate(${width/2},-25)`);
             
+        // First legend item
         legend.append('rect')
-            .attr('x', 0)
-            .attr('width', 10)
-            .attr('height', 10)
-            .attr('fill', '#007FFF');
+            .attr('x', -120)
+            .attr('width', 12)
+            .attr('height', 12)
+            .attr('fill', '#4292c6');
             
         legend.append('text')
-            .attr('x', 15)
-            .attr('y', 9)
-            .text('Path Length')
-            .style('font-size', '10px');
+            .attr('x', -105)
+            .attr('y', 10)
+            .text('Avg Path Length')
+            .style('font-size', '11px');
             
+        // Second legend item
         legend.append('rect')
-            .attr('x', 80)
-            .attr('width', 10)
-            .attr('height', 10)
-            .attr('fill', '#0052cc');
+            .attr('x', 10)
+            .attr('width', 12)
+            .attr('height', 12)
+            .attr('fill', '#08519c');
             
         legend.append('text')
-            .attr('x', 95)
-            .attr('y', 9)
+            .attr('x', 25)
+            .attr('y', 10)
             .text('Success Rate')
-            .style('font-size', '10px');
+            .style('font-size', '11px');
     }
     
     async function simulateRouting() {
