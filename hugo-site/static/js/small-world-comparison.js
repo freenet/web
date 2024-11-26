@@ -63,32 +63,55 @@ waitForD3().then(() => {
         const k = 4; // Each node connects to k nearest neighbors
         const beta = 0.2; // Probability of rewiring
         
-        // Create ring lattice
+        // First ensure each node is connected to its immediate neighbors
         for (let i = 0; i < numNodes; i++) {
-            for (let j = 1; j <= k/2; j++) {
+            // Connect to previous node
+            const prev = (i - 1 + numNodes) % numNodes;
+            links.push({
+                source: i,
+                target: prev,
+                rewired: false
+            });
+            
+            // Connect to next node
+            const next = (i + 1) % numNodes;
+            links.push({
+                source: i,
+                target: next,
+                rewired: false
+            });
+        }
+        
+        // Add additional longer-range connections
+        for (let i = 0; i < numNodes; i++) {
+            for (let j = 2; j <= k/2; j++) {
                 const target = (i + j) % numNodes;
-                links.push({
+                const link = {
                     source: i,
                     target: target,
                     rewired: false
-                });
-            }
-        }
-        
-        // Rewire edges
-        links.forEach(link => {
-            if (Math.random() < beta) {
-                let newTarget;
-                do {
-                    newTarget = Math.floor(Math.random() * numNodes);
-                } while (newTarget === link.source || 
+                };
+                
+                // Only rewire non-neighbor connections
+                if (Math.random() < beta) {
+                    let newTarget;
+                    do {
+                        newTarget = Math.floor(Math.random() * numNodes);
+                    } while (
+                        newTarget === link.source || 
+                        newTarget === ((i + 1) % numNodes) || // Don't rewire to immediate neighbors
+                        newTarget === ((i - 1 + numNodes) % numNodes) ||
                         links.some(l => 
                             (l.source === link.source && l.target === newTarget) ||
-                            (l.source === newTarget && l.target === link.source)));
-                link.target = newTarget;
-                link.rewired = true;
+                            (l.source === newTarget && l.target === link.source))
+                    );
+                    link.target = newTarget;
+                    link.rewired = true;
+                }
+                
+                links.push(link);
             }
-        });
+        }
         
         return links;
     }
