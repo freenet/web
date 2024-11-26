@@ -132,65 +132,56 @@ waitForD3().then(() => {
     }
 
     function findGreedyPath(start, target, nodes) {
-        const visited = new Set();
-        let current = start;
-        let path = [current];
+        if (start === target) return 0;
         
-        while (current !== target) {
-            visited.add(current);
-            
-            // Find all neighbors of current node
-            let neighbors = links
-                .filter(link => 
-                    (link.source === current || link.target === current) &&
-                    !visited.has(link.source === current ? link.target : link.source)
-                )
+        const visited = new Set([start]);
+        let current = start;
+        let pathLength = 0;
+        const maxHops = nodes.length;
+
+        function getDistance(a, b) {
+            const clockwise = Math.abs(a.index - b.index);
+            const counterclockwise = nodes.length - clockwise;
+            return Math.min(clockwise, counterclockwise);
+        }
+
+        while (pathLength < maxHops) {
+            // Get all neighbors
+            const neighbors = links
+                .filter(link => {
+                    const neighbor = link.source === current ? link.target : link.source;
+                    return (link.source === current || link.target === current) && !visited.has(neighbor);
+                })
                 .map(link => link.source === current ? link.target : link.source);
-            
+
             if (neighbors.length === 0) {
-                return Infinity; // No path found
+                return Infinity; // Dead end
             }
+
+            // Current distance to target
+            const currentDistance = getDistance(current, target);
+
+            // Sort neighbors by their distance to target
+            neighbors.sort((a, b) => {
+                const distA = getDistance(a, target);
+                const distB = getDistance(b, target);
+                return distA - distB;
+            });
+
+            // Find best neighbor that reduces distance
+            const bestNeighbor = neighbors.find(n => getDistance(n, target) < currentDistance);
             
-            // Calculate current distance to target
-            const currentDist = Math.min(
-                Math.abs(current.index - target.index),
-                nodes.length - Math.abs(current.index - target.index)
-            );
-            
-            // Find neighbor that reduces distance to target
-            let nextNode = null;
-            let minDist = currentDist;
-            
-            for (const neighbor of neighbors) {
-                const dist = Math.min(
-                    Math.abs(neighbor.index - target.index),
-                    nodes.length - Math.abs(neighbor.index - target.index)
-                );
-                if (dist < minDist) {
-                    minDist = dist;
-                    nextNode = neighbor;
-                }
-            }
-            
-            // If no neighbor reduces distance, pick any unvisited neighbor
-            if (!nextNode && neighbors.length > 0) {
-                nextNode = neighbors[0];
-            }
-            
-            // No valid next hop found
-            if (!nextNode) {
-                return Infinity;
-            }
-            
-            current = nextNode;
-            path.push(current);
-            
-            if (path.length > nodes.length) {
-                return Infinity; // Prevent infinite loops
+            // If no better neighbor exists, use the closest one to target
+            current = bestNeighbor || neighbors[0];
+            visited.add(current);
+            pathLength++;
+
+            if (current === target) {
+                return pathLength;
             }
         }
-        
-        return path.length - 1; // Return path length (number of hops)
+
+        return Infinity; // Path too long or loop detected
     }
 
     function updateChart() {
