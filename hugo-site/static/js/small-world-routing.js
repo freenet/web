@@ -12,10 +12,13 @@ function waitForD3() {
     });
 }
 
-// Initialize after everything is loaded
-window.addEventListener('load', async () => {
+// Initialize visualization
+async function initVisualization() {
     try {
+        // Wait for both D3 and DOM to be ready
         await waitForD3();
+        
+        // Get canvas element
         const canvas = document.getElementById('networkCanvas2');
         if (!canvas) {
             console.error('Canvas element not found');
@@ -270,39 +273,29 @@ window.addEventListener('load', async () => {
     initializeNetwork();
     draw();
     
-    // Setup button with retry
-    function initializeButton() {
-        const maxRetries = 5;
-        let retryCount = 0;
-        
-        function trySetupButton() {
-            const playPauseBtn = document.getElementById('routingPlayPauseBtn');
-            if (playPauseBtn) {
-                try {
-                    playPauseBtn.addEventListener('click', togglePlayPause);
-                    isPlaying = false; // Ensure initial state
-                    togglePlayPause(); // This will set isPlaying to true and start animation
-                } catch (error) {
-                    console.error('Error setting up button:', error);
-                }
-            } else {
-                retryCount++;
-                if (retryCount < maxRetries) {
-                    console.log(`Button not found, retrying... (${retryCount}/${maxRetries})`);
-                    setTimeout(trySetupButton, 100); // Retry after 100ms
-                } else {
-                    console.error('Failed to find play/pause button after maximum retries');
-                }
-            }
+        // Setup button
+        const playPauseBtn = document.getElementById('routingPlayPauseBtn');
+        if (playPauseBtn) {
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            isPlaying = false; // Ensure initial state
+            togglePlayPause(); // Start the animation
+        } else {
+            console.error('Play/Pause button not found - continuing without animation controls');
+            // Start animation anyway
+            isPlaying = true;
+            startNewRoute();
         }
-        
-        // Start the retry process
-        trySetupButton();
-    }
-    
-    // Initialize button after a short delay to ensure DOM is ready
-    setTimeout(initializeButton, 100);
     } catch (error) {
         console.error('Failed to initialize visualization:', error);
+        // Try to continue with basic functionality
+        isPlaying = true;
+        startNewRoute();
     }
-});
+}
+
+// Wait for DOM to be fully loaded before starting
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initVisualization);
+} else {
+    initVisualization();
+}
