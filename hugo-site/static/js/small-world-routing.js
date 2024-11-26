@@ -213,35 +213,58 @@ async function initVisualization() {
         currentPathSegment = 0;
         animationProgress = 0;
 
-        // Animation timing setup
-        const animationDuration = 1000; // Duration per segment in milliseconds
+        // Draw the complete path immediately
+        ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)'; // Lighter blue for complete path
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(path[0].x, path[0].y);
+        for (let i = 1; i < path.length; i++) {
+            ctx.lineTo(path[i].x, path[i].y);
+        }
+        ctx.stroke();
+        ctx.lineWidth = 1;
+
+        // Calculate segment lengths
+        const segmentLengths = [];
+        for (let i = 0; i < path.length - 1; i++) {
+            const dx = path[i+1].x - path[i].x;
+            const dy = path[i+1].y - path[i].y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            segmentLengths[i] = length;
+        }
+
+        const pixelsPerSecond = 200; // Constant speed in pixels per second
         let startTime = null;
+        let lastSegmentStartTime = null;
 
         function animate(currentTime) {
             if (!isPlaying) return;
             
             if (!startTime) {
                 startTime = currentTime;
+                lastSegmentStartTime = currentTime;
             }
 
-            const elapsed = currentTime - startTime;
-            animationProgress = Math.min(elapsed / animationDuration, 1);
+            // Calculate progress for current segment
+            const elapsedInSegment = currentTime - lastSegmentStartTime;
+            const segmentDuration = (segmentLengths[currentPathSegment] / pixelsPerSecond) * 1000;
+            animationProgress = Math.min(elapsedInSegment / segmentDuration, 1);
             
             if (animationProgress >= 1) {
                 currentPathSegment++;
                 
                 if (currentPathSegment >= currentPath.length - 1) {
-                    // Animation complete - wait 1 second then trigger new route
+                    // Animation complete - wait 3 seconds then trigger new route
                     setTimeout(() => {
                         if (isPlaying) {
                             startNewRoute();
                         }
-                    }, 1000);
+                    }, 3000);
                     return;
                 }
                 
-                // Reset for next segment
-                startTime = currentTime;
+                // Start timing for next segment
+                lastSegmentStartTime = currentTime;
                 animationProgress = 0;
             }
             
@@ -249,7 +272,6 @@ async function initVisualization() {
             animationFrame = requestAnimationFrame(animate);
         }
 
-        // Start animation immediately
         animationFrame = requestAnimationFrame(animate);
     }
 
