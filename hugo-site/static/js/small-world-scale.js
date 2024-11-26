@@ -134,7 +134,14 @@ waitForD3().then(() => {
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
 
-        const svg = d3.select('#scalingChart svg');
+        // Create SVG if it doesn't exist
+        let svg = d3.select('#scalingChart svg');
+        if (svg.empty()) {
+            svg = d3.select('#scalingChart')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+        }
         svg.selectAll('*').remove();
 
         const g = svg.append('g')
