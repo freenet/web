@@ -30,7 +30,7 @@ Small world networks combine the strengths of both regular and random networks. 
 network, nodes are primarily connected to their immediate neighbors, creating an orderly but often
 slow communication structure. On the other hand, random networks have many short paths between
 nodes, but they tend to be disorganized and unreliable. Small world networks strike a balance
-between these extremes by featuring mostly local connections along with a few strategically placed
+between these extremes by featuring mostly local connections along with some
 long-range links, which significantly reduce the average path length.
 
 To better understand this, let's look at an animation that visualizes a key property of these
