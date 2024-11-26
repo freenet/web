@@ -170,11 +170,14 @@ function updateHistogram() {
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Create histogram data
+    // Create histogram data with more bins for smoother curve
     const bins = d3.histogram()
         .domain([0, Math.floor(numPeers/2)])
-        .thresholds(10)
+        .thresholds(20)
         (distances);
+
+    // Apply square root transformation to y-values for better visualization
+    const yScale = d => Math.sqrt(d);
 
     // Scales
     const x = d3.scaleLinear()
@@ -182,7 +185,7 @@ function updateHistogram() {
         .range([0, width]);
 
     const y = d3.scaleLinear()
-        .domain([0, d3.max(bins, d => d.length)])
+        .domain([0, Math.sqrt(d3.max(bins, d => d.length))])
         .range([height, 0]);
 
     // Add bars
@@ -192,8 +195,8 @@ function updateHistogram() {
         .append('rect')
         .attr('x', d => x(d.x0))
         .attr('width', d => Math.max(0, x(d.x1) - x(d.x0) - 1))
-        .attr('y', d => y(d.length))
-        .attr('height', d => height - y(d.length))
+        .attr('y', d => y(yScale(d.length)))
+        .attr('height', d => height - y(yScale(d.length)))
         .style('fill', '#007FFF'); // Primary blue
 
     // Add axes
