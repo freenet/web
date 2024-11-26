@@ -25,8 +25,8 @@ const width1 = canvas1.width;
 const height1 = canvas1.height;
 
 // Parameters
-const numPeers = 50;
-const radius = 200;
+const numPeers = 500;
+const radius = 230; // Slightly larger radius to accommodate more nodes
 // Probability function that more strongly favors short connections
 const connectionProbability = (distance) => {
     if (distance === 0) return 0;
@@ -140,7 +140,7 @@ function drawNetwork() {
     ctx1.clearRect(0, 0, width1, height1);
 
     // Draw links
-    ctx1.strokeStyle = 'rgba(0, 127, 255, 0.3)'; // Using website link color
+    ctx1.strokeStyle = 'rgba(0, 127, 255, 0.15)'; // More transparent links due to higher density
     links.forEach(link => {
         ctx1.beginPath();
         ctx1.moveTo(link.source.x, link.source.y);
@@ -152,7 +152,7 @@ function drawNetwork() {
     ctx1.fillStyle = '#007FFF'; // Primary blue
     peers.forEach(peer => {
         ctx1.beginPath();
-        ctx1.arc(peer.x, peer.y, 5, 0, 2 * Math.PI);
+        ctx1.arc(peer.x, peer.y, 2, 0, 2 * Math.PI); // Smaller nodes
         ctx1.fill();
     });
 }
