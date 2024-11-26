@@ -90,67 +90,78 @@ waitForD3().then(() => {
         ctx.fillText(`Network Size: ${numPeers} nodes`, width/2, height - 10);
     }
 
+    // Pre-computed network statistics for common sizes
+    const networkStats = new Map();
+    
     function calculateAveragePathLength() {
-        // More aggressive adaptive sampling for larger networks
-        const baseSampleSize = 100;
-        const sampleSize = Math.min(baseSampleSize, 
-            numPeers < 500 ? Math.ceil(numPeers * 0.3) :
-            numPeers < 1000 ? Math.ceil(numPeers * 0.2) :
-            Math.ceil(numPeers * 0.1));
+        // Use cached value if available
+        if (networkStats.has(numPeers)) {
+            return networkStats.get(numPeers);
+        }
+
+        // Fixed sample size regardless of network size
+        const sampleSize = 50;
+        const sampleNodes = selectRepresentativeNodes(sampleSize);
         
         let totalLength = 0;
         let pathCount = 0;
+
+        // Use Floyd-Warshall on the sampled subset
+        const distances = floydWarshall(sampleNodes);
         
-        // Sample random pairs of nodes
-        const sampledPairs = new Set();
-        while (sampledPairs.size < sampleSize) {
-            const i = Math.floor(Math.random() * peers.length);
-            const j = Math.floor(Math.random() * peers.length);
-            if (i !== j) {
-                const pairKey = `${Math.min(i,j)}-${Math.max(i,j)}`;
-                if (!sampledPairs.has(pairKey)) {
-                    sampledPairs.add(pairKey);
-                    const path = findShortestPath(peers[i], peers[j]);
-                    if (path) {
-                        totalLength += path.length - 1;
-                        pathCount++;
+        // Calculate average from distance matrix
+        for (let i = 0; i < distances.length; i++) {
+            for (let j = i + 1; j < distances.length; j++) {
+                if (distances[i][j] !== Infinity) {
+                    totalLength += distances[i][j];
+                    pathCount++;
+                }
+            }
+        }
+
+        const avgPathLength = pathCount > 0 ? totalLength / pathCount : 0;
+        
+        // Cache the result
+        networkStats.set(numPeers, avgPathLength);
+        
+        return avgPathLength;
+    }
+
+    function selectRepresentativeNodes(sampleSize) {
+        // Select nodes that are evenly distributed around the ring
+        const step = Math.max(1, Math.floor(peers.length / sampleSize));
+        return peers.filter((_, index) => index % step === 0).slice(0, sampleSize);
+    }
+
+    function floydWarshall(nodes) {
+        const n = nodes.length;
+        const dist = Array(n).fill().map(() => Array(n).fill(Infinity));
+        
+        // Initialize distances
+        for (let i = 0; i < n; i++) {
+            dist[i][i] = 0;
+            for (const link of links) {
+                const sourceIdx = nodes.indexOf(link.source);
+                const targetIdx = nodes.indexOf(link.target);
+                if (sourceIdx !== -1 && targetIdx !== -1) {
+                    dist[sourceIdx][targetIdx] = 1;
+                    dist[targetIdx][sourceIdx] = 1;
+                }
+            }
+        }
+        
+        // Floyd-Warshall algorithm
+        for (let k = 0; k < n; k++) {
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    if (dist[i][k] !== Infinity && dist[k][j] !== Infinity) {
+                        dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);
                     }
                 }
             }
         }
-
-        return pathCount > 0 ? totalLength / pathCount : 0;
-    }
-
-    function findShortestPath(start, end) {
-        const queue = [[start]];
-        const visited = new Set([start.index]);
-
-        while (queue.length > 0) {
-            const path = queue.shift();
-            const node = path[path.length - 1];
-
-            if (node === end) {
-                return path;
-            }
-
-            // Find all neighbors
-            const neighbors = links.reduce((acc, link) => {
-                if (link.source === node && !visited.has(link.target.index)) {
-                    acc.push(link.target);
-                } else if (link.target === node && !visited.has(link.source.index)) {
-                    acc.push(link.source);
-                }
-                return acc;
-            }, []);
-
-            for (const neighbor of neighbors) {
-                visited.add(neighbor.index);
-                queue.push([...path, neighbor]);
-            }
-        }
-
-        return null;
+        
+        return dist;
     }
 
     function updateChart() {
