@@ -258,16 +258,17 @@ window.addEventListener('load', async () => {
     }
 
     // Initialize everything in sequence
-    const playPauseBtn = document.getElementById('routingPlayPauseBtn');
-    if (!playPauseBtn) {
-        console.error('Play/Pause button not found');
-        return;
-    }
-
     initializeNetwork();
     draw();
-    playPauseBtn.addEventListener('click', togglePlayPause);
-    togglePlayPause(); // Start playing
+    
+    // Setup button after ensuring it exists
+    const playPauseBtn = document.getElementById('routingPlayPauseBtn');
+    if (playPauseBtn) {
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        togglePlayPause(); // Start playing
+    } else {
+        console.error('Play/Pause button not found');
+    }
     } catch (error) {
         console.error('Failed to initialize visualization:', error);
     }
