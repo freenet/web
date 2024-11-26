@@ -31,6 +31,7 @@ waitForD3().then(() => {
     let isSimulating = false;
 
     function initializeNetwork() {
+        // Create peers in a ring
         peers = d3.range(numPeers).map(i => {
             const angle = (i / numPeers) * 2 * Math.PI;
             return {
@@ -41,11 +42,23 @@ waitForD3().then(() => {
         });
 
         links = [];
+        
+        // First ensure ring connectivity - connect each peer to its immediate neighbors
         for (let i = 0; i < numPeers; i++) {
+            // Connect to next peer
             const nextIndex = (i + 1) % numPeers;
             links.push({ source: peers[i], target: peers[nextIndex] });
             
-            for (let j = i + 2; j < numPeers; j++) {
+            // Connect to previous peer (for redundancy)
+            const prevIndex = (i - 1 + numPeers) % numPeers;
+            links.push({ source: peers[i], target: peers[prevIndex] });
+        }
+        
+        // Then add probabilistic long-range connections
+        for (let i = 0; i < numPeers; i++) {
+            for (let j = (i + 2) % numPeers; j !== i; j = (j + 1) % numPeers) {
+                if (j === (i + 1) % numPeers || j === (i - 1 + numPeers) % numPeers) continue; // Skip immediate neighbors
+                
                 const distance = Math.min(Math.abs(i - j), numPeers - Math.abs(i - j));
                 const prob = connectionProbability(distance);
                 if (Math.random() < prob) {
