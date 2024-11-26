@@ -9,20 +9,21 @@ head:
       href: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css
 ---
 
-In the 1960s, psychologist Stanley Milgram conducted an influential experiment that revealed just
-how interconnected our world really is. Milgram repeated this letter-sending experiment nearly 200
-times, where participants were asked to forward a letter to a target individual, but only by passing
-it to someone they personally knew. On average, these letters reached their target in just six
-steps, giving rise to the concept of 'six degrees of separation.' Milgram's findings demonstrated
-that despite the vastness of the world, most individuals are only a few links away from each other,
-highlighting the surprisingly small number of intermediaries connecting us all.
+In the 1960s, psychologist Stanley Milgram conducted an influential experiment that revealed
+something amazing about human relationships. Milgram chose people at random in cities like Kansas
+and gave each a letter with the address of someone they didn't know in Boson, Massachusetts. They
+were instructed to get the letter to that person but only by sending it to someone they know
+personally, who would send it to someone they know personally - and so on. Milgram repeated this
+letter-sending experiment nearly 200 times. On average, these letters reached their target in just
+six steps, this is where we get the term 'six degrees of separation.' Milgram's findings
+demonstrated that despite the vastness of the world, most individuals are only a few links away from
+each other, highlighting the surprisingly small number of intermediaries connecting us all.
 
-So, how does this concept apply to technology and Freenet? Freenet uses principles similar to those
-observed in Milgram's experiment to efficiently locate information in a decentralized way. Each node
-in Freenet is connected to a limited number of other nodes, and much like in a small world social
-network, this network structure allows data to be found with minimal hops, even when the network
-scales to millions of nodes. This efficient discovery mechanism is what makes Freenet both
-decentralized and highly scalable, embodying the core principles of a small world network.
+Freenet uses principles similar to those observed in Milgram's experiment to efficiently locate
+information in a decentralized way. Each node in Freenet is connected to a limited number of other
+nodes, and much like in a small world social network, this network structure allows data to be found
+with minimal hops, even when the network scales to millions of nodes. This efficient discovery
+mechanism is what makes Freenet both decentralized and highly scalable.
 
 ## Small World Networks: Combining Regularity and Randomness
 
@@ -30,8 +31,8 @@ Small world networks combine the strengths of both regular and random networks. 
 network, nodes are primarily connected to their immediate neighbors, creating an orderly but often
 slow communication structure. On the other hand, random networks have many short paths between
 nodes, but they tend to be disorganized and unreliable. Small world networks strike a balance
-between these extremes by featuring mostly local connections along with some
-long-range links, which significantly reduce the average path length.
+between these extremes by featuring mostly local connections along with some long-range links, which
+significantly reduce the average path length.
 
 To better understand this, let's look at an animation that visualizes a key property of these
 networks: **Greedy Routing**.
@@ -73,7 +74,14 @@ altogether.
 ## Scaling Small World Networks: Efficient Growth
 
 One of the most remarkable aspects of small world networks is how efficiently they scale as new
-nodes are added. The next animation shows the average path length as the network grows:
+nodes are added. In small world networks, the average path length grows logarithmically with the
+number of nodes, meaning that as the network doubles in size, the average number of steps to reach
+any node only increases by a small, fixed amount. This contrasts sharply with linear growth, where
+doubling the size of the network would double the number of steps required. This logarithmic growth
+is crucial because it ensures that even as the network expands to include millions of nodes, the
+average path length remains manageable.
+
+The next animation shows the average path length as the network grows.
 
 {{< small-world-scale >}}
 
