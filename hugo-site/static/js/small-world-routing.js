@@ -134,7 +134,7 @@ async function initVisualization() {
                 ctx.strokeStyle = '#0052cc'; // Darker shade of link color
                 ctx.lineWidth = 2;
             } else {
-                ctx.fillStyle = '#4da6ff'; // Light blue
+                ctx.fillStyle = '#007FFF'; // Primary blue
                 ctx.strokeStyle = 'rgba(0, 82, 204, 0.2)'; // Dark blue with transparency
                 ctx.lineWidth = 1;
             }
