@@ -151,18 +151,36 @@ waitForD3().then(() => {
                 return Infinity; // No path found
             }
             
-            // Choose the neighbor closest to target (in terms of ring distance)
-            let nextNode = neighbors.reduce((best, neighbor) => {
-                let distToTarget = Math.min(
+            // Calculate current distance to target
+            const currentDist = Math.min(
+                Math.abs(current.index - target.index),
+                nodes.length - Math.abs(current.index - target.index)
+            );
+            
+            // Find neighbor that reduces distance to target
+            let nextNode = null;
+            let minDist = currentDist;
+            
+            for (const neighbor of neighbors) {
+                const dist = Math.min(
                     Math.abs(neighbor.index - target.index),
                     nodes.length - Math.abs(neighbor.index - target.index)
                 );
-                let bestDist = Math.min(
-                    Math.abs(best.index - target.index),
-                    nodes.length - Math.abs(best.index - target.index)
-                );
-                return distToTarget < bestDist ? neighbor : best;
-            });
+                if (dist < minDist) {
+                    minDist = dist;
+                    nextNode = neighbor;
+                }
+            }
+            
+            // If no neighbor reduces distance, pick any unvisited neighbor
+            if (!nextNode && neighbors.length > 0) {
+                nextNode = neighbors[0];
+            }
+            
+            // No valid next hop found
+            if (!nextNode) {
+                return Infinity;
+            }
             
             current = nextNode;
             path.push(current);
