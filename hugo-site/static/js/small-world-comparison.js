@@ -34,7 +34,7 @@ waitForD3().then(() => {
         randomNetwork.stats = { success: 0, attempts: 0, totalPathLength: 0 };
         
         // Create nodes in a ring layout
-        const radius = Math.min(smallWorldCanvas.width, smallWorldCanvas.height) * 0.42; // Larger percentage of canvas size
+        const radius = Math.min(smallWorldCanvas.width, smallWorldCanvas.height) * 0.47; // Using 47% of canvas size
         const nodes = d3.range(numNodes).map(i => {
             const angle = (i / numNodes) * 2 * Math.PI;
             return {
