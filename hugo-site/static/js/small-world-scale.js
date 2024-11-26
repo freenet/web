@@ -250,7 +250,4 @@ waitForD3().then(() => {
     initializeNetwork();
     draw();
     
-    const startBtn = document.getElementById('startScaleBtn');
-    const resetBtn = document.getElementById('resetScaleBtn');
-    
 });
