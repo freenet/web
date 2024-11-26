@@ -215,7 +215,7 @@ waitForD3().then(() => {
             .attr('transform', `translate(${margin.left},${margin.top})`);
 
         const x = d3.scaleLinear()
-            .domain([30, maxPeers])
+            .domain([0, maxPeers])
             .range([0, chartWidth]);
 
         const y = d3.scaleLinear()
@@ -244,7 +244,8 @@ waitForD3().then(() => {
         g.append('g')
             .attr('transform', `translate(0,${chartHeight})`)
             .call(d3.axisBottom(x)
-                .ticks(10));
+                .ticks(10)
+                .tickFormat(d => d === 0 ? '0' : d));
 
         g.append('g')
             .call(d3.axisLeft(y)
