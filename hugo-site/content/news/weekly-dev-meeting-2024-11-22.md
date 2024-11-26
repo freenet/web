@@ -22,7 +22,8 @@ resolved, but a key challenge remains with the WebSocket API:
    - A user-reported bug related to the `Clap` argument parser in the CLI is under review.
 
 **Working on**
-- 
+
+-
 - Investigating the WebSocket disconnection issue
 - Continued work on integrating River with the websocket API
 

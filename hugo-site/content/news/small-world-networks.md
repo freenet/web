@@ -1,41 +1,79 @@
----
-title: "Understanding Small World Networks"
-date: 2024-11-25
-draft: false
-head:
-  - - link
-    - rel: stylesheet
-      href: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css
----
+In the 1960s, psychologist Stanley Milgram conducted an influential experiment that revealed just
+how interconnected our world really is. Milgram repeated this letter-sending experiment nearly 200
+times, where participants were asked to forward a letter to a target individual, but only by passing
+it to someone they personally knew. On average, these letters reached their target in just six
+steps, giving rise to the concept of 'six degrees of separation.' Milgram's findings demonstrated
+that despite the vastness of the world, most individuals are only a few links away from each other,
+highlighting the surprisingly small number of intermediaries connecting us all.
 
-Small world networks are a fascinating type of network structure that combines the best properties of both regular networks (where nodes connect to their nearest neighbors) and random networks (which have short average path lengths). These networks are ubiquitous in nature and technology - from social networks and neural pathways to the internet's backbone.
+So, how does this concept apply to technology and Freenet? Freenet uses principles similar to those
+observed in Milgram's experiment to efficiently locate information in a decentralized way. Each node
+in Freenet is connected to a limited number of other nodes, and much like in a small world social
+network, this network structure allows data to be found with minimal hops, even when the network
+scales to millions of nodes. This efficient discovery mechanism is what makes Freenet both
+decentralized and highly scalable, embodying the core principles of a small world network.
 
-Let's explore these remarkable networks through interactive visualizations that demonstrate their key properties.
+## Small World Networks: Combining Regularity and Randomness
 
-## Greedy Routing
+Small world networks combine the strengths of both regular and random networks. In a regular
+network, nodes are primarily connected to their immediate neighbors, creating an orderly but often
+slow communication structure. On the other hand, random networks have many short paths between
+nodes, but they tend to be disorganized and unreliable. Small world networks strike a balance
+between these extremes by featuring mostly local connections along with a few strategically placed
+long-range links, which significantly reduce the average path length.
 
-One key feature of small world networks is that they support efficient "greedy" routing - where messages are passed to whichever neighbor is closest to the final destination:
+To better understand this, let's look at an animation that visualizes a key property of these
+networks: **Greedy Routing**.
+
+## Greedy Routing: Finding a Path With Local Knowledge
+
+A defining characteristic of small world networks is their ability to support efficient "greedy"
+routing. In this context, "greedy" routing refers to a process where each node forwards a message to
+the neighbor that appears to be closest to the final destination, based only on locally available
+information:
 
 {{< small-world-routing >}}
 
-Watch as messages navigate through the network using only local information. While this greedy routing strategy isn't guaranteed to find the mathematically shortest path, it demonstrates how local decisions can achieve remarkably efficient global routing - a key feature of small world networks.
+In this animation, you can observe messages navigating the network using only local decisions at
+each step. While this approach does not always yield the mathematically shortest path, it is
+remarkably effective at navigating small world structures. Freenet leverages a similar principle:
+nodes use their local knowledge to make efficient routing decisions, much like the participants in
+Milgram's experiment passing letters through their personal networks.
 
-## Routing Performance
+## Comparing Routing Performance: Small World vs. Random Networks
 
-The real power of small world networks becomes apparent when we compare their routing performance to random networks. In the visualization below, watch as both networks attempt to route messages between random pairs of nodes:
+The benefits of small world networks are most apparent when we compare their routing performance
+with that of purely random networks. The animation below illustrates how both network types route
+messages between random pairs of nodes:
 
 {{< small-world-comparison >}}
 
-The small world network (left) consistently achieves higher routing success rates compared to the random network (right), even though both have the same number of connections. This is because the small world network's strategic mix of short and long-range connections creates natural routing pathways that span the entire network efficiently.
+The small world network is shown on the left, while the random network is on the right. Notice how
+the small world network consistently achieves higher success rates in delivering messages. This is
+due to its strategic combination of short- and long-range connections, which naturally create
+efficient routing pathways. In contrast, the random network's unstructured connections often lead to
+inefficient, unreliable paths.
 
-A routing attempt is considered successful if it reaches its destination within 30 hops. Notice how the small world network's structured randomness leads to more reliable message delivery, while the purely random network often requires more hops or fails to find paths entirely.
+In our comparison, a routing attempt is deemed successful if the message reaches its destination
+within 30 hops. The structured randomness of the small world network ensures more reliable message
+delivery, whereas the random network frequently requires more hops or fails to find a path
+altogether.
 
-## Network Scaling
+## Scaling Small World Networks: Efficient Growth
 
-Finally, let's look at how these networks scale. As we add more nodes, how does the average path length grow?
+One of the most remarkable aspects of small world networks is how efficiently they scale as new
+nodes are added. The next animation shows the average path length as the network grows:
 
 {{< small-world-scale >}}
 
-The plot reveals one of the most remarkable properties of small world networks - the average path length grows logarithmically with network size, much slower than the linear growth seen in regular networks. This "small world" property enables efficient communication even as networks scale to millions of nodes.
+In small world networks, the average path length grows logarithmically with the number of nodes,
+which is far more efficient than the linear growth typical of regular networks. This means that even
+as the network expands to include millions of nodes, the average number of steps required to reach
+any other node remains relatively low—a critical feature for scalability. This property is precisely
+what allows Freenet to maintain efficient data retrieval, regardless of how large the network
+becomes.
 
-This combination of mostly local connections with a few long-range links creates a highly efficient network structure that nature seems to have discovered repeatedly through evolution.
+The blend of local and long-range connections in small world networks creates a structure that is
+both resilient and highly efficient. This pattern has been discovered repeatedly in nature, from
+social networks to neural pathways. Freenet leverages this natural efficiency to create a truly
+decentralized and scalable method for sharing information.
