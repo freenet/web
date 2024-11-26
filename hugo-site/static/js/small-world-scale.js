@@ -214,12 +214,12 @@ waitForD3().then(() => {
         const g = svg.append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
 
-        const x = d3.scaleLog()
+        const x = d3.scaleLinear()
             .domain([30, maxPeers])
             .range([0, chartWidth]);
 
         const y = d3.scaleLinear()
-            .domain([1, d3.max(averagePathLengths, d => d.pathLength) * 1.1])
+            .domain([0, d3.max(averagePathLengths, d => d.pathLength) * 1.1])
             .range([chartHeight, 0]);
 
         // Add gridlines
@@ -227,6 +227,7 @@ waitForD3().then(() => {
             .attr('class', 'grid')
             .attr('opacity', 0.1)
             .call(d3.axisLeft(y)
+                .ticks(10)
                 .tickSize(-chartWidth)
                 .tickFormat(''));
 
@@ -235,6 +236,7 @@ waitForD3().then(() => {
             .attr('transform', `translate(0,${chartHeight})`)
             .attr('opacity', 0.1)
             .call(d3.axisBottom(x)
+                .ticks(10)
                 .tickSize(chartHeight)
                 .tickFormat(''));
 
@@ -242,10 +244,11 @@ waitForD3().then(() => {
         g.append('g')
             .attr('transform', `translate(0,${chartHeight})`)
             .call(d3.axisBottom(x)
-                .tickFormat(d3.format('d')));
+                .ticks(10));
 
         g.append('g')
-            .call(d3.axisLeft(y));
+            .call(d3.axisLeft(y)
+                .ticks(10));
 
         // Add axis labels
         g.append('text')
