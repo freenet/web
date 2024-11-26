@@ -223,6 +223,7 @@ async function initVisualization() {
         function animate(currentTime) {
             if (!isPlaying) return;
             
+            if (!lastTime) lastTime = currentTime;
             const deltaTime = currentTime - lastTime;
             lastTime = currentTime;
             
@@ -256,7 +257,8 @@ async function initVisualization() {
         if (animationFrame) {
             cancelAnimationFrame(animationFrame);
         }
-        animate();
+        lastTime = performance.now();
+        animationFrame = requestAnimationFrame(animate);
     }
 
     let isPlaying = false;
