@@ -84,7 +84,7 @@ async function initVisualization() {
         ctx.clearRect(0, 0, width, height);
 
         // Draw links
-        ctx.strokeStyle = 'rgba(100, 149, 237, 0.3)';
+        ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)'; // Using website link color
         links.forEach(link => {
             ctx.beginPath();
             ctx.moveTo(link.source.x, link.source.y);
@@ -95,7 +95,7 @@ async function initVisualization() {
         // Draw the complete path up to current segment
         if (currentPath.length > 1) {
             // Draw the completed segments
-            ctx.strokeStyle = 'rgba(255, 0, 0, 0.4)';
+            ctx.strokeStyle = 'rgba(51, 153, 102, 0.6)'; // Using Ghost Key green
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(currentPath[0].x, currentPath[0].y);
@@ -115,8 +115,8 @@ async function initVisualization() {
             const x = start.x + (end.x - start.x) * animationProgress;
             const y = start.y + (end.y - start.y) * animationProgress;
             
-            ctx.fillStyle = 'yellow';
-            ctx.strokeStyle = 'black';
+            ctx.fillStyle = '#1f5c3d'; // Darker Ghost Key green
+            ctx.strokeStyle = '#339966'; // Lighter Ghost Key green
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, 2 * Math.PI);
             ctx.fill();
@@ -126,16 +126,16 @@ async function initVisualization() {
         // Draw nodes
         peers.forEach(peer => {
             if (peer === sourceNode) {
-                ctx.fillStyle = 'green';
-                ctx.strokeStyle = 'black';
+                ctx.fillStyle = '#339966'; // Lighter Ghost Key green
+                ctx.strokeStyle = '#1f5c3d'; // Darker Ghost Key green
                 ctx.lineWidth = 2;
             } else if (peer === targetNode) {
-                ctx.fillStyle = 'red';
-                ctx.strokeStyle = 'black';
+                ctx.fillStyle = '#007FFF'; // Website link color
+                ctx.strokeStyle = '#0052cc'; // Darker shade of link color
                 ctx.lineWidth = 2;
             } else {
-                ctx.fillStyle = 'tomato';
-                ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                ctx.fillStyle = '#66cc99'; // Lighter Ghost Key green
+                ctx.strokeStyle = 'rgba(31, 92, 61, 0.2)'; // Darker Ghost Key green with transparency
                 ctx.lineWidth = 1;
             }
             ctx.beginPath();
