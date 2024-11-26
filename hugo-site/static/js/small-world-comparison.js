@@ -235,7 +235,7 @@ waitForD3().then(() => {
         statsDiv.innerHTML = '';
         
         // Create SVG
-        const margin = {top: 40, right: 50, bottom: 30, left: 50};
+        const margin = {top: 40, right: 60, bottom: 30, left: 60};
         const width = 300 - margin.left - margin.right;
         const height = 350 - margin.top - margin.bottom;
         
@@ -269,8 +269,9 @@ waitForD3().then(() => {
             .call(d3.axisLeft(yPath))
             .append('text')
             .attr('fill', '#000')
-            .attr('y', -10)
-            .attr('x', -10)
+            .attr('y', -30)
+            .attr('x', -30)
+            .attr('transform', 'rotate(-90)')
             .text('Path Length');
             
         svg.append('g')
@@ -288,8 +289,8 @@ waitForD3().then(() => {
             .enter()
             .append('rect')
             .attr('class', 'path-bar')
-            .attr('x', d => x(d))
-            .attr('width', x.bandwidth() / 2)
+            .attr('x', d => x(d) + 2)  // Add small padding
+            .attr('width', (x.bandwidth() / 2) - 4)  // Subtract padding
             .attr('y', d => yPath(d === 'Small World' ? swAvgPath : rnAvgPath))
             .attr('height', d => height - yPath(d === 'Small World' ? swAvgPath : rnAvgPath))
             .attr('fill', '#4292c6');
@@ -309,8 +310,8 @@ waitForD3().then(() => {
             .enter()
             .append('rect')
             .attr('class', 'success-bar')
-            .attr('x', d => x(d) + x.bandwidth() / 2)
-            .attr('width', x.bandwidth() / 2)
+            .attr('x', d => x(d) + (x.bandwidth() / 2) + 2)  // Add small padding
+            .attr('width', (x.bandwidth() / 2) - 4)  // Subtract padding
             .attr('y', d => ySuccess(d === 'Small World' ? swSuccess : rnSuccess))
             .attr('height', d => height - ySuccess(d === 'Small World' ? swSuccess : rnSuccess))
             .attr('fill', '#08519c');
