@@ -17,12 +17,12 @@ window.addEventListener('load', async () => {
     try {
         await waitForD3();
         const canvas = document.getElementById('networkCanvas2');
-    if (!canvas) {
-        console.error('Canvas element not found');
-        return;
-    }
-    
-    const ctx = canvas.getContext('2d');
+        if (!canvas) {
+            console.error('Canvas element not found');
+            return;
+        }
+        
+        const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
 
@@ -268,4 +268,7 @@ window.addEventListener('load', async () => {
     draw();
     playPauseBtn.addEventListener('click', togglePlayPause);
     togglePlayPause(); // Start playing
+    } catch (error) {
+        console.error('Failed to initialize visualization:', error);
+    }
 });
