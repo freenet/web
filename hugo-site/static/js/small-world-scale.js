@@ -31,7 +31,6 @@ waitForD3().then(() => {
     let isSimulating = false;
 
     function initializeNetwork() {
-        // Create peers in a ring
         peers = d3.range(numPeers).map(i => {
             const angle = (i / numPeers) * 2 * Math.PI;
             return {
@@ -42,23 +41,11 @@ waitForD3().then(() => {
         });
 
         links = [];
-        
-        // First ensure ring connectivity - connect each peer to its immediate neighbors
         for (let i = 0; i < numPeers; i++) {
-            // Connect to next peer
             const nextIndex = (i + 1) % numPeers;
             links.push({ source: peers[i], target: peers[nextIndex] });
             
-            // Connect to previous peer (for redundancy)
-            const prevIndex = (i - 1 + numPeers) % numPeers;
-            links.push({ source: peers[i], target: peers[prevIndex] });
-        }
-        
-        // Then add probabilistic long-range connections
-        for (let i = 0; i < numPeers; i++) {
-            for (let j = (i + 2) % numPeers; j !== i; j = (j + 1) % numPeers) {
-                if (j === (i + 1) % numPeers || j === (i - 1 + numPeers) % numPeers) continue; // Skip immediate neighbors
-                
+            for (let j = i + 2; j < numPeers; j++) {
                 const distance = Math.min(Math.abs(i - j), numPeers - Math.abs(i - j));
                 const prob = connectionProbability(distance);
                 if (Math.random() < prob) {
@@ -103,98 +90,67 @@ waitForD3().then(() => {
         ctx.fillText(`Network Size: ${numPeers} nodes`, width/2, height - 10);
     }
 
-    // Pre-computed network statistics for common sizes
-    const networkStats = new Map();
-    
     function calculateAveragePathLength() {
-        // Use cached value if available
-        if (networkStats.has(numPeers)) {
-            return networkStats.get(numPeers);
-        }
-
-        // Fixed sample size regardless of network size
-        const sampleSize = 50;
-        const sampleNodes = selectRepresentativeNodes(sampleSize);
+        // More aggressive adaptive sampling for larger networks
+        const baseSampleSize = 100;
+        const sampleSize = Math.min(baseSampleSize, 
+            numPeers < 500 ? Math.ceil(numPeers * 0.3) :
+            numPeers < 1000 ? Math.ceil(numPeers * 0.2) :
+            Math.ceil(numPeers * 0.1));
         
         let totalLength = 0;
         let pathCount = 0;
-
-        // Calculate paths between sampled pairs
-        for (let i = 0; i < sampleNodes.length; i++) {
-            for (let j = i + 1; j < sampleNodes.length; j++) {
-                const pathLength = findGreedyPath(sampleNodes[i], sampleNodes[j], sampleNodes);
-                if (pathLength !== Infinity) {
-                    totalLength += pathLength;
-                    pathCount++;
+        
+        // Sample random pairs of nodes
+        const sampledPairs = new Set();
+        while (sampledPairs.size < sampleSize) {
+            const i = Math.floor(Math.random() * peers.length);
+            const j = Math.floor(Math.random() * peers.length);
+            if (i !== j) {
+                const pairKey = `${Math.min(i,j)}-${Math.max(i,j)}`;
+                if (!sampledPairs.has(pairKey)) {
+                    sampledPairs.add(pairKey);
+                    const path = findShortestPath(peers[i], peers[j]);
+                    if (path) {
+                        totalLength += path.length - 1;
+                        pathCount++;
+                    }
                 }
             }
         }
 
-        const avgPathLength = pathCount > 0 ? totalLength / pathCount : 0;
-        
-        // Cache the result
-        networkStats.set(numPeers, avgPathLength);
-        
-        return avgPathLength;
+        return pathCount > 0 ? totalLength / pathCount : 0;
     }
 
-    function selectRepresentativeNodes(sampleSize) {
-        // Select nodes that are evenly distributed around the ring
-        const step = Math.max(1, Math.floor(peers.length / sampleSize));
-        return peers.filter((_, index) => index % step === 0).slice(0, sampleSize);
-    }
+    function findShortestPath(start, end) {
+        const queue = [[start]];
+        const visited = new Set([start.index]);
 
-    function findGreedyPath(start, target, nodes) {
-        if (start === target) return 0;
-        
-        const visited = new Set([start]);
-        let current = start;
-        let pathLength = 0;
-        const maxHops = nodes.length;
+        while (queue.length > 0) {
+            const path = queue.shift();
+            const node = path[path.length - 1];
 
-        function getDistance(a, b) {
-            const clockwise = Math.abs(a.index - b.index);
-            const counterclockwise = nodes.length - clockwise;
-            return Math.min(clockwise, counterclockwise);
-        }
-
-        while (pathLength < maxHops) {
-            // Get all neighbors
-            const neighbors = links
-                .filter(link => {
-                    const neighbor = link.source === current ? link.target : link.source;
-                    return (link.source === current || link.target === current) && !visited.has(neighbor);
-                })
-                .map(link => link.source === current ? link.target : link.source);
-
-            if (neighbors.length === 0) {
-                return Infinity; // Dead end
+            if (node === end) {
+                return path;
             }
 
-            // Current distance to target
-            const currentDistance = getDistance(current, target);
+            // Find all neighbors
+            const neighbors = links.reduce((acc, link) => {
+                if (link.source === node && !visited.has(link.target.index)) {
+                    acc.push(link.target);
+                } else if (link.target === node && !visited.has(link.source.index)) {
+                    acc.push(link.source);
+                }
+                return acc;
+            }, []);
 
-            // Sort neighbors by their distance to target
-            neighbors.sort((a, b) => {
-                const distA = getDistance(a, target);
-                const distB = getDistance(b, target);
-                return distA - distB;
-            });
-
-            // Find best neighbor that reduces distance
-            const bestNeighbor = neighbors.find(n => getDistance(n, target) < currentDistance);
-            
-            // If no better neighbor exists, use the closest one to target
-            current = bestNeighbor || neighbors[0];
-            visited.add(current);
-            pathLength++;
-
-            if (current === target) {
-                return pathLength;
+            for (const neighbor of neighbors) {
+                visited.add(neighbor.index);
+                queue.push([...path, neighbor]);
             }
         }
 
-        return Infinity; // Path too long or loop detected
+        return null;
     }
 
     function updateChart() {
