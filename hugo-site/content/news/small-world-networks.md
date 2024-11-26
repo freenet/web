@@ -12,14 +12,6 @@ Small world networks are a fascinating type of network structure that combines t
 
 Let's explore these remarkable networks through interactive visualizations that demonstrate their key properties.
 
-## Link Distribution
-
-First, let's examine the distribution of connections in a small world network. The visualization below shows how connections are primarily short-range (between nearby nodes), with strategically placed long-range connections that create "shortcuts" through the network:
-
-{{< small-world-dist >}}
-
-The histogram on the right quantifies this distribution - showing a high concentration of short-range links that rapidly falls off for longer distances. This characteristic pattern is what gives small world networks their efficient routing properties while maintaining local clustering.
-
 ## Greedy Routing
 
 One key feature of small world networks is that they support efficient "greedy" routing - where messages are passed to whichever neighbor is closest to the final destination:
@@ -27,6 +19,16 @@ One key feature of small world networks is that they support efficient "greedy" 
 {{< small-world-routing >}}
 
 Watch as messages navigate through the network using only local information. While this greedy routing strategy isn't guaranteed to find the mathematically shortest path, it demonstrates how local decisions can achieve remarkably efficient global routing - a key feature of small world networks.
+
+## Routing Performance
+
+The real power of small world networks becomes apparent when we compare their routing performance to random networks. In the visualization below, watch as both networks attempt to route messages between random pairs of nodes:
+
+{{< small-world-comparison >}}
+
+The small world network (left) consistently achieves higher routing success rates compared to the random network (right), even though both have the same number of connections. This is because the small world network's strategic mix of short and long-range connections creates natural routing pathways that span the entire network efficiently.
+
+A routing attempt is considered successful if it reaches its destination within 30 hops. Notice how the small world network's structured randomness leads to more reliable message delivery, while the purely random network often requires more hops or fails to find paths entirely.
 
 ## Network Scaling
 
