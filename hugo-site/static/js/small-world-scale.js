@@ -77,25 +77,32 @@ waitForD3().then(() => {
     }
 
     function calculateAveragePathLength() {
+        // Adaptive sampling based on network size
+        const baseSampleSize = 100;
+        const sampleSize = Math.min(baseSampleSize, Math.ceil(numPeers * 0.5));
+        
         let totalLength = 0;
         let pathCount = 0;
         
-        // Sample only a subset of paths for larger networks
-        const sampleSize = numPeers > 100 ? 200 : numPeers * 2;
-        
-        for (let k = 0; k < sampleSize; k++) {
+        // Sample random pairs of nodes
+        const sampledPairs = new Set();
+        while (sampledPairs.size < sampleSize) {
             const i = Math.floor(Math.random() * peers.length);
             const j = Math.floor(Math.random() * peers.length);
             if (i !== j) {
-                const path = findShortestPath(peers[i], peers[j]);
-                if (path) {
-                    totalLength += path.length - 1;
-                    pathCount++;
+                const pairKey = `${Math.min(i,j)}-${Math.max(i,j)}`;
+                if (!sampledPairs.has(pairKey)) {
+                    sampledPairs.add(pairKey);
+                    const path = findShortestPath(peers[i], peers[j]);
+                    if (path) {
+                        totalLength += path.length - 1;
+                        pathCount++;
+                    }
                 }
             }
         }
 
-        return totalLength / pathCount;
+        return pathCount > 0 ? totalLength / pathCount : 0;
     }
 
     function findShortestPath(start, end) {
@@ -207,10 +214,12 @@ waitForD3().then(() => {
             const icon = btn.querySelector('i');
             icon.className = 'fas fa-pause';
             
-            function step() {
+            async function step() {
                 if (!isSimulating) return;
                 
+                // Initialize and draw with small delay to allow UI updates
                 initializeNetwork();
+                await new Promise(resolve => setTimeout(resolve, 10));
                 draw();
                 
                 const avgPathLength = calculateAveragePathLength();
@@ -220,17 +229,25 @@ waitForD3().then(() => {
                 });
                 updateChart();
                 
-                numPeers += 10;
+                // Adaptive step size based on network size
+                const stepSize = numPeers < 100 ? 10 : 
+                               numPeers < 500 ? 20 : 50;
+                numPeers += stepSize;
                 
                 if (numPeers <= maxPeers) {
-                    setTimeout(step, 500);
+                    // Longer delay for larger networks
+                    const delay = numPeers < 100 ? 500 : 
+                                numPeers < 500 ? 750 : 1000;
+                    setTimeout(step, delay);
                 } else {
                     isSimulating = false;
-                    startBtn.textContent = '▶️ Start';
+                    const btn = document.getElementById('scalePlayPauseBtn');
+                    const icon = btn.querySelector('i');
+                    icon.className = 'fas fa-play';
                 }
             }
             
-            step();
+            step().catch(console.error);
         } else {
             isSimulating = false;
             const btn = document.getElementById('scalePlayPauseBtn');
