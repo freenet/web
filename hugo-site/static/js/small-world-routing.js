@@ -246,7 +246,16 @@ window.addEventListener('load', async () => {
     function togglePlayPause() {
         isPlaying = !isPlaying;
         const btn = document.getElementById('routingPlayPauseBtn');
+        if (!btn) {
+            console.error('Play/Pause button not found');
+            return;
+        }
+        
         const icon = btn.querySelector('i');
+        if (!icon) {
+            console.error('Button icon not found');
+            return;
+        }
         
         if (isPlaying) {
             icon.className = 'fas fa-pause';
@@ -261,13 +270,20 @@ window.addEventListener('load', async () => {
     initializeNetwork();
     draw();
     
-    // Setup button after ensuring it exists
+    // Setup button
     const playPauseBtn = document.getElementById('routingPlayPauseBtn');
-    if (playPauseBtn) {
-        playPauseBtn.addEventListener('click', togglePlayPause);
-        togglePlayPause(); // Start playing
-    } else {
+    if (!playPauseBtn) {
         console.error('Play/Pause button not found');
+        return;
+    }
+    
+    try {
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        // Start the visualization
+        isPlaying = false; // Ensure initial state
+        togglePlayPause(); // This will set isPlaying to true and start animation
+    } catch (error) {
+        console.error('Error setting up button:', error);
     }
     } catch (error) {
         console.error('Failed to initialize visualization:', error);
