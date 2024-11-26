@@ -25,13 +25,13 @@ waitForD3().then(() => {
     const rnCtx = randomCanvas.getContext('2d');
     
     // Network state
-    let smallWorldNetwork = { nodes: [], links: [], stats: { success: 0, attempts: 0 } };
-    let randomNetwork = { nodes: [], links: [], stats: { success: 0, attempts: 0 } };
+    let smallWorldNetwork = { nodes: [], links: [], stats: { success: 0, attempts: 0, totalPathLength: 0 } };
+    let randomNetwork = { nodes: [], links: [], stats: { success: 0, attempts: 0, totalPathLength: 0 } };
     
     function initializeNetworks() {
         // Reset stats
-        smallWorldNetwork.stats = { success: 0, attempts: 0 };
-        randomNetwork.stats = { success: 0, attempts: 0 };
+        smallWorldNetwork.stats = { success: 0, attempts: 0, totalPathLength: 0 };
+        randomNetwork.stats = { success: 0, attempts: 0, totalPathLength: 0 };
         
         // Create nodes in a ring layout
         const radius = Math.min(smallWorldCanvas.width, smallWorldCanvas.height) * 0.4;
@@ -224,12 +224,16 @@ waitForD3().then(() => {
         
         const swSuccess = smallWorldNetwork.stats.attempts === 0 ? 0 :
             (smallWorldNetwork.stats.success / smallWorldNetwork.stats.attempts * 100).toFixed(1);
+        const swAvgPath = smallWorldNetwork.stats.success === 0 ? 0 :
+            (smallWorldNetwork.stats.totalPathLength / smallWorldNetwork.stats.success).toFixed(1);
         
         const rnSuccess = randomNetwork.stats.attempts === 0 ? 0 :
             (randomNetwork.stats.success / randomNetwork.stats.attempts * 100).toFixed(1);
+        const rnAvgPath = randomNetwork.stats.success === 0 ? 0 :
+            (randomNetwork.stats.totalPathLength / randomNetwork.stats.success).toFixed(1);
         
-        swStats.innerHTML = `Success Rate: ${swSuccess}%<br>Attempts: ${smallWorldNetwork.stats.attempts}`;
-        rnStats.innerHTML = `Success Rate: ${rnSuccess}%<br>Attempts: ${randomNetwork.stats.attempts}`;
+        swStats.innerHTML = `Success Rate: ${swSuccess}%<br>Avg Path Length: ${swAvgPath}<br>Attempts: ${smallWorldNetwork.stats.attempts}`;
+        rnStats.innerHTML = `Success Rate: ${rnSuccess}%<br>Avg Path Length: ${rnAvgPath}<br>Attempts: ${randomNetwork.stats.attempts}`;
     }
     
     async function simulateRouting() {
@@ -249,8 +253,14 @@ waitForD3().then(() => {
         // Update stats
         smallWorldNetwork.stats.attempts++;
         randomNetwork.stats.attempts++;
-        if (swPath) smallWorldNetwork.stats.success++;
-        if (rnPath) randomNetwork.stats.success++;
+        if (swPath) {
+            smallWorldNetwork.stats.success++;
+            smallWorldNetwork.stats.totalPathLength += swPath.length - 1;
+        }
+        if (rnPath) {
+            randomNetwork.stats.success++;
+            randomNetwork.stats.totalPathLength += rnPath.length - 1;
+        }
         
         // Draw networks with paths
         drawNetwork(swCtx, smallWorldNetwork, swPath);
