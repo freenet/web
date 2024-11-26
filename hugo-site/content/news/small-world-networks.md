@@ -2,6 +2,7 @@
 title: "Understanding Small World Networks"
 date: 2024-11-25
 draft: false
+tags: ["front-page", "university"]
 head:
   - - link
     - rel: stylesheet
