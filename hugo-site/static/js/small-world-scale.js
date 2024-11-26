@@ -201,7 +201,9 @@ waitForD3().then(() => {
         peers = newPeers;
         links = newLinks;
         
-        if (currentPeers % 30 === 0) {
+        // Reduce drawing frequency as network grows
+        const drawThreshold = Math.ceil(currentPeers / 100) * 30;
+        if (currentPeers % drawThreshold === 0) {
             draw();
         }
         
