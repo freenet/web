@@ -213,20 +213,8 @@ async function initVisualization() {
         currentPathSegment = 0;
         animationProgress = 0;
 
-        // Draw the complete path first in a very light blue
-        ctx.save();
-        ctx.strokeStyle = 'rgba(0, 127, 255, 0.15)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(path[0].x, path[0].y);
-        for (let i = 1; i < path.length; i++) {
-            ctx.lineTo(path[i].x, path[i].y);
-        }
-        ctx.stroke();
-        ctx.restore();
-
         // Animation timing setup
-        const animationDuration = 500; // Duration per segment in milliseconds
+        const animationDuration = 1000; // Duration per segment in milliseconds
         let startTime = null;
 
         function animate(currentTime) {
