@@ -205,18 +205,22 @@ waitForD3().then(() => {
             draw();
         }
         
-        const avgPathLength = calculateAveragePathLength();
-        averagePathLengths.push({
-            numPeers: numPeers,
-            pathLength: avgPathLength
-        });
-        
-        updateChart();
         
         // Increase step size
-        numPeers += 20;
-        // Use setTimeout instead of requestAnimationFrame to reduce CPU usage
-        animationFrameId = setTimeout(simulate, 100); // 100ms delay between iterations
+        numPeers += 50;
+        
+        // Only calculate path lengths and update chart every other iteration
+        if (numPeers % 100 === 0) {
+            const avgPathLength = calculateAveragePathLength();
+            averagePathLengths.push({
+                numPeers: numPeers,
+                pathLength: avgPathLength
+            });
+            updateChart();
+        }
+        
+        // Use setTimeout with longer delay to reduce CPU usage
+        animationFrameId = setTimeout(simulate, 200); // 200ms delay between iterations
     }
 
     function reset() {
