@@ -19,7 +19,7 @@ waitForD3().then(() => {
     const height = canvas.height;
 
     // Parameters
-    let numPeers = 30;
+    let numPeers = 5;
     const maxPeers = 500;
     const radius = Math.min(width, height) * 0.4;
     const connectionProbability = (distance) => 1 / (distance + 1);
@@ -309,8 +309,10 @@ waitForD3().then(() => {
                         pathLength: avgPathLength
                     });
                     
-                    // Smaller step sizes for more granular data
-                    const stepSize = numPeers < 100 ? 5 : 
+                    // Very fine granularity for small networks, increasing with size
+                    const stepSize = numPeers < 20 ? 1 :
+                                   numPeers < 50 ? 2 :
+                                   numPeers < 100 ? 5 : 
                                    numPeers < 200 ? 10 :
                                    numPeers < 350 ? 15 : 20;
                     numPeers += stepSize;
@@ -324,9 +326,11 @@ waitForD3().then(() => {
                 updateChart();
                 
                 if (numPeers <= maxPeers) {
-                    const delay = numPeers < 100 ? 300 : 
-                                numPeers < 250 ? 400 :
-                                500; // Longer delays for more thorough sampling
+                    const delay = numPeers < 20 ? 500 :
+                                numPeers < 50 ? 400 :
+                                numPeers < 100 ? 300 : 
+                                numPeers < 250 ? 250 :
+                                200; // More time studying small networks
                     setTimeout(step, delay);
                 } else {
                     isSimulating = false;
