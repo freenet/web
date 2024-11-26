@@ -28,6 +28,8 @@ waitForD3().then(() => {
     let currentPath = [];
     let animationFrame;
     let sourceNode, targetNode;
+    let animationProgress = 0;
+    let currentPathSegment = 0;
 
     function initializeNetwork() {
         // Calculate positions for peers on a 1D ring
@@ -70,32 +72,70 @@ waitForD3().then(() => {
             ctx.stroke();
         });
 
-        // Draw path
+        // Draw completed path segments
         if (currentPath.length > 1) {
-            ctx.strokeStyle = 'rgba(255, 0, 0, 0.7)';
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.4)';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(currentPath[0].x, currentPath[0].y);
-            for (let i = 1; i < currentPath.length; i++) {
+            for (let i = 1; i <= currentPathSegment; i++) {
                 ctx.lineTo(currentPath[i].x, currentPath[i].y);
             }
             ctx.stroke();
             ctx.lineWidth = 1;
         }
 
+        // Draw animated request
+        if (currentPath.length > 1 && currentPathSegment < currentPath.length - 1) {
+            const start = currentPath[currentPathSegment];
+            const end = currentPath[currentPathSegment + 1];
+            
+            // Draw moving request dot
+            const x = start.x + (end.x - start.x) * animationProgress;
+            const y = start.y + (end.y - start.y) * animationProgress;
+            
+            ctx.fillStyle = 'yellow';
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+        }
+
         // Draw nodes
         peers.forEach(peer => {
             if (peer === sourceNode) {
                 ctx.fillStyle = 'green';
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
             } else if (peer === targetNode) {
                 ctx.fillStyle = 'red';
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
             } else {
                 ctx.fillStyle = 'tomato';
+                ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                ctx.lineWidth = 1;
             }
             ctx.beginPath();
             ctx.arc(peer.x, peer.y, 5, 0, 2 * Math.PI);
             ctx.fill();
+            ctx.stroke();
         });
+
+        // Add labels for source and target
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        
+        if (sourceNode) {
+            ctx.fillStyle = 'black';
+            ctx.fillText('Source', sourceNode.x, sourceNode.y - 10);
+        }
+        if (targetNode) {
+            ctx.fillStyle = 'black';
+            ctx.fillText('Target', targetNode.x, targetNode.y - 10);
+        }
     }
 
     function findPath(source, target) {
@@ -140,16 +180,31 @@ waitForD3().then(() => {
 
     function animatePath() {
         const path = findPath(sourceNode, targetNode);
-        let step = 1;
+        currentPath = path;
+        currentPathSegment = 0;
+        animationProgress = 0;
 
         function animate() {
-            currentPath = path.slice(0, step);
-            draw();
+            animationProgress += 0.02;
             
-            if (step < path.length) {
-                step++;
-                animationFrame = requestAnimationFrame(animate);
+            if (animationProgress >= 1) {
+                animationProgress = 0;
+                currentPathSegment++;
+                
+                if (currentPathSegment >= currentPath.length - 1) {
+                    currentPathSegment = 0;
+                    // Restart animation after a delay
+                    setTimeout(() => {
+                        animationProgress = 0;
+                        currentPathSegment = 0;
+                        animationFrame = requestAnimationFrame(animate);
+                    }, 1000);
+                    return;
+                }
             }
+            
+            draw();
+            animationFrame = requestAnimationFrame(animate);
         }
 
         cancelAnimationFrame(animationFrame);
