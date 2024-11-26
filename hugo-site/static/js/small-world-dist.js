@@ -1,3 +1,7 @@
+let isPlaying = false;
+let animationFrame = 0;
+const maxAnimationFrames = 100;
+
 // Wait for D3.js to be available
 function waitForD3() {
     return new Promise((resolve) => {
@@ -29,7 +33,67 @@ let peers = [];
 let links = [];
 let distances = [];
 
-function initializeNetwork() {
+function togglePlayPause() {
+    isPlaying = !isPlaying;
+    const icon = document.querySelector('#distPlayPauseBtn i');
+    icon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+    if (isPlaying) {
+        animate();
+    }
+}
+
+function resetAnimation() {
+    isPlaying = false;
+    animationFrame = 0;
+    const icon = document.querySelector('#distPlayPauseBtn i');
+    icon.className = 'fas fa-play';
+    initializeNetwork(true);
+}
+
+function animate() {
+    if (!isPlaying) return;
+    
+    if (animationFrame < maxAnimationFrames) {
+        animationFrame++;
+        updateNetworkState();
+        requestAnimationFrame(animate);
+    } else {
+        isPlaying = false;
+        const icon = document.querySelector('#distPlayPauseBtn i');
+        icon.className = 'fas fa-play';
+    }
+}
+
+function updateNetworkState() {
+    // Clear non-ring links
+    links = links.filter((link, i) => {
+        const sourceIdx = link.source.index;
+        const targetIdx = link.target.index;
+        const distance = Math.min(Math.abs(sourceIdx - targetIdx), 
+                                numPeers - Math.abs(sourceIdx - targetIdx));
+        return distance === 1;
+    });
+    distances = distances.filter(d => d === 1);
+    
+    // Add long-range links progressively
+    const progress = animationFrame / maxAnimationFrames;
+    
+    for (let i = 0; i < numPeers; i++) {
+        for (let j = i + 2; j < numPeers; j++) {
+            const distance = Math.min(Math.abs(i - j), numPeers - Math.abs(i - j));
+            const prob = connectionProbability(distance) * progress;
+            if (Math.random() < prob) {
+                links.push({ source: peers[i], target: peers[j] });
+                distances.push(distance);
+            }
+        }
+    }
+    
+    drawNetwork();
+    updateHistogram();
+}
+
+function initializeNetwork(initialStateOnly = false) {
     // Calculate positions for peers on a 1D ring
     peers = d3.range(numPeers).map(i => {
         const angle = (i / numPeers) * 2 * Math.PI;
@@ -40,23 +104,27 @@ function initializeNetwork() {
         };
     });
 
-    // Generate links and collect distances
+    // Initialize with only ring connections
     links = [];
     distances = [];
     
+    // Always add ring connections
     for (let i = 0; i < numPeers; i++) {
-        // Always connect adjacent peers
         const nextIndex = (i + 1) % numPeers;
         links.push({ source: peers[i], target: peers[nextIndex] });
         distances.push(1);
-        
-        // Additional links based on distance and probability
-        for (let j = i + 2; j < numPeers; j++) {
-            const distance = Math.min(Math.abs(i - j), numPeers - Math.abs(i - j));
-            const prob = connectionProbability(distance);
-            if (Math.random() < prob) {
-                links.push({ source: peers[i], target: peers[j] });
-                distances.push(distance);
+    }
+    
+    // Add other connections only if not in initial state
+    if (!initialStateOnly) {
+        for (let i = 0; i < numPeers; i++) {
+            for (let j = i + 2; j < numPeers; j++) {
+                const distance = Math.min(Math.abs(i - j), numPeers - Math.abs(i - j));
+                const prob = connectionProbability(distance);
+                if (Math.random() < prob) {
+                    links.push({ source: peers[i], target: peers[j] });
+                    distances.push(distance);
+                }
             }
         }
     }
@@ -153,8 +221,12 @@ function updateHistogram() {
         .text('Frequency');
 }
 
-    // Initialize visualization
-    initializeNetwork();
+    // Add button event listeners
+    document.getElementById('distPlayPauseBtn').addEventListener('click', togglePlayPause);
+    document.getElementById('resetDistBtn').addEventListener('click', resetAnimation);
+    
+    // Initialize with only ring connections
+    initializeNetwork(true);
 
     // Add resize handler
     window.addEventListener('resize', () => {
