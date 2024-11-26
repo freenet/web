@@ -126,8 +126,7 @@ waitForD3().then(() => {
         ctx.fillStyle = '#007FFF';
         ctx.textAlign = 'center';
         ctx.font = '14px Arial';
-        const connectionsPerNode = (links.length * 2 / numPeers).toFixed(1);
-        ctx.fillText(`Network Size: ${numPeers} nodes, Avg. Connections/Node: ${connectionsPerNode}`, width/2, height - 10);
+        ctx.fillText(`Network Size: ${numPeers} nodes`, width/2, height - 10);
     }
 
     function calculateAveragePathLength() {
@@ -331,7 +330,7 @@ waitForD3().then(() => {
                                    numPeers < 50 ? 4 :
                                    numPeers < 100 ? 10 : 
                                    numPeers < 200 ? 20 :
-                                   numPeers < 350 ? 30 : 40;
+                                   numPeers < 350 ? 25 : 30;
                     numPeers += stepSize;
                     
                     // Allow UI updates between iterations
