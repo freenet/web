@@ -12,8 +12,23 @@ function waitForD3() {
     });
 }
 
-waitForD3().then(() => {
+// Wait for both D3 and DOM to be ready
+Promise.all([
+    waitForD3(),
+    new Promise(resolve => {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', resolve);
+        } else {
+            resolve();
+        }
+    })
+]).then(() => {
     const canvas = document.getElementById('networkCanvas2');
+    if (!canvas) {
+        console.error('Canvas element not found');
+        return;
+    }
+    
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
