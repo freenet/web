@@ -20,7 +20,7 @@ waitForD3().then(() => {
 
     // Parameters
     let numPeers = 30;
-    const maxPeers = 10000;
+    const maxPeers = 500;
     const radius = Math.min(width, height) * 0.4;
     const connectionProbability = (distance) => 1 / (distance + 1);
     
@@ -115,7 +115,8 @@ waitForD3().then(() => {
     }
 
     function calculateAveragePathLength() {
-        const numReferenceNodes = 5;
+        // More reference nodes for smaller networks
+        const numReferenceNodes = Math.min(10, Math.ceil(numPeers * 0.2));
         const referenceNodes = [];
         const stride = Math.floor(peers.length / numReferenceNodes);
         
@@ -124,11 +125,11 @@ waitForD3().then(() => {
             referenceNodes.push(peers[i * stride]);
         }
         
-        // Calculate sample size per reference node
-        const samplesPerRef = Math.min(20,
-            numPeers < 500 ? Math.ceil(numPeers * 0.1) :
-            numPeers < 1000 ? Math.ceil(numPeers * 0.05) :
-            Math.ceil(numPeers * 0.02));
+        // Increased sampling for better averages
+        const samplesPerRef = Math.min(
+            Math.ceil(numPeers * 0.3), // Sample up to 30% of nodes
+            30 // but cap at 30 samples per reference node
+        );
         
         let totalLength = 0;
         let pathCount = 0;
@@ -287,10 +288,10 @@ waitForD3().then(() => {
                         pathLength: avgPathLength
                     });
                     
-                    // Adjust step size based on network phase
-                    const stepSize = numPeers < 100 ? 10 : 
-                                   numPeers < 500 ? 25 :
-                                   numPeers < 1000 ? 100 : 200;
+                    // Smaller step sizes for more granular data
+                    const stepSize = numPeers < 100 ? 5 : 
+                                   numPeers < 200 ? 10 :
+                                   numPeers < 350 ? 15 : 20;
                     numPeers += stepSize;
                     
                     // Allow UI updates between iterations
@@ -302,9 +303,9 @@ waitForD3().then(() => {
                 updateChart();
                 
                 if (numPeers <= maxPeers) {
-                    const delay = numPeers < 100 ? 200 : 
-                                numPeers < 500 ? 300 :
-                                numPeers < 1000 ? 500 : 750;
+                    const delay = numPeers < 100 ? 300 : 
+                                numPeers < 250 ? 400 :
+                                500; // Longer delays for more thorough sampling
                     setTimeout(step, delay);
                 } else {
                     isSimulating = false;
