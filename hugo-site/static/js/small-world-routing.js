@@ -264,18 +264,27 @@ Promise.all([
         }
     }
 
-    // Initialize network
-    initializeNetwork();
-    draw();
-
-    // Add button handler after ensuring the button exists
-    const playPauseBtn = document.getElementById('routingPlayPauseBtn');
-    if (!playPauseBtn) {
-        console.error('Play/Pause button not found');
-        return;
+    function initializeUI() {
+        return new Promise((resolve, reject) => {
+            const playPauseBtn = document.getElementById('routingPlayPauseBtn');
+            if (!playPauseBtn) {
+                reject(new Error('Play/Pause button not found'));
+                return;
+            }
+            
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            resolve();
+        });
     }
-    
-    playPauseBtn.addEventListener('click', togglePlayPause);
-    // Start playing
-    togglePlayPause();
+
+    // Initialize everything in sequence
+    try {
+        initializeNetwork();
+        draw();
+        await initializeUI();
+        // Start playing
+        togglePlayPause();
+    } catch (error) {
+        console.error('Failed to initialize:', error);
+    }
 });
