@@ -24,12 +24,19 @@ waitForD3().then(() => {
     const radius = Math.min(width, height) * 0.4;
     // Target ~4 long-range connections per peer (plus 2 ring connections)
     const connectionProbability = (distance, networkSize) => {
-        // Base probability that decreases with distance
-        const distanceProb = 1 / (distance + 1);
-        // Scale factor to maintain ~4 long-range connections per peer
-        const targetConnections = 4;
-        const scaleFactor = (targetConnections * 2) / (networkSize - 3);
-        return Math.min(1, distanceProb * scaleFactor);
+        // We want each node to make ~4 long-range connections
+        const targetLongRangePerNode = 4;
+        
+        // Calculate probability needed to achieve target connections
+        // Each node attempts (n-3) connections after ring connections
+        // We want targetLongRangePerNode successes out of these attempts
+        const baseProb = targetLongRangePerNode / (networkSize - 3);
+        
+        // Adjust for distance preference (closer nodes more likely)
+        const distanceWeight = 1 / (distance + 1);
+        const normalizedWeight = distanceWeight / (1 + Math.log(networkSize));
+        
+        return Math.min(1, baseProb * normalizedWeight * networkSize);
     };
     
     let peers = [];
