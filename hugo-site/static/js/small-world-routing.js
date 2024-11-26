@@ -14,9 +14,18 @@ function waitForD3() {
 
 // Initialize visualization
 async function initVisualization() {
+    console.log('Starting visualization initialization');
+    
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+        console.error('Not in browser environment');
+        return;
+    }
+
     try {
-        // Wait for both D3 and DOM to be ready
+        console.log('Waiting for D3...');
         await waitForD3();
+        console.log('D3 loaded successfully');
         
         // Get canvas element
         const canvas = document.getElementById('networkCanvas2');
@@ -318,9 +327,40 @@ async function initVisualization() {
     }
 }
 
+// Ensure we have access to DOM APIs
+if (typeof document === 'undefined') {
+    console.error('Document not available');
+    return;
+}
+
+console.log('Current document.readyState:', document.readyState);
+
 // Wait for DOM to be fully loaded before starting
+function startInit() {
+    console.log('Starting initialization...');
+    // Ensure the button exists before initializing
+    const checkButton = setInterval(() => {
+        const btn = document.getElementById('routingPlayPauseBtn');
+        console.log('Checking for button:', btn);
+        if (btn) {
+            clearInterval(checkButton);
+            initVisualization();
+        }
+    }, 100);
+    
+    // Stop checking after 5 seconds
+    setTimeout(() => {
+        clearInterval(checkButton);
+        console.error('Timed out waiting for button');
+        // Initialize anyway
+        initVisualization();
+    }, 5000);
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initVisualization);
+    console.log('Document still loading, waiting for DOMContentLoaded');
+    document.addEventListener('DOMContentLoaded', startInit);
 } else {
-    initVisualization();
+    console.log('Document already loaded, starting immediately');
+    startInit();
 }
