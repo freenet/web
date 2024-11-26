@@ -213,9 +213,9 @@ async function initVisualization() {
         currentPathSegment = 0;
         animationProgress = 0;
 
-        // Draw the complete path first with full opacity
+        // Draw the complete path first in a very light blue
         ctx.save();
-        ctx.strokeStyle = 'rgba(0, 127, 255, 0.6)'; // More visible blue for complete path
+        ctx.strokeStyle = 'rgba(0, 127, 255, 0.15)';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(path[0].x, path[0].y);
@@ -225,50 +225,35 @@ async function initVisualization() {
         ctx.stroke();
         ctx.restore();
 
-        // Add a small delay before starting the dot animation
-        setTimeout(() => {
-
-        // Calculate segment lengths
-        const segmentLengths = [];
-        for (let i = 0; i < path.length - 1; i++) {
-            const dx = path[i+1].x - path[i].x;
-            const dy = path[i+1].y - path[i].y;
-            const length = Math.sqrt(dx * dx + dy * dy);
-            segmentLengths[i] = length;
-        }
-
-        const pixelsPerSecond = 200; // Constant speed in pixels per second
+        // Animation timing setup
+        const animationDuration = 500; // Duration per segment in milliseconds
         let startTime = null;
-        let lastSegmentStartTime = null;
 
         function animate(currentTime) {
             if (!isPlaying) return;
             
             if (!startTime) {
                 startTime = currentTime;
-                lastSegmentStartTime = currentTime;
             }
 
-            // Calculate progress for current segment
-            const elapsedInSegment = currentTime - lastSegmentStartTime;
-            const segmentDuration = (segmentLengths[currentPathSegment] / pixelsPerSecond) * 1000;
-            animationProgress = Math.min(elapsedInSegment / segmentDuration, 1);
+            const elapsed = currentTime - startTime;
+            animationProgress = Math.min(elapsed / animationDuration, 1);
             
             if (animationProgress >= 1) {
                 currentPathSegment++;
                 
                 if (currentPathSegment >= currentPath.length - 1) {
-                    // Animation complete - wait 3 seconds then trigger new route
+                    // Animation complete - wait 1 second then trigger new route
                     setTimeout(() => {
                         if (isPlaying) {
                             startNewRoute();
                         }
-                    }, 3000);
+                    }, 1000);
                     return;
                 }
                 
-                // Start timing for next segment
-                lastSegmentStartTime = currentTime;
+                // Reset for next segment
+                startTime = currentTime;
                 animationProgress = 0;
             }
             
@@ -276,8 +261,8 @@ async function initVisualization() {
             animationFrame = requestAnimationFrame(animate);
         }
 
-        // Start the animation after the delay
-        }, 500);
+        // Start animation immediately
+        animationFrame = requestAnimationFrame(animate);
     }
 
     let isPlaying = false;
