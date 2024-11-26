@@ -106,14 +106,12 @@ waitForD3().then(() => {
         let totalLength = 0;
         let pathCount = 0;
 
-        // Use Floyd-Warshall on the sampled subset
-        const distances = floydWarshall(sampleNodes);
-        
-        // Calculate average from distance matrix
-        for (let i = 0; i < distances.length; i++) {
-            for (let j = i + 1; j < distances.length; j++) {
-                if (distances[i][j] !== Infinity) {
-                    totalLength += distances[i][j];
+        // Calculate paths between sampled pairs
+        for (let i = 0; i < sampleNodes.length; i++) {
+            for (let j = i + 1; j < sampleNodes.length; j++) {
+                const pathLength = findGreedyPath(sampleNodes[i], sampleNodes[j], sampleNodes);
+                if (pathLength !== Infinity) {
+                    totalLength += pathLength;
                     pathCount++;
                 }
             }
@@ -133,35 +131,48 @@ waitForD3().then(() => {
         return peers.filter((_, index) => index % step === 0).slice(0, sampleSize);
     }
 
-    function floydWarshall(nodes) {
-        const n = nodes.length;
-        const dist = Array(n).fill().map(() => Array(n).fill(Infinity));
+    function findGreedyPath(start, target, nodes) {
+        const visited = new Set();
+        let current = start;
+        let path = [current];
         
-        // Initialize distances
-        for (let i = 0; i < n; i++) {
-            dist[i][i] = 0;
-            for (const link of links) {
-                const sourceIdx = nodes.indexOf(link.source);
-                const targetIdx = nodes.indexOf(link.target);
-                if (sourceIdx !== -1 && targetIdx !== -1) {
-                    dist[sourceIdx][targetIdx] = 1;
-                    dist[targetIdx][sourceIdx] = 1;
-                }
+        while (current !== target) {
+            visited.add(current);
+            
+            // Find all neighbors of current node
+            let neighbors = links
+                .filter(link => 
+                    (link.source === current || link.target === current) &&
+                    !visited.has(link.source === current ? link.target : link.source)
+                )
+                .map(link => link.source === current ? link.target : link.source);
+            
+            if (neighbors.length === 0) {
+                return Infinity; // No path found
+            }
+            
+            // Choose the neighbor closest to target (in terms of ring distance)
+            let nextNode = neighbors.reduce((best, neighbor) => {
+                let distToTarget = Math.min(
+                    Math.abs(neighbor.index - target.index),
+                    nodes.length - Math.abs(neighbor.index - target.index)
+                );
+                let bestDist = Math.min(
+                    Math.abs(best.index - target.index),
+                    nodes.length - Math.abs(best.index - target.index)
+                );
+                return distToTarget < bestDist ? neighbor : best;
+            });
+            
+            current = nextNode;
+            path.push(current);
+            
+            if (path.length > nodes.length) {
+                return Infinity; // Prevent infinite loops
             }
         }
         
-        // Floyd-Warshall algorithm
-        for (let k = 0; k < n; k++) {
-            for (let i = 0; i < n; i++) {
-                for (let j = 0; j < n; j++) {
-                    if (dist[i][k] !== Infinity && dist[k][j] !== Infinity) {
-                        dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);
-                    }
-                }
-            }
-        }
-        
-        return dist;
+        return path.length - 1; // Return path length (number of hops)
     }
 
     function updateChart() {
