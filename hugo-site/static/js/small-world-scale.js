@@ -143,8 +143,8 @@ waitForD3().then(() => {
         
         // Increased sampling for better averages
         const samplesPerRef = Math.min(
-            Math.ceil(numPeers * 0.3), // Sample up to 30% of nodes
-            30 // but cap at 30 samples per reference node
+            Math.ceil(numPeers * 0.9), // Sample up to 90% of nodes
+            90 // but cap at 90 samples per reference node
         );
         
         let totalLength = 0;
@@ -327,11 +327,11 @@ waitForD3().then(() => {
                     });
                     
                     // Very fine granularity for small networks, increasing with size
-                    const stepSize = numPeers < 20 ? 1 :
-                                   numPeers < 50 ? 2 :
-                                   numPeers < 100 ? 5 : 
-                                   numPeers < 200 ? 10 :
-                                   numPeers < 350 ? 15 : 20;
+                    const stepSize = numPeers < 20 ? 2 :
+                                   numPeers < 50 ? 4 :
+                                   numPeers < 100 ? 10 : 
+                                   numPeers < 200 ? 20 :
+                                   numPeers < 350 ? 30 : 40;
                     numPeers += stepSize;
                     
                     // Allow UI updates between iterations
