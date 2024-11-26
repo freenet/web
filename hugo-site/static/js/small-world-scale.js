@@ -237,6 +237,14 @@ waitForD3().then(() => {
     initializeNetwork();
     draw();
     
+    // Initialize the graph with the first data point
+    const initialAvgPathLength = calculateAveragePathLength();
+    averagePathLengths = [{
+        numPeers: numPeers,
+        pathLength: initialAvgPathLength
+    }];
+    updateChart();
+    
     const playPauseBtn = document.getElementById('scalePlayPauseBtn');
     const resetBtn = document.getElementById('resetScaleBtn');
     
@@ -245,13 +253,19 @@ waitForD3().then(() => {
 
     function reset() {
         cancelAnimationFrame(animationFrame);
+        isSimulating = false;
         numPeers = 30;
-        averagePathLengths = [];
-        simulate();
+        averagePathLengths = [{
+            numPeers: numPeers,
+            pathLength: calculateAveragePathLength()
+        }];
+        initializeNetwork();
+        draw();
+        updateChart();
+        
+        const btn = document.getElementById('scalePlayPauseBtn');
+        const icon = btn.querySelector('i');
+        icon.className = 'fas fa-play';
     }
-
-    // Initialize network but don't start simulation
-    initializeNetwork();
-    draw();
     
 });
