@@ -58,22 +58,30 @@ waitForD3().then(() => {
     function draw() {
         ctx.clearRect(0, 0, width, height);
 
-        // Draw links
-        ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)'; // Using website link color
-        links.forEach(link => {
-            ctx.beginPath();
-            ctx.moveTo(link.source.x, link.source.y);
-            ctx.lineTo(link.target.x, link.target.y);
-            ctx.stroke();
-        });
+        if (numPeers <= 500) {
+            // Full rendering for smaller networks
+            ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)';
+            links.forEach(link => {
+                ctx.beginPath();
+                ctx.moveTo(link.source.x, link.source.y);
+                ctx.lineTo(link.target.x, link.target.y);
+                ctx.stroke();
+            });
 
-        // Draw nodes
-        ctx.fillStyle = '#007FFF'; // Primary blue
-        peers.forEach(peer => {
-            ctx.beginPath();
-            ctx.arc(peer.x, peer.y, 3, 0, 2 * Math.PI);
-            ctx.fill();
-        });
+            ctx.fillStyle = '#007FFF';
+            peers.forEach(peer => {
+                ctx.beginPath();
+                ctx.arc(peer.x, peer.y, 3, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        } else {
+            // Simplified visualization for larger networks
+            ctx.fillStyle = '#007FFF';
+            ctx.textAlign = 'center';
+            ctx.font = '16px Arial';
+            ctx.fillText(`Network Size: ${numPeers} nodes`, width/2, height/2 - 20);
+            ctx.fillText(`Computing path lengths...`, width/2, height/2 + 20);
+        }
     }
 
     function calculateAveragePathLength() {
@@ -232,17 +240,17 @@ waitForD3().then(() => {
                 });
                 updateChart();
                 
-                // More granular adaptive step size
+                // Adjust step size based on network phase
                 const stepSize = numPeers < 100 ? 10 : 
                                numPeers < 500 ? 25 :
-                               numPeers < 1000 ? 50 : 100;
+                               numPeers < 1000 ? 100 : 200;
                 numPeers += stepSize;
                 
                 if (numPeers <= maxPeers) {
-                    // Adjusted delays for smoother animation
+                    // Longer delays for computation-heavy phases
                     const delay = numPeers < 100 ? 400 : 
                                 numPeers < 500 ? 600 :
-                                numPeers < 1000 ? 800 : 1200;
+                                numPeers < 1000 ? 1000 : 1500;
                     setTimeout(step, delay);
                 } else {
                     isSimulating = false;
