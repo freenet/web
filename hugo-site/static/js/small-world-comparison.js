@@ -13,7 +13,7 @@ function waitForD3() {
 }
 
 waitForD3().then(() => {
-    const numNodes = 100;
+    const numNodes = 400;
     const maxHops = 30;
     let isPlaying = false;
     let animationFrame;
@@ -34,7 +34,7 @@ waitForD3().then(() => {
         randomNetwork.stats = { success: 0, attempts: 0, totalPathLength: 0 };
         
         // Create nodes in a ring layout
-        const radius = Math.min(smallWorldCanvas.width, smallWorldCanvas.height) * 0.4;
+        const radius = Math.min(smallWorldCanvas.width, smallWorldCanvas.height) * 0.45;
         const nodes = d3.range(numNodes).map(i => {
             const angle = (i / numNodes) * 2 * Math.PI;
             return {
@@ -188,7 +188,7 @@ waitForD3().then(() => {
             ctx.beginPath();
             ctx.moveTo(source.x, source.y);
             ctx.lineTo(target.x, target.y);
-            ctx.strokeStyle = 'rgba(0, 127, 255, 0.2)';
+            ctx.strokeStyle = 'rgba(0, 127, 255, 0.1)';
             ctx.stroke();
         });
         
@@ -210,7 +210,7 @@ waitForD3().then(() => {
         // Draw nodes
         network.nodes.forEach((node, i) => {
             ctx.beginPath();
-            ctx.arc(node.x, node.y, 3, 0, 2 * Math.PI);
+            ctx.arc(node.x, node.y, 2, 0, 2 * Math.PI);
             ctx.fillStyle = path && (path[0] === i || path[path.length - 1] === i) 
                 ? '#0052cc' 
                 : '#007FFF';
