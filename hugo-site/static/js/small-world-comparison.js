@@ -235,7 +235,7 @@ waitForD3().then(() => {
         statsDiv.innerHTML = '';
         
         // Create SVG
-        const margin = {top: 40, right: 60, bottom: 30, left: 60};
+        const margin = {top: 40, right: 60, bottom: 50, left: 60};
         const width = 300 - margin.left - margin.right;
         const height = 350 - margin.top - margin.bottom;
         
@@ -245,128 +245,112 @@ waitForD3().then(() => {
             .attr('height', height + margin.top + margin.bottom)
             .append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
-            
+
         // Scales
-        const x = d3.scaleBand()
+        const x = d3.scaleLinear()
             .range([0, width])
-            .padding(0.1)
-            .domain(['Small World', 'Random']);
-            
-        const yPath = d3.scaleLinear()
+            .domain([0, Math.max(swAvgPath, rnAvgPath, 1) * 1.1]);  // Add 10% padding
+
+        const y = d3.scaleLinear()
             .range([height, 0])
-            .domain([0, Math.max(swAvgPath, rnAvgPath, 1)]);
-            
-        const ySuccess = d3.scaleLinear()
-            .range([height, 0])
-            .domain([0, 100]);
-            
-        // Axes
-        svg.append('g')
-            .attr('transform', `translate(0,${height})`)
-            .call(d3.axisBottom(x));
-            
-        svg.append('g')
-            .call(d3.axisLeft(yPath))
-            .append('text')
-            .attr('fill', '#000')
-            .attr('y', -30)
-            .attr('x', -30)
-            .attr('transform', 'rotate(-90)')
-            .text('Path Length');
-            
-        svg.append('g')
-            .attr('transform', `translate(${width},0)`)
-            .call(d3.axisRight(ySuccess))
-            .append('text')
-            .attr('fill', '#000')
-            .attr('y', -10)
-            .attr('x', 10)
-            .text('Success %');
-            
-        // Bars
-        svg.selectAll('.path-bar')
-            .data(['Small World', 'Random'])
-            .enter()
-            .append('rect')
-            .attr('class', 'path-bar')
-            .attr('x', d => x(d) + 2)  // Add small padding
-            .attr('width', (x.bandwidth() / 2) - 4)  // Subtract padding
-            .attr('y', d => yPath(d === 'Small World' ? swAvgPath : rnAvgPath))
-            .attr('height', d => height - yPath(d === 'Small World' ? swAvgPath : rnAvgPath))
-            .attr('fill', '#4292c6');
+            .domain([0, 100]);  // Success rate is always 0-100%
 
         // Add grid lines
         svg.append('g')
             .attr('class', 'grid')
-            .call(d3.axisLeft(yPath)
+            .attr('transform', `translate(0,${height})`)
+            .call(d3.axisBottom(x)
+                .tickSize(-height)
+                .tickFormat('')
+            )
+            .style('stroke-dasharray', '2,2')
+            .style('stroke-opacity', 0.2);
+
+        svg.append('g')
+            .attr('class', 'grid')
+            .call(d3.axisLeft(y)
                 .tickSize(-width)
                 .tickFormat('')
             )
             .style('stroke-dasharray', '2,2')
             .style('stroke-opacity', 0.2);
-            
-        svg.selectAll('.success-bar')
-            .data(['Small World', 'Random'])
-            .enter()
-            .append('rect')
-            .attr('class', 'success-bar')
-            .attr('x', d => x(d) + (x.bandwidth() / 2) + 2)  // Add small padding
-            .attr('width', (x.bandwidth() / 2) - 4)  // Subtract padding
-            .attr('y', d => ySuccess(d === 'Small World' ? swSuccess : rnSuccess))
-            .attr('height', d => height - ySuccess(d === 'Small World' ? swSuccess : rnSuccess))
-            .attr('fill', '#08519c');
 
-        // Add value labels on bars
-        svg.selectAll('.path-label')
-            .data(['Small World', 'Random'])
+        // Add axes
+        svg.append('g')
+            .attr('transform', `translate(0,${height})`)
+            .call(d3.axisBottom(x))
+            .append('text')
+            .attr('fill', '#000')
+            .attr('x', width / 2)
+            .attr('y', 35)
+            .attr('text-anchor', 'middle')
+            .text('Average Path Length');
+
+        svg.append('g')
+            .call(d3.axisLeft(y))
+            .append('text')
+            .attr('fill', '#000')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', -45)
+            .attr('x', -height / 2)
+            .attr('text-anchor', 'middle')
+            .text('Success Rate (%)');
+
+        // Plot points
+        const data = [
+            { name: 'Small World', x: swAvgPath, y: swSuccess },
+            { name: 'Random', x: rnAvgPath, y: rnSuccess }
+        ];
+
+        // Add points
+        svg.selectAll('.point')
+            .data(data)
+            .enter()
+            .append('circle')
+            .attr('class', 'point')
+            .attr('cx', d => x(d.x))
+            .attr('cy', d => y(d.y))
+            .attr('r', 6)
+            .attr('fill', (d, i) => i === 0 ? '#4292c6' : '#08519c');
+
+        // Add labels
+        svg.selectAll('.point-label')
+            .data(data)
             .enter()
             .append('text')
-            .attr('class', 'path-label')
-            .attr('x', d => x(d) + x.bandwidth()/4)
-            .attr('y', d => yPath(d === 'Small World' ? swAvgPath : rnAvgPath) - 5)
+            .attr('class', 'point-label')
+            .attr('x', d => x(d.x))
+            .attr('y', d => y(d.y) - 10)
             .attr('text-anchor', 'middle')
             .style('font-size', '10px')
-            .text(d => (d === 'Small World' ? swAvgPath : rnAvgPath).toFixed(1));
+            .text(d => d.name);
 
-        svg.selectAll('.success-label')
-            .data(['Small World', 'Random'])
-            .enter()
-            .append('text')
-            .attr('class', 'success-label')
-            .attr('x', d => x(d) + 3*x.bandwidth()/4)
-            .attr('y', d => ySuccess(d === 'Small World' ? swSuccess : rnSuccess) - 5)
-            .attr('text-anchor', 'middle')
-            .style('font-size', '10px')
-            .text(d => (d === 'Small World' ? swSuccess : rnSuccess).toFixed(1) + '%');
-            
-        // Legend with better spacing and alignment
+        // Legend
         const legend = svg.append('g')
             .attr('transform', `translate(${width/2},-25)`);
-            
-        // First legend item
-        legend.append('rect')
-            .attr('x', -120)
-            .attr('width', 12)
-            .attr('height', 12)
+
+        legend.append('circle')
+            .attr('cx', -100)
+            .attr('cy', 5)
+            .attr('r', 6)
             .attr('fill', '#4292c6');
-            
+
         legend.append('text')
-            .attr('x', -105)
+            .attr('x', -85)
             .attr('y', 10)
-            .text('Avg Path Length')
+            .text('Small World')
             .style('font-size', '11px');
-            
-        // Second legend item
-        legend.append('rect')
-            .attr('x', 10)
-            .attr('width', 12)
-            .attr('height', 12)
+
+        legend.append('circle')
+            .attr('cx', 20)
+            .attr('cy', 5)
+            .attr('r', 6)
             .attr('fill', '#08519c');
-            
+
         legend.append('text')
-            .attr('x', 25)
+            .attr('x', 35)
             .attr('y', 10)
-            .text('Success Rate')
+            .text('Random')
             .style('font-size', '11px');
     }
     
