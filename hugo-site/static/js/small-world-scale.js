@@ -58,30 +58,36 @@ waitForD3().then(() => {
     function draw() {
         ctx.clearRect(0, 0, width, height);
 
-        if (numPeers <= 500) {
-            // Full rendering for smaller networks
-            ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)';
-            links.forEach(link => {
+        // Always show visualization but limit rendered nodes
+        const renderLimit = 200;
+        const renderStep = Math.max(1, Math.floor(peers.length / renderLimit));
+        
+        // Draw a subset of links
+        ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)';
+        links.forEach((link, i) => {
+            if (i % renderStep === 0) {
                 ctx.beginPath();
                 ctx.moveTo(link.source.x, link.source.y);
                 ctx.lineTo(link.target.x, link.target.y);
                 ctx.stroke();
-            });
+            }
+        });
 
-            ctx.fillStyle = '#007FFF';
-            peers.forEach(peer => {
+        // Draw a subset of nodes
+        ctx.fillStyle = '#007FFF';
+        peers.forEach((peer, i) => {
+            if (i % renderStep === 0) {
                 ctx.beginPath();
                 ctx.arc(peer.x, peer.y, 3, 0, 2 * Math.PI);
                 ctx.fill();
-            });
-        } else {
-            // Simplified visualization for larger networks
-            ctx.fillStyle = '#007FFF';
-            ctx.textAlign = 'center';
-            ctx.font = '16px Arial';
-            ctx.fillText(`Network Size: ${numPeers} nodes`, width/2, height/2 - 20);
-            ctx.fillText(`Computing path lengths...`, width/2, height/2 + 20);
-        }
+            }
+        });
+
+        // Show network size
+        ctx.fillStyle = '#007FFF';
+        ctx.textAlign = 'center';
+        ctx.font = '14px Arial';
+        ctx.fillText(`Network Size: ${numPeers} nodes`, width/2, height - 10);
     }
 
     function calculateAveragePathLength() {
