@@ -233,7 +233,7 @@ async function initVisualization() {
             segmentLengths[i] = length;
         }
 
-        const pixelsPerSecond = 200; // Constant speed in pixels per second
+        const pixelsPerSecond = 600; // Constant speed in pixels per second
         let startTime = null;
         let lastSegmentStartTime = null;
 
