@@ -77,9 +77,12 @@ waitForD3().then(() => {
     }
 
     function calculateAveragePathLength() {
-        // Adaptive sampling based on network size
+        // More aggressive adaptive sampling for larger networks
         const baseSampleSize = 100;
-        const sampleSize = Math.min(baseSampleSize, Math.ceil(numPeers * 0.5));
+        const sampleSize = Math.min(baseSampleSize, 
+            numPeers < 500 ? Math.ceil(numPeers * 0.3) :
+            numPeers < 1000 ? Math.ceil(numPeers * 0.2) :
+            Math.ceil(numPeers * 0.1));
         
         let totalLength = 0;
         let pathCount = 0;
@@ -229,15 +232,17 @@ waitForD3().then(() => {
                 });
                 updateChart();
                 
-                // Adaptive step size based on network size
+                // More granular adaptive step size
                 const stepSize = numPeers < 100 ? 10 : 
-                               numPeers < 500 ? 20 : 50;
+                               numPeers < 500 ? 25 :
+                               numPeers < 1000 ? 50 : 100;
                 numPeers += stepSize;
                 
                 if (numPeers <= maxPeers) {
-                    // Longer delay for larger networks
-                    const delay = numPeers < 100 ? 500 : 
-                                numPeers < 500 ? 750 : 1000;
+                    // Adjusted delays for smoother animation
+                    const delay = numPeers < 100 ? 400 : 
+                                numPeers < 500 ? 600 :
+                                numPeers < 1000 ? 800 : 1200;
                     setTimeout(step, delay);
                 } else {
                     isSimulating = false;
