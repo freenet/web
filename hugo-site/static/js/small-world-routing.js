@@ -213,16 +213,17 @@ async function initVisualization() {
         currentPathSegment = 0;
         animationProgress = 0;
 
-        // Draw the complete path immediately
-        ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)'; // Lighter blue for complete path
-        ctx.lineWidth = 2;
+        // Draw the complete path first
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 127, 255, 0.15)'; // Very light blue for complete path
+        ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(path[0].x, path[0].y);
         for (let i = 1; i < path.length; i++) {
             ctx.lineTo(path[i].x, path[i].y);
         }
         ctx.stroke();
-        ctx.lineWidth = 1;
+        ctx.restore();
 
         // Calculate segment lengths
         const segmentLengths = [];
