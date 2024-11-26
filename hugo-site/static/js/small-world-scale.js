@@ -107,11 +107,12 @@ waitForD3().then(() => {
             }
         });
 
-        // Show network size
+        // Show network size and connection count
         ctx.fillStyle = '#007FFF';
         ctx.textAlign = 'center';
         ctx.font = '14px Arial';
-        ctx.fillText(`Network Size: ${numPeers} nodes`, width/2, height - 10);
+        const connectionsPerNode = (links.length * 2 / numPeers).toFixed(1);
+        ctx.fillText(`Network Size: ${numPeers} nodes, Avg. Connections/Node: ${connectionsPerNode}`, width/2, height - 10);
     }
 
     function calculateAveragePathLength() {
@@ -306,7 +307,8 @@ waitForD3().then(() => {
                     const avgPathLength = calculateAveragePathLength();
                     averagePathLengths.push({
                         numPeers: numPeers,
-                        pathLength: avgPathLength
+                        pathLength: avgPathLength,
+                        connectionsPerNode: links.length * 2 / numPeers
                     });
                     
                     // Very fine granularity for small networks, increasing with size
@@ -358,7 +360,8 @@ waitForD3().then(() => {
     const initialAvgPathLength = calculateAveragePathLength();
     averagePathLengths = [{
         numPeers: numPeers,
-        pathLength: initialAvgPathLength
+        pathLength: initialAvgPathLength,
+        connectionsPerNode: links.length * 2 / numPeers
     }];
     updateChart();
     
