@@ -270,21 +270,38 @@ window.addEventListener('load', async () => {
     initializeNetwork();
     draw();
     
-    // Setup button
-    const playPauseBtn = document.getElementById('routingPlayPauseBtn');
-    if (!playPauseBtn) {
-        console.error('Play/Pause button not found');
-        return;
+    // Setup button with retry
+    function initializeButton() {
+        const maxRetries = 5;
+        let retryCount = 0;
+        
+        function trySetupButton() {
+            const playPauseBtn = document.getElementById('routingPlayPauseBtn');
+            if (playPauseBtn) {
+                try {
+                    playPauseBtn.addEventListener('click', togglePlayPause);
+                    isPlaying = false; // Ensure initial state
+                    togglePlayPause(); // This will set isPlaying to true and start animation
+                } catch (error) {
+                    console.error('Error setting up button:', error);
+                }
+            } else {
+                retryCount++;
+                if (retryCount < maxRetries) {
+                    console.log(`Button not found, retrying... (${retryCount}/${maxRetries})`);
+                    setTimeout(trySetupButton, 100); // Retry after 100ms
+                } else {
+                    console.error('Failed to find play/pause button after maximum retries');
+                }
+            }
+        }
+        
+        // Start the retry process
+        trySetupButton();
     }
     
-    try {
-        playPauseBtn.addEventListener('click', togglePlayPause);
-        // Start the visualization
-        isPlaying = false; // Ensure initial state
-        togglePlayPause(); // This will set isPlaying to true and start animation
-    } catch (error) {
-        console.error('Error setting up button:', error);
-    }
+    // Initialize button after a short delay to ensure DOM is ready
+    setTimeout(initializeButton, 100);
     } catch (error) {
         console.error('Failed to initialize visualization:', error);
     }
