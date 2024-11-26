@@ -219,21 +219,119 @@ waitForD3().then(() => {
     }
     
     function updateStats() {
-        const swStats = document.getElementById('smallWorldStats');
-        const rnStats = document.getElementById('randomNetworkStats');
+        const statsDiv = document.getElementById('statsGraph');
         
         const swSuccess = smallWorldNetwork.stats.attempts === 0 ? 0 :
-            (smallWorldNetwork.stats.success / smallWorldNetwork.stats.attempts * 100).toFixed(1);
+            (smallWorldNetwork.stats.success / smallWorldNetwork.stats.attempts * 100);
         const swAvgPath = smallWorldNetwork.stats.success === 0 ? 0 :
-            (smallWorldNetwork.stats.totalPathLength / smallWorldNetwork.stats.success).toFixed(1);
+            (smallWorldNetwork.stats.totalPathLength / smallWorldNetwork.stats.success);
         
         const rnSuccess = randomNetwork.stats.attempts === 0 ? 0 :
-            (randomNetwork.stats.success / randomNetwork.stats.attempts * 100).toFixed(1);
+            (randomNetwork.stats.success / randomNetwork.stats.attempts * 100);
         const rnAvgPath = randomNetwork.stats.success === 0 ? 0 :
-            (randomNetwork.stats.totalPathLength / randomNetwork.stats.success).toFixed(1);
+            (randomNetwork.stats.totalPathLength / randomNetwork.stats.success);
+
+        // Clear previous graph
+        statsDiv.innerHTML = '';
         
-        swStats.innerHTML = `Success Rate: ${swSuccess}%<br>Avg Path Length: ${swAvgPath}<br>Attempts: ${smallWorldNetwork.stats.attempts}`;
-        rnStats.innerHTML = `Success Rate: ${rnSuccess}%<br>Avg Path Length: ${rnAvgPath}<br>Attempts: ${randomNetwork.stats.attempts}`;
+        // Create SVG
+        const margin = {top: 20, right: 50, bottom: 30, left: 50};
+        const width = 300 - margin.left - margin.right;
+        const height = 350 - margin.top - margin.bottom;
+        
+        const svg = d3.select('#statsGraph')
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+        // Scales
+        const x = d3.scaleBand()
+            .range([0, width])
+            .padding(0.1)
+            .domain(['Small World', 'Random']);
+            
+        const yPath = d3.scaleLinear()
+            .range([height, 0])
+            .domain([0, Math.max(swAvgPath, rnAvgPath, 1)]);
+            
+        const ySuccess = d3.scaleLinear()
+            .range([height, 0])
+            .domain([0, 100]);
+            
+        // Axes
+        svg.append('g')
+            .attr('transform', `translate(0,${height})`)
+            .call(d3.axisBottom(x));
+            
+        svg.append('g')
+            .call(d3.axisLeft(yPath))
+            .append('text')
+            .attr('fill', '#000')
+            .attr('y', -10)
+            .attr('x', -10)
+            .text('Path Length');
+            
+        svg.append('g')
+            .attr('transform', `translate(${width},0)`)
+            .call(d3.axisRight(ySuccess))
+            .append('text')
+            .attr('fill', '#000')
+            .attr('y', -10)
+            .attr('x', 10)
+            .text('Success %');
+            
+        // Bars
+        svg.selectAll('.path-bar')
+            .data(['Small World', 'Random'])
+            .enter()
+            .append('rect')
+            .attr('class', 'path-bar')
+            .attr('x', d => x(d))
+            .attr('width', x.bandwidth() / 2)
+            .attr('y', d => yPath(d === 'Small World' ? swAvgPath : rnAvgPath))
+            .attr('height', d => height - yPath(d === 'Small World' ? swAvgPath : rnAvgPath))
+            .attr('fill', '#007FFF');
+            
+        svg.selectAll('.success-bar')
+            .data(['Small World', 'Random'])
+            .enter()
+            .append('rect')
+            .attr('class', 'success-bar')
+            .attr('x', d => x(d) + x.bandwidth() / 2)
+            .attr('width', x.bandwidth() / 2)
+            .attr('y', d => ySuccess(d === 'Small World' ? swSuccess : rnSuccess))
+            .attr('height', d => height - ySuccess(d === 'Small World' ? swSuccess : rnSuccess))
+            .attr('fill', '#0052cc');
+            
+        // Legend
+        const legend = svg.append('g')
+            .attr('transform', `translate(0,-15)`);
+            
+        legend.append('rect')
+            .attr('x', 0)
+            .attr('width', 10)
+            .attr('height', 10)
+            .attr('fill', '#007FFF');
+            
+        legend.append('text')
+            .attr('x', 15)
+            .attr('y', 9)
+            .text('Path Length')
+            .style('font-size', '10px');
+            
+        legend.append('rect')
+            .attr('x', 80)
+            .attr('width', 10)
+            .attr('height', 10)
+            .attr('fill', '#0052cc');
+            
+        legend.append('text')
+            .attr('x', 95)
+            .attr('y', 9)
+            .text('Success Rate')
+            .style('font-size', '10px');
     }
     
     async function simulateRouting() {
