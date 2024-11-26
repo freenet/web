@@ -192,48 +192,35 @@ waitForD3().then(() => {
             .attr('d', line);
     }
 
-    // Create Web Worker
-    const worker = new Worker('/js/network-worker.js');
-    
-    worker.onmessage = function(e) {
-        const { peers: newPeers, links: newLinks, avgPathLength, numPeers: currentPeers } = e.data;
-        
-        peers = newPeers;
-        links = newLinks;
-        
-        // Reduce drawing frequency as network grows
-        const drawThreshold = Math.ceil(currentPeers / 100) * 30;
-        if (currentPeers % drawThreshold === 0) {
-            draw();
-        }
-        
-        if (currentPeers % 100 === 0) {
-            averagePathLengths.push({
-                numPeers: currentPeers,
-                pathLength: avgPathLength
-            });
-            updateChart();
-        }
-        
-        if (isSimulating && currentPeers <= maxPeers) {
-            // Continue simulation with next batch
-            setTimeout(() => {
-                worker.postMessage({ 
-                    numPeers: currentPeers + 50,
-                    maxPeers 
-                });
-            }, 200);
-        } else {
-            isSimulating = false;
-            startBtn.textContent = '▶️ Start';
-        }
-    };
-
     function simulate() {
         if (!isSimulating) {
             isSimulating = true;
             startBtn.textContent = '⏸️ Pause';
-            worker.postMessage({ numPeers, maxPeers });
+            
+            function step() {
+                if (!isSimulating) return;
+                
+                initializeNetwork();
+                draw();
+                
+                const avgPathLength = calculateAveragePathLength();
+                averagePathLengths.push({
+                    numPeers: numPeers,
+                    pathLength: avgPathLength
+                });
+                updateChart();
+                
+                numPeers += 10;
+                
+                if (numPeers <= maxPeers) {
+                    setTimeout(step, 500);
+                } else {
+                    isSimulating = false;
+                    startBtn.textContent = '▶️ Start';
+                }
+            }
+            
+            step();
         } else {
             isSimulating = false;
             startBtn.textContent = '▶️ Start';
