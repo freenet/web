@@ -39,8 +39,8 @@ async function initVisualization() {
     const height = canvas.height;
 
     // Parameters
-    const numPeers = 50;
-    const radius = 200;
+    const numPeers = 100;
+    const radius = 220;
     const connectionProbability = (distance) => 1 / (distance + 1);
 
     let peers = [];
@@ -139,7 +139,7 @@ async function initVisualization() {
                 ctx.lineWidth = 1;
             }
             ctx.beginPath();
-            ctx.arc(peer.x, peer.y, 5, 0, 2 * Math.PI);
+            ctx.arc(peer.x, peer.y, 3, 0, 2 * Math.PI);
             ctx.fill();
             ctx.stroke();
         });
