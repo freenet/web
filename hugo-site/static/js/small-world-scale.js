@@ -215,7 +215,8 @@ waitForD3().then(() => {
         
         // Increase step size
         numPeers += 20;
-        animationFrameId = requestAnimationFrame(simulate);
+        // Use setTimeout instead of requestAnimationFrame to reduce CPU usage
+        animationFrameId = setTimeout(simulate, 100); // 100ms delay between iterations
     }
 
     function reset() {
@@ -246,7 +247,7 @@ waitForD3().then(() => {
             // Pause simulation
             isSimulating = false;
             startBtn.textContent = '▶️ Start';
-            cancelAnimationFrame(animationFrameId);
+            clearTimeout(animationFrameId);
         }
     });
     
