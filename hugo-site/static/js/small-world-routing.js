@@ -327,40 +327,5 @@ async function initVisualization() {
     }
 }
 
-// Ensure we have access to DOM APIs
-if (typeof document === 'undefined') {
-    console.error('Document not available');
-    return;
-}
-
-console.log('Current document.readyState:', document.readyState);
-
-// Wait for DOM to be fully loaded before starting
-function startInit() {
-    console.log('Starting initialization...');
-    // Ensure the button exists before initializing
-    const checkButton = setInterval(() => {
-        const btn = document.getElementById('routingPlayPauseBtn');
-        console.log('Checking for button:', btn);
-        if (btn) {
-            clearInterval(checkButton);
-            initVisualization();
-        }
-    }, 100);
-    
-    // Stop checking after 5 seconds
-    setTimeout(() => {
-        clearInterval(checkButton);
-        console.error('Timed out waiting for button');
-        // Initialize anyway
-        initVisualization();
-    }, 5000);
-}
-
-if (document.readyState === 'loading') {
-    console.log('Document still loading, waiting for DOMContentLoaded');
-    document.addEventListener('DOMContentLoaded', startInit);
-} else {
-    console.log('Document already loaded, starting immediately');
-    startInit();
-}
+// Start visualization when DOM is ready
+document.addEventListener('DOMContentLoaded', initVisualization);
