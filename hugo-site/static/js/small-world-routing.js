@@ -154,25 +154,28 @@ async function initVisualization() {
             const dy = node.y - height / 2;
             const angle = Math.atan2(dy, dx);
             
-            // Offset distance from node
+            // Calculate label position with padding from canvas edges
+            const padding = 40; // Minimum distance from canvas edges
             const labelOffset = 25;
-            const x = node.x + Math.cos(angle) * labelOffset;
-            const y = node.y + Math.sin(angle) * labelOffset;
             
-            // Adjust text alignment based on position
-            if (Math.abs(angle) > Math.PI * 3/4) {
-                ctx.textAlign = 'right';
-            } else if (Math.abs(angle) < Math.PI/4) {
-                ctx.textAlign = 'left';
-            } else {
-                ctx.textAlign = 'center';
-            }
+            // Initial position
+            let x = node.x + Math.cos(angle) * labelOffset;
+            let y = node.y + Math.sin(angle) * labelOffset;
             
-            if (angle > 0) {
-                ctx.textBaseline = 'top';
-            } else {
-                ctx.textBaseline = 'bottom';
-            }
+            // Constrain x coordinate
+            x = Math.max(padding, Math.min(width - padding, x));
+            
+            // Constrain y coordinate
+            y = Math.max(padding, Math.min(height - padding, y));
+            
+            // Adjust text alignment based on final position
+            ctx.textAlign = x < width/3 ? 'left' : 
+                          x > (2*width)/3 ? 'right' : 
+                          'center';
+            
+            ctx.textBaseline = y < height/3 ? 'top' :
+                             y > (2*height)/3 ? 'bottom' :
+                             'middle';
             
             return {x, y};
         }
