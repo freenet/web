@@ -146,16 +146,44 @@ async function initVisualization() {
 
         // Add labels for source and target
         ctx.font = '14px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
+        ctx.fillStyle = 'black';
+        
+        function positionLabel(node) {
+            // Calculate angle relative to center
+            const dx = node.x - width / 2;
+            const dy = node.y - height / 2;
+            const angle = Math.atan2(dy, dx);
+            
+            // Offset distance from node
+            const labelOffset = 25;
+            const x = node.x + Math.cos(angle) * labelOffset;
+            const y = node.y + Math.sin(angle) * labelOffset;
+            
+            // Adjust text alignment based on position
+            if (Math.abs(angle) > Math.PI * 3/4) {
+                ctx.textAlign = 'right';
+            } else if (Math.abs(angle) < Math.PI/4) {
+                ctx.textAlign = 'left';
+            } else {
+                ctx.textAlign = 'center';
+            }
+            
+            if (angle > 0) {
+                ctx.textBaseline = 'top';
+            } else {
+                ctx.textBaseline = 'bottom';
+            }
+            
+            return {x, y};
+        }
         
         if (sourceNode) {
-            ctx.fillStyle = 'black';
-            ctx.fillText('Source', sourceNode.x, sourceNode.y - 10);
+            const pos = positionLabel(sourceNode);
+            ctx.fillText('Source', pos.x, pos.y);
         }
         if (targetNode) {
-            ctx.fillStyle = 'black';
-            ctx.fillText('Target', targetNode.x, targetNode.y - 10);
+            const pos = positionLabel(targetNode);
+            ctx.fillText('Target', pos.x, pos.y);
         }
     }
 
