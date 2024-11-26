@@ -115,8 +115,8 @@ async function initVisualization() {
             const x = start.x + (end.x - start.x) * animationProgress;
             const y = start.y + (end.y - start.y) * animationProgress;
             
-            ctx.fillStyle = '#0052cc'; // Darker blue
-            ctx.strokeStyle = '#007FFF'; // Primary blue
+            ctx.fillStyle = '#008800'; // Darker green
+            ctx.strokeStyle = '#00cc00'; // Bright green
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, 2 * Math.PI);
             ctx.fill();
@@ -126,16 +126,16 @@ async function initVisualization() {
         // Draw nodes
         peers.forEach(peer => {
             if (peer === sourceNode) {
-                ctx.fillStyle = '#007FFF'; // Primary blue
-                ctx.strokeStyle = '#0052cc'; // Darker blue
+                ctx.fillStyle = '#00cc00'; // Bright green
+                ctx.strokeStyle = '#008800'; // Darker green
                 ctx.lineWidth = 2;
             } else if (peer === targetNode) {
-                ctx.fillStyle = '#007FFF'; // Website link color
-                ctx.strokeStyle = '#0052cc'; // Darker shade of link color
+                ctx.fillStyle = '#00cc00'; // Bright green
+                ctx.strokeStyle = '#008800'; // Darker green
                 ctx.lineWidth = 2;
             } else {
-                ctx.fillStyle = '#007FFF'; // Primary blue
-                ctx.strokeStyle = 'rgba(0, 82, 204, 0.2)'; // Dark blue with transparency
+                ctx.fillStyle = '#00cc00'; // Bright green
+                ctx.strokeStyle = 'rgba(0, 136, 0, 0.2)'; // Dark green with transparency
                 ctx.lineWidth = 1;
             }
             ctx.beginPath();
