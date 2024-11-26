@@ -27,7 +27,11 @@ const height1 = canvas1.height;
 // Parameters
 const numPeers = 50;
 const radius = 200;
-const connectionProbability = (distance) => 1 / (distance + 1);
+// Probability function that more strongly favors short connections
+const connectionProbability = (distance) => {
+    if (distance === 0) return 0;
+    return Math.pow(distance, -1.5); // Using power law with exponent 1.5
+};
 
 let peers = [];
 let links = [];
@@ -65,15 +69,9 @@ function animate() {
 }
 
 function updateNetworkState() {
-    // Clear non-ring links
-    links = links.filter((link, i) => {
-        const sourceIdx = link.source.index;
-        const targetIdx = link.target.index;
-        const distance = Math.min(Math.abs(sourceIdx - targetIdx), 
-                                numPeers - Math.abs(sourceIdx - targetIdx));
-        return distance === 1;
-    });
-    distances = distances.filter(d => d === 1);
+    // Clear all existing links
+    links = [];
+    distances = [];
     
     // Add long-range links progressively
     const progress = animationFrame / maxAnimationFrames;
@@ -104,15 +102,20 @@ function initializeNetwork(initialStateOnly = false) {
         };
     });
 
-    // Initialize with only ring connections
+    // Initialize connections
     links = [];
     distances = [];
     
-    // Always add ring connections
+    // Add all possible connections according to probability
     for (let i = 0; i < numPeers; i++) {
-        const nextIndex = (i + 1) % numPeers;
-        links.push({ source: peers[i], target: peers[nextIndex] });
-        distances.push(1);
+        for (let j = i + 1; j < numPeers; j++) {
+            const distance = Math.min(Math.abs(i - j), numPeers - Math.abs(i - j));
+            const prob = connectionProbability(distance);
+            if (Math.random() < prob) {
+                links.push({ source: peers[i], target: peers[j] });
+                distances.push(distance);
+            }
+        }
     }
     
     // Add other connections only if not in initial state
