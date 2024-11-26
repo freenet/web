@@ -179,12 +179,16 @@ waitForD3().then(() => {
     }
 
     function animatePath() {
+        if (!isPlaying) return;
+        
         const path = findPath(sourceNode, targetNode);
         currentPath = path;
         currentPathSegment = 0;
         animationProgress = 0;
 
         function animate() {
+            if (!isPlaying) return;
+            
             animationProgress += 0.02;
             
             if (animationProgress >= 1) {
@@ -195,6 +199,7 @@ waitForD3().then(() => {
                     currentPathSegment = 0;
                     // Restart animation after a delay
                     setTimeout(() => {
+                        if (!isPlaying) return;
                         animationProgress = 0;
                         currentPathSegment = 0;
                         animationFrame = requestAnimationFrame(animate);
@@ -207,7 +212,9 @@ waitForD3().then(() => {
             animationFrame = requestAnimationFrame(animate);
         }
 
-        cancelAnimationFrame(animationFrame);
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+        }
         animate();
     }
 
