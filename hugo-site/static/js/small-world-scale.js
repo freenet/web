@@ -192,35 +192,50 @@ waitForD3().then(() => {
             .attr('d', line);
     }
 
-    function simulate() {
-        if (numPeers > maxPeers || !isSimulating) {
-            isSimulating = false;
-            startBtn.textContent = '▶️ Start';
-            return;
-        }
-
-        // Only redraw network every 3 iterations
-        initializeNetwork();
-        if (numPeers % 30 === 0) {
+    // Create Web Worker
+    const worker = new Worker('/js/network-worker.js');
+    
+    worker.onmessage = function(e) {
+        const { peers: newPeers, links: newLinks, avgPathLength, numPeers: currentPeers } = e.data;
+        
+        peers = newPeers;
+        links = newLinks;
+        
+        if (currentPeers % 30 === 0) {
             draw();
         }
         
-        
-        // Increase step size
-        numPeers += 50;
-        
-        // Only calculate path lengths and update chart every other iteration
-        if (numPeers % 100 === 0) {
-            const avgPathLength = calculateAveragePathLength();
+        if (currentPeers % 100 === 0) {
             averagePathLengths.push({
-                numPeers: numPeers,
+                numPeers: currentPeers,
                 pathLength: avgPathLength
             });
             updateChart();
         }
         
-        // Use setTimeout with longer delay to reduce CPU usage
-        animationFrameId = setTimeout(simulate, 200); // 200ms delay between iterations
+        if (isSimulating && currentPeers <= maxPeers) {
+            // Continue simulation with next batch
+            setTimeout(() => {
+                worker.postMessage({ 
+                    numPeers: currentPeers + 50,
+                    maxPeers 
+                });
+            }, 200);
+        } else {
+            isSimulating = false;
+            startBtn.textContent = '▶️ Start';
+        }
+    };
+
+    function simulate() {
+        if (!isSimulating) {
+            isSimulating = true;
+            startBtn.textContent = '⏸️ Pause';
+            worker.postMessage({ numPeers, maxPeers });
+        } else {
+            isSimulating = false;
+            startBtn.textContent = '▶️ Start';
+        }
     }
 
     function reset() {
