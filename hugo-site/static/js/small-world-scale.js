@@ -28,6 +28,7 @@ waitForD3().then(() => {
     let links = [];
     let averagePathLengths = [];
     let animationFrame;
+    let isSimulating = false;
 
     function initializeNetwork() {
         peers = d3.range(numPeers).map(i => {
@@ -242,7 +243,6 @@ waitForD3().then(() => {
     const resetBtn = document.getElementById('resetScaleBtn');
     
     // Add button handlers
-    let isSimulating = false;
     let animationFrameId = null;
     
     startBtn.addEventListener('click', () => {
