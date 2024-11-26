@@ -1,3 +1,13 @@
+---
+title: "Understanding Small World Networks"
+date: 2024-11-25
+draft: false
+head:
+  - - link
+    - rel: stylesheet
+      href: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css
+---
+
 In the 1960s, psychologist Stanley Milgram conducted an influential experiment that revealed just
 how interconnected our world really is. Milgram repeated this letter-sending experiment nearly 200
 times, where participants were asked to forward a letter to a target individual, but only by passing
