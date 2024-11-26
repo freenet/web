@@ -92,20 +92,21 @@ async function initVisualization() {
             ctx.stroke();
         });
 
-        // Draw completed path segments
+        // Draw the complete path up to current segment
         if (currentPath.length > 1) {
+            // Draw the completed segments
             ctx.strokeStyle = 'rgba(255, 0, 0, 0.4)';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(currentPath[0].x, currentPath[0].y);
-            for (let i = 1; i <= currentPathSegment; i++) {
+            for (let i = 1; i <= currentPathSegment + 1; i++) {
                 ctx.lineTo(currentPath[i].x, currentPath[i].y);
             }
             ctx.stroke();
             ctx.lineWidth = 1;
         }
 
-        // Draw animated request
+        // Draw the animated request dot
         if (currentPath.length > 1 && currentPathSegment < currentPath.length - 1) {
             const start = currentPath[currentPathSegment];
             const end = currentPath[currentPathSegment + 1];
@@ -273,10 +274,24 @@ async function initVisualization() {
             routeTimeout = null;
         }
 
+        // Select source node randomly
         sourceNode = peers[Math.floor(Math.random() * peers.length)];
+        
+        // Find a target that's at least 1/3 of the way around the ring
+        const minDistance = Math.floor(numPeers / 3);
+        const sourceIndex = sourceNode.index;
+        
         do {
-            targetNode = peers[Math.floor(Math.random() * peers.length)];
-        } while (targetNode === sourceNode);
+            const targetIndex = Math.floor(Math.random() * peers.length);
+            const distance = Math.min(
+                Math.abs(targetIndex - sourceIndex),
+                numPeers - Math.abs(targetIndex - sourceIndex)
+            );
+            if (distance >= minDistance) {
+                targetNode = peers[targetIndex];
+                break;
+            }
+        } while (true);
         
         currentPath = [];
         animatePath();
