@@ -41,15 +41,21 @@ waitForD3().then(() => {
         });
 
         links = [];
+        // Always add ring connections first
         for (let i = 0; i < numPeers; i++) {
             const nextIndex = (i + 1) % numPeers;
             links.push({ source: peers[i], target: peers[nextIndex] });
-            
-            for (let j = i + 2; j < numPeers; j++) {
-                const distance = Math.min(Math.abs(i - j), numPeers - Math.abs(i - j));
+        }
+        
+        // Add long-range connections with distance limit
+        const maxDistance = Math.min(Math.floor(numPeers/4), 50);
+        for (let i = 0; i < numPeers; i++) {
+            for (let j = i + 2; j <= i + maxDistance; j++) {
+                const targetIdx = j % numPeers;
+                const distance = Math.min(Math.abs(i - targetIdx), numPeers - Math.abs(i - targetIdx));
                 const prob = connectionProbability(distance);
                 if (Math.random() < prob) {
-                    links.push({ source: peers[i], target: peers[j] });
+                    links.push({ source: peers[i], target: peers[targetIdx] });
                 }
             }
         }
@@ -91,26 +97,31 @@ waitForD3().then(() => {
     }
 
     function calculateAveragePathLength() {
-        // More aggressive adaptive sampling for larger networks
-        const baseSampleSize = 100;
-        const sampleSize = Math.min(baseSampleSize, 
-            numPeers < 500 ? Math.ceil(numPeers * 0.3) :
-            numPeers < 1000 ? Math.ceil(numPeers * 0.2) :
-            Math.ceil(numPeers * 0.1));
+        const numReferenceNodes = 5;
+        const referenceNodes = [];
+        const stride = Math.floor(peers.length / numReferenceNodes);
+        
+        // Select evenly spaced reference nodes
+        for (let i = 0; i < numReferenceNodes; i++) {
+            referenceNodes.push(peers[i * stride]);
+        }
+        
+        // Calculate sample size per reference node
+        const samplesPerRef = Math.min(20,
+            numPeers < 500 ? Math.ceil(numPeers * 0.1) :
+            numPeers < 1000 ? Math.ceil(numPeers * 0.05) :
+            Math.ceil(numPeers * 0.02));
         
         let totalLength = 0;
         let pathCount = 0;
         
-        // Sample random pairs of nodes
-        const sampledPairs = new Set();
-        while (sampledPairs.size < sampleSize) {
-            const i = Math.floor(Math.random() * peers.length);
-            const j = Math.floor(Math.random() * peers.length);
-            if (i !== j) {
-                const pairKey = `${Math.min(i,j)}-${Math.max(i,j)}`;
-                if (!sampledPairs.has(pairKey)) {
-                    sampledPairs.add(pairKey);
-                    const path = findShortestPath(peers[i], peers[j]);
+        // Calculate paths from reference nodes to sampled targets
+        for (const refNode of referenceNodes) {
+            for (let i = 0; i < samplesPerRef; i++) {
+                const targetIdx = Math.floor(Math.random() * peers.length);
+                const target = peers[targetIdx];
+                if (refNode !== target) {
+                    const path = findShortestPath(refNode, target);
                     if (path) {
                         totalLength += path.length - 1;
                         pathCount++;
@@ -123,18 +134,28 @@ waitForD3().then(() => {
     }
 
     function findShortestPath(start, end) {
-        const queue = [[start]];
+        if (start === end) return [start];
+        
+        const queue = [start];
+        let queueStart = 0;
         const visited = new Set([start.index]);
-
-        while (queue.length > 0) {
-            const path = queue.shift();
-            const node = path[path.length - 1];
-
+        const previous = new Map();
+        
+        while (queueStart < queue.length) {
+            const node = queue[queueStart++];
+            
             if (node === end) {
+                // Reconstruct path
+                const path = [end];
+                let current = end;
+                while (previous.has(current)) {
+                    current = previous.get(current);
+                    path.unshift(current);
+                }
                 return path;
             }
 
-            // Find all neighbors
+            // Find neighbors
             const neighbors = links.reduce((acc, link) => {
                 if (link.source === node && !visited.has(link.target.index)) {
                     acc.push(link.target);
@@ -145,8 +166,11 @@ waitForD3().then(() => {
             }, []);
 
             for (const neighbor of neighbors) {
-                visited.add(neighbor.index);
-                queue.push([...path, neighbor]);
+                if (!visited.has(neighbor.index)) {
+                    visited.add(neighbor.index);
+                    previous.set(neighbor, node);
+                    queue.push(neighbor);
+                }
             }
         }
 
@@ -234,29 +258,35 @@ waitForD3().then(() => {
             async function step() {
                 if (!isSimulating) return;
                 
-                // Initialize and draw with small delay to allow UI updates
-                initializeNetwork();
-                await new Promise(resolve => setTimeout(resolve, 10));
-                draw();
+                const batchSize = 3; // Process multiple steps at once
+                for (let i = 0; i < batchSize && numPeers <= maxPeers; i++) {
+                    initializeNetwork();
+                    draw();
+                    
+                    const avgPathLength = calculateAveragePathLength();
+                    averagePathLengths.push({
+                        numPeers: numPeers,
+                        pathLength: avgPathLength
+                    });
+                    
+                    // Adjust step size based on network phase
+                    const stepSize = numPeers < 100 ? 10 : 
+                                   numPeers < 500 ? 25 :
+                                   numPeers < 1000 ? 100 : 200;
+                    numPeers += stepSize;
+                    
+                    // Allow UI updates between iterations
+                    if (i < batchSize - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 0));
+                    }
+                }
                 
-                const avgPathLength = calculateAveragePathLength();
-                averagePathLengths.push({
-                    numPeers: numPeers,
-                    pathLength: avgPathLength
-                });
                 updateChart();
                 
-                // Adjust step size based on network phase
-                const stepSize = numPeers < 100 ? 10 : 
-                               numPeers < 500 ? 25 :
-                               numPeers < 1000 ? 100 : 200;
-                numPeers += stepSize;
-                
                 if (numPeers <= maxPeers) {
-                    // Longer delays for computation-heavy phases
-                    const delay = numPeers < 100 ? 400 : 
-                                numPeers < 500 ? 600 :
-                                numPeers < 1000 ? 1000 : 1500;
+                    const delay = numPeers < 100 ? 200 : 
+                                numPeers < 500 ? 300 :
+                                numPeers < 1000 ? 500 : 750;
                     setTimeout(step, delay);
                 } else {
                     isSimulating = false;
