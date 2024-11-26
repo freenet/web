@@ -201,63 +201,65 @@ async function initVisualization() {
     function animatePath() {
         if (!isPlaying) return;
         
+        // Cancel any existing animation
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+            animationFrame = null;
+        }
+
         const path = findPath(sourceNode, targetNode);
         currentPath = path;
         currentPathSegment = 0;
         animationProgress = 0;
 
-        // Calculate segment lengths and total path length
+        // Calculate segment lengths
         const segmentLengths = [];
-        let totalLength = 0;
         for (let i = 0; i < path.length - 1; i++) {
             const dx = path[i+1].x - path[i].x;
             const dy = path[i+1].y - path[i].y;
             const length = Math.sqrt(dx * dx + dy * dy);
             segmentLengths[i] = length;
-            totalLength += length;
         }
 
         const pixelsPerSecond = 200; // Constant speed in pixels per second
-        let lastTime = performance.now();
+        let startTime = null;
+        let lastSegmentStartTime = null;
 
         function animate(currentTime) {
             if (!isPlaying) return;
             
-            if (!lastTime) lastTime = currentTime;
-            const deltaTime = currentTime - lastTime;
-            lastTime = currentTime;
-            
-            // Calculate progress based on constant speed
-            const progressPerMs = pixelsPerSecond / 1000;
-            const progressThisFrame = (deltaTime * progressPerMs) / segmentLengths[currentPathSegment];
-            animationProgress += progressThisFrame;
+            if (!startTime) {
+                startTime = currentTime;
+                lastSegmentStartTime = currentTime;
+            }
+
+            // Calculate progress for current segment
+            const elapsedInSegment = currentTime - lastSegmentStartTime;
+            const segmentDuration = (segmentLengths[currentPathSegment] / pixelsPerSecond) * 1000;
+            animationProgress = Math.min(elapsedInSegment / segmentDuration, 1);
             
             if (animationProgress >= 1) {
-                animationProgress = 0;
                 currentPathSegment++;
                 
                 if (currentPathSegment >= currentPath.length - 1) {
-                    currentPathSegment = 0;
-                    // Restart animation after a delay
+                    // Animation complete - wait 3 seconds then trigger new route
                     setTimeout(() => {
-                        if (!isPlaying) return;
-                        animationProgress = 0;
-                        currentPathSegment = 0;
-                        lastTime = performance.now();
-                        animationFrame = requestAnimationFrame(animate);
-                    }, 1000);
+                        if (isPlaying) {
+                            startNewRoute();
+                        }
+                    }, 3000);
                     return;
                 }
+                
+                // Start timing for next segment
+                lastSegmentStartTime = currentTime;
+                animationProgress = 0;
             }
             
             draw();
             animationFrame = requestAnimationFrame(animate);
         }
 
-        if (animationFrame) {
-            cancelAnimationFrame(animationFrame);
-        }
-        lastTime = performance.now();
         animationFrame = requestAnimationFrame(animate);
     }
 
@@ -265,6 +267,12 @@ async function initVisualization() {
     let routeTimeout;
 
     function startNewRoute() {
+        // Clear any existing timeouts
+        if (routeTimeout) {
+            clearTimeout(routeTimeout);
+            routeTimeout = null;
+        }
+
         sourceNode = peers[Math.floor(Math.random() * peers.length)];
         do {
             targetNode = peers[Math.floor(Math.random() * peers.length)];
@@ -272,10 +280,6 @@ async function initVisualization() {
         
         currentPath = [];
         animatePath();
-
-        if (isPlaying) {
-            routeTimeout = setTimeout(startNewRoute, 3000); // Start new route every 3 seconds
-        }
     }
 
     function togglePlayPause() {
