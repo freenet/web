@@ -273,14 +273,39 @@ async function initVisualization() {
     initializeNetwork();
     draw();
     
-        // Setup button
+        // Debug: Log all elements with IDs containing 'play' or 'pause'
+        const allElements = document.querySelectorAll('[id]');
+        console.log('Available elements with IDs:', Array.from(allElements).map(el => ({
+            id: el.id,
+            tagName: el.tagName,
+            classes: el.className
+        })));
+
+        // Setup button with detailed error checking
         const playPauseBtn = document.getElementById('routingPlayPauseBtn');
+        console.log('Found button:', playPauseBtn);
+        
         if (playPauseBtn) {
-            playPauseBtn.addEventListener('click', togglePlayPause);
-            isPlaying = false; // Ensure initial state
-            togglePlayPause(); // Start the animation
+            console.log('Button details:', {
+                id: playPauseBtn.id,
+                tagName: playPauseBtn.tagName,
+                classes: playPauseBtn.className,
+                innerHTML: playPauseBtn.innerHTML
+            });
+            
+            try {
+                playPauseBtn.addEventListener('click', togglePlayPause);
+                console.log('Successfully added click listener');
+                isPlaying = false; // Ensure initial state
+                togglePlayPause(); // Start the animation
+            } catch (err) {
+                console.error('Error adding event listener:', err);
+                // Fallback to auto-play
+                isPlaying = true;
+                startNewRoute();
+            }
         } else {
-            console.error('Play/Pause button not found - continuing without animation controls');
+            console.error('Play/Pause button not found - searched for ID: routingPlayPauseBtn');
             // Start animation anyway
             isPlaying = true;
             startNewRoute();
