@@ -213,10 +213,10 @@ async function initVisualization() {
         currentPathSegment = 0;
         animationProgress = 0;
 
-        // Draw the complete path first
+        // Draw the complete path first with full opacity
         ctx.save();
-        ctx.strokeStyle = 'rgba(0, 127, 255, 0.15)'; // Very light blue for complete path
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(0, 127, 255, 0.6)'; // More visible blue for complete path
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(path[0].x, path[0].y);
         for (let i = 1; i < path.length; i++) {
@@ -224,6 +224,9 @@ async function initVisualization() {
         }
         ctx.stroke();
         ctx.restore();
+
+        // Add a small delay before starting the dot animation
+        setTimeout(() => {
 
         // Calculate segment lengths
         const segmentLengths = [];
@@ -273,7 +276,8 @@ async function initVisualization() {
             animationFrame = requestAnimationFrame(animate);
         }
 
-        animationFrame = requestAnimationFrame(animate);
+        // Start the animation after the delay
+        }, 500);
     }
 
     let isPlaying = false;
