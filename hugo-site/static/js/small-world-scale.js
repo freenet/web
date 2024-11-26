@@ -225,8 +225,19 @@ waitForD3().then(() => {
         } else {
             isSimulating = false;
             startBtn.textContent = '▶️ Start';
+            cancelAnimationFrame(animationFrameId);
         }
     }
+
+    // Initialize network and add button handlers
+    initializeNetwork();
+    draw();
+    
+    const startBtn = document.getElementById('startScaleBtn');
+    const resetBtn = document.getElementById('resetScaleBtn');
+    
+    startBtn.addEventListener('click', simulate);
+    resetBtn.addEventListener('click', reset);
 
     function reset() {
         cancelAnimationFrame(animationFrame);
@@ -242,31 +253,4 @@ waitForD3().then(() => {
     const startBtn = document.getElementById('startScaleBtn');
     const resetBtn = document.getElementById('resetScaleBtn');
     
-    // Add button handlers
-    let animationFrameId = null;
-    
-    startBtn.addEventListener('click', () => {
-        if (!isSimulating) {
-            // Resume/start simulation
-            isSimulating = true;
-            startBtn.textContent = '⏸️ Pause';
-            simulate();
-        } else {
-            // Pause simulation
-            isSimulating = false;
-            startBtn.textContent = '▶️ Start';
-            clearTimeout(animationFrameId);
-        }
-    });
-    
-    resetBtn.addEventListener('click', () => {
-        // Reset everything
-        isSimulating = false;
-        startBtn.textContent = '▶️ Start';
-        cancelAnimationFrame(animationFrameId);
-        numPeers = 30;
-        averagePathLengths = [];
-        initializeNetwork();
-        draw();
-    });
 });
