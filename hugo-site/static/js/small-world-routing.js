@@ -249,18 +249,18 @@ waitForD3().then(() => {
         }
     }
 
-    // Wait for DOM to be fully loaded
-    document.addEventListener('DOMContentLoaded', () => {
-        // Initialize network
-        initializeNetwork();
-        draw();
+    // Initialize network
+    initializeNetwork();
+    draw();
 
-        // Add button handler
-        const playPauseBtn = document.getElementById('routingPlayPauseBtn');
-        if (playPauseBtn) {
-            playPauseBtn.addEventListener('click', togglePlayPause);
-            // Start playing
-            togglePlayPause();
-        }
-    });
+    // Add button handler after ensuring the button exists
+    const playPauseBtn = document.getElementById('routingPlayPauseBtn');
+    if (!playPauseBtn) {
+        console.error('Play/Pause button not found');
+        return;
+    }
+    
+    playPauseBtn.addEventListener('click', togglePlayPause);
+    // Start playing
+    togglePlayPause();
 });
