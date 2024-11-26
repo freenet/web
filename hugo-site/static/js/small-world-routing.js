@@ -211,6 +211,9 @@ waitForD3().then(() => {
         animate();
     }
 
+    let isPlaying = false;
+    let routeTimeout;
+
     function startNewRoute() {
         sourceNode = peers[Math.floor(Math.random() * peers.length)];
         do {
@@ -219,6 +222,24 @@ waitForD3().then(() => {
         
         currentPath = [];
         animatePath();
+
+        if (isPlaying) {
+            routeTimeout = setTimeout(startNewRoute, 3000); // Start new route every 3 seconds
+        }
+    }
+
+    function togglePlayPause() {
+        isPlaying = !isPlaying;
+        const btn = document.getElementById('routingPlayPauseBtn');
+        const icon = btn.querySelector('i');
+        
+        if (isPlaying) {
+            icon.className = 'fas fa-pause';
+            startNewRoute();
+        } else {
+            icon.className = 'fas fa-play';
+            clearTimeout(routeTimeout);
+        }
     }
 
     // Initialize
@@ -226,8 +247,8 @@ waitForD3().then(() => {
     draw();
 
     // Add button handler
-    document.getElementById('newRouteBtn').addEventListener('click', startNewRoute);
+    document.getElementById('routingPlayPauseBtn').addEventListener('click', togglePlayPause);
     
-    // Start first route
-    startNewRoute();
+    // Start playing
+    togglePlayPause();
 });

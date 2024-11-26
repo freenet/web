@@ -1,7 +1,15 @@
 <div class="visualization-container">
     <div class="buttons has-addons is-centered" style="margin: 1rem;">
-        <button id="startScaleBtn" class="button is-medium is-primary">▶️ Start</button>
-        <button id="resetScaleBtn" class="button is-medium">Reset</button>
+        <button id="scalePlayPauseBtn" class="button is-medium is-primary">
+            <span class="icon">
+                <i class="fas fa-play"></i>
+            </span>
+        </button>
+        <button id="resetScaleBtn" class="button is-medium">
+            <span class="icon">
+                <i class="fas fa-undo"></i>
+            </span>
+        </button>
     </div>
     <div style="display: flex; flex-direction: row;">
         <canvas id="networkCanvas3" width="500" height="500"></canvas>

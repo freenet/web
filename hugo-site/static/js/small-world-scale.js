@@ -196,7 +196,9 @@ waitForD3().then(() => {
     function simulate() {
         if (!isSimulating) {
             isSimulating = true;
-            startBtn.textContent = '⏸️ Pause';
+            const btn = document.getElementById('scalePlayPauseBtn');
+            const icon = btn.querySelector('i');
+            icon.className = 'fas fa-pause';
             
             function step() {
                 if (!isSimulating) return;
@@ -224,7 +226,9 @@ waitForD3().then(() => {
             step();
         } else {
             isSimulating = false;
-            startBtn.textContent = '▶️ Start';
+            const btn = document.getElementById('scalePlayPauseBtn');
+            const icon = btn.querySelector('i');
+            icon.className = 'fas fa-play';
             cancelAnimationFrame(animationFrameId);
         }
     }
@@ -233,10 +237,10 @@ waitForD3().then(() => {
     initializeNetwork();
     draw();
     
-    const startBtn = document.getElementById('startScaleBtn');
+    const playPauseBtn = document.getElementById('scalePlayPauseBtn');
     const resetBtn = document.getElementById('resetScaleBtn');
     
-    startBtn.addEventListener('click', simulate);
+    playPauseBtn.addEventListener('click', simulate);
     resetBtn.addEventListener('click', reset);
 
     function reset() {

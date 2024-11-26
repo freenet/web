@@ -2,6 +2,10 @@
 title: "Understanding Small World Networks"
 date: 2024-11-25
 draft: false
+head:
+  - - link
+    - rel: stylesheet
+      href: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css
 ---
 
 Small world networks are a fascinating type of network structure that combines the benefits of regular networks (where nodes connect to their nearest neighbors) with random networks (which have short average path lengths). They're found everywhere from social networks to neural networks to the internet itself.
