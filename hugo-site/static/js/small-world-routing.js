@@ -84,7 +84,7 @@ async function initVisualization() {
         ctx.clearRect(0, 0, width, height);
 
         // Draw links
-        ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)'; // Using website link color
+        ctx.strokeStyle = 'rgba(0, 204, 0, 0.3)'; // Using semi-transparent green
         links.forEach(link => {
             ctx.beginPath();
             ctx.moveTo(link.source.x, link.source.y);
@@ -95,7 +95,7 @@ async function initVisualization() {
         // Draw the complete path up to current segment
         if (currentPath.length > 1) {
             // Draw the completed segments
-            ctx.strokeStyle = 'rgba(0, 127, 255, 0.6)'; // Using primary blue
+            ctx.strokeStyle = 'rgba(0, 204, 0, 0.6)'; // Using semi-transparent green
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(currentPath[0].x, currentPath[0].y);
