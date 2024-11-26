@@ -69,7 +69,7 @@ function drawNetwork() {
     ctx1.clearRect(0, 0, width1, height1);
 
     // Draw links
-    ctx1.strokeStyle = 'rgba(100, 149, 237, 0.3)';
+    ctx1.strokeStyle = 'rgba(0, 127, 255, 0.3)'; // Using website link color
     links.forEach(link => {
         ctx1.beginPath();
         ctx1.moveTo(link.source.x, link.source.y);
@@ -78,7 +78,7 @@ function drawNetwork() {
     });
 
     // Draw nodes
-    ctx1.fillStyle = 'tomato';
+    ctx1.fillStyle = '#007FFF'; // Primary blue
     peers.forEach(peer => {
         ctx1.beginPath();
         ctx1.arc(peer.x, peer.y, 5, 0, 2 * Math.PI);
@@ -126,7 +126,7 @@ function updateHistogram() {
         .attr('width', d => Math.max(0, x(d.x1) - x(d.x0) - 1))
         .attr('y', d => y(d.length))
         .attr('height', d => height - y(d.length))
-        .style('fill', 'steelblue');
+        .style('fill', '#007FFF'); // Primary blue
 
     // Add axes
     svg.append('g')

@@ -59,7 +59,7 @@ waitForD3().then(() => {
         ctx.clearRect(0, 0, width, height);
 
         // Draw links
-        ctx.strokeStyle = 'rgba(100, 149, 237, 0.3)';
+        ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)'; // Using website link color
         links.forEach(link => {
             ctx.beginPath();
             ctx.moveTo(link.source.x, link.source.y);
@@ -68,7 +68,7 @@ waitForD3().then(() => {
         });
 
         // Draw nodes
-        ctx.fillStyle = 'tomato';
+        ctx.fillStyle = '#007FFF'; // Primary blue
         peers.forEach(peer => {
             ctx.beginPath();
             ctx.arc(peer.x, peer.y, 3, 0, 2 * Math.PI);
@@ -178,7 +178,7 @@ waitForD3().then(() => {
             .attr('cx', d => x(d.numPeers))
             .attr('cy', d => y(d.pathLength))
             .attr('r', 3)
-            .style('fill', 'steelblue');
+            .style('fill', '#007FFF'); // Primary blue
 
         // Add connecting line
         const line = d3.line()
@@ -188,7 +188,7 @@ waitForD3().then(() => {
         g.append('path')
             .datum(averagePathLengths)
             .attr('fill', 'none')
-            .attr('stroke', 'steelblue')
+            .attr('stroke', '#007FFF') // Primary blue
             .attr('stroke-width', 1.5)
             .attr('d', line);
     }
