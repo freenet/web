@@ -40,22 +40,40 @@ waitForD3().then(() => {
             };
         });
 
+        // Initialize links array
         links = [];
-        // Always add ring connections first
+        
+        // Create ring connections and store existing connections for quick lookup
+        const existingConnections = new Set();
         for (let i = 0; i < numPeers; i++) {
+            // Connect to immediate neighbors (ring structure)
             const nextIndex = (i + 1) % numPeers;
             links.push({ source: peers[i], target: peers[nextIndex] });
+            existingConnections.add(`${i}-${nextIndex}`);
+            existingConnections.add(`${nextIndex}-${i}`);
         }
-        
-        // Add long-range connections with distance limit
-        const maxDistance = Math.min(Math.floor(numPeers/4), 50);
+
+        // Add long-range connections
         for (let i = 0; i < numPeers; i++) {
-            for (let j = i + 2; j <= i + maxDistance; j++) {
-                const targetIdx = j % numPeers;
-                const distance = Math.min(Math.abs(i - targetIdx), numPeers - Math.abs(i - targetIdx));
-                const prob = connectionProbability(distance);
-                if (Math.random() < prob) {
-                    links.push({ source: peers[i], target: peers[targetIdx] });
+            for (let j = 0; j < numPeers; j++) {
+                if (i !== j) {
+                    // Skip if connection already exists
+                    if (existingConnections.has(`${i}-${j}`)) continue;
+                    
+                    // Calculate shortest distance on the ring
+                    const distance = Math.min(
+                        Math.abs(i - j),
+                        numPeers - Math.abs(i - j)
+                    );
+                    
+                    // Probability decreases with distance
+                    const prob = connectionProbability(distance);
+                    
+                    if (Math.random() < prob) {
+                        links.push({ source: peers[i], target: peers[j] });
+                        existingConnections.add(`${i}-${j}`);
+                        existingConnections.add(`${j}-${i}`);
+                    }
                 }
             }
         }
