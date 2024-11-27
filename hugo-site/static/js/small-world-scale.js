@@ -235,6 +235,15 @@ waitForD3().then(() => {
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
 
+        // Initialize scales first
+        xScale = d3.scaleLinear()
+            .domain([0, maxPeers])
+            .range([0, chartWidth]);
+            
+        yScale = d3.scaleLinear()
+            .domain([0, 3])  // Initial domain, will be updated
+            .range([chartHeight, 0]);
+
         if (!chartSvg) {
             chartSvg = d3.select('#scalingChart svg')
                 .attr('width', width)

@@ -258,12 +258,25 @@ waitForD3().then(() => {
         }
         statsSvg.selectAll('*').remove();
         
-        // Create SVG
+        // Create SVG with fixed dimensions
         const margin = {top: 30, right: 60, bottom: 40, left: 60};
         const width = 245 - margin.left - margin.right;
         const height = 245 - margin.top - margin.bottom;
         
-        const svg = d3.select('#statsGraph')
+        // Clear previous content
+        if (statsSvg) {
+            statsSvg.selectAll('*').remove();
+        }
+        
+        // Create or update SVG
+        if (!statsSvg) {
+            statsSvg = d3.select('#statsGraph')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom);
+        }
+        
+        const svg = statsSvg
             .append('svg')
             .attr('width', width + margin.left + margin.right)
             .attr('height', height + margin.top + margin.bottom)
