@@ -231,15 +231,15 @@ waitForD3().then(() => {
     let pathElement, pointElements;
     
     function initializeChart() {
-        const margin = {top: 20, right: 20, bottom: 60, left: 50};
+        const margin = {top: 30, right: 40, bottom: 70, left: 60};
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
 
         if (!chartSvg) {
-            chartSvg = d3.select('#scalingChart')
-                .append('svg')
+            chartSvg = d3.select('#scalingChart svg')
                 .attr('width', width)
-                .attr('height', height);
+                .attr('height', height)
+                .style('overflow', 'visible'); // Allow elements to render outside SVG bounds
                 
             chartG = chartSvg.append('g')
                 .attr('transform', `translate(${margin.left},${margin.top})`);
