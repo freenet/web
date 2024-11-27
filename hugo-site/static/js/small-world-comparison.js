@@ -313,17 +313,6 @@ waitForD3().then(() => {
             .attr('r', 6)
             .attr('fill', (d, i) => i === 0 ? '#4292c6' : '#08519c');
 
-        // Add labels
-        svg.selectAll('.point-label')
-            .data(data)
-            .enter()
-            .append('text')
-            .attr('class', 'point-label')
-            .attr('x', d => x(d.x))
-            .attr('y', d => y(d.y) - 10)
-            .attr('text-anchor', 'middle')
-            .style('font-size', '10px')
-            .text(d => d.name);
 
     }
     
