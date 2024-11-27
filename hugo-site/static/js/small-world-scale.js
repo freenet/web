@@ -173,20 +173,6 @@ waitForD3().then(() => {
             }
         }
         
-        // Select evenly spaced reference nodes
-        for (let i = 0; i < numReferenceNodes; i++) {
-            referenceNodes.push(peers[i * stride]);
-        }
-        
-        // Increased sampling for better averages
-        const samplesPerRef = Math.min(
-            Math.ceil(numPeers * 0.9), // Sample up to 90% of nodes
-            90 // but cap at 90 samples per reference node
-        );
-        
-        let totalLength = 0;
-        let pathCount = 0;
-        
         return pathCount > 0 ? totalLength / pathCount : 0;
     }
 
@@ -464,7 +450,7 @@ waitForD3().then(() => {
     function reset() {
         cancelAnimationFrame(animationFrame);
         isSimulating = false;
-        numPeers = 30;
+        numPeers = 3;
         averagePathLengths = [
             {
                 numPeers: 0,
