@@ -9,8 +9,7 @@ head:
       href: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css
 ---
 
-<img src="/img/handing-letter-sw.webp" alt="Handing a Letter" style="float: right; margin-left: 20px; margin-bottom: 
-10px; width: 300px;">
+<img src="/img/handing-letter-sw.webp" alt="Handing a Letter" style="float: right; margin-left: 20px; margin-bottom: 10px; width: 300px; border: 1px solid #ccc; border-radius: 5px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1);">
 
 In the 1960s, psychologist Stanley Milgram conducted an influential experiment that revealed
 something amazing about human relationships. Milgram chose people at random in cities like Kansas
