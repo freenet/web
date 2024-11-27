@@ -27,7 +27,7 @@ nodes, and much like in a small world social network, this network structure all
 with minimal hops, even when the network scales to millions of nodes. This efficient discovery
 mechanism is what makes Freenet both decentralized and highly scalable.
 
-## Small World Networks: Combining Regularity and Randomness
+### Small World Networks: Combining Regularity and Randomness
 
 Small world networks combine the strengths of both regular and random networks. In a regular
 network, nodes are primarily connected to their immediate neighbors, creating an orderly but often
@@ -39,7 +39,7 @@ significantly reduce the average path length.
 To better understand this, let's look at an animation that visualizes a key property of these
 networks: **Greedy Routing**.
 
-## Greedy Routing: Finding a Path With Local Knowledge
+### Greedy Routing: Finding a Path With Local Knowledge
 
 A defining characteristic of small world networks is their ability to support efficient "greedy"
 routing. In this context, "greedy" routing refers to a process where each node forwards a message to
@@ -54,7 +54,7 @@ remarkably effective at navigating small world structures. Freenet leverages a s
 nodes use their local knowledge to make efficient routing decisions, much like the participants in
 Milgram's experiment passing letters through their personal networks.
 
-## Comparing Routing Performance: Small World vs. Random Networks
+### Comparing Routing Performance: Small World vs. Random Networks
 
 The benefits of small world networks are most apparent when we compare their routing performance
 with that of purely random networks. The animation below illustrates how both network types route
