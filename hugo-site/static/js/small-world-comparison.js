@@ -235,9 +235,9 @@ waitForD3().then(() => {
         statsDiv.innerHTML = '';
         
         // Create SVG
-        const margin = {top: 40, right: 60, bottom: 50, left: 60};
-        const width = 300 - margin.left - margin.right;
-        const height = 350 - margin.top - margin.bottom;
+        const margin = {top: 30, right: 60, bottom: 40, left: 60};
+        const width = 245 - margin.left - margin.right;
+        const height = 245 - margin.top - margin.bottom;
         
         const svg = d3.select('#statsGraph')
             .append('svg')
