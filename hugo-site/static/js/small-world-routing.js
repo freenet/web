@@ -290,7 +290,7 @@ async function initVisualization() {
                         if (isPlaying) {
                             startNewRoute();
                         }
-                    }, 3000);
+                    }, 1500);
                     return;
                 }
                 
