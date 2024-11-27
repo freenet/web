@@ -370,12 +370,29 @@ async function initVisualization() {
         draw();
     }
 
+    // Listen for pause events from other animations
+    document.addEventListener('pause-other-animations', (event) => {
+        if (event.detail.except !== 'routing' && isPlaying) {
+            isPlaying = false;
+            const btn = document.getElementById('routingPlayPauseBtn');
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) icon.className = 'fas fa-play';
+            }
+            if (routeTimeout) clearTimeout(routeTimeout);
+        }
+    });
+
     function togglePlayPause() {
         isPlaying = !isPlaying;
         const btn = document.getElementById('routingPlayPauseBtn');
         if (!btn) {
             console.error('Play/Pause button not found');
             return;
+        }
+        
+        if (isPlaying) {
+            AnimationCoordinator.setActive('routing');
         }
         
         const icon = btn.querySelector('i');

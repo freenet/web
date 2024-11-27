@@ -418,11 +418,28 @@ waitForD3().then(() => {
         }
     }
     
+    // Listen for pause events from other animations
+    document.addEventListener('pause-other-animations', (event) => {
+        if (event.detail.except !== 'comparison' && isPlaying) {
+            isPlaying = false;
+            const btn = document.getElementById('comparisonPlayPauseBtn');
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) icon.className = 'fas fa-play';
+            }
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+        }
+    });
+
     function togglePlayPause() {
         isPlaying = !isPlaying;
         const btn = document.getElementById('comparisonPlayPauseBtn');
         const icon = btn.querySelector('i');
         icon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+        
+        if (isPlaying) {
+            AnimationCoordinator.setActive('comparison');
+        }
         
         if (isPlaying) {
             startTime = Date.now();

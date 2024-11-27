@@ -352,12 +352,26 @@ waitForD3().then(() => {
 
     }
 
+    // Listen for pause events from other animations
+    document.addEventListener('pause-other-animations', (event) => {
+        if (event.detail.except !== 'scale' && isSimulating) {
+            isSimulating = false;
+            const btn = document.getElementById('scalePlayPauseBtn');
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) icon.className = 'fas fa-play';
+            }
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+        }
+    });
+
     function simulate() {
         if (!isSimulating) {
             isSimulating = true;
             const btn = document.getElementById('scalePlayPauseBtn');
             const icon = btn.querySelector('i');
             icon.className = 'fas fa-pause';
+            AnimationCoordinator.setActive('scale');
             
             async function step() {
                 if (!isSimulating) return;
