@@ -370,13 +370,20 @@ waitForD3().then(() => {
     initializeNetwork();
     draw();
     
-    // Initialize the graph with the first data point
+    // Initialize the graph with (0,0) and first data point
     const initialAvgPathLength = calculateAveragePathLength();
-    averagePathLengths = [{
-        numPeers: numPeers,
-        pathLength: initialAvgPathLength,
-        connectionsPerNode: links.length * 2 / numPeers
-    }];
+    averagePathLengths = [
+        {
+            numPeers: 0,
+            pathLength: 0,
+            connectionsPerNode: 0
+        },
+        {
+            numPeers: numPeers,
+            pathLength: initialAvgPathLength,
+            connectionsPerNode: links.length * 2 / numPeers
+        }
+    ];
     updateChart();
     
     const playPauseBtn = document.getElementById('scalePlayPauseBtn');
