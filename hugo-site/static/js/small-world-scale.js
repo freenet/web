@@ -255,6 +255,7 @@ waitForD3().then(() => {
                 
             // Add static elements
             // Add gridlines
+            // Add horizontal grid lines
             chartG.append('g')
                 .attr('class', 'grid')
                 .attr('opacity', 0.1)
@@ -263,13 +264,14 @@ waitForD3().then(() => {
                     .tickSize(-chartWidth)
                     .tickFormat(''));
 
+            // Add vertical grid lines
             chartG.append('g')
                 .attr('class', 'grid')
                 .attr('transform', `translate(0,${chartHeight})`)
                 .attr('opacity', 0.1)
                 .call(d3.axisBottom(xScale)
                     .ticks(10)
-                    .tickSize(chartHeight)
+                    .tickSize(-chartHeight)  // Changed from positive to negative
                     .tickFormat(''));
 
             // Add the axes
