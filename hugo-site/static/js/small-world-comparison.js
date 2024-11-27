@@ -343,17 +343,29 @@ waitForD3().then(() => {
             { x: rnAvgPath, y: rnSuccess }
         ];
 
-        // Add points without legend
-        svg.selectAll('.point')
+        // Add points with labels
+        const pointGroups = svg.selectAll('.point-group')
             .data(data)
             .enter()
-            .append('circle')
+            .append('g')
+            .attr('class', 'point-group');
+
+        // Add circles
+        pointGroups.append('circle')
             .attr('class', 'point')
             .attr('cx', d => x(d.x))
             .attr('cy', d => y(d.y))
             .attr('r', 6)
             .attr('fill', (d, i) => i === 0 ? '#4292c6' : '#08519c')
             .style('opacity', 0.80);
+
+        // Add labels
+        pointGroups.append('text')
+            .attr('x', d => x(d.x) + 10)
+            .attr('y', d => y(d.y) + 5)
+            .text((d, i) => i === 0 ? 'Small World' : 'Random')
+            .attr('font-size', '12px')
+            .attr('fill', (d, i) => i === 0 ? '#4292c6' : '#08519c');
 
 
     }
