@@ -302,7 +302,7 @@ waitForD3().then(() => {
             { x: rnAvgPath, y: rnSuccess }
         ];
 
-        // Add points
+        // Add points without legend
         svg.selectAll('.point')
             .data(data)
             .enter()
@@ -311,7 +311,8 @@ waitForD3().then(() => {
             .attr('cx', d => x(d.x))
             .attr('cy', d => y(d.y))
             .attr('r', 6)
-            .attr('fill', (d, i) => i === 0 ? '#4292c6' : '#08519c');
+            .attr('fill', (d, i) => i === 0 ? '#4292c6' : '#08519c')
+            .style('opacity', 0.8);
 
 
     }
