@@ -15,8 +15,8 @@ function waitForD3() {
 waitForD3().then(() => {
     const canvas = document.getElementById('networkCanvas3');
     const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
+    const width = 350;
+    const height = 350;
 
     // Parameters
     let numPeers = 3;
