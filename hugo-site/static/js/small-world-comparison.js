@@ -298,8 +298,8 @@ waitForD3().then(() => {
 
         // Plot points
         const data = [
-            { name: 'Small World', x: swAvgPath, y: swSuccess },
-            { name: 'Random', x: rnAvgPath, y: rnSuccess }
+            { x: swAvgPath, y: swSuccess },
+            { x: rnAvgPath, y: rnSuccess }
         ];
 
         // Add points
