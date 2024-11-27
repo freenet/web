@@ -212,7 +212,7 @@ waitForD3().then(() => {
     }
 
     function updateChart() {
-        const margin = {top: 20, right: 20, bottom: 40, left: 40};
+        const margin = {top: 20, right: 20, bottom: 50, left: 40};
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
 
