@@ -78,7 +78,7 @@ altogether.
 One of the most remarkable aspects of small world networks is how efficiently they scale as new
 nodes are added. In small world networks, the average path length grows logarithmically with the
 number of nodes, meaning that as the network doubles in size, the average number of steps to reach
-any node only increases by a small, fixed amount. This contrasts sharply with linear growth, where
+any node only increases by a small amount. This contrasts with linear growth, where
 doubling the size of the network would double the number of steps required. This logarithmic growth
 is crucial because it ensures that even as the network expands to include millions of nodes, the
 average path length remains manageable.
