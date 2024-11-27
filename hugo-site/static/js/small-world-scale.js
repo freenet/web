@@ -209,7 +209,7 @@ waitForD3().then(() => {
             }
 
             // Use pre-computed adjacency list
-            const neighbors = adjacencyLists.get(node);
+            const neighbors = adjacencyLists.get(node) || [];
             for (const neighbor of neighbors) {
                 if (!visited.has(neighbor.index)) {
                     visited.add(neighbor.index);
@@ -413,7 +413,9 @@ waitForD3().then(() => {
             const btn = document.getElementById('scalePlayPauseBtn');
             const icon = btn.querySelector('i');
             icon.className = 'fas fa-play';
-            cancelAnimationFrame(animationFrameId);
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+            }
         }
     }
 

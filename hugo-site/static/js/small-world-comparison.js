@@ -258,10 +258,12 @@ waitForD3().then(() => {
         }
         statsSvg.selectAll('*').remove();
         
-        // Create SVG with fixed dimensions
+        // Define dimensions first
         const margin = {top: 30, right: 60, bottom: 40, left: 60};
-        const width = 245 - margin.left - margin.right;
-        const height = 245 - margin.top - margin.bottom;
+        const svgWidth = 245;
+        const svgHeight = 245;
+        const width = svgWidth - margin.left - margin.right;
+        const height = svgHeight - margin.top - margin.bottom;
         
         // Clear previous content
         if (statsSvg) {
