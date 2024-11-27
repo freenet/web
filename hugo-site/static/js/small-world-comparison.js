@@ -218,8 +218,25 @@ waitForD3().then(() => {
         });
     }
     
+    // Keep SVG reference
+    let statsSvg;
+    
     function updateStats() {
         const statsDiv = document.getElementById('statsGraph');
+        
+        // Reset stats after certain threshold to prevent overflow
+        if (smallWorldNetwork.stats.attempts > 1000) {
+            smallWorldNetwork.stats = { 
+                success: 0, 
+                attempts: 0, 
+                totalPathLength: 0 
+            };
+            randomNetwork.stats = { 
+                success: 0, 
+                attempts: 0, 
+                totalPathLength: 0 
+            };
+        }
         
         const swSuccess = smallWorldNetwork.stats.attempts === 0 ? 0 :
             (smallWorldNetwork.stats.success / smallWorldNetwork.stats.attempts * 100);
@@ -231,8 +248,15 @@ waitForD3().then(() => {
         const rnAvgPath = randomNetwork.stats.success === 0 ? 0 :
             (randomNetwork.stats.totalPathLength / randomNetwork.stats.success);
 
-        // Clear previous graph
-        statsDiv.innerHTML = '';
+        // Create or reuse SVG
+        if (!statsSvg) {
+            statsDiv.innerHTML = '';
+            statsSvg = d3.select('#statsGraph')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom);
+        }
+        statsSvg.selectAll('*').remove();
         
         // Create SVG
         const margin = {top: 30, right: 60, bottom: 40, left: 60};

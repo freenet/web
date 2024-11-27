@@ -211,20 +211,22 @@ waitForD3().then(() => {
         return null;
     }
 
+    // Keep SVG reference to avoid repeated selections
+    let chartSvg;
+    
     function updateChart() {
         const margin = {top: 20, right: 20, bottom: 60, left: 50};
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
 
-        // Create SVG if it doesn't exist
-        let svg = d3.select('#scalingChart svg');
-        if (svg.empty()) {
-            svg = d3.select('#scalingChart')
+        // Create or reuse SVG
+        if (!chartSvg) {
+            chartSvg = d3.select('#scalingChart')
                 .append('svg')
                 .attr('width', width)
                 .attr('height', height);
         }
-        svg.selectAll('*').remove();
+        chartSvg.selectAll('*').remove();
 
         const g = svg.append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -332,6 +334,12 @@ waitForD3().then(() => {
                                    numPeers < 200 ? 20 :
                                    numPeers < 350 ? 25 : 30;
                     numPeers += stepSize;
+        
+                    // Limit array size to prevent memory growth
+                    if (averagePathLengths.length > 100) {
+                        const keepEvery = Math.ceil(averagePathLengths.length / 100);
+                        averagePathLengths = averagePathLengths.filter((_, i) => i % keepEvery === 0);
+                    }
                     
                     // Allow UI updates between iterations
                     if (i < batchSize - 1) {

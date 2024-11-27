@@ -231,12 +231,12 @@ async function initVisualization() {
     }
 
     function animatePath() {
-        if (!isPlaying) return;
-        
-        // Cancel any existing animation
-        if (animationFrame) {
-            cancelAnimationFrame(animationFrame);
-            animationFrame = null;
+        if (!isPlaying) {
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+            return;
         }
 
         const path = findPath(sourceNode, targetNode);
