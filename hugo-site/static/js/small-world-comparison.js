@@ -218,6 +218,13 @@ waitForD3().then(() => {
         });
     }
     
+    // Define dimensions first - moved to top level
+    const margin = {top: 30, right: 60, bottom: 40, left: 60};
+    const svgWidth = 245;
+    const svgHeight = 245;
+    const width = svgWidth - margin.left - margin.right;
+    const height = svgHeight - margin.top - margin.bottom;
+
     // Keep SVG reference
     let statsSvg;
     
@@ -257,13 +264,6 @@ waitForD3().then(() => {
                 .attr('height', height + margin.top + margin.bottom);
         }
         statsSvg.selectAll('*').remove();
-        
-        // Define dimensions first
-        const margin = {top: 30, right: 60, bottom: 40, left: 60};
-        const svgWidth = 245;
-        const svgHeight = 245;
-        const width = svgWidth - margin.left - margin.right;
-        const height = svgHeight - margin.top - margin.bottom;
         
         // Clear previous content
         if (statsSvg) {
