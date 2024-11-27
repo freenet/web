@@ -19,7 +19,7 @@ waitForD3().then(() => {
     const height = canvas.height;
 
     // Parameters
-    let numPeers = 5;
+    let numPeers = 3;
     const maxPeers = 500;
     const radius = Math.min(width, height) * 0.4;
     // Target ~4 long-range connections per peer (plus 2 ring connections)
@@ -46,6 +46,8 @@ waitForD3().then(() => {
     let isSimulating = false;
 
     function initializeNetwork() {
+        buildAdjacencyLists(); // Clear old adjacency lists
+        
         // Pre-calculate sine and cosine values
         const angleStep = (2 * Math.PI) / numPeers;
         const centerX = width / 2;
@@ -137,10 +139,39 @@ waitForD3().then(() => {
     function calculateAveragePathLength() {
         if (numPeers <= 1) return 0;
         
-        // More reference nodes for smaller networks
-        const numReferenceNodes = Math.min(numPeers - 1, Math.ceil(numPeers * 0.2));
-        const referenceNodes = [];
-        const stride = Math.max(1, Math.floor(peers.length / numReferenceNodes));
+        buildAdjacencyLists(); // Ensure adjacency lists are up to date
+        
+        let totalLength = 0;
+        let pathCount = 0;
+        
+        // For small networks, check all pairs
+        if (numPeers <= 20) {
+            for (let i = 0; i < numPeers; i++) {
+                for (let j = i + 1; j < numPeers; j++) {
+                    const path = findShortestPath(peers[i], peers[j]);
+                    if (path) {
+                        totalLength += path.length - 1;
+                        pathCount++;
+                    }
+                }
+            }
+        } else {
+            // For larger networks, sample pairs
+            const numSamples = Math.min(200, numPeers * 2);
+            for (let i = 0; i < numSamples; i++) {
+                const source = Math.floor(Math.random() * numPeers);
+                let target;
+                do {
+                    target = Math.floor(Math.random() * numPeers);
+                } while (target === source);
+                
+                const path = findShortestPath(peers[source], peers[target]);
+                if (path) {
+                    totalLength += path.length - 1;
+                    pathCount++;
+                }
+            }
+        }
         
         // Select evenly spaced reference nodes
         for (let i = 0; i < numReferenceNodes; i++) {
@@ -156,21 +187,6 @@ waitForD3().then(() => {
         let totalLength = 0;
         let pathCount = 0;
         
-        // Calculate paths from reference nodes to sampled targets
-        for (const refNode of referenceNodes) {
-            for (let i = 0; i < samplesPerRef; i++) {
-                const targetIdx = Math.floor(Math.random() * peers.length);
-                const target = peers[targetIdx];
-                if (refNode !== target) {
-                    const path = findShortestPath(refNode, target);
-                    if (path) {
-                        totalLength += path.length - 1;
-                        pathCount++;
-                    }
-                }
-            }
-        }
-
         return pathCount > 0 ? totalLength / pathCount : 0;
     }
 
