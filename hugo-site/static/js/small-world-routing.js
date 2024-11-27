@@ -238,6 +238,12 @@ async function initVisualization() {
             }
             return;
         }
+        
+        // Clear any existing animation
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+            animationFrame = null;
+        }
 
         const path = findPath(sourceNode, targetNode);
         currentPath = path;
@@ -269,7 +275,13 @@ async function initVisualization() {
         let lastSegmentStartTime = null;
 
         function animate(currentTime) {
-            if (!isPlaying) return;
+            if (!isPlaying) {
+                if (animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                    animationFrame = null;
+                }
+                return;
+            }
             
             if (!startTime) {
                 startTime = currentTime;
@@ -287,7 +299,12 @@ async function initVisualization() {
                 if (currentPathSegment >= currentPath.length - 1) {
                     // Animation complete - immediately start new route
                     if (isPlaying) {
-                        requestAnimationFrame(() => startNewRoute());
+                        // Use timeout instead of immediate requestAnimationFrame
+                        routeTimeout = setTimeout(() => {
+                            if (isPlaying) {
+                                startNewRoute();
+                            }
+                        }, 500);
                     }
                     return;
                 }
