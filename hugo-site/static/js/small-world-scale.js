@@ -231,7 +231,7 @@ waitForD3().then(() => {
     let pathElement, pointElements;
     
     function initializeChart() {
-        const margin = {top: 30, right: 40, bottom: 70, left: 60};
+        const margin = {top: 30, right: 40, bottom: 90, left: 60};
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
 
@@ -245,7 +245,50 @@ waitForD3().then(() => {
                 .attr('transform', `translate(${margin.left},${margin.top})`);
                 
             // Add static elements
-            setupStaticChartElements(chartG, chartWidth, chartHeight, margin);
+            // Add gridlines
+            chartG.append('g')
+                .attr('class', 'grid')
+                .attr('opacity', 0.1)
+                .call(d3.axisLeft(yScale)
+                    .ticks(10)
+                    .tickSize(-chartWidth)
+                    .tickFormat(''));
+
+            chartG.append('g')
+                .attr('class', 'grid')
+                .attr('transform', `translate(0,${chartHeight})`)
+                .attr('opacity', 0.1)
+                .call(d3.axisBottom(xScale)
+                    .ticks(10)
+                    .tickSize(chartHeight)
+                    .tickFormat(''));
+
+            // Add the axes
+            chartG.append('g')
+                .attr('transform', `translate(0,${chartHeight})`)
+                .attr('class', 'x-axis')
+                .call(d3.axisBottom(xScale)
+                    .ticks(10)
+                    .tickFormat(d => d === 0 ? '0' : d));
+
+            chartG.append('g')
+                .attr('class', 'y-axis')
+                .call(d3.axisLeft(yScale)
+                    .ticks(10));
+
+            // Add axis labels
+            chartG.append('text')
+                .attr('transform', `translate(${chartWidth/2},${chartHeight + 45})`)
+                .style('text-anchor', 'middle')
+                .text('Network Size');
+
+            chartG.append('text')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', 0 - margin.left + 15)
+                .attr('x', 0 - (chartHeight / 2))
+                .attr('dy', '1em')
+                .style('text-anchor', 'middle')
+                .text('Average Path Length');
         }
         
         xScale = d3.scaleLinear()
@@ -292,81 +335,6 @@ waitForD3().then(() => {
             
         points.exit().remove();
 
-        const g = svg.append('g')
-            .attr('transform', `translate(${margin.left},${margin.top})`);
-
-        const x = d3.scaleLinear()
-            .domain([0, maxPeers])
-            .range([0, chartWidth]);
-
-        const y = d3.scaleLinear()
-            .domain([0, Math.max(3, d3.max(averagePathLengths, d => d.pathLength) * 1.1)])
-            .range([chartHeight, 0]);
-
-        // Add gridlines
-        g.append('g')
-            .attr('class', 'grid')
-            .attr('opacity', 0.1)
-            .call(d3.axisLeft(y)
-                .ticks(10)
-                .tickSize(-chartWidth)
-                .tickFormat(''));
-
-        g.append('g')
-            .attr('class', 'grid')
-            .attr('transform', `translate(0,${chartHeight})`)
-            .attr('opacity', 0.1)
-            .call(d3.axisBottom(x)
-                .ticks(10)
-                .tickSize(chartHeight)
-                .tickFormat(''));
-
-        // Add the axes
-        g.append('g')
-            .attr('transform', `translate(0,${chartHeight})`)
-            .call(d3.axisBottom(x)
-                .ticks(10)
-                .tickFormat(d => d === 0 ? '0' : d));
-
-        g.append('g')
-            .call(d3.axisLeft(y)
-                .ticks(10));
-
-        // Add axis labels
-        g.append('text')
-            .attr('transform', `translate(${chartWidth/2},${chartHeight + margin.bottom})`)
-            .style('text-anchor', 'middle')
-            .text('Network Size');
-
-        g.append('text')
-            .attr('transform', 'rotate(-90)')
-            .attr('y', 0 - margin.left)
-            .attr('x', 0 - (chartHeight / 2))
-            .attr('dy', '1em')
-            .style('text-anchor', 'middle')
-            .text('Average Path Length');
-
-        // Plot points
-        g.selectAll('circle')
-            .data(averagePathLengths)
-            .enter()
-            .append('circle')
-            .attr('cx', d => x(d.numPeers))
-            .attr('cy', d => y(d.pathLength))
-            .attr('r', 3)
-            .style('fill', '#007FFF'); // Primary blue
-
-        // Add connecting line
-        const line = d3.line()
-            .x(d => x(d.numPeers))
-            .y(d => y(d.pathLength));
-
-        g.append('path')
-            .datum(averagePathLengths)
-            .attr('fill', 'none')
-            .attr('stroke', '#007FFF') // Primary blue
-            .attr('stroke-width', 1.5)
-            .attr('d', line);
     }
 
     function simulate() {
