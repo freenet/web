@@ -302,26 +302,16 @@ waitForD3().then(() => {
             { name: 'Random', x: rnAvgPath, y: rnSuccess }
         ];
 
-        // Add points with labels
-        const points = svg.selectAll('.point-group')
+        // Add points
+        svg.selectAll('.point')
             .data(data)
             .enter()
-            .append('g')
-            .attr('class', 'point-group');
-
-        points.append('circle')
+            .append('circle')
             .attr('class', 'point')
             .attr('cx', d => x(d.x))
             .attr('cy', d => y(d.y))
             .attr('r', 6)
             .attr('fill', (d, i) => i === 0 ? '#4292c6' : '#08519c');
-
-        points.append('text')
-            .attr('x', d => x(d.x))
-            .attr('y', d => y(d.y) + 20)
-            .attr('text-anchor', 'middle')
-            .style('font-size', '10px')
-            .text(d => d.name);
 
 
     }
