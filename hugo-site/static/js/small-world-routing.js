@@ -337,6 +337,39 @@ async function initVisualization() {
         animatePath();
     }
 
+    function resetVisualization() {
+        // Stop any ongoing animation
+        isPlaying = false;
+        const playPauseBtn = document.getElementById('routingPlayPauseBtn');
+        if (playPauseBtn) {
+            const icon = playPauseBtn.querySelector('i');
+            if (icon) {
+                icon.className = 'fas fa-play';
+            }
+        }
+        
+        // Clear current state
+        if (routeTimeout) {
+            clearTimeout(routeTimeout);
+            routeTimeout = null;
+        }
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+            animationFrame = null;
+        }
+        
+        // Reset visualization state
+        currentPath = [];
+        sourceNode = null;
+        targetNode = null;
+        currentPathSegment = 0;
+        animationProgress = 0;
+        
+        // Reinitialize network and redraw
+        initializeNetwork();
+        draw();
+    }
+
     function togglePlayPause() {
         isPlaying = !isPlaying;
         const btn = document.getElementById('routingPlayPauseBtn');
@@ -387,6 +420,16 @@ async function initVisualization() {
             try {
                 playPauseBtn.addEventListener('click', togglePlayPause);
                 console.log('Successfully added click listener');
+                
+                // Add reset button listener
+                const resetBtn = document.getElementById('resetRoutingBtn');
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', resetVisualization);
+                    console.log('Successfully added reset button listener');
+                } else {
+                    console.error('Reset button not found');
+                }
+                
                 isPlaying = false; // Ensure initial state
                 togglePlayPause(); // Start the animation
             } catch (err) {
