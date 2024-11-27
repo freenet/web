@@ -396,10 +396,18 @@ waitForD3().then(() => {
         cancelAnimationFrame(animationFrame);
         isSimulating = false;
         numPeers = 30;
-        averagePathLengths = [{
-            numPeers: numPeers,
-            pathLength: calculateAveragePathLength()
-        }];
+        averagePathLengths = [
+            {
+                numPeers: 0,
+                pathLength: 0,
+                connectionsPerNode: 0
+            },
+            {
+                numPeers: numPeers,
+                pathLength: calculateAveragePathLength(),
+                connectionsPerNode: links.length * 2 / numPeers
+            }
+        ];
         initializeNetwork();
         draw();
         updateChart();
