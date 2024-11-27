@@ -135,10 +135,12 @@ waitForD3().then(() => {
     }
 
     function calculateAveragePathLength() {
+        if (numPeers <= 1) return 0;
+        
         // More reference nodes for smaller networks
-        const numReferenceNodes = Math.min(10, Math.ceil(numPeers * 0.2));
+        const numReferenceNodes = Math.min(numPeers - 1, Math.ceil(numPeers * 0.2));
         const referenceNodes = [];
-        const stride = Math.floor(peers.length / numReferenceNodes);
+        const stride = Math.max(1, Math.floor(peers.length / numReferenceNodes));
         
         // Select evenly spaced reference nodes
         for (let i = 0; i < numReferenceNodes; i++) {
@@ -370,12 +372,11 @@ waitForD3().then(() => {
                         connectionsPerNode: links.length * 2 / numPeers
                     });
                     
-                    // Very fine granularity for small networks, increasing with size
-                    const stepSize = numPeers < 20 ? 2 :
-                                   numPeers < 50 ? 4 :
-                                   numPeers < 100 ? 10 : 
-                                   numPeers < 200 ? 20 :
-                                   numPeers < 350 ? 25 : 30;
+                    // Smaller step sizes for more gradual growth
+                    const stepSize = numPeers < 20 ? 1 :
+                                   numPeers < 50 ? 2 :
+                                   numPeers < 100 ? 5 : 
+                                   numPeers < 200 ? 10 : 15;
                     numPeers += stepSize;
         
                     // Limit array size to prevent memory growth
@@ -425,21 +426,18 @@ waitForD3().then(() => {
     draw();
     initializeChart();
     
-    // Initialize the graph with (0,0) and first data point
+    // Initialize chart first
+    updateChart();
+    
+    // Then add initial data points
     const initialAvgPathLength = calculateAveragePathLength();
     averagePathLengths = [
-        {
-            numPeers: 0,
-            pathLength: 0,
-            connectionsPerNode: 0
-        },
         {
             numPeers: numPeers,
             pathLength: initialAvgPathLength,
             connectionsPerNode: links.length * 2 / numPeers
         }
     ];
-    updateChart();
     
     const playPauseBtn = document.getElementById('scalePlayPauseBtn');
     const resetBtn = document.getElementById('resetScaleBtn');
