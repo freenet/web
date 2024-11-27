@@ -212,7 +212,7 @@ waitForD3().then(() => {
     }
 
     function updateChart() {
-        const margin = {top: 20, right: 20, bottom: 30, left: 40};
+        const margin = {top: 20, right: 20, bottom: 40, left: 40};
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
 
@@ -234,7 +234,7 @@ waitForD3().then(() => {
             .range([0, chartWidth]);
 
         const y = d3.scaleLinear()
-            .domain([0, d3.max(averagePathLengths, d => d.pathLength) * 1.1])
+            .domain([0, Math.max(3, d3.max(averagePathLengths, d => d.pathLength) * 1.1)])
             .range([chartHeight, 0]);
 
         // Add gridlines
