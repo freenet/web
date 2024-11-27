@@ -40,7 +40,7 @@ async function initVisualization() {
 
     // Parameters
     const numPeers = 100;
-    const radius = 220;
+    const radius = 150;
     const connectionProbability = (distance) => 1 / (distance + 1);
 
     let peers = [];
