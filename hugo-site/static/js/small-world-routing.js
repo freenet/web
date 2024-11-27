@@ -264,7 +264,7 @@ async function initVisualization() {
             segmentLengths[i] = length;
         }
 
-        const pixelsPerSecond = 1200; // Constant speed in pixels per second
+        const pixelsPerSecond = 2400; // Constant speed in pixels per second
         let startTime = null;
         let lastSegmentStartTime = null;
 
@@ -285,9 +285,9 @@ async function initVisualization() {
                 currentPathSegment++;
                 
                 if (currentPathSegment >= currentPath.length - 1) {
-                    // Animation complete - wait 3 seconds then trigger new route
+                    // Animation complete - immediately start new route
                     if (isPlaying) {
-                        startNewRoute();
+                        requestAnimationFrame(() => startNewRoute());
                     }
                     return;
                 }
