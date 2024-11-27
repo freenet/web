@@ -17,6 +17,8 @@ waitForD3().then(() => {
     const maxHops = 30;
     let isPlaying = false;
     let animationFrame;
+    let startTime;
+    const simulationDuration = 60000; // 60 seconds in milliseconds
     
     // Setup canvases
     const smallWorldCanvas = document.getElementById('smallWorldCanvas');
@@ -387,8 +389,17 @@ waitForD3().then(() => {
         drawNetwork(rnCtx, randomNetwork, rnPath);
         updateStats();
         
+        // Check if 60 seconds have elapsed
+        if (Date.now() - startTime >= simulationDuration) {
+            isPlaying = false;
+            const btn = document.getElementById('comparisonPlayPauseBtn');
+            const icon = btn.querySelector('i');
+            icon.className = 'fas fa-play';
+            return;
+        }
+
         // Wait before next attempt
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         if (isPlaying) {
             animationFrame = requestAnimationFrame(() => simulateRouting());
@@ -402,6 +413,7 @@ waitForD3().then(() => {
         icon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
         
         if (isPlaying) {
+            startTime = Date.now();
             simulateRouting();
         }
     }
