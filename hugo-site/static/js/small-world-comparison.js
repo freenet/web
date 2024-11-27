@@ -325,33 +325,6 @@ waitForD3().then(() => {
             .style('font-size', '10px')
             .text(d => d.name);
 
-        // Legend
-        const legend = svg.append('g')
-            .attr('transform', `translate(${width/2},-25)`);
-
-        legend.append('circle')
-            .attr('cx', -100)
-            .attr('cy', 5)
-            .attr('r', 6)
-            .attr('fill', '#4292c6');
-
-        legend.append('text')
-            .attr('x', -85)
-            .attr('y', 10)
-            .text('Small World')
-            .style('font-size', '11px');
-
-        legend.append('circle')
-            .attr('cx', 20)
-            .attr('cy', 5)
-            .attr('r', 6)
-            .attr('fill', '#08519c');
-
-        legend.append('text')
-            .attr('x', 35)
-            .attr('y', 10)
-            .text('Random')
-            .style('font-size', '11px');
     }
     
     async function simulateRouting() {
