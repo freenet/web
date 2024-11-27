@@ -46,16 +46,21 @@ waitForD3().then(() => {
     let isSimulating = false;
 
     function initializeNetwork() {
-        peers = d3.range(numPeers).map(i => {
-            const angle = (i / numPeers) * 2 * Math.PI;
-            return {
-                x: width / 2 + radius * Math.cos(angle),
-                y: height / 2 + radius * Math.sin(angle),
+        // Pre-calculate sine and cosine values
+        const angleStep = (2 * Math.PI) / numPeers;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        
+        peers = new Array(numPeers);
+        for (let i = 0; i < numPeers; i++) {
+            const angle = i * angleStep;
+            peers[i] = {
+                x: centerX + radius * Math.cos(angle),
+                y: centerY + radius * Math.sin(angle),
                 index: i
             };
-        });
+        }
 
-        // Initialize links array
         links = [];
         
         // Create ring connections and store existing connections for quick lookup
@@ -167,6 +172,20 @@ waitForD3().then(() => {
         return pathCount > 0 ? totalLength / pathCount : 0;
     }
 
+    // Pre-compute adjacency lists for faster path finding
+    let adjacencyLists = new Map();
+    
+    function buildAdjacencyLists() {
+        adjacencyLists.clear();
+        for (const peer of peers) {
+            adjacencyLists.set(peer, []);
+        }
+        for (const link of links) {
+            adjacencyLists.get(link.source).push(link.target);
+            adjacencyLists.get(link.target).push(link.source);
+        }
+    }
+
     function findShortestPath(start, end) {
         if (start === end) return [start];
         
@@ -189,16 +208,8 @@ waitForD3().then(() => {
                 return path;
             }
 
-            // Find neighbors
-            const neighbors = links.reduce((acc, link) => {
-                if (link.source === node && !visited.has(link.target.index)) {
-                    acc.push(link.target);
-                } else if (link.target === node && !visited.has(link.source.index)) {
-                    acc.push(link.source);
-                }
-                return acc;
-            }, []);
-
+            // Use pre-computed adjacency list
+            const neighbors = adjacencyLists.get(node);
             for (const neighbor of neighbors) {
                 if (!visited.has(neighbor.index)) {
                     visited.add(neighbor.index);
@@ -214,19 +225,72 @@ waitForD3().then(() => {
     // Keep SVG reference to avoid repeated selections
     let chartSvg;
     
-    function updateChart() {
+    // Cache DOM elements and D3 scales
+    let chartG;
+    let xScale, yScale;
+    let pathElement, pointElements;
+    
+    function initializeChart() {
         const margin = {top: 20, right: 20, bottom: 60, left: 50};
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
 
-        // Create or reuse SVG
         if (!chartSvg) {
             chartSvg = d3.select('#scalingChart')
                 .append('svg')
                 .attr('width', width)
                 .attr('height', height);
+                
+            chartG = chartSvg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+                
+            // Add static elements
+            setupStaticChartElements(chartG, chartWidth, chartHeight, margin);
         }
-        chartSvg.selectAll('*').remove();
+        
+        xScale = d3.scaleLinear()
+            .domain([0, maxPeers])
+            .range([0, chartWidth]);
+            
+        yScale = d3.scaleLinear()
+            .domain([0, 3])  // Initial domain, will be updated
+            .range([chartHeight, 0]);
+            
+        // Create elements that will be updated
+        pathElement = chartG.append('path')
+            .attr('fill', 'none')
+            .attr('stroke', '#007FFF')
+            .attr('stroke-width', 1.5);
+            
+        pointElements = chartG.append('g')
+            .attr('class', 'points');
+    }
+    
+    function updateChart() {
+        // Update scales
+        yScale.domain([0, Math.max(3, d3.max(averagePathLengths, d => d.pathLength) * 1.1)]);
+        
+        // Update line
+        const line = d3.line()
+            .x(d => xScale(d.numPeers))
+            .y(d => yScale(d.pathLength));
+            
+        pathElement.datum(averagePathLengths)
+            .attr('d', line);
+            
+        // Update points
+        const points = pointElements.selectAll('circle')
+            .data(averagePathLengths);
+            
+        points.enter()
+            .append('circle')
+            .merge(points)
+            .attr('cx', d => xScale(d.numPeers))
+            .attr('cy', d => yScale(d.pathLength))
+            .attr('r', 3)
+            .style('fill', '#007FFF');
+            
+        points.exit().remove();
 
         const g = svg.append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -376,7 +440,9 @@ waitForD3().then(() => {
 
     // Initialize network and add button handlers
     initializeNetwork();
+    buildAdjacencyLists();
     draw();
+    initializeChart();
     
     // Initialize the graph with (0,0) and first data point
     const initialAvgPathLength = calculateAveragePathLength();
