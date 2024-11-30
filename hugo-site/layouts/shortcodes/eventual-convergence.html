@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<div class="visualization-container">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" />
+<div class="visualization-wrapper">
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     .link {
@@ -23,53 +21,34 @@
       min-height: 400px;
       overflow: visible;
     }
-    .visualization-container {
+    .visualization-wrapper {
       width: 100%;
       height: auto;
       min-height: 500px;
       position: relative;
+      margin: 2rem auto;
+    }
+    .visualization-content {
+      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem 1rem;
-      margin-top: 2rem;
-      margin-bottom: 2rem;
+      gap: 1rem;
     }
     @media (max-width: 768px) {
-      .visualization-container {
-        padding: 1rem 0.5rem;
+      .visualization-wrapper {
         min-height: 450px;
+        margin: 1rem auto;
       }
       svg {
         transform: scale(0.85);
         transform-origin: center top;
       }
-      .title.is-4 {
-        font-size: 1.2rem;
-      }
-      .subtitle.is-6 {
-        font-size: 0.9rem;
-      }
-    }
-    .container {
-      padding: 1rem;
-      max-width: 100%;
-      overflow-x: hidden;
-      margin: 0 auto;
     }
   </style>
 
-  <div class="container visualization-container">
-    <div class="content mb-4">
-      <h2 class="title is-4 has-text-centered">Freenet Eventual Convergence Simulation</h2>
-      <p class="subtitle is-6 has-text-centered mb-3">
-        Click nodes to initiate an update and see how changes propagate through the
-        network.
-      </p>
-      <div class="has-text-centered">
-        <button class="button is-info is-small" onclick="resetVisualization()">Reset Network</button>
-      </div>
-    </div>
+  <div class="visualization-content">
+    <button class="button is-info is-small" onclick="resetVisualization()">Reset Network</button>
   </div>
 
   <script>
