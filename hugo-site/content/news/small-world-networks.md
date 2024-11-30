@@ -13,7 +13,7 @@ head:
     <img src="/img/handing-letter-sw.webp" alt="Handing a Letter" style="width: 100%; border: 1px solid #ccc; border-radius: 5px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1);">
 </div>
 
-In the 1960s, psychologist Stanley Milgram conducted an influential experiment that revealed
+In the 1960s psychologist Stanley Milgram conducted an influential experiment that revealed
 something amazing about human relationships. Milgram chose people at random in cities like Kansas
 and gave each a letter with the address of someone they didn't know in Boson, Massachusetts. They
 were instructed to get the letter to that person but only by sending it to someone they know
