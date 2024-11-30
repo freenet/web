@@ -84,7 +84,7 @@
     </section>
     <script>
       // Generate a random tree-like structure
-      function generateRandomTree(numNodes = window.innerWidth < 768 ? 10 : 60) {
+      function generateRandomTree(numNodes = window.innerWidth < 768 ? 5 : 60) {
         const nodes = Array.from({ length: numNodes }, (_, i) => ({
           id: i,
           color: COLOR_PALETTE[0],
@@ -122,10 +122,10 @@
 
       const arcGenerator = d3.arc()
         .innerRadius(0)
-        .outerRadius(window.innerWidth < 768 ? 25 : 15);  // Larger nodes on mobile
+        .outerRadius(window.innerWidth < 768 ? 50 : 15);  // Much larger nodes on mobile
       const messageArcGenerator = d3.arc()
         .innerRadius(0)
-        .outerRadius(window.innerWidth < 768 ? 12 : 7);   // Larger messages on mobile
+        .outerRadius(window.innerWidth < 768 ? 25 : 7);   // Larger messages on mobile
       const pieGenerator = d3
         .pie()
         .value(1) // Each segment has equal weight
