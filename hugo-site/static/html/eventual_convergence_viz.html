@@ -286,12 +286,12 @@
 
       // Function to check neighbors and propagate colors if needed
       async function checkAndPropagate(startNode) {
-        let hasUpdates = true;
-        while (hasUpdates) {
-          hasUpdates = false;
+        let iteration = 0;
+        const MAX_ITERATIONS = 100; // Safety limit
+        
+        while (iteration < MAX_ITERATIONS) {
+          let hasUpdates = false;
           const nodePairs = getAllConnectedPairs();
-          
-          // Group all needed propagations
           const propagations = [];
           
           for (const [nodeA, nodeB] of nodePairs) {
@@ -320,10 +320,19 @@
             }
           }
           
+          // If no updates were needed, we're done
+          if (!hasUpdates) {
+            break;
+          }
+          
           // Wait for all propagations in this timestep to complete
           if (propagations.length > 0) {
             await Promise.all(propagations);
+            // Add a small delay between iterations to prevent UI freezing
+            await new Promise(resolve => setTimeout(resolve, 50));
           }
+          
+          iteration++;
         }
       }
     </script>
