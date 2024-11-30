@@ -8,8 +8,8 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
       const animationQueue = new Map(); // Track ongoing animations per node
-      let lastColorIndex = -1;
-      const globalColors = []; // Track colors in order of introduction to network
+      let lastColorIndex = 0; // Start at 0 since we're using the first color for initialization
+      const globalColors = [COLOR_PALETTE[0]]; // Initialize with first color
       const MAX_COLORS = 3; // Only show 3 most recent colors per node
       // Palette of 6 visually distinct colors that work well together
       const COLOR_PALETTE = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEEAD", "#D4A5A5"];
@@ -55,8 +55,8 @@
       function generateRandomTree(numNodes) {
         const nodes = Array.from({ length: numNodes }, (_, i) => ({
           id: i,
-          color: "#87cefa",
-          receivedColors: ["#87cefa"],
+          color: COLOR_PALETTE[0],
+          receivedColors: [COLOR_PALETTE[0]],
         }));
         const links = [];
 
@@ -134,11 +134,8 @@
         .sort(null); // Do not sort, keep original order
 
       function drawPie(nodeGroup, allColors) {
-        // For the initial color and non-global colors, show them all
         let displayColors;
-        if (allColors.length === 1 && allColors[0] === "#87cefa") {
-          displayColors = allColors;
-        } else {
+        // For propagated colors, show only the most recent MAX_COLORS from global tracking
           // For propagated colors, show only the most recent MAX_COLORS from global tracking
           const visibleColors = allColors.filter(color => globalColors.includes(color));
           displayColors = visibleColors.slice(-MAX_COLORS);
