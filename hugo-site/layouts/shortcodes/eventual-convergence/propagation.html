@@ -320,6 +320,12 @@
 
     function startAutoUpdates() {
       if (!updateInterval) {
+        // Trigger first propagation immediately
+        const nodes = root.descendants();
+        const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
+        initiatePropagation(randomNode);
+
+        // Set up interval for subsequent propagations
         updateInterval = setInterval(() => {
           if (isPlaying) {
             const nodes = root.descendants();
