@@ -149,7 +149,11 @@
 
       node
         .on("mouseover", function (event, d) {
-          d3.select(this).append("title").text(d.data.receivedColors.join(", "));
+          // Show all colors with their sequence numbers in the tooltip
+          const colorInfo = d.data.receivedColors
+            .map(color => `${color} (${colorSequenceMap.get(color)})`)
+            .join(", ");
+          d3.select(this).append("title").text(colorInfo);
         })
         .on("click", function (event, d) {
           initiatePropagation(d);
@@ -211,46 +215,22 @@
         globalSequenceCounter += 1;
         colorSequenceMap.set(newColor, globalSequenceCounter);
 
-        // Remove the oldest color globally if there are already 3 colors
-        if (root.descendants().some((d) => d.data.receivedColors.length >= 3)) {
-          let oldestColor = null;
-          let oldestSequence = Infinity;
-
-          // Find the oldest color across all nodes
-          root.descendants().forEach((d) => {
-            d.data.receivedColors.forEach((color) => {
-              if (colorSequenceMap.get(color) < oldestSequence) {
-                oldestColor = color;
-                oldestSequence = colorSequenceMap.get(color);
-              }
-            });
-          });
-
-          // Remove the oldest color from all nodes
-          if (oldestColor) {
-            root.descendants().forEach((d) => {
-              d.data.receivedColors = d.data.receivedColors.filter(
-                (color) => color !== oldestColor
-              );
-            });
-            colorSequenceMap.delete(oldestColor);
-          }
-        }
-
-        // Add the new color to the clicked node
-        if (!startNode.data.receivedColors.includes(newColor)) {
-          startNode.data.receivedColors.push(newColor);
-        }
-
-        // Update the clicked node's colors
+        // Add the new color to the clicked node's full history
+        startNode.data.receivedColors.push(newColor);
+        
+        // Update the clicked node's colors and start propagation
         updateNodeColors(startNode);
-        checkAndPropagate(startNode); // Allow overlapping propagations immediately
+        checkAndPropagate(startNode);
       }
 
       // Function to update node colors visually
       function updateNodeColors(node) {
         const nodeGroup = d3.select(`#node-${node.data.id}`);
-        drawPie(nodeGroup, node.data.receivedColors);
+        // Sort colors by sequence number and take most recent 3
+        const recentColors = [...node.data.receivedColors].sort((a, b) => 
+          colorSequenceMap.get(b) - colorSequenceMap.get(a)
+        ).slice(0, 3);
+        drawPie(nodeGroup, recentColors);
       }
 
       // Function to check neighbors and propagate colors if needed
