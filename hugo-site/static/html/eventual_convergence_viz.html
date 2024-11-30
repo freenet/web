@@ -133,14 +133,18 @@
         .value(1) // Each segment has equal weight
         .sort(null); // Do not sort, keep original order
 
-      function drawPie(nodeGroup, colors) {
-        const arcs = pieGenerator(colors);
+      function drawPie(nodeGroup, allColors) {
+        // Only show the most recent MAX_COLORS from the global tracking
+        const visibleColors = allColors.filter(color => globalColors.includes(color));
+        const displayColors = visibleColors.slice(-MAX_COLORS);
+        
+        const arcs = pieGenerator(displayColors);
         nodeGroup.selectAll("path").remove(); // Clear existing paths before drawing
         arcs.forEach((arc, i) => {
           nodeGroup
             .append("path")
             .attr("d", arcGenerator(arc))
-            .attr("fill", colors[i])
+            .attr("fill", displayColors[i])
             .attr("stroke", "#5f9ea0")
             .attr("stroke-width", 0.5);
         });
@@ -211,10 +215,6 @@
           });
           
           if (colorsAdded) {
-            // Only trim to MAX_COLORS if we exceed it
-            if (target.data.receivedColors.length > MAX_COLORS) {
-              target.data.receivedColors = target.data.receivedColors.slice(-MAX_COLORS);
-            }
             updateNodeColors(target);
           }
         } finally {
