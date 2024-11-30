@@ -129,7 +129,7 @@
     }
 
     function getContainerDimensions() {
-      const container = document.querySelector('.visualization-container');
+      const container = document.querySelector('.visualization-wrapper');
       const rect = container.getBoundingClientRect();
       return {
         width: Math.max(rect.width - 40, 400),
@@ -177,7 +177,7 @@
 
     // Add resize and orientation change listeners
     const resizeObserver = new ResizeObserver(debounce(handleResize, 250));
-    resizeObserver.observe(document.querySelector('.visualization-container'));
+    resizeObserver.observe(document.querySelector('.visualization-wrapper'));
     window.addEventListener('orientationchange', () => {
       setTimeout(handleResize, 100); // Small delay to allow orientation change to complete
     });
@@ -234,7 +234,7 @@
       const viewBoxHeight = maxY - minY + paddingTop + paddingBottom;
       
       svg = d3
-      .select(".visualization-container")
+      .select(".visualization-wrapper")
       .append("svg")
       .attr("width", width)
       .attr("height", height)
