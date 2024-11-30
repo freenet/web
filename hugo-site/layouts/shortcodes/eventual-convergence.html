@@ -48,7 +48,18 @@
   </style>
 
   <div class="visualization-content">
-    <button class="button is-info is-small" onclick="resetVisualization()">Reset Network</button>
+    <div class="buttons has-addons is-centered" style="margin: 0.25rem;">
+      <button id="convergencePlayPauseBtn" class="button is-medium is-primary">
+        <span class="icon">
+          <i class="fas fa-play"></i>
+        </span>
+      </button>
+      <button id="resetConvergenceBtn" class="button is-medium">
+        <span class="icon">
+          <i class="fas fa-undo"></i>
+        </span>
+      </button>
+    </div>
   </div>
 
   <script>
@@ -286,11 +297,81 @@
         });
     }
 
+    // Control variables
+    let isPlaying = false;
+    let updateInterval;
+    const UPDATE_DELAY = 2000; // 2 seconds between updates
+
+    function togglePlayPause() {
+      isPlaying = !isPlaying;
+      const btn = document.getElementById('convergencePlayPauseBtn');
+      if (!btn) return;
+      
+      if (isPlaying) {
+        AnimationCoordinator.setActive('convergence');
+        btn.querySelector('i').className = 'fas fa-pause';
+        startAutoUpdates();
+      } else {
+        btn.querySelector('i').className = 'fas fa-play';
+        stopAutoUpdates();
+      }
+    }
+
+    function startAutoUpdates() {
+      if (!updateInterval) {
+        updateInterval = setInterval(() => {
+          if (isPlaying) {
+            const nodes = root.descendants();
+            const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
+            initiatePropagation(randomNode);
+          }
+        }, UPDATE_DELAY);
+      }
+    }
+
+    function stopAutoUpdates() {
+      if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
+      }
+    }
+
+    // Listen for pause events from other animations
+    document.addEventListener('pause-other-animations', (event) => {
+      if (event.detail.except !== 'convergence' && isPlaying) {
+        isPlaying = false;
+        const btn = document.getElementById('convergencePlayPauseBtn');
+        if (btn) {
+          btn.querySelector('i').className = 'fas fa-play';
+        }
+        stopAutoUpdates();
+      }
+    });
+
     // Initial visualization
     initializeVisualization();
 
+    // Setup button listeners
+    const playPauseBtn = document.getElementById('convergencePlayPauseBtn');
+    if (playPauseBtn) {
+      playPauseBtn.addEventListener('click', togglePlayPause);
+    }
+
+    const resetBtn = document.getElementById('resetConvergenceBtn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', resetVisualization);
+    }
+
     // Function to reset the visualization
     function resetVisualization() {
+      // Stop any ongoing updates
+      isPlaying = false;
+      stopAutoUpdates();
+      const playPauseBtn = document.getElementById('convergencePlayPauseBtn');
+      if (playPauseBtn) {
+        playPauseBtn.querySelector('i').className = 'fas fa-play';
+      }
+
       // Reset global state
       lastColorIndex = 0;
       globalColors.length = 0;
