@@ -61,19 +61,19 @@
     </style>
   </head>
   <body>
-    <section class="section">
+    <section class="section py-4">
       <div class="container">
-        <h1 class="title">Freenet Eventual Convergence Simulation</h1>
-        <p class="subtitle">
+        <h1 class="title is-4">Freenet Eventual Convergence Simulation</h1>
+        <p class="subtitle is-6 mb-2">
           Click nodes to initiate an update and see how changes propagate through the
           network.
         </p>
-        <button class="button is-info" onclick="resetVisualization()">Reset Network</button>
+        <button class="button is-info is-small" onclick="resetVisualization()">Reset Network</button>
       </div>
     </section>
     <script>
       // Generate a random tree-like structure with 40 nodes
-      function generateRandomTree(numNodes) {
+      function generateRandomTree(numNodes = 60) {
         const nodes = Array.from({ length: numNodes }, (_, i) => ({
           id: i,
           color: COLOR_PALETTE[0],
@@ -94,11 +94,11 @@
         return { nodes, links };
       }
 
-      let randomTreeData = generateRandomTree(80);
+      let randomTreeData = generateRandomTree(60);
       let svg;
       
       const width = Math.min(window.innerWidth - 40, 1200);
-      const height = Math.min(window.innerHeight - 200, 800);
+      const height = Math.min(window.innerHeight - 100, 800);
       const mobileScale = window.innerWidth < 768 ? 0.6 : 1;
 
       const arcGenerator = d3.arc().innerRadius(0).outerRadius(10);
@@ -131,7 +131,7 @@
         .attr("height", height)
         .attr("viewBox", `${-width/4} 0 ${width * 1.5} ${height}`)
         .append("g")
-        .attr("transform", `translate(0, 100) scale(${mobileScale})`);
+        .attr("transform", `translate(0, 40) scale(${mobileScale})`);
 
       // Draw links
       const link = svg
