@@ -7,12 +7,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" />
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
+      // Palette of 6 visually distinct colors that work well together
+      const COLOR_PALETTE = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEEAD", "#D4A5A5"];
       const animationQueue = new Map(); // Track ongoing animations per node
       let lastColorIndex = 0; // Start at 0 since we're using the first color for initialization
       const globalColors = [COLOR_PALETTE[0]]; // Initialize with first color
       const MAX_COLORS = 3; // Only show 3 most recent colors per node
-      // Palette of 6 visually distinct colors that work well together
-      const COLOR_PALETTE = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEEAD", "#D4A5A5"];
     </script>
     <style>
       .link {
@@ -136,13 +136,11 @@
       function drawPie(nodeGroup, allColors) {
         let displayColors;
         // For propagated colors, show only the most recent MAX_COLORS from global tracking
-          // For propagated colors, show only the most recent MAX_COLORS from global tracking
-          const visibleColors = allColors.filter(color => globalColors.includes(color));
-          displayColors = visibleColors.slice(-MAX_COLORS);
-          // If no colors would be shown, keep the node's existing colors
-          if (displayColors.length === 0) {
-            displayColors = allColors;
-          }
+        const visibleColors = allColors.filter(color => globalColors.includes(color));
+        displayColors = visibleColors.slice(-MAX_COLORS);
+        // If no colors would be shown, keep the node's existing colors
+        if (displayColors.length === 0) {
+          displayColors = allColors;
         }
         
         const arcs = pieGenerator(displayColors);
