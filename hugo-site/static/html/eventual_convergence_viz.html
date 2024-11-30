@@ -207,6 +207,10 @@
               target.data.receivedColors.push(color);
             }
           });
+          // Ensure we only keep the MAX_COLORS most recent colors
+          target.data.receivedColors = target.data.receivedColors
+            .filter(c => globalColors.includes(c))
+            .slice(-MAX_COLORS);
           updateNodeColors(target);
         } finally {
           // Clear animation flag when done
