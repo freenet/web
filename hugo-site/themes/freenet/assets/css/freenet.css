@@ -318,6 +318,15 @@ p.page-end-spacer {
         color: transparent;
     }
 
+    /* Mobile image handling */
+    @media screen and (max-width: 480px) {
+        div[style*="float: right"] {
+            float: none !important;
+            margin: 0 auto 20px auto;
+            display: block;
+        }
+    }
+
     .navbar-item.ghost-key:hover {
         opacity: 0.8;
     }
