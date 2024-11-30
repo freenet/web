@@ -151,10 +151,8 @@
 
       node
         .on("mouseover", function (event, d) {
-          // Show all colors with their sequence numbers in the tooltip
-          const colorInfo = d.data.receivedColors
-            .map(color => `${color} (${colorSequenceMap.get(color)})`)
-            .join(", ");
+          // Show all colors in the tooltip
+          const colorInfo = d.data.receivedColors.join(", ");
           d3.select(this).append("title").text(colorInfo);
         })
         .on("click", function (event, d) {
