@@ -172,10 +172,12 @@
           maxY = Math.max(maxY, d.y);
         });
         
-        // Add padding
-        const padding = 40;
-        const viewBoxWidth = maxX - minX + padding * 2;
-        const viewBoxHeight = maxY - minY + padding * 2;
+        // Add padding, less at the top
+        const paddingTop = 20;
+        const paddingSides = 40;
+        const paddingBottom = 40;
+        const viewBoxWidth = maxX - minX + (paddingSides * 2);
+        const viewBoxHeight = maxY - minY + paddingTop + paddingBottom;
         
         svg = d3
         .select(".visualization-container")
@@ -183,7 +185,7 @@
         .attr("width", width)
         .attr("height", height)
         .attr("preserveAspectRatio", "xMidYMid meet")
-        .attr("viewBox", `${minX - padding} ${minY - padding} ${viewBoxWidth} ${viewBoxHeight}`)
+        .attr("viewBox", `${minX - paddingSides} ${minY - paddingTop} ${viewBoxWidth} ${viewBoxHeight}`)
         .append("g");
 
       // Draw links
