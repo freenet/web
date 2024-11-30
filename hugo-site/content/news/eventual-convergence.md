@@ -15,7 +15,7 @@ Eventual convergence is a fundamental concept in distributed systems that descri
 
 The following interactive visualization demonstrates how updates propagate through a network. Each node starts with the same initial state (color). When you click on a node, it receives new information (a new color) which then spreads to its neighbors:
 
-{{< eventual-convergence >}}
+{{< eventual-convergence/propagation >}}
 
 Click different nodes to see how information spreads through the network. Notice how:
 - Updates propagate gradually from node to node
