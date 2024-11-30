@@ -146,9 +146,9 @@
         .append("svg")
         .attr("width", width)
         .attr("height", height)
-        .attr("viewBox", `${-width/3} ${-height/4} ${width * 1.2} ${height * 1.5}`)
+        .attr("viewBox", `${-width/2} ${-height/4} ${width * 1.4} ${height * 1.5}`)
         .append("g")
-        .attr("transform", `translate(0, 20) scale(${mobileScale})`);
+        .attr("transform", `translate(${width/6}, 20) scale(${mobileScale})`);
 
       // Draw links
       const link = svg
