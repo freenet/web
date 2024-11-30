@@ -177,13 +177,8 @@
         animationQueue.set(animationKey, true);
 
         try {
-          // For animation, show the 3 most recent valid colors from the source node
-          const sourceRecentColors = [...source.data.receivedColors]
-            .filter(color => color !== undefined)
-            .sort((a, b) => colorSequenceMap.get(b) - colorSequenceMap.get(a))
-            .slice(0, 3);
-
-          const arcs = pieGenerator(sourceRecentColors);
+          // For animation, only show the colors being propagated
+          const arcs = pieGenerator(validColors);
           const messageGroup = svg
             .append("g")
             .attr("class", "message")
