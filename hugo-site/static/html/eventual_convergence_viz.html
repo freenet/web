@@ -148,10 +148,19 @@
         // Remove existing SVG if it exists
         d3.select("svg").remove();
         
-        // Calculate tree bounds first
-        const root = d3.hierarchy(treeData);
+        // Create hierarchy from randomTreeData
+        root = d3
+          .stratify()
+          .id((d) => d.id)
+          .parentId((d) => {
+            const link = randomTreeData.links.find((link) => link.target.id === d.id);
+            return link ? link.source.id : null;
+          })(randomTreeData.nodes);
+
+        // Apply tree layout
         treeLayout(root);
         
+        // Calculate bounds
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         root.each(d => {
           minX = Math.min(minX, d.x);
