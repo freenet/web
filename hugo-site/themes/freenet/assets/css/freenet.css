@@ -319,17 +319,25 @@ p.page-end-spacer {
     }
 
     /* Mobile image handling */
-    @media screen and (max-width: 480px), 
-           (min-width: 481px) and (max-width: 800px) and (min-content-width: < 200px) {
+    @container (max-width: 800px) {
         div[style*="float: right"] {
             float: none !important;
             margin: 0 auto 20px auto;
             display: block;
         }
-        
-        div[style*="float: right"] + p {
-            min-width: 200px; /* Ensures at least ~10 words can fit */
+    }
+
+    @media screen and (max-width: 480px) {
+        div[style*="float: right"] {
+            float: none !important;
+            margin: 0 auto 20px auto;
+            display: block;
         }
+    }
+
+    /* Ensure minimum text width next to floating images */
+    div[style*="float: right"] + p {
+        min-width: 200px; /* Ensures at least ~10 words can fit */
     }
 
     .navbar-item.ghost-key:hover {
