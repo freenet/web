@@ -9,6 +9,7 @@
     <script>
       let globalSequenceCounter = 0;
       const colorSequenceMap = new Map();
+      const animationQueue = new Map(); // Track ongoing animations per node
     </script>
     <style>
       .link {
@@ -160,43 +161,62 @@
         });
 
       // Function to animate a message along a link
-      function animateMessage(source, target, colors) {
-        // For animation, show the 3 most recent colors from the source node
-        const sourceRecentColors = [...source.data.receivedColors]
-          .sort((a, b) => colorSequenceMap.get(b) - colorSequenceMap.get(a))
-          .slice(0, 3);
+      async function animateMessage(source, target, colors) {
+        // Skip if there's already an animation to this target
+        const targetKey = `node-${target.data.id}`;
+        if (animationQueue.get(targetKey)) {
+          return;
+        }
 
-        const arcs = pieGenerator(sourceRecentColors);
-        const messageGroup = svg
-          .append("g")
-          .attr("class", "message")
-          .attr("transform", `translate(${source.x},${source.y})`);
+        // Filter out any undefined colors
+        const validColors = colors.filter(color => color !== undefined);
+        if (validColors.length === 0) return;
 
-        arcs.forEach((arc, i) => {
-          messageGroup
-            .append("path")
-            .attr("d", messageArcGenerator(arc))
-            .attr("fill", sourceRecentColors[i])
-            .attr("stroke", "#4682b4")
-            .attr("stroke-width", 0.5);
-        });
+        // Mark animation as in progress
+        animationQueue.set(targetKey, true);
 
-        return messageGroup
-          .transition()
-          .duration(1000)
-          .attr("transform", `translate(${target.x},${target.y})`)
-          .remove()
-          .end()
-          .then(() => {
-            // Add only new colors to the target node's history
-            colors.forEach(color => {
-              if (!target.data.receivedColors.includes(color)) {
-                target.data.receivedColors.push(color);
-              }
-            });
-            updateNodeColors(target);
-            setTimeout(() => checkAndPropagate(target), 10);
+        try {
+          // For animation, show the 3 most recent valid colors from the source node
+          const sourceRecentColors = [...source.data.receivedColors]
+            .filter(color => color !== undefined)
+            .sort((a, b) => colorSequenceMap.get(b) - colorSequenceMap.get(a))
+            .slice(0, 3);
+
+          const arcs = pieGenerator(sourceRecentColors);
+          const messageGroup = svg
+            .append("g")
+            .attr("class", "message")
+            .attr("transform", `translate(${source.x},${source.y})`);
+
+          arcs.forEach((arc, i) => {
+            messageGroup
+              .append("path")
+              .attr("d", messageArcGenerator(arc))
+              .attr("fill", sourceRecentColors[i])
+              .attr("stroke", "#4682b4")
+              .attr("stroke-width", 0.5);
           });
+
+          await messageGroup
+            .transition()
+            .duration(1000)
+            .attr("transform", `translate(${target.x},${target.y})`)
+            .remove()
+            .end();
+
+          // Add only new valid colors to the target node's history
+          validColors.forEach(color => {
+            if (!target.data.receivedColors.includes(color)) {
+              target.data.receivedColors.push(color);
+            }
+          });
+          
+          updateNodeColors(target);
+          await checkAndPropagate(target);
+        } finally {
+          // Clear animation flag when done
+          animationQueue.delete(targetKey);
+        }
       }
 
       // Helper function to blend colors
@@ -219,7 +239,10 @@
       }
 
       // Function to initiate color propagation from a clicked node
-      function initiatePropagation(startNode) {
+      async function initiatePropagation(startNode) {
+        // Clean up any undefined colors first
+        startNode.data.receivedColors = startNode.data.receivedColors.filter(color => color !== undefined);
+        
         // Determine the new color to add
         const distinctColors = ["#4a90e2", "#ff7f50", "#32cd32"];
         const newColor = distinctColors[Math.floor(Math.random() * distinctColors.length)];
@@ -231,7 +254,7 @@
         
         // Update the clicked node's colors and start propagation
         updateNodeColors(startNode);
-        checkAndPropagate(startNode);
+        await checkAndPropagate(startNode);
       }
 
       // Function to update node colors visually
@@ -245,14 +268,20 @@
       }
 
       // Function to check neighbors and propagate colors if needed
-      function checkAndPropagate(node) {
+      async function checkAndPropagate(node) {
         const descendants = node.children || [];
         const ancestors = node.parent ? [node.parent] : [];
         const connectedNodes = [...descendants, ...ancestors];
 
-        connectedNodes.forEach((neighbor) => {
+        // Clean up any undefined colors
+        node.data.receivedColors = node.data.receivedColors.filter(color => color !== undefined);
+
+        const propagationPromises = connectedNodes.map(async (neighbor) => {
           const sourceNode = node.data;
           const targetNode = neighbor.data;
+
+          // Clean up target's colors
+          targetNode.receivedColors = targetNode.receivedColors.filter(color => color !== undefined);
 
           // Get all colors from source that target doesn't have
           const sourceToTargetColors = sourceNode.receivedColors.filter(
@@ -261,9 +290,12 @@
 
           // Only propagate if there are new colors to send
           if (sourceToTargetColors.length > 0) {
-            animateMessage(node, neighbor, sourceToTargetColors);
+            await animateMessage(node, neighbor, sourceToTargetColors);
           }
         });
+
+        // Wait for all propagations to complete
+        await Promise.all(propagationPromises);
       }
     </script>
     </script>
