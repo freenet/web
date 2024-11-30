@@ -161,7 +161,12 @@
 
       // Function to animate a message along a link
       function animateMessage(source, target, colors) {
-        const arcs = pieGenerator(colors);
+        // Sort colors by sequence number for the message animation
+        const recentColors = [...colors].sort((a, b) => 
+          colorSequenceMap.get(b) - colorSequenceMap.get(a)
+        ).slice(0, 3); // Show only 3 most recent colors in animation
+
+        const arcs = pieGenerator(recentColors);
         const messageGroup = svg
           .append("g")
           .attr("class", "message")
@@ -171,7 +176,7 @@
           messageGroup
             .append("path")
             .attr("d", messageArcGenerator(arc))
-            .attr("fill", colors[i])
+            .attr("fill", recentColors[i])
             .attr("stroke", "#4682b4")
             .attr("stroke-width", 0.5);
         });
@@ -183,9 +188,11 @@
           .remove()
           .end()
           .then(() => {
+            // Add ALL colors to the target node's history
+            target.data.receivedColors.push(...colors);
             updateNodeColors(target);
-            setTimeout(() => checkAndPropagate(target), 10); // Allow overlapping propagations
-          }); // Return a promise for chaining
+            setTimeout(() => checkAndPropagate(target), 10);
+          });
       }
 
       // Helper function to blend colors
@@ -243,14 +250,13 @@
           const sourceNode = node.data;
           const targetNode = neighbor.data;
 
-          // Determine colors that need to be transferred from source to target
+          // Get all colors from source that target doesn't have
           const sourceToTargetColors = sourceNode.receivedColors.filter(
             (color) => !targetNode.receivedColors.includes(color)
           );
 
-          // Propagate colors from source to target if necessary
+          // Only propagate if there are new colors to send
           if (sourceToTargetColors.length > 0) {
-            targetNode.receivedColors.push(...sourceToTargetColors);
             animateMessage(node, neighbor, sourceToTargetColors);
           }
         });
