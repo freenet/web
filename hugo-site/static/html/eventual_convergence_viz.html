@@ -105,7 +105,7 @@
         return { nodes, links };
       }
 
-      let randomTreeData = generateRandomTree(60);
+      let randomTreeData = generateRandomTree();
       let svg;
       
       function getContainerDimensions() {
@@ -251,8 +251,8 @@
         globalColors.length = 0;
         globalColors.push(COLOR_PALETTE[0]);
         
-        // Generate new tree data
-        randomTreeData = generateRandomTree();
+        // Generate new tree data with mobile-aware node count
+        randomTreeData = generateRandomTree(window.innerWidth < 768 ? 5 : 60);
         
         // Create new root
         root = d3
