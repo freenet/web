@@ -319,15 +319,7 @@ p.page-end-spacer {
     }
 
     /* Mobile image handling */
-    @container (max-width: 800px) {
-        div[style*="float: right"] {
-            float: none !important;
-            margin: 0 auto 20px auto;
-            display: block;
-        }
-    }
-
-    @media screen and (max-width: 480px) {
+    @media screen and (max-width: 800px) {
         div[style*="float: right"] {
             float: none !important;
             margin: 0 auto 20px auto;
@@ -336,8 +328,10 @@ p.page-end-spacer {
     }
 
     /* Ensure minimum text width next to floating images */
-    div[style*="float: right"] + p {
-        min-width: 200px; /* Ensures at least ~10 words can fit */
+    @media screen and (min-width: 801px) {
+        div[style*="float: right"] + p {
+            min-width: 200px; /* Ensures at least ~10 words can fit */
+        }
     }
 
     .navbar-item.ghost-key:hover {
