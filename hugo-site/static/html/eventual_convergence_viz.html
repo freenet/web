@@ -61,6 +61,7 @@
           Click nodes to initiate an update and see how changes propagate through the
           network.
         </p>
+        <button class="button is-info" onclick="resetVisualization()">Reset Network</button>
       </div>
     </section>
     <script>
@@ -87,7 +88,8 @@
       }
 
       let randomTreeData = generateRandomTree(80);
-
+      let svg;
+      
       const width = Math.min(window.innerWidth - 40, 1200);
       const height = Math.min(window.innerHeight - 200, 800);
 
@@ -102,7 +104,12 @@
       const treeLayout = d3.tree().size([width, height - 200]);
       treeLayout(root);
 
-      let svg = d3
+      // Initialize visualization
+      function initializeVisualization() {
+        // Remove existing SVG if it exists
+        d3.select("svg").remove();
+        
+        svg = d3
         .select("body")
         .append("svg")
         .attr("width", width)
@@ -126,6 +133,36 @@
         )
         .attr("stroke", "#1e90ff")
         .attr("stroke-width", 2);
+
+      }
+
+      // Initial visualization
+      initializeVisualization();
+
+      // Function to reset the visualization
+      function resetVisualization() {
+        // Reset global state
+        lastColorIndex = 0;
+        globalColors.length = 0;
+        globalColors.push(COLOR_PALETTE[0]);
+        
+        // Generate new tree data
+        randomTreeData = generateRandomTree(80);
+        
+        // Create new root
+        root = d3
+          .stratify()
+          .id((d) => d.id)
+          .parentId((d) => {
+            const link = randomTreeData.links.find((link) => link.target.id === d.id);
+            return link ? link.source.id : null;
+          })(randomTreeData.nodes);
+
+        treeLayout(root);
+        
+        // Reinitialize the visualization
+        initializeVisualization();
+      }
 
       // Draw nodes as pie charts
       const node = svg
