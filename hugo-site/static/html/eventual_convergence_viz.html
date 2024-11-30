@@ -211,6 +211,20 @@
         .attr("id", (d) => `node-${d.data.id}`);
 
       // Initialize node colors and event handlers
+      node.each(function (d) {
+        const nodeGroup = d3.select(this);
+        drawPie(nodeGroup, d.data.receivedColors);
+      });
+
+      node
+        .on("mouseover", function (event, d) {
+          // Show all colors in the tooltip
+          const colorInfo = d.data.receivedColors.join(", ");
+          d3.select(this).append("title").text(colorInfo);
+        })
+        .on("click", function (event, d) {
+          initiatePropagation(d);
+        });
 
       }
 
@@ -265,20 +279,6 @@
         });
       }
 
-      node.each(function (d) {
-        const nodeGroup = d3.select(this);
-        drawPie(nodeGroup, d.data.receivedColors);
-      });
-
-      node
-        .on("mouseover", function (event, d) {
-          // Show all colors in the tooltip
-          const colorInfo = d.data.receivedColors.join(", ");
-          d3.select(this).append("title").text(colorInfo);
-        })
-        .on("click", function (event, d) {
-          initiatePropagation(d);
-        });
 
       // Function to animate a message along a link
       async function animateMessage(source, target, colors) {
