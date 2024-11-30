@@ -254,13 +254,7 @@
         // Add new color to global tracking and keep only most recent MAX_COLORS
         globalColors.push(newColor);
         if (globalColors.length > MAX_COLORS) {
-            const removedColor = globalColors.shift(); // Remove oldest color
-            // Remove old colors from all nodes, keeping only MAX_COLORS most recent
-            root.descendants().forEach(node => {
-                node.data.receivedColors = node.data.receivedColors
-                    .filter(c => globalColors.includes(c))
-                    .slice(-MAX_COLORS);
-            });
+            globalColors.shift(); // Remove oldest color from tracking, but don't force-remove from nodes
         }
         
         // Add the new color to the clicked node
