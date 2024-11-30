@@ -268,7 +268,7 @@
           // Animate the message first
           await messageGroup
             .transition()
-            .duration(1000)
+            .duration(500)
             .attr("transform", `translate(${target.x},${target.y})`)
             .remove()
             .end();
@@ -405,7 +405,7 @@
           }
           
           // Add a small delay between iterations
-          await new Promise(resolve => setTimeout(resolve, 50));
+          await new Promise(resolve => setTimeout(resolve, 25));
           
           iteration++;
         }
