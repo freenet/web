@@ -163,9 +163,9 @@
 
       // Function to animate a message along a link
       async function animateMessage(source, target, colors) {
-        // Skip if there's already an animation to this target
-        const targetKey = `node-${target.data.id}`;
-        if (animationQueue.get(targetKey)) {
+        // Create a unique key for this specific animation
+        const animationKey = `${source.data.id}-${target.data.id}`;
+        if (animationQueue.get(animationKey)) {
           return;
         }
 
@@ -173,8 +173,8 @@
         const validColors = colors.filter(color => color !== undefined);
         if (validColors.length === 0) return;
 
-        // Mark animation as in progress
-        animationQueue.set(targetKey, true);
+        // Mark this specific animation as in progress
+        animationQueue.set(animationKey, true);
 
         try {
           // For animation, show the 3 most recent valid colors from the source node
@@ -216,7 +216,7 @@
           await checkAndPropagate(target);
         } finally {
           // Clear animation flag when done
-          animationQueue.delete(targetKey);
+          animationQueue.delete(animationKey);
         }
       }
 
@@ -293,10 +293,12 @@
           // Only propagate if there are new colors to send
           if (sourceToTargetColors.length > 0) {
             await animateMessage(node, neighbor, sourceToTargetColors);
+            // Continue propagation from the neighbor node
+            await checkAndPropagate(neighbor);
           }
         });
 
-        // Wait for all propagations to complete
+        // Process all propagations concurrently
         await Promise.all(propagationPromises);
       }
     </script>
