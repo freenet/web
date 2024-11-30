@@ -93,7 +93,7 @@
       const width = Math.min(window.innerWidth - 40, 1200);
       const height = Math.min(window.innerHeight - 200, 800);
 
-      const root = d3
+      let root = d3
         .stratify()
         .id((d) => d.id)
         .parentId((d) => {
