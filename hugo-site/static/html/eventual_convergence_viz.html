@@ -105,8 +105,9 @@
         return { nodes, links };
       }
 
-      let randomTreeData = generateRandomTree();
+      let randomTreeData;
       let svg;
+      let root;
       
       function calculateOptimalParameters(containerWidth, containerHeight) {
         const availableArea = containerWidth * containerHeight;
@@ -159,19 +160,11 @@
         .value(1) // Each segment has equal weight
         .sort(null); // Do not sort, keep original order
 
-      let root = d3
-        .stratify()
-        .id((d) => d.id)
-        .parentId((d) => {
-          const link = randomTreeData.links.find((link) => link.target.id === d.id);
-          return link ? link.source.id : null;
-        })(randomTreeData.nodes);
-
+      // Initialize tree layout
       const treeLayout = d3.tree().nodeSize([
         window.innerWidth < 768 ? 100 : 60,  // Wider spacing on mobile
         window.innerWidth < 768 ? 140 : 100  // More vertical space on mobile
       ]); 
-      treeLayout(root);
 
       function handleResize() {
         ({ width, height } = getContainerDimensions());
@@ -215,6 +208,11 @@
       function initializeVisualization() {
         // Remove existing SVG if it exists
         d3.select("svg").remove();
+        
+        // Generate new tree data with current parameters
+        const { width, height } = getContainerDimensions();
+        const params = calculateOptimalParameters(width, height);
+        randomTreeData = generateRandomTree(params.nodeCount);
         
         // Create hierarchy from randomTreeData
         root = d3
