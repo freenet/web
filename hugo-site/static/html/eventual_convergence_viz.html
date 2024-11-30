@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" />
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
-      let globalSequenceCounter = 0;
-      const colorSequenceMap = new Map();
       const animationQueue = new Map(); // Track ongoing animations per node
       let lastColorIndex = -1;
+      const globalColors = []; // Track colors in order of introduction to network
+      const MAX_COLORS = 6;
     </script>
     <style>
       .link {
@@ -201,14 +201,10 @@
             .remove()
             .end();
 
-          // Add colors to target after animation completes, maintaining 6 color limit
+          // Add colors to target after animation completes
           validColors.forEach(color => {
             if (!target.data.receivedColors.includes(color)) {
               target.data.receivedColors.push(color);
-              if (target.data.receivedColors.length > 6) {
-                target.data.receivedColors.sort((a, b) => colorSequenceMap.get(b) - colorSequenceMap.get(a));
-                target.data.receivedColors = target.data.receivedColors.slice(0, 6);
-              }
             }
           });
           updateNodeColors(target);
@@ -246,15 +242,19 @@
         lastColorIndex = (lastColorIndex + 1) % 3;
         const distinctColors = ["#4a90e2", "#ff7f50", "#32cd32"];
         const newColor = distinctColors[lastColorIndex];
-        globalSequenceCounter += 1;
-        colorSequenceMap.set(newColor, globalSequenceCounter);
 
-        // Add the new color to the clicked node's history, keeping only the 6 most recent colors
-        startNode.data.receivedColors.push(newColor);
-        if (startNode.data.receivedColors.length > 6) {
-          startNode.data.receivedColors.sort((a, b) => colorSequenceMap.get(b) - colorSequenceMap.get(a));
-          startNode.data.receivedColors = startNode.data.receivedColors.slice(0, 6);
+        // Add new color to global tracking
+        globalColors.push(newColor);
+        if (globalColors.length > MAX_COLORS) {
+            const removedColor = globalColors.shift(); // Remove oldest color
+            // Remove this color from all nodes
+            root.descendants().forEach(node => {
+                node.data.receivedColors = node.data.receivedColors.filter(c => c !== removedColor);
+            });
         }
+        
+        // Add the new color to the clicked node
+        startNode.data.receivedColors.push(newColor);
         
         // Update the clicked node's colors and start propagation
         updateNodeColors(startNode);
