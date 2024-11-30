@@ -84,7 +84,7 @@
     </section>
     <script>
       // Generate a random tree-like structure
-      function generateRandomTree(numNodes = window.innerWidth < 768 ? 40 : 60) {
+      function generateRandomTree(numNodes = window.innerWidth < 768 ? 15 : 60) {
         const nodes = Array.from({ length: numNodes }, (_, i) => ({
           id: i,
           color: COLOR_PALETTE[0],
@@ -245,7 +245,7 @@
         globalColors.push(COLOR_PALETTE[0]);
         
         // Generate new tree data
-        randomTreeData = generateRandomTree(80);
+        randomTreeData = generateRandomTree();
         
         // Create new root
         root = d3
