@@ -43,9 +43,16 @@
       svg {
         display: block;
         margin: 0 auto;
-        max-width: 100%;
-        height: auto;
+        width: 100%;
+        height: 100%;
+        min-height: 600px;
         overflow: hidden;
+      }
+      .visualization-container {
+        width: 100%;
+        height: 100vh;
+        min-height: 600px;
+        position: relative;
       }
       @media (max-width: 768px) {
         svg {
@@ -124,7 +131,7 @@
           return link ? link.source.id : null;
         })(randomTreeData.nodes);
 
-      const treeLayout = d3.tree().size([width * 0.9 / mobileScale, height * 1.3 / mobileScale]);
+      const treeLayout = d3.tree().nodeSize([60, 100]); // Use fixed node sizing instead of container-relative
       treeLayout(root);
 
       function handleResize() {
@@ -141,14 +148,31 @@
         // Remove existing SVG if it exists
         d3.select("svg").remove();
         
+        // Calculate tree bounds first
+        const root = d3.hierarchy(treeData);
+        treeLayout(root);
+        
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        root.each(d => {
+          minX = Math.min(minX, d.x);
+          maxX = Math.max(maxX, d.x);
+          minY = Math.min(minY, d.y);
+          maxY = Math.max(maxY, d.y);
+        });
+        
+        // Add padding
+        const padding = 40;
+        const viewBoxWidth = maxX - minX + padding * 2;
+        const viewBoxHeight = maxY - minY + padding * 2;
+        
         svg = d3
         .select("body")
         .append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("viewBox", `${-width/2} ${-height/4} ${width * 1.4} ${height * 1.5}`)
-        .append("g")
-        .attr("transform", `translate(${width/6}, 20) scale(${mobileScale})`);
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .attr("preserveAspectRatio", "xMidYMid meet")
+        .attr("viewBox", `${minX - padding} ${minY - padding} ${viewBoxWidth} ${viewBoxHeight}`)
+        .append("g");
 
       // Draw links
       const link = svg
