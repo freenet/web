@@ -72,8 +72,8 @@
       </div>
     </section>
     <script>
-      // Generate a random tree-like structure with 40 nodes
-      function generateRandomTree(numNodes = 60) {
+      // Generate a random tree-like structure
+      function generateRandomTree(numNodes = window.innerWidth < 768 ? 40 : 60) {
         const nodes = Array.from({ length: numNodes }, (_, i) => ({
           id: i,
           color: COLOR_PALETTE[0],
@@ -107,7 +107,7 @@
       }
       
       let { width, height } = getContainerDimensions();
-      const mobileScale = width < 768 ? 0.8 : 1;
+      const mobileScale = width < 768 ? 0.6 : 1;
 
       const arcGenerator = d3.arc().innerRadius(0).outerRadius(15);
       const messageArcGenerator = d3.arc().innerRadius(0).outerRadius(7);
@@ -146,7 +146,7 @@
         .append("svg")
         .attr("width", width)
         .attr("height", height)
-        .attr("viewBox", `${-width/3} 0 ${width * 1.66} ${height}`)
+        .attr("viewBox", `${-width/2} 0 ${width * 2} ${height}`)
         .append("g")
         .attr("transform", `translate(0, 20) scale(${mobileScale})`);
 
