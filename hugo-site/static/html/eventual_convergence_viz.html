@@ -290,31 +290,39 @@
           let hasUpdates = false;
           const nodePairs = getAllConnectedPairs();
           
-          // Process pairs sequentially to avoid animation conflicts
-          for (const [nodeA, nodeB] of nodePairs) {
+          // Group pairs by source node for parallel processing
+          const pairsBySource = new Map();
+          nodePairs.forEach(([nodeA, nodeB]) => {
+            if (!pairsBySource.has(nodeA)) pairsBySource.set(nodeA, []);
+            if (!pairsBySource.has(nodeB)) pairsBySource.set(nodeB, []);
+            pairsBySource.get(nodeA).push(nodeB);
+            pairsBySource.get(nodeB).push(nodeA);
+          });
+          
+          // Process all outbound connections from each node in parallel
+          const propagationPromises = [];
+          
+          for (const [sourceNode, targetNodes] of pairsBySource) {
             // Clean up undefined colors
-            nodeA.data.receivedColors = nodeA.data.receivedColors.filter(color => color !== undefined);
-            nodeB.data.receivedColors = nodeB.data.receivedColors.filter(color => color !== undefined);
+            sourceNode.data.receivedColors = sourceNode.data.receivedColors.filter(color => color !== undefined);
             
-            // Check colors A -> B
-            const colorsAtoB = nodeA.data.receivedColors.filter(
-              color => !nodeB.data.receivedColors.includes(color)
-            );
-            
-            // Check colors B -> A
-            const colorsBtoA = nodeB.data.receivedColors.filter(
-              color => !nodeA.data.receivedColors.includes(color)
-            );
-            
-            if (colorsAtoB.length > 0) {
-              hasUpdates = true;
-              await animateMessage(nodeA, nodeB, colorsAtoB);
+            for (const targetNode of targetNodes) {
+              targetNode.data.receivedColors = targetNode.data.receivedColors.filter(color => color !== undefined);
+              
+              const colorsToPropagate = sourceNode.data.receivedColors.filter(
+                color => !targetNode.data.receivedColors.includes(color)
+              );
+              
+              if (colorsToPropagate.length > 0) {
+                hasUpdates = true;
+                propagationPromises.push(animateMessage(sourceNode, targetNode, colorsToPropagate));
+              }
             }
-            
-            if (colorsBtoA.length > 0) {
-              hasUpdates = true;
-              await animateMessage(nodeB, nodeA, colorsBtoA);
-            }
+          }
+          
+          // Wait for all parallel propagations to complete
+          if (propagationPromises.length > 0) {
+            await Promise.all(propagationPromises);
           }
           
           // If no updates were needed, we're done
