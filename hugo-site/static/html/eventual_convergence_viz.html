@@ -23,6 +23,17 @@
       .message {
         r: 5;
       }
+      svg {
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+        height: auto;
+      }
+      .container {
+        padding: 1rem;
+        max-width: 100%;
+        overflow-x: hidden;
+      }
     </style>
   </head>
   <body>
@@ -60,8 +71,8 @@
 
       let randomTreeData = generateRandomTree(80);
 
-      const width = 1200;
-      const height = 1000;
+      const width = Math.min(window.innerWidth - 40, 1200);
+      const height = Math.min(window.innerHeight - 200, 800);
 
       const root = d3
         .stratify()
