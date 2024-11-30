@@ -97,7 +97,7 @@
       let randomTreeData = generateRandomTree(60);
       let svg;
       
-      const width = Math.min(window.innerWidth - 40, 1200);
+      const width = Math.min(window.innerWidth - 40, 1600);
       const height = Math.min(window.innerHeight - 100, 800);
       const mobileScale = window.innerWidth < 768 ? 0.8 : 1;
 
@@ -129,7 +129,7 @@
         .append("svg")
         .attr("width", width)
         .attr("height", height)
-        .attr("viewBox", `${-width/4} 0 ${width * 1.5} ${height}`)
+        .attr("viewBox", `${-width/3} 0 ${width * 1.66} ${height}`)
         .append("g")
         .attr("transform", `translate(0, 40) scale(${mobileScale})`);
 
