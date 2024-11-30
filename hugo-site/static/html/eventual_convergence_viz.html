@@ -10,7 +10,9 @@
       const animationQueue = new Map(); // Track ongoing animations per node
       let lastColorIndex = -1;
       const globalColors = []; // Track colors in order of introduction to network
-      const MAX_COLORS = 6;
+      const MAX_COLORS = 3; // Only show 3 most recent colors per node
+      // Palette of 6 visually distinct colors that work well together
+      const COLOR_PALETTE = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEEAD", "#D4A5A5"];
     </script>
     <style>
       .link {
@@ -236,18 +238,19 @@
         // Clean up any undefined colors first
         startNode.data.receivedColors = startNode.data.receivedColors.filter(color => color !== undefined);
         
-        // Define distinct colors and rotate through them sequentially
-        const distinctColors = ["#4a90e2", "#ff7f50", "#32cd32", "#9370db", "#ff69b4", "#ffd700"];
-        lastColorIndex = (lastColorIndex + 1) % distinctColors.length;
-        const newColor = distinctColors[lastColorIndex];
+        // Rotate through the color palette sequentially
+        lastColorIndex = (lastColorIndex + 1) % COLOR_PALETTE.length;
+        const newColor = COLOR_PALETTE[lastColorIndex];
 
-        // Add new color to global tracking
+        // Add new color to global tracking and keep only most recent MAX_COLORS
         globalColors.push(newColor);
         if (globalColors.length > MAX_COLORS) {
             const removedColor = globalColors.shift(); // Remove oldest color
-            // Remove this color from all nodes
+            // Remove old colors from all nodes, keeping only MAX_COLORS most recent
             root.descendants().forEach(node => {
-                node.data.receivedColors = node.data.receivedColors.filter(c => c !== removedColor);
+                node.data.receivedColors = node.data.receivedColors
+                    .filter(c => globalColors.includes(c))
+                    .slice(-MAX_COLORS);
             });
         }
         
