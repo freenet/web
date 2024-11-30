@@ -124,7 +124,7 @@
           return link ? link.source.id : null;
         })(randomTreeData.nodes);
 
-      const treeLayout = d3.tree().size([width / mobileScale, (height - 200) / mobileScale]);
+      const treeLayout = d3.tree().size([width / mobileScale, (height - 100) / mobileScale]);
       treeLayout(root);
 
       function handleResize() {
@@ -148,7 +148,7 @@
         .attr("height", height)
         .attr("viewBox", `${-width/3} 0 ${width * 1.66} ${height}`)
         .append("g")
-        .attr("transform", `translate(0, 40) scale(${mobileScale})`);
+        .attr("transform", `translate(0, 20) scale(${mobileScale})`);
 
       // Draw links
       const link = svg
