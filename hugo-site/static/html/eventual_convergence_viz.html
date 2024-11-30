@@ -198,22 +198,21 @@
               .attr("stroke-width", 0.5);
           });
 
+          // Add colors to target before animation
+          validColors.forEach(color => {
+            if (!target.data.receivedColors.includes(color)) {
+              target.data.receivedColors.push(color);
+            }
+          });
+          updateNodeColors(target);
+
+          // Then animate the message
           await messageGroup
             .transition()
             .duration(1000)
             .attr("transform", `translate(${target.x},${target.y})`)
             .remove()
             .end();
-
-          // Add only new valid colors to the target node's history
-          validColors.forEach(color => {
-            if (!target.data.receivedColors.includes(color)) {
-              target.data.receivedColors.push(color);
-            }
-          });
-          
-          updateNodeColors(target);
-          await checkAndPropagate(target);
         } finally {
           // Clear animation flag when done
           animationQueue.delete(animationKey);
