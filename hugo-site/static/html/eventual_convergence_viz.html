@@ -45,6 +45,13 @@
         margin: 0 auto;
         max-width: 100%;
         height: auto;
+        overflow: visible;
+      }
+      @media (max-width: 768px) {
+        svg {
+          transform: scale(0.8);
+          transform-origin: center top;
+        }
       }
       .container {
         padding: 1rem;
@@ -92,6 +99,7 @@
       
       const width = Math.min(window.innerWidth - 40, 1200);
       const height = Math.min(window.innerHeight - 200, 800);
+      const mobileScale = window.innerWidth < 768 ? 0.6 : 1;
 
       const arcGenerator = d3.arc().innerRadius(0).outerRadius(10);
       const messageArcGenerator = d3.arc().innerRadius(0).outerRadius(5);
@@ -108,7 +116,7 @@
           return link ? link.source.id : null;
         })(randomTreeData.nodes);
 
-      const treeLayout = d3.tree().size([width, height - 200]);
+      const treeLayout = d3.tree().size([width / mobileScale, (height - 200) / mobileScale]);
       treeLayout(root);
 
       // Initialize visualization
@@ -121,8 +129,9 @@
         .append("svg")
         .attr("width", width)
         .attr("height", height)
+        .attr("viewBox", `${-width/4} 0 ${width * 1.5} ${height}`)
         .append("g")
-        .attr("transform", "translate(0, 100)");
+        .attr("transform", `translate(0, 100) scale(${mobileScale})`);
 
       // Draw links
       const link = svg
