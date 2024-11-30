@@ -134,9 +134,19 @@
         .sort(null); // Do not sort, keep original order
 
       function drawPie(nodeGroup, allColors) {
-        // Only show the most recent MAX_COLORS from the global tracking
-        const visibleColors = allColors.filter(color => globalColors.includes(color));
-        const displayColors = visibleColors.slice(-MAX_COLORS);
+        // For the initial color and non-global colors, show them all
+        let displayColors;
+        if (allColors.length === 1 && allColors[0] === "#87cefa") {
+          displayColors = allColors;
+        } else {
+          // For propagated colors, show only the most recent MAX_COLORS from global tracking
+          const visibleColors = allColors.filter(color => globalColors.includes(color));
+          displayColors = visibleColors.slice(-MAX_COLORS);
+          // If no colors would be shown, keep the node's existing colors
+          if (displayColors.length === 0) {
+            displayColors = allColors;
+          }
+        }
         
         const arcs = pieGenerator(displayColors);
         nodeGroup.selectAll("path").remove(); // Clear existing paths before drawing
