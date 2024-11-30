@@ -161,12 +161,12 @@
 
       // Function to animate a message along a link
       function animateMessage(source, target, colors) {
-        // Sort colors by sequence number for the message animation
-        const recentColors = [...colors].sort((a, b) => 
-          colorSequenceMap.get(b) - colorSequenceMap.get(a)
-        ).slice(0, 3); // Show only 3 most recent colors in animation
+        // For animation, show the 3 most recent colors from the source node
+        const sourceRecentColors = [...source.data.receivedColors]
+          .sort((a, b) => colorSequenceMap.get(b) - colorSequenceMap.get(a))
+          .slice(0, 3);
 
-        const arcs = pieGenerator(recentColors);
+        const arcs = pieGenerator(sourceRecentColors);
         const messageGroup = svg
           .append("g")
           .attr("class", "message")
@@ -176,7 +176,7 @@
           messageGroup
             .append("path")
             .attr("d", messageArcGenerator(arc))
-            .attr("fill", recentColors[i])
+            .attr("fill", sourceRecentColors[i])
             .attr("stroke", "#4682b4")
             .attr("stroke-width", 0.5);
         });
@@ -188,8 +188,12 @@
           .remove()
           .end()
           .then(() => {
-            // Add ALL colors to the target node's history
-            target.data.receivedColors.push(...colors);
+            // Add only new colors to the target node's history
+            colors.forEach(color => {
+              if (!target.data.receivedColors.includes(color)) {
+                target.data.receivedColors.push(color);
+              }
+            });
             updateNodeColors(target);
             setTimeout(() => checkAndPropagate(target), 10);
           });
