@@ -48,7 +48,7 @@ routing. In this context, "greedy" routing refers to a process where each node f
 the neighbor that appears to be closest to the final destination, based only on locally available
 information:
 
-{{< small-world-routing >}}
+{{< small-world/routing >}}
 
 In this animation, you can observe messages navigating the network using only local decisions at
 each step. While this approach does not always yield the mathematically shortest path, it is
@@ -62,7 +62,7 @@ The benefits of small world networks are most apparent when we compare their rou
 with that of purely random networks. The animation below illustrates how both network types route
 messages between random pairs of nodes:
 
-{{< small-world-comparison >}}
+{{< small-world/comparison >}}
 
 The small world network is shown on the left, while the random network is on the right. Notice how
 the small world network consistently achieves higher success rates in delivering messages. This is
@@ -87,7 +87,7 @@ length remains manageable.
 
 The next animation shows the average path length as the network grows.
 
-{{< small-world-scale >}}
+{{< small-world/scale >}}
 
 In small world networks, the average path length grows logarithmically with the number of nodes,
 which is far more efficient than the linear growth typical of regular networks. This means that even
