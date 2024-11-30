@@ -7,12 +7,25 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" />
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
-      // Palette of 6 visually distinct colors that work well together
-      const COLOR_PALETTE = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEEAD", "#D4A5A5"];
+      // Palette of 12 visually distinct colors that work well together
+      const COLOR_PALETTE = [
+        "#FF6B6B", // Coral Red
+        "#4ECDC4", // Turquoise
+        "#45B7D1", // Sky Blue
+        "#96CEB4", // Sage Green
+        "#FFEEAD", // Soft Yellow
+        "#9B59B6", // Purple
+        "#3498DB", // Blue
+        "#E67E22", // Orange
+        "#2ECC71", // Emerald Green
+        "#F1C40F", // Yellow
+        "#E74C3C", // Red
+        "#1ABC9C"  // Teal
+      ];
       const animationQueue = new Map(); // Track ongoing animations per node
       let lastColorIndex = 0; // Start at 0 since we're using the first color for initialization
       const globalColors = [COLOR_PALETTE[0]]; // Initialize with first color
-      const MAX_COLORS = 3; // Only show 3 most recent colors per node
+      const MAX_COLORS = 5; // Show 5 most recent colors per node
     </script>
     <style>
       .link {
