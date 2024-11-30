@@ -201,10 +201,14 @@
             .remove()
             .end();
 
-          // Add colors to target after animation completes
+          // Add colors to target after animation completes, maintaining 6 color limit
           validColors.forEach(color => {
             if (!target.data.receivedColors.includes(color)) {
               target.data.receivedColors.push(color);
+              if (target.data.receivedColors.length > 6) {
+                target.data.receivedColors.sort((a, b) => colorSequenceMap.get(b) - colorSequenceMap.get(a));
+                target.data.receivedColors = target.data.receivedColors.slice(0, 6);
+              }
             }
           });
           updateNodeColors(target);
@@ -245,8 +249,12 @@
         globalSequenceCounter += 1;
         colorSequenceMap.set(newColor, globalSequenceCounter);
 
-        // Add the new color to the clicked node's full history
+        // Add the new color to the clicked node's history, keeping only the 6 most recent colors
         startNode.data.receivedColors.push(newColor);
+        if (startNode.data.receivedColors.length > 6) {
+          startNode.data.receivedColors.sort((a, b) => colorSequenceMap.get(b) - colorSequenceMap.get(a));
+          startNode.data.receivedColors = startNode.data.receivedColors.slice(0, 6);
+        }
         
         // Update the clicked node's colors and start propagation
         updateNodeColors(startNode);
