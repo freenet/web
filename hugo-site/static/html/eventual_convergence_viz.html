@@ -262,11 +262,7 @@
       // Function to update node colors visually
       function updateNodeColors(node) {
         const nodeGroup = d3.select(`#node-${node.data.id}`);
-        // Sort colors by sequence number and take most recent 3
-        const recentColors = [...node.data.receivedColors].sort((a, b) => 
-          colorSequenceMap.get(b) - colorSequenceMap.get(a)
-        ).slice(0, 3);
-        drawPie(nodeGroup, recentColors);
+        drawPie(nodeGroup, node.data.receivedColors);
       }
 
       // Function to get all connected node pairs in the network
