@@ -62,7 +62,7 @@
   </head>
   <body>
     <section class="section py-4">
-      <div class="container">
+      <div class="container visualization-container" style="width: 100%; height: 100%;">
         <h1 class="title is-4">Freenet Eventual Convergence Simulation</h1>
         <p class="subtitle is-6 mb-2">
           Click nodes to initiate an update and see how changes propagate through the
@@ -97,9 +97,17 @@
       let randomTreeData = generateRandomTree(60);
       let svg;
       
-      const width = Math.min(window.innerWidth - 40, 1600);
-      const height = Math.min(window.innerHeight - 100, 800);
-      const mobileScale = window.innerWidth < 768 ? 0.8 : 1;
+      function getContainerDimensions() {
+        const container = document.querySelector('.visualization-container');
+        const rect = container.getBoundingClientRect();
+        return {
+          width: Math.max(rect.width - 40, 400),
+          height: Math.max(rect.height - 40, 400)
+        };
+      }
+      
+      let { width, height } = getContainerDimensions();
+      const mobileScale = width < 768 ? 0.8 : 1;
 
       const arcGenerator = d3.arc().innerRadius(0).outerRadius(15);
       const messageArcGenerator = d3.arc().innerRadius(0).outerRadius(7);
@@ -118,6 +126,15 @@
 
       const treeLayout = d3.tree().size([width / mobileScale, (height - 200) / mobileScale]);
       treeLayout(root);
+
+      function handleResize() {
+        ({ width, height } = getContainerDimensions());
+        initializeVisualization();
+      }
+
+      // Add resize listener
+      const resizeObserver = new ResizeObserver(handleResize);
+      resizeObserver.observe(document.querySelector('.visualization-container'));
 
       // Initialize visualization
       function initializeVisualization() {
