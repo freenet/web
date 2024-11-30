@@ -49,7 +49,7 @@
       }
       @media (max-width: 768px) {
         svg {
-          transform: scale(0.8);
+          transform: scale(0.9);
           transform-origin: center top;
         }
       }
@@ -99,10 +99,10 @@
       
       const width = Math.min(window.innerWidth - 40, 1200);
       const height = Math.min(window.innerHeight - 100, 800);
-      const mobileScale = window.innerWidth < 768 ? 0.6 : 1;
+      const mobileScale = window.innerWidth < 768 ? 0.8 : 1;
 
-      const arcGenerator = d3.arc().innerRadius(0).outerRadius(10);
-      const messageArcGenerator = d3.arc().innerRadius(0).outerRadius(5);
+      const arcGenerator = d3.arc().innerRadius(0).outerRadius(15);
+      const messageArcGenerator = d3.arc().innerRadius(0).outerRadius(7);
       const pieGenerator = d3
         .pie()
         .value(1) // Each segment has equal weight
