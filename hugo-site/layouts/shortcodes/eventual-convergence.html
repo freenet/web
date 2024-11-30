@@ -26,36 +26,51 @@
     .visualization-container {
       width: 100%;
       height: auto;
-      min-height: 400px;
+      min-height: 500px;
       position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 1rem;
+      padding: 2rem 1rem;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
     }
     @media (max-width: 768px) {
+      .visualization-container {
+        padding: 1rem 0.5rem;
+        min-height: 450px;
+      }
       svg {
-        transform: scale(0.9);
+        transform: scale(0.85);
         transform-origin: center top;
+      }
+      .title.is-4 {
+        font-size: 1.2rem;
+      }
+      .subtitle.is-6 {
+        font-size: 0.9rem;
       }
     }
     .container {
       padding: 1rem;
       max-width: 100%;
       overflow-x: hidden;
+      margin: 0 auto;
     }
   </style>
 
-  <section class="section py-4">
-    <div class="container visualization-container">
-      <h1 class="title is-4">Freenet Eventual Convergence Simulation</h1>
-      <p class="subtitle is-6 mb-2">
+  <div class="container visualization-container">
+    <div class="content mb-4">
+      <h2 class="title is-4 has-text-centered">Freenet Eventual Convergence Simulation</h2>
+      <p class="subtitle is-6 has-text-centered mb-3">
         Click nodes to initiate an update and see how changes propagate through the
         network.
       </p>
-      <button class="button is-info is-small" onclick="resetVisualization()">Reset Network</button>
+      <div class="has-text-centered">
+        <button class="button is-info is-small" onclick="resetVisualization()">Reset Network</button>
+      </div>
     </div>
-  </section>
+  </div>
 
   <script>
     // Palette of 12 visually distinct colors that work well together
