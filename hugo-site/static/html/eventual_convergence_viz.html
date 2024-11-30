@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eventual Convergence Visualization</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+      let globalSequenceCounter = 0;
+      const colorSequenceMap = new Map();
+    </script>
+    <style>
+      .link {
+        fill: none;
+        stroke: #ccc;
+        stroke-width: 2px;
+      }
+      .node {
+        stroke: #000;
+        stroke-width: 1.5px;
+      }
+      .message {
+        r: 5;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="section">
+      <div class="container">
+        <h1 class="title">Freenet Eventual Convergence Simulation</h1>
+        <p class="subtitle">
+          Click on a node to initiate an update and see how the color propagates through the
+          network.
+        </p>
+      </div>
+    </section>
+    <script>
+      // Generate a random tree-like structure with 40 nodes
+      function generateRandomTree(numNodes) {
+        const nodes = Array.from({ length: numNodes }, (_, i) => ({
+          id: i,
+          color: "#87cefa",
+          receivedColors: ["#87cefa"],
+        }));
+        const links = [];
+
+        // Create a random parent-child relationship to form a tree with up to 5 children per node
+        for (let i = 1; i < numNodes; i++) {
+          const possibleParents = nodes.slice(0, i).filter((parent) => {
+            const childrenCount = links.filter((link) => link.source.id === parent.id).length;
+            return childrenCount < 5;
+          });
+          const parentIndex = Math.floor(Math.random() * possibleParents.length);
+          links.push({ source: possibleParents[parentIndex], target: nodes[i] });
+        }
+
+        return { nodes, links };
+      }
+
+      let randomTreeData = generateRandomTree(80);
+
+      const width = 1200;
+      const height = 1000;
+
+      const root = d3
+        .stratify()
+        .id((d) => d.id)
+        .parentId((d) => {
+          const link = randomTreeData.links.find((link) => link.target.id === d.id);
+          return link ? link.source.id : null;
+        })(randomTreeData.nodes);
+
+      const treeLayout = d3.tree().size([width, height - 200]);
+      treeLayout(root);
+
+      const svg = d3
+        .select("body")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(0, 100)");
+
+      // Draw links
+      const link = svg
+        .selectAll(".link")
+        .data(root.links())
+        .enter()
+        .append("path")
+        .attr("class", "link")
+        .attr(
+          "d",
+          d3
+            .linkVertical()
+            .x((d) => d.x)
+            .y((d) => d.y)
+        )
+        .attr("stroke", "#1e90ff")
+        .attr("stroke-width", 2);
+
+      // Draw nodes as pie charts
+      const node = svg
+        .selectAll(".node")
+        .data(root.descendants())
+        .enter()
+        .append("g")
+        .attr("class", "node")
+        .attr("transform", (d) => `translate(${d.x},${d.y})`)
+        .attr("id", (d) => `node-${d.data.id}`);
+
+      const arcGenerator = d3.arc().innerRadius(0).outerRadius(10);
+
+      const messageArcGenerator = d3.arc().innerRadius(0).outerRadius(5);
+
+      const pieGenerator = d3
+        .pie()
+        .value(1) // Each segment has equal weight
+        .sort(null); // Do not sort, keep original order
+
+      function drawPie(nodeGroup, colors) {
+        const arcs = pieGenerator(colors);
+        nodeGroup.selectAll("path").remove(); // Clear existing paths before drawing
+        arcs.forEach((arc, i) => {
+          nodeGroup
+            .append("path")
+            .attr("d", arcGenerator(arc))
+            .attr("fill", colors[i])
+            .attr("stroke", "#5f9ea0")
+            .attr("stroke-width", 0.5);
+        });
+      }
+
+      node.each(function (d) {
+        const nodeGroup = d3.select(this);
+        drawPie(nodeGroup, d.data.receivedColors);
+      });
+
+      node
+        .on("mouseover", function (event, d) {
+          d3.select(this).append("title").text(d.data.receivedColors.join(", "));
+        })
+        .on("click", function (event, d) {
+          initiatePropagation(d);
+        });
+
+      // Function to animate a message along a link
+      function animateMessage(source, target, colors) {
+        const arcs = pieGenerator(colors);
+        const messageGroup = svg
+          .append("g")
+          .attr("class", "message")
+          .attr("transform", `translate(${source.x},${source.y})`);
+
+        arcs.forEach((arc, i) => {
+          messageGroup
+            .append("path")
+            .attr("d", messageArcGenerator(arc))
+            .attr("fill", colors[i])
+            .attr("stroke", "#4682b4")
+            .attr("stroke-width", 0.5);
+        });
+
+        return messageGroup
+          .transition()
+          .duration(1000)
+          .attr("transform", `translate(${target.x},${target.y})`)
+          .remove()
+          .end()
+          .then(() => {
+            updateNodeColors(target);
+            setTimeout(() => checkAndPropagate(target), 10); // Allow overlapping propagations
+          }); // Return a promise for chaining
+      }
+
+      // Helper function to blend colors
+      function blendColorsList(colors) {
+        // Average the RGB components to ensure order-independent blending
+        let totalR = 0,
+          totalG = 0,
+          totalB = 0;
+        colors.forEach((color) => {
+          const c = d3.color(color);
+          totalR += c.r;
+          totalG += c.g;
+          totalB += c.b;
+        });
+
+        const n = colors.length;
+        return d3
+          .rgb(Math.round(totalR / n), Math.round(totalG / n), Math.round(totalB / n))
+          .toString();
+      }
+
+      // Function to initiate color propagation from a clicked node
+      function initiatePropagation(startNode) {
+        // Determine the new color to add
+        const distinctColors = ["#4a90e2", "#ff7f50", "#32cd32"];
+        const newColor = distinctColors[Math.floor(Math.random() * distinctColors.length)];
+        globalSequenceCounter += 1;
+        colorSequenceMap.set(newColor, globalSequenceCounter);
+
+        // Remove the oldest color globally if there are already 3 colors
+        if (root.descendants().some((d) => d.data.receivedColors.length >= 3)) {
+          let oldestColor = null;
+          let oldestSequence = Infinity;
+
+          // Find the oldest color across all nodes
+          root.descendants().forEach((d) => {
+            d.data.receivedColors.forEach((color) => {
+              if (colorSequenceMap.get(color) < oldestSequence) {
+                oldestColor = color;
+                oldestSequence = colorSequenceMap.get(color);
+              }
+            });
+          });
+
+          // Remove the oldest color from all nodes
+          if (oldestColor) {
+            root.descendants().forEach((d) => {
+              d.data.receivedColors = d.data.receivedColors.filter(
+                (color) => color !== oldestColor
+              );
+            });
+            colorSequenceMap.delete(oldestColor);
+          }
+        }
+
+        // Add the new color to the clicked node
+        if (!startNode.data.receivedColors.includes(newColor)) {
+          startNode.data.receivedColors.push(newColor);
+        }
+
+        // Update the clicked node's colors
+        updateNodeColors(startNode);
+        checkAndPropagate(startNode); // Allow overlapping propagations immediately
+      }
+
+      // Function to update node colors visually
+      function updateNodeColors(node) {
+        const nodeGroup = d3.select(`#node-${node.data.id}`);
+        drawPie(nodeGroup, node.data.receivedColors);
+      }
+
+      // Function to check neighbors and propagate colors if needed
+      function checkAndPropagate(node) {
+        const descendants = node.children || [];
+        const ancestors = node.parent ? [node.parent] : [];
+        const connectedNodes = [...descendants, ...ancestors];
+
+        connectedNodes.forEach((neighbor) => {
+          const sourceNode = node.data;
+          const targetNode = neighbor.data;
+
+          // Determine colors that need to be transferred from source to target
+          const sourceToTargetColors = sourceNode.receivedColors.filter(
+            (color) => !targetNode.receivedColors.includes(color)
+          );
+
+          // Propagate colors from source to target if necessary
+          if (sourceToTargetColors.length > 0) {
+            targetNode.receivedColors.push(...sourceToTargetColors);
+            animateMessage(node, neighbor, sourceToTargetColors);
+          }
+        });
+      }
+    </script>
+    <script>
+      function drawTree() {
+        const treeLayout = d3.tree().size([width, height - 200]);
+        treeLayout(root);
+
+        svg = d3
+          .select("body")
+          .append("svg")
+          .attr("width", width)
+          .attr("height", height)
+          .append("g")
+          .attr("transform", "translate(0, 100)");
+
+        // Draw links
+        const link = svg
+          .selectAll(".link")
+          .data(root.links())
+          .enter()
+          .append("path")
+          .attr("class", "link")
+          .attr(
+            "d",
+            d3
+              .linkVertical()
+              .x((d) => d.x)
+              .y((d) => d.y)
+          )
+          .attr("stroke", "#1e90ff")
+          .attr("stroke-width", 2);
+
+        // Draw nodes as pie charts
+        const node = svg
+          .selectAll(".node")
+          .data(root.descendants())
+          .enter()
+          .append("g")
+          .attr("class", "node")
+          .attr("transform", (d) => `translate(${d.x},${d.y})`)
+          .attr("id", (d) => `node-${d.data.id}`);
+
+        node.each(function (d) {
+          const nodeGroup = d3.select(this);
+          drawPie(nodeGroup, d.data.receivedColors);
+        });
+
+        node
+          .on("mouseover", function (event, d) {
+            d3.select(this).append("title").text(d.data.receivedColors.join(", "));
+          })
+          .on("click", function (event, d) {
+            initiatePropagation(d);
+          });
+      }
+
+      drawTree();
+    </script>
+  </body>
+</html>
