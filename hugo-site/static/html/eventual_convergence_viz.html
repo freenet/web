@@ -289,8 +289,8 @@
         while (iteration < MAX_ITERATIONS) {
           let hasUpdates = false;
           const nodePairs = getAllConnectedPairs();
-          const propagations = [];
           
+          // Process pairs sequentially to avoid animation conflicts
           for (const [nodeA, nodeB] of nodePairs) {
             // Clean up undefined colors
             nodeA.data.receivedColors = nodeA.data.receivedColors.filter(color => color !== undefined);
@@ -308,12 +308,12 @@
             
             if (colorsAtoB.length > 0) {
               hasUpdates = true;
-              propagations.push(animateMessage(nodeA, nodeB, colorsAtoB));
+              await animateMessage(nodeA, nodeB, colorsAtoB);
             }
             
             if (colorsBtoA.length > 0) {
               hasUpdates = true;
-              propagations.push(animateMessage(nodeB, nodeA, colorsBtoA));
+              await animateMessage(nodeB, nodeA, colorsBtoA);
             }
           }
           
@@ -322,12 +322,8 @@
             break;
           }
           
-          // Wait for all propagations in this timestep to complete
-          if (propagations.length > 0) {
-            await Promise.all(propagations);
-            // Add a small delay between iterations to prevent UI freezing
-            await new Promise(resolve => setTimeout(resolve, 50));
-          }
+          // Add a small delay between iterations
+          await new Promise(resolve => setTimeout(resolve, 50));
           
           iteration++;
         }
