@@ -93,6 +93,13 @@
       const width = Math.min(window.innerWidth - 40, 1200);
       const height = Math.min(window.innerHeight - 200, 800);
 
+      const arcGenerator = d3.arc().innerRadius(0).outerRadius(10);
+      const messageArcGenerator = d3.arc().innerRadius(0).outerRadius(5);
+      const pieGenerator = d3
+        .pie()
+        .value(1) // Each segment has equal weight
+        .sort(null); // Do not sort, keep original order
+
       let root = d3
         .stratify()
         .id((d) => d.id)
@@ -188,14 +195,6 @@
         initializeVisualization();
       }
 
-      const arcGenerator = d3.arc().innerRadius(0).outerRadius(10);
-
-      const messageArcGenerator = d3.arc().innerRadius(0).outerRadius(5);
-
-      const pieGenerator = d3
-        .pie()
-        .value(1) // Each segment has equal weight
-        .sort(null); // Do not sort, keep original order
 
       function drawPie(nodeGroup, allColors) {
         let displayColors;
