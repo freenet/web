@@ -134,6 +134,30 @@
         .attr("stroke", "#1e90ff")
         .attr("stroke-width", 2);
 
+      // Draw nodes as pie charts
+      const node = svg
+        .selectAll(".node")
+        .data(root.descendants())
+        .enter()
+        .append("g")
+        .attr("class", "node")
+        .attr("transform", (d) => `translate(${d.x},${d.y})`)
+        .attr("id", (d) => `node-${d.data.id}`);
+
+      node.each(function (d) {
+        const nodeGroup = d3.select(this);
+        drawPie(nodeGroup, d.data.receivedColors);
+      });
+
+      node
+        .on("mouseover", function (event, d) {
+          // Show all colors in the tooltip
+          const colorInfo = d.data.receivedColors.join(", ");
+          d3.select(this).append("title").text(colorInfo);
+        })
+        .on("click", function (event, d) {
+          initiatePropagation(d);
+        });
       }
 
       // Initial visualization
@@ -163,16 +187,6 @@
         // Reinitialize the visualization
         initializeVisualization();
       }
-
-      // Draw nodes as pie charts
-      const node = svg
-        .selectAll(".node")
-        .data(root.descendants())
-        .enter()
-        .append("g")
-        .attr("class", "node")
-        .attr("transform", (d) => `translate(${d.x},${d.y})`)
-        .attr("id", (d) => `node-${d.data.id}`);
 
       const arcGenerator = d3.arc().innerRadius(0).outerRadius(10);
 
