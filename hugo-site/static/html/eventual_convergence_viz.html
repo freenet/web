@@ -269,37 +269,63 @@
         drawPie(nodeGroup, recentColors);
       }
 
-      // Function to check neighbors and propagate colors if needed
-      async function checkAndPropagate(node) {
-        const descendants = node.children || [];
-        const ancestors = node.parent ? [node.parent] : [];
-        const connectedNodes = [...descendants, ...ancestors];
-
-        // Clean up any undefined colors
-        node.data.receivedColors = node.data.receivedColors.filter(color => color !== undefined);
-
-        const propagationPromises = connectedNodes.map(async (neighbor) => {
-          const sourceNode = node.data;
-          const targetNode = neighbor.data;
-
-          // Clean up target's colors
-          targetNode.receivedColors = targetNode.receivedColors.filter(color => color !== undefined);
-
-          // Get all colors from source that target doesn't have
-          const sourceToTargetColors = sourceNode.receivedColors.filter(
-            (color) => !targetNode.receivedColors.includes(color)
-          );
-
-          // Only propagate if there are new colors to send
-          if (sourceToTargetColors.length > 0) {
-            await animateMessage(node, neighbor, sourceToTargetColors);
-            // Continue propagation from the neighbor node
-            await checkAndPropagate(neighbor);
+      // Function to get all connected node pairs in the network
+      function getAllConnectedPairs() {
+        const pairs = [];
+        root.descendants().forEach(node => {
+          if (node.parent) {
+            pairs.push([node, node.parent]);
+          }
+          if (node.children) {
+            node.children.forEach(child => {
+              pairs.push([node, child]);
+            });
           }
         });
+        return pairs;
+      }
 
-        // Process all propagations concurrently
-        await Promise.all(propagationPromises);
+      // Function to check neighbors and propagate colors if needed
+      async function checkAndPropagate(startNode) {
+        let hasUpdates = true;
+        while (hasUpdates) {
+          hasUpdates = false;
+          const nodePairs = getAllConnectedPairs();
+          
+          // Group all needed propagations
+          const propagations = [];
+          
+          for (const [nodeA, nodeB] of nodePairs) {
+            // Clean up undefined colors
+            nodeA.data.receivedColors = nodeA.data.receivedColors.filter(color => color !== undefined);
+            nodeB.data.receivedColors = nodeB.data.receivedColors.filter(color => color !== undefined);
+            
+            // Check colors A -> B
+            const colorsAtoB = nodeA.data.receivedColors.filter(
+              color => !nodeB.data.receivedColors.includes(color)
+            );
+            
+            // Check colors B -> A
+            const colorsBtoA = nodeB.data.receivedColors.filter(
+              color => !nodeA.data.receivedColors.includes(color)
+            );
+            
+            if (colorsAtoB.length > 0) {
+              hasUpdates = true;
+              propagations.push(animateMessage(nodeA, nodeB, colorsAtoB));
+            }
+            
+            if (colorsBtoA.length > 0) {
+              hasUpdates = true;
+              propagations.push(animateMessage(nodeB, nodeA, colorsBtoA));
+            }
+          }
+          
+          // Wait for all propagations in this timestep to complete
+          if (propagations.length > 0) {
+            await Promise.all(propagations);
+          }
+        }
       }
     </script>
     </script>
