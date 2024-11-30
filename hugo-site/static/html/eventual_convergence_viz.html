@@ -53,6 +53,9 @@
         height: 100vh;
         min-height: 600px;
         position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
       @media (max-width: 768px) {
         svg {
@@ -68,8 +71,8 @@
     </style>
   </head>
   <body>
-    <section class="section py-4">
-      <div class="container visualization-container" style="width: 100%; height: 100%;">
+    <section class="section py-4" style="height: 100vh;">
+      <div class="container visualization-container">
         <h1 class="title is-4">Freenet Eventual Convergence Simulation</h1>
         <p class="subtitle is-6 mb-2">
           Click nodes to initiate an update and see how changes propagate through the
@@ -177,8 +180,8 @@
         svg = d3
         .select(".visualization-container")
         .append("svg")
-        .attr("width", "100%")
-        .attr("height", "100%")
+        .attr("width", width)
+        .attr("height", height)
         .attr("preserveAspectRatio", "xMidYMid meet")
         .attr("viewBox", `${minX - padding} ${minY - padding} ${viewBoxWidth} ${viewBoxHeight}`)
         .append("g");
