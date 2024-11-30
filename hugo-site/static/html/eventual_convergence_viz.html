@@ -202,16 +202,21 @@
             .end();
 
           // Add colors to target after animation completes
+          let colorsAdded = false;
           validColors.forEach(color => {
             if (!target.data.receivedColors.includes(color)) {
               target.data.receivedColors.push(color);
+              colorsAdded = true;
             }
           });
-          // Ensure we only keep the MAX_COLORS most recent colors
-          target.data.receivedColors = target.data.receivedColors
-            .filter(c => globalColors.includes(c))
-            .slice(-MAX_COLORS);
-          updateNodeColors(target);
+          
+          if (colorsAdded) {
+            // Ensure we only keep the MAX_COLORS most recent colors
+            target.data.receivedColors = target.data.receivedColors
+              .filter(c => globalColors.includes(c))
+              .slice(-MAX_COLORS);
+            updateNodeColors(target);
+          }
         } finally {
           // Clear animation flag when done
           animationQueue.delete(animationKey);
