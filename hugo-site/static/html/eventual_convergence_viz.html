@@ -236,9 +236,9 @@
         // Clean up any undefined colors first
         startNode.data.receivedColors = startNode.data.receivedColors.filter(color => color !== undefined);
         
-        // Rotate through colors sequentially
-        lastColorIndex = (lastColorIndex + 1) % 3;
-        const distinctColors = ["#4a90e2", "#ff7f50", "#32cd32"];
+        // Define distinct colors and rotate through them sequentially
+        const distinctColors = ["#4a90e2", "#ff7f50", "#32cd32", "#9370db", "#ff69b4", "#ffd700"];
+        lastColorIndex = (lastColorIndex + 1) % distinctColors.length;
         const newColor = distinctColors[lastColorIndex];
 
         // Add new color to global tracking
