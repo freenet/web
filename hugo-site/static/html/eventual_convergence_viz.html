@@ -123,9 +123,11 @@
           60
         );
         
+        // Increase base node size for mobile
+        const baseSizeFactor = containerWidth < 768 ? 0.035 : 0.02;
         const optimalNodeSize = Math.min(
-          Math.max(10, Math.floor(Math.sqrt(availableArea) * 0.02)),
-          30
+          Math.max(15, Math.floor(Math.sqrt(availableArea) * baseSizeFactor)),
+          containerWidth < 768 ? 40 : 30
         );
         
         return {
