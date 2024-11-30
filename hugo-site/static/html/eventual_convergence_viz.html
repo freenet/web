@@ -122,10 +122,10 @@
 
       const arcGenerator = d3.arc()
         .innerRadius(0)
-        .outerRadius(window.innerWidth < 768 ? 10 : 15);  // Slightly smaller nodes on mobile
+        .outerRadius(window.innerWidth < 768 ? 20 : 15);  // Larger nodes on mobile
       const messageArcGenerator = d3.arc()
         .innerRadius(0)
-        .outerRadius(window.innerWidth < 768 ? 5 : 7);   // Smaller messages on mobile
+        .outerRadius(window.innerWidth < 768 ? 10 : 7);   // Larger messages on mobile
       const pieGenerator = d3
         .pie()
         .value(1) // Each segment has equal weight
