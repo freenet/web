@@ -211,10 +211,10 @@
           });
           
           if (colorsAdded) {
-            // Ensure we only keep the MAX_COLORS most recent colors
-            target.data.receivedColors = target.data.receivedColors
-              .filter(c => globalColors.includes(c))
-              .slice(-MAX_COLORS);
+            // Only trim to MAX_COLORS if we exceed it
+            if (target.data.receivedColors.length > MAX_COLORS) {
+              target.data.receivedColors = target.data.receivedColors.slice(-MAX_COLORS);
+            }
             updateNodeColors(target);
           }
         } finally {
