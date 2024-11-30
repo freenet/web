@@ -84,7 +84,7 @@
     </section>
     <script>
       // Generate a random tree-like structure
-      function generateRandomTree(numNodes = window.innerWidth < 768 ? 20 : 60) {
+      function generateRandomTree(numNodes) {
         const nodes = Array.from({ length: numNodes }, (_, i) => ({
           id: i,
           color: COLOR_PALETTE[0],
@@ -108,24 +108,52 @@
       let randomTreeData = generateRandomTree();
       let svg;
       
+      function calculateOptimalParameters(containerWidth, containerHeight) {
+        const availableArea = containerWidth * containerHeight;
+        const minSpacingHorizontal = 40;
+        const minSpacingVertical = 60;
+        const densityFactor = 0.8;
+        
+        const estimatedNodesHorizontal = Math.floor((containerWidth * densityFactor) / minSpacingHorizontal);
+        const estimatedNodesVertical = Math.floor((containerHeight * densityFactor) / minSpacingVertical);
+        
+        const optimalNodes = Math.min(
+          Math.max(10, Math.floor(estimatedNodesHorizontal * estimatedNodesVertical * 0.4)),
+          60
+        );
+        
+        const optimalNodeSize = Math.min(
+          Math.max(10, Math.floor(Math.sqrt(availableArea) * 0.02)),
+          30
+        );
+        
+        return {
+          nodeCount: optimalNodes,
+          nodeSize: optimalNodeSize,
+          messageSize: optimalNodeSize * 0.5,
+          horizontalSpacing: containerWidth < 768 ? 100 : 60,
+          verticalSpacing: containerWidth < 768 ? 140 : 100
+        };
+      }
+
       function getContainerDimensions() {
         const container = document.querySelector('.visualization-container');
         const rect = container.getBoundingClientRect();
         return {
           width: Math.max(rect.width - 40, 400),
-          height: Math.max(500, rect.width * 0.6) // Height proportional to width but with minimum
+          height: Math.max(500, rect.width * 0.6)
         };
       }
       
       let { width, height } = getContainerDimensions();
-      const mobileScale = width < 768 ? 0.9 : 1;
+      const params = calculateOptimalParameters(width, height);
 
       const arcGenerator = d3.arc()
         .innerRadius(0)
-        .outerRadius(window.innerWidth < 768 ? 20 : 15);  // Larger nodes on mobile
+        .outerRadius(params.nodeSize);
       const messageArcGenerator = d3.arc()
         .innerRadius(0)
-        .outerRadius(window.innerWidth < 768 ? 10 : 7);   // Larger messages on mobile
+        .outerRadius(params.messageSize);
       const pieGenerator = d3
         .pie()
         .value(1) // Each segment has equal weight
@@ -147,12 +175,41 @@
 
       function handleResize() {
         ({ width, height } = getContainerDimensions());
+        const params = calculateOptimalParameters(width, height);
+        
+        // Update generators with new sizes
+        arcGenerator.outerRadius(params.nodeSize);
+        messageArcGenerator.outerRadius(params.messageSize);
+        
+        // Update tree layout
+        treeLayout.nodeSize([params.horizontalSpacing, params.verticalSpacing]);
+        
+        // Generate new tree with optimal node count
+        randomTreeData = generateRandomTree(params.nodeCount);
+        
+        // Reinitialize visualization
         initializeVisualization();
       }
 
-      // Add resize listener
-      const resizeObserver = new ResizeObserver(handleResize);
+      // Add resize and orientation change listeners
+      const resizeObserver = new ResizeObserver(debounce(handleResize, 250));
       resizeObserver.observe(document.querySelector('.visualization-container'));
+      window.addEventListener('orientationchange', () => {
+        setTimeout(handleResize, 100); // Small delay to allow orientation change to complete
+      });
+
+      // Debounce helper to prevent too frequent updates
+      function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
+      }
 
       // Initialize visualization
       function initializeVisualization() {
