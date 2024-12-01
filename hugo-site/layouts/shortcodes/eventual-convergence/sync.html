@@ -9,13 +9,13 @@
       display: flex;
       justify-content: space-around;
       align-items: flex-start;
-      gap: 8rem;
+      gap: 4rem;
       margin: 2rem;
-      min-height: 400px;
+      min-height: 200px;
     }
     .peer {
       flex: 1;
-      max-width: 300px;
+      max-width: 150px;
       padding: 1rem;
       border: 2px solid #ccc;
       border-radius: 8px;
@@ -42,7 +42,7 @@
       position: absolute;
       background: #fff;
       padding: 1rem;
-      min-width: 120px;
+      min-width: 80px;
       font-family: monospace;
       opacity: 0;
       transition: all 0.5s ease-in-out;
@@ -271,7 +271,10 @@
           peerState[peerId].icons.forEach((icon, iconIdx) => {
             setTimeout(() => {
               const li = document.createElement('li');
-              li.textContent = icon.name;
+              const iconElement = document.createElement('i');
+              iconElement.className = icon.class;
+              iconElement.style.fontSize = '1.2rem';
+              li.appendChild(iconElement);
               li.style.opacity = '0';
               li.style.backgroundColor = idx === 0 ? '#f5f9ff' : '#f0fffc';
               summaryList.appendChild(li);
