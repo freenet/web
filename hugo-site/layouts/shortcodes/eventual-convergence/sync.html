@@ -339,9 +339,12 @@
         const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
         
-        // Calculate center points
+        // Calculate center points and summary widths
         const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
         const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
+        
+        const summary1Width = summary1.getBoundingClientRect().width;
+        const summary2Width = summary2.getBoundingClientRect().width;
         
         // Animate summaries moving to opposite peers
         summary1.style.transition = summary2.style.transition = 'all 0.5s ease-in-out';
