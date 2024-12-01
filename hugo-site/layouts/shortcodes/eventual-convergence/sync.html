@@ -262,7 +262,7 @@
       ]);
       
       await new Promise(resolve => setTimeout(resolve, 1000));
-      if (!isPlaying) return;
+      if (!animState.isPlaying) return;
       
       // Calculate deltas
       const delta1 = peerState.peer1.icons.filter(icon1 => 
@@ -295,8 +295,8 @@
       
       // Auto-pause after completion
       await new Promise(resolve => setTimeout(resolve, 1000));
-      if (isPlaying) {
-        isPlaying = false;
+      if (animState.isPlaying) {
+        animState.isPlaying = false;
         const btn = document.getElementById('syncPlayPauseBtn');
         btn.disabled = true;
         btn.querySelector('i').className = 'fas fa-pause';
