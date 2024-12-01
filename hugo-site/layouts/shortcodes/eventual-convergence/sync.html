@@ -193,60 +193,102 @@
       switch(currentStep) {
         case 0: // Generate and show summaries
           await generateAndAnimateSummaries();
+          currentStep++;
+          setTimeout(runSyncAnimation, ANIMATION_DELAY);
           break;
+          
         case 1: // Exchange summaries and generate deltas
           await exchangeSummariesAndGenerateDeltas();
+          currentStep++;
+          setTimeout(runSyncAnimation, ANIMATION_DELAY);
           break;
+          
         case 2: // Exchange deltas
           await exchangeDeltas();
-          break;
-        default:
           // Animation complete
           isPlaying = false;
           document.querySelector('#syncPlayPauseBtn i').className = 'fas fa-play';
-          return;
+          break;
       }
-      
-      currentStep++;
-      setTimeout(runSyncAnimation, ANIMATION_DELAY);
     }
 
     async function generateAndAnimateSummaries() {
-      const summary1 = document.getElementById('summary1');
-      const summary2 = document.getElementById('summary2');
-      
-      // Position summaries next to their peers
-      const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
-      const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
-      
-      summary1.style.left = `${peer1Rect.right + 10}px`;
-      summary1.style.top = `${peer1Rect.top}px`;
-      summary2.style.left = `${peer2Rect.right + 10}px`;
-      summary2.style.top = `${peer2Rect.top}px`;
-      
-      // Populate and show summaries
-      ['peer1', 'peer2'].forEach((peerId, idx) => {
-        const summaryList = document.querySelector(`#summary${idx + 1} .summary-list`);
-        summaryList.innerHTML = '';
-        peerState[peerId].icons.forEach(icon => {
-          const li = document.createElement('li');
-          li.textContent = icon.name;
-          summaryList.appendChild(li);
+      return new Promise((resolve) => {
+        const summary1 = document.getElementById('summary1');
+        const summary2 = document.getElementById('summary2');
+        
+        // Position summaries next to their peers
+        const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
+        const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
+        
+        summary1.style.left = `${peer1Rect.right + 10}px`;
+        summary1.style.top = `${peer1Rect.top}px`;
+        summary2.style.left = `${peer2Rect.right + 10}px`;
+        summary2.style.top = `${peer2Rect.top}px`;
+        
+        // Clear and populate summaries with animation
+        ['peer1', 'peer2'].forEach((peerId, idx) => {
+          const summaryList = document.querySelector(`#summary${idx + 1} .summary-list`);
+          summaryList.innerHTML = '';
+          
+          peerState[peerId].icons.forEach((icon, iconIdx) => {
+            setTimeout(() => {
+              const li = document.createElement('li');
+              li.textContent = icon.name;
+              li.style.opacity = '0';
+              summaryList.appendChild(li);
+              
+              // Fade in the item
+              requestAnimationFrame(() => {
+                li.style.transition = 'opacity 0.3s';
+                li.style.opacity = '1';
+              });
+              
+              // Resolve when last item of last peer is done
+              if (idx === 1 && iconIdx === peerState[peerId].icons.length - 1) {
+                setTimeout(resolve, 300);
+              }
+            }, iconIdx * 200);
+          });
         });
+        
+        summary1.classList.add('visible');
+        summary2.classList.add('visible');
       });
-      
-      summary1.classList.add('visible');
-      summary2.classList.add('visible');
     }
 
     async function exchangeSummariesAndGenerateDeltas() {
-      // Calculate deltas based on summaries
-      peerState.peer1.delta = peerState.peer1.icons.filter(icon1 => 
-        !peerState.peer2.icons.some(icon2 => icon2.name === icon1.name)
-      );
-      peerState.peer2.delta = peerState.peer2.icons.filter(icon2 => 
-        !peerState.peer1.icons.some(icon1 => icon1.name === icon2.name)
-      );
+      return new Promise((resolve) => {
+        // Animate summaries moving to opposite peers
+        const summary1 = document.getElementById('summary1');
+        const summary2 = document.getElementById('summary2');
+        const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
+        const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
+        
+        // Animate summaries moving across
+        summary1.style.transition = 'all 0.5s ease-in-out';
+        summary2.style.transition = 'all 0.5s ease-in-out';
+        
+        summary1.style.left = `${peer2Rect.right + 10}px`;
+        summary2.style.left = `${peer1Rect.right + 10}px`;
+        
+        // Calculate deltas after summaries have moved
+        setTimeout(() => {
+          // Calculate and display deltas
+          peerState.peer1.delta = peerState.peer1.icons.filter(icon1 => 
+            !peerState.peer2.icons.some(icon2 => icon2.name === icon1.name)
+          );
+          peerState.peer2.delta = peerState.peer2.icons.filter(icon2 => 
+            !peerState.peer1.icons.some(icon1 => icon1.name === icon2.name)
+          );
+          
+          // Hide summaries
+          summary1.classList.remove('visible');
+          summary2.classList.remove('visible');
+          
+          resolve();
+        }, 600);
+      });
     }
 
     async function exchangeDeltas() {
