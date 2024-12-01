@@ -10,6 +10,7 @@ head:
 ---
 
 ### The Challenge of Consistency in Distributed Systems
+
 Achieving consistency across distributed systems is a notoriously difficult problem. The key reason
 is that, in a distributed environment, multiple nodes can independently make changes to the same
 piece of data. When different nodes hold different versions of this data, deciding how to reconcile
@@ -25,42 +26,46 @@ any given time, making it hard to achieve strong consistency while keeping a sys
 and partition-tolerant.
 
 ### How Freenet's Eventual Convergence Sidesteps This Challenge
+
 Instead of relying on heavyweight consensus mechanisms, Freenet adopts an **eventual consistency**
 model, but with a unique twist called **Eventual Convergence**. Here’s why this approach is
 especially powerful and flexible:
 
 #### 1. Flexible Merge Mechanism Defined by Contracts
 
-   In Freenet, every value stored under a given key is required to be **mergeable**—meaning that
-   different versions can be combined into a consistent state. But instead of enforcing a rigid,
-   one-size-fits-all merge strategy, Freenet uses **WebAssembly (Wasm) contracts** to define how
-   data should be synchronized. The author of each Wasm contract specifies the rules for merging
-   data, allowing them to tailor the synchronization process to the specific needs of the
-   application. This flexibility is crucial because not all data requires the same kind of
-   consistency. For some use cases, merging could mean taking the union of two sets, while for
-   others, it might involve choosing the latest timestamp.
+In Freenet, every value stored under a given key is required to be **mergeable**—meaning that
+different versions can be combined into a consistent state. But instead of enforcing a rigid,
+one-size-fits-all merge strategy, Freenet uses **WebAssembly (Wasm) contracts** to define how data
+should be synchronized. The author of each Wasm contract specifies the rules for merging data,
+allowing them to tailor the synchronization process to the specific needs of the application. This
+flexibility is crucial because not all data requires the same kind of consistency. For some use
+cases, merging could mean taking the union of two sets, while for others, it might involve choosing
+the latest timestamp.
 
 #### 2. Efficient Synchronization via Summary and Delta
-   Freenet’s approach involves a **two-step process** that ensures eventual convergence efficiently:
 
-   - Each node generates a **summary** of its current state, which is a compact representation of
-     what it knows.
-   - Nodes exchange these summaries, allowing them to create a **delta**—the set of changes needed
-     to bring their state up to date with the other node's state.
+Freenet’s approach involves a **two-step process** that ensures eventual convergence efficiently:
 
-   These summaries and deltas can be extremely efficient because they’re represented as arbitrary
-   byte arrays, and their structure is defined by the Wasm contract. This efficiency means that
-   nodes can converge without having to exchange large amounts of redundant information.
+- Each node generates a **summary** of its current state, which is a compact representation of what
+  it knows.
+- Nodes exchange these summaries, allowing them to create a **delta**—the set of changes needed to
+  bring their state up to date with the other node's state.
+
+These summaries and deltas can be extremely efficient because they’re represented as arbitrary byte
+arrays, and their structure is defined by the Wasm contract. This efficiency means that nodes can
+converge without having to exchange large amounts of redundant information.
 
 #### 3. Eventual Convergence in a Small-World Network
-   In Freenet, the key-values are stored using a **small-world network** topology, which has
-   interesting properties for distributed consistency. For a given key, nodes subscribe to the
-   value, forming a connected "tree" structure, with the root being the node closest to the key.
-   Updates propagate through this tree using the **Eventual Convergence** mechanism—similar to a
-   virus spreading through a network. This ensures that changes are efficiently propagated to all
-   subscribing nodes, leading them to converge on a consistent state over time.
+
+In Freenet, the key-values are stored using a **small-world network** topology, which has
+interesting properties for distributed consistency. For a given key, nodes subscribe to the value,
+forming a connected "tree" structure, with the root being the node closest to the key. Updates
+propagate through this tree using the **Eventual Convergence** mechanism—similar to a virus
+spreading through a network. This ensures that changes are efficiently propagated to all subscribing
+nodes, leading them to converge on a consistent state over time.
 
 #### Illustrating Eventual Convergence: The Color Mixing Analogy
+
 To help understand how multiple updates can occur simultaneously yet lead to the same end result, we
 can use a **color mixing** analogy. Imagine updates represented by different colors spreading
 through the tree of nodes. As updates propagate and meet at nodes, their colors mix. Even though the
@@ -84,6 +89,7 @@ distributed systems but also provides the flexibility and efficiency needed for 
 decentralized applications.
 
 #### Peer Synchronization Example
+
 Below is a simple visualization of how two peers synchronize their data using summaries and deltas:
 
 {{< eventual-convergence/sync >}}
@@ -94,6 +100,7 @@ Below is a simple visualization of how two peers synchronize their data using su
 4. After exchanging deltas, both peers have the same complete set of data
 
 #### Network-wide Propagation
+
 The visualization below shows how updates propagate through the entire network:
 
 {{< eventual-convergence/propagation >}}
