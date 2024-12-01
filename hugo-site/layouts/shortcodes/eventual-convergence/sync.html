@@ -355,7 +355,10 @@
             
             peerState[peerId].delta.forEach(icon => {
               const li = document.createElement('li');
-              li.textContent = icon.name;
+              const iconElement = document.createElement('i');
+              iconElement.className = icon.class;
+              iconElement.style.fontSize = '1.2rem';
+              li.appendChild(iconElement);
               li.style.backgroundColor = '#f0fffc';
               deltaList.appendChild(li);
             });
