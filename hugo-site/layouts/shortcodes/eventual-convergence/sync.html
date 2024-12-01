@@ -362,6 +362,10 @@
             // Position deltas at the left of peer1 and right of peer2
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const deltaWidth = deltaBox.getBoundingClientRect().width;
+            // Calculate center points for positioning
+            const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
+            const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
+            
             if (idx === 0) {
               deltaBox.style.left = `${peer1Center - peer1Rect.width/2 - deltaWidth - 40}px`;
               deltaBox.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
