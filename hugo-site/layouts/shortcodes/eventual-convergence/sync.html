@@ -68,6 +68,9 @@
       font-size: 0.9rem;
       opacity: 0;
       transition: all 0.5s ease;
+      transform-origin: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      z-index: 100;
     }
     @media (max-width: 768px) {
       .peer-container {
@@ -166,6 +169,8 @@
     }
 
     async function animateMessage(from, to, content, type = 'summary') {
+      const container = document.querySelector('.peer-container');
+      const containerRect = container.getBoundingClientRect();
       const fromEl = document.getElementById(from);
       const toEl = document.getElementById(to);
       const fromRect = fromEl.getBoundingClientRect();
@@ -174,15 +179,25 @@
       const message = document.createElement('div');
       message.className = 'message';
       message.textContent = content;
-      message.style.left = `${fromRect.left + fromRect.width/2}px`;
-      message.style.top = `${fromRect.top + fromRect.height/2}px`;
       
-      document.querySelector('.animation-area').appendChild(message);
+      // Position relative to container
+      const startX = fromRect.left - containerRect.left + (fromRect.width/2);
+      const startY = fromRect.top - containerRect.top + (fromRect.height/2);
+      
+      message.style.left = `${startX}px`;
+      message.style.top = `${startY}px`;
+      message.style.transform = 'translate(-50%, -50%)';
+      
+      container.appendChild(message);
       
       // Start animation
       await new Promise(resolve => setTimeout(resolve, 100));
       message.style.opacity = '1';
-      message.style.transform = `translate(${toRect.left - fromRect.left}px, ${toRect.top - fromRect.top}px)`;
+      
+      const endX = toRect.left - containerRect.left + (toRect.width/2);
+      const endY = toRect.top - containerRect.top + (toRect.height/2);
+      
+      message.style.transform = `translate(${endX - startX}px, ${endY - startY}px) translate(-50%, -50%)`;
       
       await new Promise(resolve => setTimeout(resolve, 1000));
       message.style.opacity = '0';
