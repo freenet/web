@@ -262,10 +262,14 @@
         summary1.querySelector('.summary-list').innerHTML = '';
         summary2.querySelector('.summary-list').innerHTML = '';
         
-        // Position summaries initially hidden at their starting positions
-        summary1.style.left = `${peer1Rect.right + 20}px`;
+        // Calculate center points for positioning
+        const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
+        const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
+        
+        // Position summaries initially at their starting positions
+        summary1.style.left = `${peer1Center + peer1Rect.width/2 + 40}px`;
         summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
-        summary2.style.left = `${peer2Rect.left - 100}px`; // Offset by box width
+        summary2.style.left = `${peer2Center - peer2Rect.width/2 - 120}px`;
         summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
         
         // Make summaries visible but transparent
@@ -313,8 +317,8 @@
           const summary2Width = summary2.getBoundingClientRect().width;
             
           summary1.style.transition = summary2.style.transition = 'all 0.5s ease-in-out';
-          summary1.style.left = `${peer2Rect.left - summary1Width - 20}px`; // Move to left of peer2
-          summary2.style.left = `${peer1Rect.right + 20}px`; // Move to right of peer1
+          summary1.style.left = `${peer2Center - peer2Rect.width/2 - summary1Width - 40}px`; // Move to left of peer2
+          summary2.style.left = `${peer1Center + peer1Rect.width/2 + 40}px`; // Move to right of peer1
           summary1.style.opacity = '0';
           summary2.style.opacity = '0';
             
@@ -357,11 +361,12 @@
             
             // Position deltas at the left of peer1 and right of peer2
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const deltaWidth = deltaBox.getBoundingClientRect().width;
             if (idx === 0) {
-              deltaBox.style.left = `${peer1Rect.left - 100}px`; // Offset by box width
+              deltaBox.style.left = `${peer1Center - peer1Rect.width/2 - deltaWidth - 40}px`;
               deltaBox.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
             } else {
-              deltaBox.style.left = `${peer2Rect.right + 20}px`;
+              deltaBox.style.left = `${peer2Center + peer2Rect.width/2 + 40}px`;
               deltaBox.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
             }
             
