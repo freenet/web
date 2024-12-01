@@ -1,6 +1,5 @@
 <div class="visualization-wrapper">
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="/js/animation-coordinator.js"></script>
   <style>
     .visualization-wrapper {
       width: 100%;
@@ -196,17 +195,23 @@
       });
     }
 
-    async function animateMessage(from, to, content, type = 'summary') {
+    async function animateMessage(fromId, toId, content, type = 'summary') {
       const container = document.querySelector('.peer-container');
       const containerRect = container.getBoundingClientRect();
-      const fromEl = document.getElementById(from);
-      const toEl = document.getElementById(to);
+      const fromEl = document.getElementById(fromId);
+      const toEl = document.getElementById(toId);
+      
+      if (!fromEl || !toEl) {
+        console.error('Missing elements:', fromId, toId);
+        return;
+      }
+      
       const fromRect = fromEl.getBoundingClientRect();
       const toRect = toEl.getBoundingClientRect();
       
       if (type === 'summary') {
         // Show summary in the respective summary box
-        const summaryBox = document.getElementById(`summary${from.slice(-1)}`);
+        const summaryBox = document.getElementById(`summary${fromId.slice(-1)}`);
         summaryBox.textContent = content;
         summaryBox.style.opacity = '1';
         return;
