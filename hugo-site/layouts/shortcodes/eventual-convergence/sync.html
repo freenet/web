@@ -240,11 +240,13 @@
         updatePeerUI('peer1');
       }
       
-      // Auto-reset after completion
+      // Auto-pause after completion
       await new Promise(resolve => setTimeout(resolve, 1000));
       if (isPlaying) {
-        initializePeers();
-        runSyncAnimation();
+        isPlaying = false;
+        const btn = document.getElementById('syncPlayPauseBtn');
+        btn.disabled = true;
+        btn.querySelector('i').className = 'fas fa-pause';
       }
     }
 
@@ -278,7 +280,9 @@
     document.getElementById('syncPlayPauseBtn').addEventListener('click', togglePlayPause);
     document.getElementById('resetSyncBtn').addEventListener('click', () => {
       isPlaying = false;
-      document.getElementById('syncPlayPauseBtn').querySelector('i').className = 'fas fa-play';
+      const playPauseBtn = document.getElementById('syncPlayPauseBtn');
+      playPauseBtn.disabled = false;
+      playPauseBtn.querySelector('i').className = 'fas fa-play';
       initializePeers();
     });
 
