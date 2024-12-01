@@ -9,8 +9,9 @@
       display: flex;
       justify-content: space-around;
       align-items: flex-start;
-      gap: 2rem;
-      margin: 1rem;
+      gap: 8rem;
+      margin: 2rem;
+      min-height: 400px;
     }
     .peer {
       flex: 1;
@@ -38,17 +39,18 @@
       color: #2c3e50;
     }
     .summary-display, .delta-display {
-      position: fixed;
+      position: absolute;
       background: #fff;
-      padding: 0.5rem;
-      min-width: 100px;
+      padding: 1rem;
+      min-width: 120px;
       font-family: monospace;
       opacity: 0;
       transition: all 0.5s ease-in-out;
       pointer-events: none;
       z-index: 100;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       transform: translate(-50%, -50%);
+      border-radius: 6px;
     }
     .summary-display {
       border: 2px solid #3273dc;
@@ -254,10 +256,10 @@
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
-        // Position summaries inside their respective peers initially
-        summary1.style.left = `${peer1Rect.left + peer1Rect.width/2}px`;
+        // Position summaries to the right of their respective peers initially
+        summary1.style.left = `${peer1Rect.right + 20}px`;
         summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
-        summary2.style.left = `${peer2Rect.left + peer2Rect.width/2}px`;
+        summary2.style.left = `${peer2Rect.right + 20}px`;
         summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
         
         // Clear and populate summaries with animation
