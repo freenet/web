@@ -83,6 +83,19 @@ Thus, **Freenet's Eventual Convergence** not only simplifies the problem of achi
 distributed systems but also provides the flexibility and efficiency needed for diverse,
 decentralized applications.
 
+#### Peer Synchronization Example
+Below is a simple visualization of how two peers synchronize their data using summaries and deltas:
+
+{{< eventual-convergence/sync >}}
+
+1. Each peer starts with different data (represented by icons)
+2. They generate summaries of their data (lists of icon names)
+3. By comparing summaries, each peer determines what data to send (the delta)
+4. After exchanging deltas, both peers have the same complete set of data
+
+#### Network-wide Propagation
+The visualization below shows how updates propagate through the entire network:
+
 {{< eventual-convergence/propagation >}}
 
 Click different nodes to see how information spreads through the network. Notice how:

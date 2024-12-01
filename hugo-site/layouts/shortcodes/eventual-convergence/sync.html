@@ -1,0 +1,230 @@
+<div class="sync-visualization-wrapper">
+  <style>
+    .sync-visualization-wrapper {
+      width: 100%;
+      margin: 2rem auto;
+      min-height: 300px;
+    }
+    .peer-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      gap: 2rem;
+      margin: 1rem;
+    }
+    .peer {
+      flex: 1;
+      max-width: 300px;
+      padding: 1rem;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .peer-title {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+    .peer-icons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      min-height: 50px;
+      margin-bottom: 1rem;
+    }
+    .peer-icon {
+      font-size: 2rem;
+      color: #2c3e50;
+    }
+    .summary-box, .delta-box {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      min-height: 2rem;
+      font-family: monospace;
+    }
+    .summary-box {
+      color: #2980b9;
+    }
+    .delta-box {
+      color: #27ae60;
+    }
+    .sync-controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    @media (max-width: 768px) {
+      .peer-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .peer {
+        width: 100%;
+      }
+    }
+  </style>
+
+  <div class="peer-container">
+    <div class="peer" id="peer1">
+      <div class="peer-title">Peer 1</div>
+      <div class="peer-icons"></div>
+      <div>Summary:</div>
+      <div class="summary-box"></div>
+      <div>Delta to send:</div>
+      <div class="delta-box"></div>
+    </div>
+    <div class="peer" id="peer2">
+      <div class="peer-title">Peer 2</div>
+      <div class="peer-icons"></div>
+      <div>Summary:</div>
+      <div class="summary-box"></div>
+      <div>Delta to send:</div>
+      <div class="delta-box"></div>
+    </div>
+  </div>
+
+  <div class="sync-controls">
+    <button id="generateSummaryBtn" class="button is-primary">
+      Generate Summaries
+    </button>
+    <button id="exchangeDeltasBtn" class="button is-primary" disabled>
+      Exchange Deltas
+    </button>
+    <button id="resetSyncBtn" class="button">
+      Reset
+    </button>
+  </div>
+
+  <script>
+    // Available FontAwesome icons for the visualization
+    const availableIcons = [
+      { name: 'dog', class: 'fas fa-dog' },
+      { name: 'cat', class: 'fas fa-cat' },
+      { name: 'fish', class: 'fas fa-fish' },
+      { name: 'dove', class: 'fas fa-dove' },
+      { name: 'dragon', class: 'fas fa-dragon' },
+      { name: 'spider', class: 'fas fa-spider' },
+      { name: 'horse', class: 'fas fa-horse' },
+      { name: 'hippo', class: 'fas fa-hippo' }
+    ];
+
+    // State for each peer
+    const peerState = {
+      peer1: {
+        icons: [],
+        summary: '',
+        delta: []
+      },
+      peer2: {
+        icons: [],
+        summary: '',
+        delta: []
+      }
+    };
+
+    // Initialize with random icons
+    function initializePeers() {
+      // Clear existing state
+      peerState.peer1.icons = [];
+      peerState.peer2.icons = [];
+      peerState.peer1.summary = '';
+      peerState.peer2.summary = '';
+      peerState.peer1.delta = [];
+      peerState.peer2.delta = [];
+
+      // Shuffle available icons
+      const shuffled = [...availableIcons].sort(() => Math.random() - 0.5);
+      
+      // Assign 2-4 random icons to each peer
+      const peer1Count = Math.floor(Math.random() * 3) + 2; // 2-4 icons
+      const peer2Count = Math.floor(Math.random() * 3) + 2; // 2-4 icons
+      
+      peerState.peer1.icons = shuffled.slice(0, peer1Count);
+      peerState.peer2.icons = shuffled.slice(shuffled.length - peer2Count);
+
+      // Update UI
+      updatePeerUI('peer1');
+      updatePeerUI('peer2');
+      
+      // Reset buttons
+      document.getElementById('generateSummaryBtn').disabled = false;
+      document.getElementById('exchangeDeltasBtn').disabled = true;
+      
+      // Clear summary and delta boxes
+      document.querySelectorAll('.summary-box').forEach(box => box.textContent = '');
+      document.querySelectorAll('.delta-box').forEach(box => box.textContent = '');
+    }
+
+    // Update the UI for a peer
+    function updatePeerUI(peerId) {
+      const iconContainer = document.querySelector(`#${peerId} .peer-icons`);
+      iconContainer.innerHTML = '';
+      
+      peerState[peerId].icons.forEach(icon => {
+        const iconElement = document.createElement('i');
+        iconElement.className = `peer-icon ${icon.class}`;
+        iconContainer.appendChild(iconElement);
+      });
+    }
+
+    // Generate summaries for both peers
+    function generateSummaries() {
+      // Generate summary for each peer (list of icon names)
+      peerState.peer1.summary = peerState.peer1.icons.map(icon => icon.name).join(', ');
+      peerState.peer2.summary = peerState.peer2.icons.map(icon => icon.name).join(', ');
+      
+      // Update UI
+      document.querySelector('#peer1 .summary-box').textContent = peerState.peer1.summary;
+      document.querySelector('#peer2 .summary-box').textContent = peerState.peer2.summary;
+      
+      // Calculate deltas
+      peerState.peer1.delta = peerState.peer1.icons.filter(icon1 => 
+        !peerState.peer2.icons.some(icon2 => icon2.name === icon1.name)
+      );
+      peerState.peer2.delta = peerState.peer2.icons.filter(icon2 => 
+        !peerState.peer1.icons.some(icon1 => icon1.name === icon2.name)
+      );
+      
+      // Update delta UI
+      document.querySelector('#peer1 .delta-box').textContent = 
+        peerState.peer1.delta.map(icon => icon.name).join(', ');
+      document.querySelector('#peer2 .delta-box').textContent = 
+        peerState.peer2.delta.map(icon => icon.name).join(', ');
+      
+      // Enable exchange button
+      document.getElementById('exchangeDeltasBtn').disabled = false;
+    }
+
+    // Exchange deltas between peers
+    function exchangeDeltas() {
+      // Add missing icons to each peer
+      peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...peerState.peer2.delta])];
+      peerState.peer2.icons = [...new Set([...peerState.peer2.icons, ...peerState.peer1.delta])];
+      
+      // Sort icons by name for consistent display
+      peerState.peer1.icons.sort((a, b) => a.name.localeCompare(b.name));
+      peerState.peer2.icons.sort((a, b) => a.name.localeCompare(b.name));
+      
+      // Update UI
+      updatePeerUI('peer1');
+      updatePeerUI('peer2');
+      
+      // Disable buttons after exchange
+      document.getElementById('generateSummaryBtn').disabled = true;
+      document.getElementById('exchangeDeltasBtn').disabled = true;
+    }
+
+    // Set up event listeners
+    document.getElementById('generateSummaryBtn').addEventListener('click', generateSummaries);
+    document.getElementById('exchangeDeltasBtn').addEventListener('click', exchangeDeltas);
+    document.getElementById('resetSyncBtn').addEventListener('click', initializePeers);
+
+    // Initialize on load
+    initializePeers();
+  </script>
+</div>
