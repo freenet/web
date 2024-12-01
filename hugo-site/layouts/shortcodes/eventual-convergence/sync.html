@@ -38,7 +38,7 @@
       color: #2c3e50;
     }
     .summary-display, .delta-display {
-      position: absolute;
+      position: fixed;
       background: #fff;
       padding: 0.5rem;
       min-width: 100px;
@@ -46,8 +46,9 @@
       opacity: 0;
       transition: all 0.5s ease-in-out;
       pointer-events: none;
-      z-index: 10;
+      z-index: 100;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transform: translate(-50%, -50%);
     }
     .summary-display {
       border: 2px solid #3273dc;
@@ -248,15 +249,16 @@
         const summary1 = document.getElementById('summary1');
         const summary2 = document.getElementById('summary2');
         
-        // Position summaries next to their peers
+        // Get viewport-relative positions for peers
         const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
         // Position summaries inside their respective peers initially
-        summary1.style.left = `${peer1Rect.left + peer1Rect.width/4}px`;
-        summary1.style.top = `${peer1Rect.top + peer1Rect.height/4}px`;
-        summary2.style.left = `${peer2Rect.left + peer2Rect.width/4}px`;
-        summary2.style.top = `${peer2Rect.top + peer2Rect.height/4}px`;
+        summary1.style.left = `${peer1Rect.left + peer1Rect.width/2}px`;
+        summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
+        summary2.style.left = `${peer2Rect.left + peer2Rect.width/2}px`;
+        summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
         
         // Clear and populate summaries with animation
         ['peer1', 'peer2'].forEach((peerId, idx) => {
@@ -307,8 +309,8 @@
         // Animate summaries moving to opposite peers
         summary1.style.transition = summary2.style.transition = 'all 0.5s ease-in-out';
         
-        summary1.style.left = `${peer2Rect.left + peer2Rect.width/4}px`;
-        summary2.style.left = `${peer1Rect.left + peer1Rect.width/4}px`;
+        summary1.style.left = `${peer2Rect.left + peer2Rect.width/2}px`;
+        summary2.style.left = `${peer1Rect.left + peer1Rect.width/2}px`;
         
         // Calculate and show deltas after summaries have moved
         setTimeout(() => {
