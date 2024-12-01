@@ -178,7 +178,14 @@
       
       const message = document.createElement('div');
       message.className = 'message';
-      message.textContent = content;
+      if (type === 'delta') {
+        message.innerHTML = content;
+        message.style.display = 'flex';
+        message.style.alignItems = 'center';
+        message.style.gap = '0.5rem';
+      } else {
+        message.textContent = content;
+      }
       
       // Position relative to container
       const startX = fromRect.left - containerRect.left + (fromRect.width/2);
@@ -229,13 +236,29 @@
       );
       
       if (delta1.length > 0) {
-        await animateMessage('peer1', 'peer2', delta1.map(i => i.name).join(', '), 'delta');
+        const deltaContent = document.createElement('div');
+        deltaContent.style.display = 'flex';
+        deltaContent.style.gap = '0.5rem';
+        delta1.forEach(icon => {
+          const iconEl = document.createElement('i');
+          iconEl.className = icon.class;
+          deltaContent.appendChild(iconEl);
+        });
+        await animateMessage('peer1', 'peer2', deltaContent.innerHTML, 'delta');
         peerState.peer2.icons = [...new Set([...peerState.peer2.icons, ...delta1])];
         updatePeerUI('peer2');
       }
       
       if (delta2.length > 0) {
-        await animateMessage('peer2', 'peer1', delta2.map(i => i.name).join(', '), 'delta');
+        const deltaContent = document.createElement('div');
+        deltaContent.style.display = 'flex';
+        deltaContent.style.gap = '0.5rem';
+        delta2.forEach(icon => {
+          const iconEl = document.createElement('i');
+          iconEl.className = icon.class;
+          deltaContent.appendChild(iconEl);
+        });
+        await animateMessage('peer2', 'peer1', deltaContent.innerHTML, 'delta');
         peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...delta2])];
         updatePeerUI('peer1');
       }
