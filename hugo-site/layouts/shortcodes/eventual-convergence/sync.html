@@ -45,7 +45,8 @@
       min-width: 80px;
       font-family: monospace;
       opacity: 0;
-      transition: all 0.5s ease-in-out;
+      visibility: hidden;
+      transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
       pointer-events: none;
       z-index: 100;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -64,6 +65,7 @@
     }
     .summary-display.visible, .delta-display.visible {
       opacity: 1;
+      visibility: visible;
     }
     .summary-title {
       font-weight: bold;
@@ -256,13 +258,19 @@
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
+        // Clear existing content
+        summary1.querySelector('.summary-list').innerHTML = '';
+        summary2.querySelector('.summary-list').innerHTML = '';
+        
         // Position summaries initially hidden at their starting positions
         summary1.style.left = `${peer1Rect.right + 20}px`;
         summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
         summary2.style.left = `${peer2Rect.left - 100}px`; // Offset by box width
         summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
-        summary1.style.opacity = '0';
-        summary2.style.opacity = '0';
+        
+        // Make summaries visible but transparent
+        summary1.classList.add('visible');
+        summary2.classList.add('visible');
         
         // Clear and populate summaries with animation
         ['peer1', 'peer2'].forEach((peerId, idx) => {
