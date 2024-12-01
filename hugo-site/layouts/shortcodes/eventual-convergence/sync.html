@@ -256,12 +256,11 @@
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
-        // Position summaries between peers
-        const midpointX = (peer1Rect.right + peer2Rect.left) / 2;
-        summary1.style.left = `${midpointX}px`;
-        summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2 - 40}px`;
-        summary2.style.left = `${midpointX}px`;
-        summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2 + 40}px`;
+        // Position summaries at the right of peer1 and left of peer2
+        summary1.style.left = `${peer1Rect.right + 20}px`;
+        summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
+        summary2.style.left = `${peer2Rect.left - 20}px`;
+        summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
         
         // Clear and populate summaries with animation
         ['peer1', 'peer2'].forEach((peerId, idx) => {
@@ -334,11 +333,15 @@
             const deltaList = deltaBox.querySelector('.summary-list');
             deltaList.innerHTML = '';
             
-            // Position deltas between peers
-            const midpointX = (peer1Rect.right + peer2Rect.left) / 2;
-            deltaBox.style.left = `${midpointX}px`;
+            // Position deltas at the left of peer1 and right of peer2
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            deltaBox.style.top = `${(idx === 0 ? peer1Rect.top - 20 : peer2Rect.top + 20) + scrollTop + (idx === 0 ? peer1Rect : peer2Rect).height/2}px`;
+            if (idx === 0) {
+              deltaBox.style.left = `${peer1Rect.left - 20}px`;
+              deltaBox.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
+            } else {
+              deltaBox.style.right = `${peer2Rect.right + 20}px`;
+              deltaBox.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
+            }
             
             peerState[peerId].delta.forEach(icon => {
               const li = document.createElement('li');
