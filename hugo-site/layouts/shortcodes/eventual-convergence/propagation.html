@@ -298,17 +298,17 @@
         });
     }
 
-    // Control variables
-    let isPlaying = false;
+    // Control variables for propagation animation
+    let propagationIsPlaying = false;
     let updateInterval;
     const UPDATE_DELAY = 2000; // 2 seconds between updates
 
     function togglePlayPause() {
-      isPlaying = !isPlaying;
+      propagationIsPlaying = !propagationIsPlaying;
       const btn = document.getElementById('convergencePlayPauseBtn');
       if (!btn) return;
       
-      if (isPlaying) {
+      if (propagationIsPlaying) {
         AnimationCoordinator.setActive('convergence');
         btn.querySelector('i').className = 'fas fa-pause';
         startAutoUpdates();
@@ -327,7 +327,7 @@
 
         // Set up interval for subsequent propagations
         updateInterval = setInterval(() => {
-          if (isPlaying) {
+          if (propagationIsPlaying) {
             const nodes = root.descendants();
             const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
             initiatePropagation(randomNode);
@@ -345,8 +345,8 @@
 
     // Listen for pause events from other animations
     document.addEventListener('pause-other-animations', (event) => {
-      if (event.detail.except !== 'convergence' && isPlaying) {
-        isPlaying = false;
+      if (event.detail.except !== 'convergence' && propagationIsPlaying) {
+        propagationIsPlaying = false;
         const btn = document.getElementById('convergencePlayPauseBtn');
         if (btn) {
           btn.querySelector('i').className = 'fas fa-play';
@@ -372,7 +372,7 @@
     // Function to reset the visualization
     function resetVisualization() {
       // Stop any ongoing updates
-      isPlaying = false;
+      propagationIsPlaying = false;
       stopAutoUpdates();
       const playPauseBtn = document.getElementById('convergencePlayPauseBtn');
       if (playPauseBtn) {

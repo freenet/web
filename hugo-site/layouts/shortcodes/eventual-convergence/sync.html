@@ -166,10 +166,6 @@
       updatePeerUI('peer1');
       updatePeerUI('peer2');
       
-      // Reset buttons
-      document.getElementById('generateSummaryBtn').disabled = false;
-      document.getElementById('exchangeDeltasBtn').disabled = true;
-      
       // Clear summary and delta boxes
       document.querySelectorAll('.summary-box').forEach(box => box.textContent = '');
       document.querySelectorAll('.delta-box').forEach(box => box.textContent = '');
