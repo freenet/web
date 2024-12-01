@@ -175,6 +175,38 @@
       const toEl = document.getElementById(to);
       const fromRect = fromEl.getBoundingClientRect();
       const toRect = toEl.getBoundingClientRect();
+
+      // If this is a summary message, animate the icons first
+      if (type === 'summary') {
+        const icons = fromEl.querySelectorAll('.peer-icon');
+        const promises = Array.from(icons).map(async (icon, index) => {
+          const clone = icon.cloneNode(true);
+          clone.style.position = 'absolute';
+          clone.style.left = `${icon.getBoundingClientRect().left - fromRect.left}px`;
+          clone.style.top = `${icon.getBoundingClientRect().top - fromRect.top}px`;
+          clone.style.transition = 'all 0.5s ease';
+          clone.style.zIndex = '1000';
+          fromEl.appendChild(clone);
+
+          // Highlight original icon
+          icon.style.color = '#1e90ff';
+          
+          await new Promise(resolve => setTimeout(resolve, 200 * index));
+          
+          // Move clone to center
+          clone.style.left = '50%';
+          clone.style.top = '50%';
+          clone.style.transform = 'translate(-50%, -50%)';
+          clone.style.opacity = '0.6';
+          
+          await new Promise(resolve => setTimeout(resolve, 500));
+          clone.remove();
+          icon.style.color = '#2c3e50';
+        });
+        
+        await Promise.all(promises);
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
       
       const message = document.createElement('div');
       message.className = 'message';
@@ -206,10 +238,10 @@
       
       message.style.transform = `translate(${endX - startX}px, ${endY - startY}px) translate(-50%, -50%)`;
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       message.style.opacity = '0';
       
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 800));
       message.remove();
     }
 
