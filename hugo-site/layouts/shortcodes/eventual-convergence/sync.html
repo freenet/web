@@ -21,9 +21,26 @@
       justify-content: space-between;
       align-items: center;
       width: 100%;
-      max-width: 800px;
+      max-width: 1000px;
       margin: 2rem auto;
       position: relative;
+    }
+    .peer-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .summary-box {
+      width: 120px;
+      min-height: 80px;
+      padding: 0.75rem;
+      border: 2px dashed #1e90ff;
+      border-radius: 8px;
+      background: #f8f9fa;
+      font-family: monospace;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
     .peer {
       width: 200px;
@@ -98,13 +115,19 @@
     </div>
 
     <div class="peer-container">
-      <div class="peer" id="peer1">
-        <div class="peer-title">Peer 1</div>
-        <div class="peer-icons"></div>
+      <div class="peer-group">
+        <div class="peer" id="peer1">
+          <div class="peer-title">Peer 1</div>
+          <div class="peer-icons"></div>
+        </div>
+        <div class="summary-box" id="summary1"></div>
       </div>
-      <div class="peer" id="peer2">
-        <div class="peer-title">Peer 2</div>
-        <div class="peer-icons"></div>
+      <div class="peer-group">
+        <div class="summary-box" id="summary2"></div>
+        <div class="peer" id="peer2">
+          <div class="peer-title">Peer 2</div>
+          <div class="peer-icons"></div>
+        </div>
       </div>
       <div class="animation-area"></div>
     </div>
@@ -133,8 +156,10 @@
     };
 
     function initializePeers() {
-      // Clear animation area
+      // Clear animation area and summary boxes
       document.querySelector('.animation-area').innerHTML = '';
+      document.getElementById('summary1').style.opacity = '0';
+      document.getElementById('summary2').style.opacity = '0';
       
       // Shuffle and assign icons
       const shuffled = [...availableIcons].sort(() => Math.random() - 0.5);
@@ -173,39 +198,13 @@
       const containerRect = container.getBoundingClientRect();
       const fromEl = document.getElementById(from);
       const toEl = document.getElementById(to);
-      const fromRect = fromEl.getBoundingClientRect();
-      const toRect = toEl.getBoundingClientRect();
-
-      // If this is a summary message, animate the icons first
+      
       if (type === 'summary') {
-        const icons = fromEl.querySelectorAll('.peer-icon');
-        const promises = Array.from(icons).map(async (icon, index) => {
-          const clone = icon.cloneNode(true);
-          clone.style.position = 'absolute';
-          clone.style.left = `${icon.getBoundingClientRect().left - fromRect.left}px`;
-          clone.style.top = `${icon.getBoundingClientRect().top - fromRect.top}px`;
-          clone.style.transition = 'all 0.5s ease';
-          clone.style.zIndex = '1000';
-          fromEl.appendChild(clone);
-
-          // Highlight original icon
-          icon.style.color = '#1e90ff';
-          
-          await new Promise(resolve => setTimeout(resolve, 200 * index));
-          
-          // Move clone to center
-          clone.style.left = '50%';
-          clone.style.top = '50%';
-          clone.style.transform = 'translate(-50%, -50%)';
-          clone.style.opacity = '0.6';
-          
-          await new Promise(resolve => setTimeout(resolve, 500));
-          clone.remove();
-          icon.style.color = '#2c3e50';
-        });
-        
-        await Promise.all(promises);
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // Show summary in the respective summary box
+        const summaryBox = document.getElementById(`summary${from.slice(-1)}`);
+        summaryBox.textContent = content;
+        summaryBox.style.opacity = '1';
+        return;
       }
       
       const message = document.createElement('div');
@@ -248,7 +247,7 @@
     async function runSyncAnimation() {
       if (!isPlaying) return;
       
-      // Generate and exchange summaries
+      // Generate and show summaries
       const summary1 = peerState.peer1.icons.map(icon => icon.name).join(', ');
       const summary2 = peerState.peer2.icons.map(icon => icon.name).join(', ');
       
@@ -257,9 +256,10 @@
         animateMessage('peer2', 'peer1', summary2)
       ]);
       
+      await new Promise(resolve => setTimeout(resolve, 1000));
       if (!isPlaying) return;
       
-      // Calculate and exchange deltas
+      // Calculate deltas
       const delta1 = peerState.peer1.icons.filter(icon1 => 
         !peerState.peer2.icons.some(icon2 => icon2.name === icon1.name)
       );
@@ -267,32 +267,25 @@
         !peerState.peer1.icons.some(icon1 => icon1.name === icon2.name)
       );
       
-      if (delta1.length > 0) {
-        const deltaContent = document.createElement('div');
-        deltaContent.style.display = 'flex';
-        deltaContent.style.gap = '0.5rem';
-        delta1.forEach(icon => {
-          const iconEl = document.createElement('i');
-          iconEl.className = icon.class;
-          deltaContent.appendChild(iconEl);
-        });
-        await animateMessage('peer1', 'peer2', deltaContent.innerHTML, 'delta');
-        peerState.peer2.icons = [...new Set([...peerState.peer2.icons, ...delta1])];
-        updatePeerUI('peer2');
-      }
-      
-      if (delta2.length > 0) {
-        const deltaContent = document.createElement('div');
-        deltaContent.style.display = 'flex';
-        deltaContent.style.gap = '0.5rem';
-        delta2.forEach(icon => {
-          const iconEl = document.createElement('i');
-          iconEl.className = icon.class;
-          deltaContent.appendChild(iconEl);
-        });
-        await animateMessage('peer2', 'peer1', deltaContent.innerHTML, 'delta');
-        peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...delta2])];
+      // Exchange deltas simultaneously
+      if (delta1.length > 0 || delta2.length > 0) {
+        const promises = [];
+        
+        if (delta1.length > 0) {
+          const deltaContent = delta1.map(icon => icon.name).join(', ');
+          promises.push(animateMessage('peer1', 'peer2', deltaContent, 'delta'));
+          peerState.peer2.icons = [...new Set([...peerState.peer2.icons, ...delta1])];
+        }
+        
+        if (delta2.length > 0) {
+          const deltaContent = delta2.map(icon => icon.name).join(', ');
+          promises.push(animateMessage('peer2', 'peer1', deltaContent, 'delta'));
+          peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...delta2])];
+        }
+        
+        await Promise.all(promises);
         updatePeerUI('peer1');
+        updatePeerUI('peer2');
       }
       
       // Auto-pause after completion
