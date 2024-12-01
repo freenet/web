@@ -258,6 +258,7 @@
         
         // Position summaries between peers
         const midpointX = (peer1Rect.right + peer2Rect.left) / 2;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         summary1.style.left = `${midpointX}px`;
         summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2 - 40}px`;
         summary2.style.left = `${midpointX}px`;
@@ -334,6 +335,7 @@
             // Position deltas between peers
             const midpointX = (peer1Rect.right + peer2Rect.left) / 2;
             deltaBox.style.left = `${midpointX}px`;
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             deltaBox.style.top = `${(idx === 0 ? peer1Rect.top - 20 : peer2Rect.top + 20) + scrollTop + (idx === 0 ? peer1Rect : peer2Rect).height/2}px`;
             
             peerState[peerId].delta.forEach(icon => {
