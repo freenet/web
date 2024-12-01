@@ -37,18 +37,26 @@
       font-size: 2rem;
       color: #2c3e50;
     }
-    .summary-display {
+    .summary-display, .delta-display {
       position: absolute;
       background: #fff;
-      border: 2px solid #3273dc;
-      border-radius: 4px;
       padding: 0.5rem;
       min-width: 100px;
       font-family: monospace;
       opacity: 0;
-      transition: opacity 0.3s;
+      transition: all 0.5s ease-in-out;
+      pointer-events: none;
+      z-index: 10;
     }
-    .summary-display.visible {
+    .summary-display {
+      border: 2px solid #3273dc;
+      border-radius: 4px;
+    }
+    .delta-display {
+      border: 2px solid #00d1b2;
+      border-radius: 4px;
+    }
+    .summary-display.visible, .delta-display.visible {
       opacity: 1;
     }
     .summary-title {
@@ -86,10 +94,6 @@
     <div class="peer" id="peer2">
       <div class="peer-title">Peer 2</div>
       <div class="peer-icons"></div>
-      <div>Summary:</div>
-      <div class="summary-box"></div>
-      <div>Delta to send:</div>
-      <div class="delta-box"></div>
     </div>
   </div>
 
@@ -107,11 +111,19 @@
   </div>
 
   <div id="summary1" class="summary-display">
-    <div class="summary-title">Peer 1 Summary</div>
+    <div class="summary-title">Summary</div>
     <ul class="summary-list"></ul>
   </div>
   <div id="summary2" class="summary-display">
-    <div class="summary-title">Peer 2 Summary</div>
+    <div class="summary-title">Summary</div>
+    <ul class="summary-list"></ul>
+  </div>
+  <div id="delta1" class="delta-display">
+    <div class="summary-title">Delta</div>
+    <ul class="summary-list"></ul>
+  </div>
+  <div id="delta2" class="delta-display">
+    <div class="summary-title">Delta</div>
     <ul class="summary-list"></ul>
   </div>
 
