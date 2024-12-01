@@ -256,11 +256,13 @@
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
-        // Position summaries at the right of peer1 and left of peer2
+        // Position summaries initially hidden at their starting positions
         summary1.style.left = `${peer1Rect.right + 20}px`;
         summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
         summary2.style.left = `${peer2Rect.left - 100}px`; // Offset by box width
         summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
+        summary1.style.opacity = '0';
+        summary2.style.opacity = '0';
         
         // Clear and populate summaries with animation
         ['peer1', 'peer2'].forEach((peerId, idx) => {
