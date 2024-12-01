@@ -101,11 +101,7 @@ Below is a simple visualization of how two peers synchronize their data using su
 
 #### Network-wide Propagation
 
-<div style="margin-top: 8rem; padding-top: 4rem; border-top: 1px solid #eee;">
-<h4>Network-wide Propagation</h4>
-
 The visualization below shows how updates propagate through the entire network:
-</div>
 
 {{< eventual-convergence/propagation >}}
 
