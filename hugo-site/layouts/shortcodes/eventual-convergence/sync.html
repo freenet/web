@@ -266,10 +266,10 @@
         const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
         const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
         
-        // Position summaries at their starting positions
+        // Position summary1 to the right of peer1 and summary2 to the left of peer2
         summary1.style.left = `${peer1Center + peer1Rect.width/2 + 40}px`;
         summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
-        summary2.style.left = `${peer2Center + peer2Rect.width/2 + 40}px`;
+        summary2.style.left = `${peer2Center - peer2Rect.width/2 - 120}px`; // Start left of peer2
         summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
         
         // Make summaries visible but transparent
@@ -296,9 +296,9 @@
             
           // Position summaries at their starting points
           if (idx === 0) {
-            summary.style.left = `${peer1Rect.right + 20}px`;
+            summary.style.left = `${peer1Center + peer1Rect.width/2 + 40}px`; // Start right of peer1
           } else {
-            summary.style.left = `${peer2Rect.left - summaryWidth - 20}px`;
+            summary.style.left = `${peer2Center - peer2Rect.width/2 - summaryWidth - 40}px`; // Start left of peer2
           }
             
           // Fade in all items together
@@ -318,7 +318,7 @@
             
           summary1.style.transition = summary2.style.transition = 'all 0.5s ease-in-out';
           summary1.style.left = `${peer2Center - peer2Rect.width/2 - summary1Width - 40}px`; // Move to left of peer2
-          summary2.style.left = `${peer1Center - peer1Rect.width/2 - summary2Width - 40}px`; // Move to left of peer1
+          summary2.style.left = `${peer1Center + peer1Rect.width/2 + 40}px`; // Move to right of peer1
           // Wait for summaries to reach their destinations before fading
           setTimeout(() => {
             summary1.style.opacity = '0';
