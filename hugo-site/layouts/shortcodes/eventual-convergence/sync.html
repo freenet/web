@@ -55,8 +55,25 @@
     .sync-controls {
       display: flex;
       justify-content: center;
-      gap: 1rem;
+      gap: 0.5rem;
       margin: 1rem 0;
+    }
+    .message-animation {
+      position: absolute;
+      padding: 0.5rem;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: monospace;
+      pointer-events: none;
+      transition: all 0.5s ease;
+      opacity: 0;
+    }
+    .message-animation.summary {
+      color: #2980b9;
+    }
+    .message-animation.delta {
+      color: #27ae60;
     }
     @media (max-width: 768px) {
       .peer-container {
@@ -89,14 +106,15 @@
   </div>
 
   <div class="sync-controls">
-    <button id="generateSummaryBtn" class="button is-primary">
-      Generate Summaries
+    <button id="syncPlayPauseBtn" class="button is-medium is-primary">
+      <span class="icon">
+        <i class="fas fa-play"></i>
+      </span>
     </button>
-    <button id="exchangeDeltasBtn" class="button is-primary" disabled>
-      Exchange Deltas
-    </button>
-    <button id="resetSyncBtn" class="button">
-      Reset
+    <button id="resetSyncBtn" class="button is-medium">
+      <span class="icon">
+        <i class="fas fa-undo"></i>
+      </span>
     </button>
   </div>
 
@@ -127,8 +145,23 @@
       }
     };
 
+    // Control variables
+    let isPlaying = false;
+    let currentStep = 0;
+    const ANIMATION_STEPS = [
+      generateSummaries,
+      exchangeDeltas
+    ];
+
     // Initialize with random icons
     function initializePeers() {
+      // Reset control state
+      isPlaying = false;
+      currentStep = 0;
+      const btn = document.getElementById('syncPlayPauseBtn');
+      if (btn) {
+        btn.querySelector('i').className = 'fas fa-play';
+      }
       // Clear existing state
       peerState.peer1.icons = [];
       peerState.peer2.icons = [];
@@ -173,12 +206,24 @@
     }
 
     // Generate summaries for both peers
-    function generateSummaries() {
+    async function generateSummaries() {
       // Generate summary for each peer (list of icon names)
       peerState.peer1.summary = peerState.peer1.icons.map(icon => icon.name).join(', ');
       peerState.peer2.summary = peerState.peer2.icons.map(icon => icon.name).join(', ');
       
-      // Update UI
+      // Animate summaries being exchanged
+      await Promise.all([
+        new Promise(resolve => {
+          animateMessage(peerState.peer1.summary, 'summary', 'peer1', 'peer2');
+          setTimeout(resolve, 600);
+        }),
+        new Promise(resolve => {
+          animateMessage(peerState.peer2.summary, 'summary', 'peer2', 'peer1');
+          setTimeout(resolve, 600);
+        })
+      ]);
+      
+      // Update UI after animation
       document.querySelector('#peer1 .summary-box').textContent = peerState.peer1.summary;
       document.querySelector('#peer2 .summary-box').textContent = peerState.peer2.summary;
       
@@ -201,7 +246,37 @@
     }
 
     // Exchange deltas between peers
-    function exchangeDeltas() {
+    async function exchangeDeltas() {
+      // Calculate deltas
+      peerState.peer1.delta = peerState.peer1.icons.filter(icon1 => 
+        !peerState.peer2.icons.some(icon2 => icon2.name === icon1.name)
+      );
+      peerState.peer2.delta = peerState.peer2.icons.filter(icon2 => 
+        !peerState.peer1.icons.some(icon1 => icon1.name === icon2.name)
+      );
+      
+      // Update delta UI
+      document.querySelector('#peer1 .delta-box').textContent = 
+        peerState.peer1.delta.map(icon => icon.name).join(', ');
+      document.querySelector('#peer2 .delta-box').textContent = 
+        peerState.peer2.delta.map(icon => icon.name).join(', ');
+
+      // Animate deltas being exchanged
+      await Promise.all([
+        new Promise(resolve => {
+          if (peerState.peer1.delta.length > 0) {
+            animateMessage(peerState.peer1.delta.map(i => i.name).join(', '), 'delta', 'peer1', 'peer2');
+          }
+          setTimeout(resolve, 600);
+        }),
+        new Promise(resolve => {
+          if (peerState.peer2.delta.length > 0) {
+            animateMessage(peerState.peer2.delta.map(i => i.name).join(', '), 'delta', 'peer2', 'peer1');
+          }
+          setTimeout(resolve, 600);
+        })
+      ]);
+
       // Add missing icons to each peer
       peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...peerState.peer2.delta])];
       peerState.peer2.icons = [...new Set([...peerState.peer2.icons, ...peerState.peer1.delta])];
@@ -213,15 +288,88 @@
       // Update UI
       updatePeerUI('peer1');
       updatePeerUI('peer2');
-      
-      // Disable buttons after exchange
-      document.getElementById('generateSummaryBtn').disabled = true;
-      document.getElementById('exchangeDeltasBtn').disabled = true;
     }
 
+    // Animate message between peers
+    function animateMessage(content, type, fromPeer, toPeer) {
+      const messageEl = document.createElement('div');
+      messageEl.className = `message-animation ${type}`;
+      messageEl.textContent = content;
+      
+      // Get peer element positions
+      const fromEl = document.getElementById(fromPeer);
+      const toEl = document.getElementById(toPeer);
+      const fromRect = fromEl.getBoundingClientRect();
+      const toRect = toEl.getBoundingClientRect();
+      
+      // Position message at start
+      messageEl.style.position = 'absolute';
+      messageEl.style.left = `${fromRect.left + fromRect.width/2}px`;
+      messageEl.style.top = `${fromRect.top + fromRect.height/2}px`;
+      document.body.appendChild(messageEl);
+      
+      // Trigger animation
+      setTimeout(() => {
+        messageEl.style.opacity = '1';
+        messageEl.style.left = `${toRect.left + toRect.width/2}px`;
+        messageEl.style.top = `${toRect.top + toRect.height/2}px`;
+      }, 50);
+      
+      // Clean up after animation
+      setTimeout(() => {
+        messageEl.remove();
+      }, 600);
+    }
+
+    function togglePlayPause() {
+      isPlaying = !isPlaying;
+      const btn = document.getElementById('syncPlayPauseBtn');
+      if (!btn) return;
+      
+      if (isPlaying) {
+        AnimationCoordinator.setActive('sync');
+        btn.querySelector('i').className = 'fas fa-pause';
+        runNextStep();
+      } else {
+        btn.querySelector('i').className = 'fas fa-play';
+      }
+    }
+
+    async function runNextStep() {
+      if (!isPlaying || currentStep >= ANIMATION_STEPS.length) {
+        isPlaying = false;
+        currentStep = 0;
+        const btn = document.getElementById('syncPlayPauseBtn');
+        if (btn) {
+          btn.querySelector('i').className = 'fas fa-play';
+        }
+        return;
+      }
+
+      await ANIMATION_STEPS[currentStep]();
+      currentStep++;
+      
+      // Add delay between steps
+      setTimeout(() => {
+        if (isPlaying) {
+          runNextStep();
+        }
+      }, 1000);
+    }
+
+    // Listen for pause events from other animations
+    document.addEventListener('pause-other-animations', (event) => {
+      if (event.detail.except !== 'sync' && isPlaying) {
+        isPlaying = false;
+        const btn = document.getElementById('syncPlayPauseBtn');
+        if (btn) {
+          btn.querySelector('i').className = 'fas fa-play';
+        }
+      }
+    });
+
     // Set up event listeners
-    document.getElementById('generateSummaryBtn').addEventListener('click', generateSummaries);
-    document.getElementById('exchangeDeltasBtn').addEventListener('click', exchangeDeltas);
+    document.getElementById('syncPlayPauseBtn').addEventListener('click', togglePlayPause);
     document.getElementById('resetSyncBtn').addEventListener('click', initializePeers);
 
     // Initialize on load
