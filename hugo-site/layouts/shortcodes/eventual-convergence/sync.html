@@ -272,42 +272,54 @@
         summary1.classList.add('visible');
         summary2.classList.add('visible');
         
-        // Clear and populate summaries with animation
+        // Clear and populate summaries with text
         ['peer1', 'peer2'].forEach((peerId, idx) => {
           const summaryList = document.querySelector(`#summary${idx + 1} .summary-list`);
+          const summary = document.getElementById(`summary${idx + 1}`);
           summaryList.innerHTML = '';
-          
-          peerState[peerId].icons.forEach((icon, iconIdx) => {
-            setTimeout(() => {
-              const li = document.createElement('li');
-              const iconElement = document.createElement('i');
-              iconElement.className = icon.class;
-              iconElement.style.fontSize = '1.2rem';
-              li.appendChild(iconElement);
-              li.style.opacity = '0';
-              li.style.backgroundColor = idx === 0 ? '#f5f9ff' : '#f0fffc';
-              summaryList.appendChild(li);
-              
-              // Fade in the item
-              requestAnimationFrame(() => {
-                li.style.transition = 'opacity 0.3s';
-                li.style.opacity = '1';
-              });
-              
-              // Move summary boxes to final position after all items are added
-              if (idx === 1 && iconIdx === peerState[peerId].icons.length - 1) {
-                setTimeout(() => {
-                  summary1.style.left = `${peer1Rect.right + 20}px`;
-                  summary2.style.left = `${peer2Rect.right + 20}px`;
-                  setTimeout(resolve, 500);
-                }, 300);
-              }
-            }, iconIdx * 200);
+            
+          // Add all names at once
+          peerState[peerId].icons.forEach(icon => {
+            const li = document.createElement('li');
+            li.textContent = icon.name;
+            li.style.opacity = '0';
+            li.style.backgroundColor = idx === 0 ? '#f5f9ff' : '#f0fffc';
+            summaryList.appendChild(li);
+          });
+            
+          // Get summary box width for positioning
+          const summaryWidth = summary.getBoundingClientRect().width;
+            
+          // Position summaries at their starting points
+          if (idx === 0) {
+            summary.style.left = `${peer1Rect.right + 20}px`;
+          } else {
+            summary.style.left = `${peer2Rect.left - summaryWidth - 20}px`;
+          }
+            
+          // Fade in all items together
+          summary.style.opacity = '1';
+          summaryList.querySelectorAll('li').forEach(li => {
+            requestAnimationFrame(() => {
+              li.style.transition = 'opacity 0.3s';
+              li.style.opacity = '1';
+            });
           });
         });
-        
-        summary1.classList.add('visible');
-        summary2.classList.add('visible');
+
+        // After summaries are visible, move them to opposite peers
+        setTimeout(() => {
+          const summary1Width = summary1.getBoundingClientRect().width;
+          const summary2Width = summary2.getBoundingClientRect().width;
+            
+          summary1.style.transition = summary2.style.transition = 'all 0.5s ease-in-out';
+          summary1.style.left = `${peer2Rect.left - summary1Width - 20}px`; // Move to left of peer2
+          summary2.style.left = `${peer1Rect.right + 20}px`; // Move to right of peer1
+          summary1.style.opacity = '0';
+          summary2.style.opacity = '0';
+            
+          setTimeout(resolve, 500);
+        }, 500); // Start movement after summaries are visible
       });
     }
 
