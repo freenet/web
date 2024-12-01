@@ -256,11 +256,12 @@
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
-        // Position summaries to the right of their respective peers initially
-        summary1.style.left = `${peer1Rect.right + 20}px`;
-        summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
-        summary2.style.left = `${peer2Rect.right + 20}px`;
-        summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
+        // Position summaries between peers
+        const midpointX = (peer1Rect.right + peer2Rect.left) / 2;
+        summary1.style.left = `${midpointX}px`;
+        summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2 - 40}px`;
+        summary2.style.left = `${midpointX}px`;
+        summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2 + 40}px`;
         
         // Clear and populate summaries with animation
         ['peer1', 'peer2'].forEach((peerId, idx) => {
@@ -330,9 +331,10 @@
             const deltaList = deltaBox.querySelector('.summary-list');
             deltaList.innerHTML = '';
             
-            // Position deltas inside their peers
-            deltaBox.style.left = `${(idx === 0 ? peer1Rect : peer2Rect).left + (idx === 0 ? peer1Rect : peer2Rect).width/4}px`;
-            deltaBox.style.top = `${(idx === 0 ? peer1Rect : peer2Rect).top + (idx === 0 ? peer1Rect : peer2Rect).height/2}px`;
+            // Position deltas between peers
+            const midpointX = (peer1Rect.right + peer2Rect.left) / 2;
+            deltaBox.style.left = `${midpointX}px`;
+            deltaBox.style.top = `${(idx === 0 ? peer1Rect.top - 20 : peer2Rect.top + 20) + scrollTop + (idx === 0 ? peer1Rect : peer2Rect).height/2}px`;
             
             peerState[peerId].delta.forEach(icon => {
               const li = document.createElement('li');
