@@ -146,8 +146,11 @@
       { name: 'hippo', class: 'fas fa-hippo' }
     ];
 
-    let isPlaying = false;
-    let currentAnimation = null;
+    // Animation state
+    const animState = {
+      isPlaying: false,
+      currentAnimation: null
+    };
 
     // State for each peer
     const peerState = {
@@ -198,6 +201,8 @@
       const containerRect = container.getBoundingClientRect();
       const fromEl = document.getElementById(from);
       const toEl = document.getElementById(to);
+      const fromRect = fromEl.getBoundingClientRect();
+      const toRect = toEl.getBoundingClientRect();
       
       if (type === 'summary') {
         // Show summary in the respective summary box
@@ -245,7 +250,7 @@
     }
 
     async function runSyncAnimation() {
-      if (!isPlaying) return;
+      if (!animState.isPlaying) return;
       
       // Generate and show summaries
       const summary1 = peerState.peer1.icons.map(icon => icon.name).join(', ');
@@ -299,11 +304,11 @@
     }
 
     function togglePlayPause() {
-      isPlaying = !isPlaying;
+      animState.isPlaying = !animState.isPlaying;
       const btn = document.getElementById('syncPlayPauseBtn');
       const icon = btn.querySelector('i');
       
-      if (isPlaying) {
+      if (animState.isPlaying) {
         AnimationCoordinator.setActive('sync');
         icon.className = 'fas fa-pause';
         initializePeers();
@@ -315,8 +320,8 @@
 
     // Listen for pause events from other animations
     document.addEventListener('pause-other-animations', (event) => {
-      if (event.detail.except !== 'sync' && isPlaying) {
-        isPlaying = false;
+      if (event.detail.except !== 'sync' && animState.isPlaying) {
+        animState.isPlaying = false;
         const btn = document.getElementById('syncPlayPauseBtn');
         if (btn) {
           btn.querySelector('i').className = 'fas fa-play';
@@ -327,7 +332,7 @@
     // Set up event listeners
     document.getElementById('syncPlayPauseBtn').addEventListener('click', togglePlayPause);
     document.getElementById('resetSyncBtn').addEventListener('click', () => {
-      isPlaying = false;
+      animState.isPlaying = false;
       const playPauseBtn = document.getElementById('syncPlayPauseBtn');
       playPauseBtn.disabled = false;
       playPauseBtn.querySelector('i').className = 'fas fa-play';
