@@ -292,6 +292,10 @@
         // Position summaries beside their respective peers
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
+        // First position the summaries before making them visible
+        summary1.style.transition = 'none';
+        summary2.style.transition = 'none';
+        
         // Position summary1 20px to the right of peer1
         summary1.style.left = `${peer1Rect.right + 20}px`;
         summary1.style.top = `${peer1Rect.top + scrollTop}px`;
@@ -300,7 +304,13 @@
         summary2.style.left = `${peer2Rect.left - summary2.offsetWidth - 20}px`;
         summary2.style.top = `${peer2Rect.top + scrollTop}px`;
         
-        // Make summaries visible but transparent
+        // Force reflow
+        summary1.offsetHeight;
+        summary2.offsetHeight;
+        
+        // Restore transitions and make summaries visible
+        summary1.style.transition = '';
+        summary2.style.transition = '';
         summary1.classList.add('visible');
         summary2.classList.add('visible');
         
