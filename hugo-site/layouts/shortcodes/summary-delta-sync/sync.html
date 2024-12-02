@@ -312,23 +312,27 @@
         // Calculate the total available space between peers
         const totalSpace = peer2Rect.left - peer1Rect.right;
         
-        // Calculate positions to evenly distribute the space
-        const spacing = Math.floor((totalSpace - (summary1.offsetWidth + summary2.offsetWidth)) / 3);
+        // Fixed spacing from peers
+        const PEER_SPACING = 20;
         
-        // Position summary1 with the calculated spacing from peer1
-        const summary1Left = peer1Rect.right + spacing;
+        // Calculate the remaining space between summaries after accounting for peer spacing
+        const remainingSpace = totalSpace - (2 * PEER_SPACING) - summary1.offsetWidth - summary2.offsetWidth;
+        
+        // Position summary1 exactly 20px from peer1
+        const summary1Left = peer1Rect.right + PEER_SPACING;
         summary1.style.left = `${summary1Left}px`;
         summary1.style.top = `${peer1Rect.top + scrollTop + (peer1Rect.height - summary1.offsetHeight) / 2}px`;
         
-        // Position summary2 with the calculated spacing from peer2
-        const summary2Left = peer2Rect.left - summary2.offsetWidth - spacing;
+        // Position summary2 exactly 20px from peer2
+        const summary2Left = peer2Rect.left - summary2.offsetWidth - PEER_SPACING;
         summary2.style.left = `${summary2Left}px`;
         summary2.style.top = `${peer2Rect.top + scrollTop + (peer2Rect.height - summary2.offsetHeight) / 2}px`;
         
         // Log positions for debugging
         console.log('Spacing calculation:', {
             totalSpace,
-            spacing,
+            peerSpacing: PEER_SPACING,
+            remainingSpace,
             summary1Left,
             summary1Right: summary1Left + summary1.offsetWidth,
             summary2Left,
