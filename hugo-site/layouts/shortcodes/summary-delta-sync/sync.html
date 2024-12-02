@@ -347,10 +347,6 @@
             !peerState.peer1.icons.some(icon1 => icon1.name === icon2.name)
           );
           
-          // Hide summaries
-          summary1.classList.remove('visible');
-          summary2.classList.remove('visible');
-          
           resolve();
         }, 600);
       });
@@ -358,6 +354,10 @@
 
     async function exchangeDeltas() {
       return new Promise((resolve) => {
+        // Hide summaries from previous step
+        document.getElementById('summary1').classList.remove('visible');
+        document.getElementById('summary2').classList.remove('visible');
+
         const delta1 = document.getElementById('delta1');
         const delta2 = document.getElementById('delta2');
         const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
