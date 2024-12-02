@@ -84,15 +84,15 @@ consistency:
   relying instead on local operations and efficient propagation through a structured small-world
   network.
 
-Thus, **Freenet's Summary-Delta Synchronization** not only simplifies the problem of achieving eventual consistency in
-distributed systems but also provides the flexibility and efficiency needed for diverse,
-decentralized applications.
+Thus, **Freenet's Summary-Delta Synchronization** not only simplifies the problem of achieving
+eventual consistency in distributed systems but also provides the flexibility and efficiency needed
+for diverse, decentralized applications.
 
 #### Peer Synchronization Example
 
 Below is a simple visualization of how two peers synchronize their data using summaries and deltas:
 
-{{< eventual-convergence/sync >}}
+{{< summary-delta-sync/sync >}}
 
 1. Each peer starts with different data (represented by icons)
 2. They generate summaries of their data (lists of icon names)
@@ -103,7 +103,7 @@ Below is a simple visualization of how two peers synchronize their data using su
 
 The visualization below shows how updates propagate through the entire network:
 
-{{< eventual-convergence/propagation >}}
+{{< summary-delta-sync/propagation >}}
 
 Click different nodes to see how information spreads through the network. Notice how:
 
