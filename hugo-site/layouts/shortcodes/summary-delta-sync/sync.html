@@ -255,15 +255,11 @@
           await generateDeltas();
           break;
           
-        case 4: // Exchange deltas
+        case 4: // Exchange and merge deltas
           await exchangeDeltas();
           break;
           
-        case 5: // Merge deltas
-          await mergeDeltas();
-          break;
-          
-        case 6: // Final state
+        case 5: // Final state
           // Show completion message
           break;
       }
@@ -551,76 +547,50 @@
           if (peerState.peer1.delta.length > 0) {
             delta1.classList.add('visible');
             setTimeout(() => {
-              delta1.style.left = `${(peer2Rect.left - containerRect.left) - delta1.offsetWidth - PEER_SPACING}px`;
+              delta1.style.left = `${(peer2Rect.left - containerRect.left)}px`;
+              delta1.style.opacity = '0';
+              delta1.style.transform = 'scale(0.5)';
             }, 100);
           }
           
           if (peerState.peer2.delta.length > 0) {
             delta2.classList.add('visible');
             setTimeout(() => {
-              delta2.style.left = `${(peer1Rect.right - containerRect.left) + PEER_SPACING}px`;
+              delta2.style.left = `${(peer1Rect.left - containerRect.left)}px`;
+              delta2.style.opacity = '0';
+              delta2.style.transform = 'scale(0.5)';
             }, 100);
           }
           
-          setTimeout(resolve, 600);
+          // Add missing icons to each peer after animation
+          setTimeout(() => {
+            peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...peerState.peer2.delta])];
+            peerState.peer2.icons = [...new Set([...peerState.peer2.icons, ...peerState.peer1.delta])];
+            
+            // Sort icons by name for consistent display
+            peerState.peer1.icons.sort((a, b) => a.name.localeCompare(b.name));
+            peerState.peer2.icons.sort((a, b) => a.name.localeCompare(b.name));
+            
+            updatePeerUI('peer1');
+            updatePeerUI('peer2');
+            
+            // Hide deltas
+            delta1.classList.remove('visible');
+            delta2.classList.remove('visible');
+            
+            resolve();
+          }, 600);
         });
       });
     }
 
-    async function mergeDeltas() {
-      return new Promise((resolve) => {
-        const delta1 = document.getElementById('delta1');
-        const delta2 = document.getElementById('delta2');
-        const peer1 = document.getElementById('peer1');
-        const peer2 = document.getElementById('peer2');
-        const container = document.querySelector('.sync-visualization-wrapper');
-        const containerRect = container.getBoundingClientRect();
-        const peer1Rect = peer1.getBoundingClientRect();
-        const peer2Rect = peer2.getBoundingClientRect();
-
-        // Calculate final positions for deltas to move into peers
-        if (peerState.peer1.delta.length > 0) {
-          delta2.style.left = `${(peer1Rect.left - containerRect.left)}px`;
-          delta2.style.top = `${(peer1Rect.top - containerRect.top) + (peer1Rect.height / 2)}px`;
-          delta2.style.opacity = '0';
-          delta2.style.transform = 'scale(0.5)';
-        }
-
-        if (peerState.peer2.delta.length > 0) {
-          delta1.style.left = `${(peer2Rect.left - containerRect.left)}px`;
-          delta1.style.top = `${(peer2Rect.top - containerRect.top) + (peer2Rect.height / 2)}px`;
-          delta1.style.opacity = '0';
-          delta1.style.transform = 'scale(0.5)';
-        }
-
-        // Add missing icons to each peer
-        peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...peerState.peer2.delta])];
-        peerState.peer2.icons = [...new Set([...peerState.peer2.icons, ...peerState.peer1.delta])];
-        
-        // Sort icons by name for consistent display
-        peerState.peer1.icons.sort((a, b) => a.name.localeCompare(b.name));
-        peerState.peer2.icons.sort((a, b) => a.name.localeCompare(b.name));
-        
-        // Update UI after a slight delay to let the animation complete
-        setTimeout(() => {
-          updatePeerUI('peer1');
-          updatePeerUI('peer2');
-          
-          // Hide deltas
-          delta1.classList.remove('visible');
-          delta2.classList.remove('visible');
-          resolve();
-        }, 600);
-      });
-    }
 
     const stepDescriptions = [
       "Click 'Next' to begin the synchronization process.",
       "Each peer generates a summary of its current state.",
       "Peers exchange their summaries to identify differences.",
       "Each peer calculates what data the other peer is missing.",
-      "Peers exchange their calculated deltas.",
-      "Peers merge received deltas to achieve consistent state."
+      "Peers exchange and merge deltas to achieve consistent state."
     ];
 
     function updateStepCaption() {
