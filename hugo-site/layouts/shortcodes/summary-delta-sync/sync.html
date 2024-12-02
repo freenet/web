@@ -277,15 +277,20 @@
         summary1.querySelector('.summary-list').innerHTML = '';
         summary2.querySelector('.summary-list').innerHTML = '';
         
-        // Position summaries relative to peers
+        // Get peer elements and their positions
         const peer1 = document.getElementById('peer1');
         const peer2 = document.getElementById('peer2');
+        const peer1Rect = peer1.getBoundingClientRect();
+        const peer2Rect = peer2.getBoundingClientRect();
         
-        // Position summary1 to the right of peer1
+        // Calculate center points
+        const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
+        const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
+        
+        // Position summaries relative to peers
         summary1.style.left = '33%';
         summary1.style.top = '0';
         
-        // Position summary2 to the left of peer2
         summary2.style.left = '66%';
         summary2.style.top = '0';
         
