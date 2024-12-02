@@ -279,115 +279,21 @@
         summary1.querySelector('.summary-list').innerHTML = '';
         summary2.querySelector('.summary-list').innerHTML = '';
         
-        // Get peer elements and their positions
+        // Get peer elements
         const peer1 = document.getElementById('peer1');
         const peer2 = document.getElementById('peer2');
         const peer1Rect = peer1.getBoundingClientRect();
         const peer2Rect = peer2.getBoundingClientRect();
         
-        // Position summaries beside their respective peers
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        
-        // First position the summaries before making them visible
-        summary1.style.transition = 'none';
-        summary2.style.transition = 'none';
-        
-        // Get the container's position and log detailed coordinates
-        const container = document.querySelector('.peer-container');
-        const containerRect = container.getBoundingClientRect();
-        
-        console.log('Container coordinates:', {
-            left: containerRect.left,
-            right: containerRect.right,
-            width: containerRect.width,
-            top: containerRect.top,
-            bottom: containerRect.bottom,
-            height: containerRect.height
-        });
-        
-        console.log('Summary box dimensions:', {
-            summary1: {
-                width: summary1.offsetWidth,
-                height: summary1.offsetHeight
-            },
-            summary2: {
-                width: summary2.offsetWidth,
-                height: summary2.offsetHeight
-            }
-        });
-        
-        console.log('Peer coordinates:', {
-            peer1: {
-                left: peer1Rect.left,
-                right: peer1Rect.right,
-                width: peer1Rect.width,
-                top: peer1Rect.top,
-                bottom: peer1Rect.bottom,
-                height: peer1Rect.height
-            },
-            peer2: {
-                left: peer2Rect.left,
-                right: peer2Rect.right,
-                width: peer2Rect.width,
-                top: peer2Rect.top,
-                bottom: peer2Rect.bottom,
-                height: peer2Rect.height
-            }
-        });
-
-        // Fixed spacing from peers
+        // Simple fixed spacing from peers
         const PEER_SPACING = 20;
         
-        // Calculate absolute positions first
-        const summary1Left = peer1Rect.right + PEER_SPACING;
-        const summary1Top = peer1Rect.top + (peer1Rect.height - summary1.offsetHeight) / 2;
-        const summary2Left = peer2Rect.left - summary2.offsetWidth - PEER_SPACING;
-        const summary2Top = peer2Rect.top + (peer2Rect.height - summary2.offsetHeight) / 2;
-
-        // Convert to container-relative positions
-        const containerRelativeSummary1Left = summary1Left - containerRect.left;
-        const containerRelativeSummary1Top = summary1Top - containerRect.top;
-        const containerRelativeSummary2Left = summary2Left - containerRect.left;
-        const containerRelativeSummary2Top = summary2Top - containerRect.top;
-
-        console.log('Absolute positions:', {
-            summary1: { left: summary1Left, top: summary1Top },
-            summary2: { left: summary2Left, top: summary2Top }
-        });
-
-        console.log('Calculated positions (container-relative):', {
-            summary1: {
-                left: summary1Left,
-                top: summary1Top,
-                rightEdge: summary1Left + summary1.offsetWidth
-            },
-            summary2: {
-                left: summary2Left,
-                top: summary2Top,
-                rightEdge: summary2Left + summary2.offsetWidth
-            },
-            spacing: {
-                totalSpace: peer2Rect.left - peer1Rect.right,
-                gapBetweenSummaries: summary2Left - (summary1Left + summary1.offsetWidth)
-            }
-        });
-
-        // Position summaries using container-relative coordinates
-        summary1.style.left = `${containerRelativeSummary1Left}px`;
-        summary1.style.top = `${containerRelativeSummary1Top}px`;
-        summary2.style.left = `${containerRelativeSummary2Left}px`;
-        summary2.style.top = `${containerRelativeSummary2Top}px`;
-
-        console.log('Applied styles:', {
-            summary1: {
-                left: summary1.style.left,
-                top: summary1.style.top
-            },
-            summary2: {
-                left: summary2.style.left,
-                top: summary2.style.top
-            }
-        });
+        // Position summaries relative to container
+        summary1.style.left = `${peer1Rect.right - peer1.offsetLeft + PEER_SPACING}px`;
+        summary1.style.top = `${(peer1Rect.height - summary1.offsetHeight) / 2}px`;
+        
+        summary2.style.left = `${peer2Rect.left - peer2.offsetLeft - summary2.offsetWidth - PEER_SPACING}px`;
+        summary2.style.top = `${(peer2Rect.height - summary2.offsetHeight) / 2}px`;
         
         // Force reflow
         summary1.offsetHeight;
