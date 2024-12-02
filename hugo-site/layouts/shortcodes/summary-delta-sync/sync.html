@@ -368,16 +368,6 @@
             summaryList.appendChild(li);
           });
             
-          // Get summary box width for positioning
-          const summaryWidth = summary.getBoundingClientRect().width;
-            
-          // Position summaries above their respective peers
-          if (idx === 0) {
-            summary.style.left = `${peer1Center}px`; // Center above peer1
-          } else {
-            summary.style.left = `${peer2Center}px`; // Center above peer2
-          }
-            
           // Fade in all items together
           summary.style.opacity = '1';
           summaryList.querySelectorAll('li').forEach(li => {
