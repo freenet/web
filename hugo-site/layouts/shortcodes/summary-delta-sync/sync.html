@@ -285,16 +285,20 @@
         const peer1Rect = peer1.getBoundingClientRect();
         const peer2Rect = peer2.getBoundingClientRect();
         
-        // Calculate center points
-        const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
-        const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
-        
         // Position summaries beside their respective peers
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
         // First position the summaries before making them visible
         summary1.style.transition = 'none';
         summary2.style.transition = 'none';
+        
+        // Position summary1 to the right of peer1
+        summary1.style.left = `${peer1Rect.right + 20}px`;
+        summary1.style.top = `${peer1Rect.top + scrollTop + (peer1Rect.height - summary1.offsetHeight) / 2}px`;
+        
+        // Position summary2 to the left of peer2
+        summary2.style.left = `${peer2Rect.left - summary2.offsetWidth - 20}px`;
+        summary2.style.top = `${peer2Rect.top + scrollTop + (peer2Rect.height - summary2.offsetHeight) / 2}px`;
         
         // Log initial positions and dimensions
         console.log('Peer1 rect:', {
