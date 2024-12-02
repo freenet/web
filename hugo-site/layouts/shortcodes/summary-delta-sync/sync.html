@@ -324,18 +324,13 @@
       return new Promise((resolve) => {
         const summary1 = document.getElementById('summary1');
         const summary2 = document.getElementById('summary2');
-        const delta1 = document.getElementById('delta1');
-        const delta2 = document.getElementById('delta2');
         
         const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
         
-        // Calculate center points and summary widths
+        // Calculate center points
         const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
         const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
-        
-        const summary1Width = summary1.getBoundingClientRect().width;
-        const summary2Width = summary2.getBoundingClientRect().width;
         
         // Animate summaries moving to opposite peers
         summary1.style.transition = summary2.style.transition = 'all 0.5s ease-in-out';
@@ -343,49 +338,14 @@
         summary1.style.left = `${peer2Center}px`; // Move to center above peer2
         summary2.style.left = `${peer1Center}px`; // Move to center above peer1
         
-        // Calculate and show deltas after summaries have moved
         setTimeout(() => {
-          // Calculate deltas
+          // Calculate deltas (but don't show them yet)
           peerState.peer1.delta = peerState.peer1.icons.filter(icon1 => 
             !peerState.peer2.icons.some(icon2 => icon2.name === icon1.name)
           );
           peerState.peer2.delta = peerState.peer2.icons.filter(icon2 => 
             !peerState.peer1.icons.some(icon1 => icon1.name === icon2.name)
           );
-          
-          // Position and populate delta boxes
-          ['peer1', 'peer2'].forEach((peerId, idx) => {
-            const deltaBox = document.getElementById(`delta${idx + 1}`);
-            const deltaList = deltaBox.querySelector('.summary-list');
-            deltaList.innerHTML = '';
-            
-            // Position deltas at the left of peer1 and right of peer2
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const deltaWidth = deltaBox.getBoundingClientRect().width;
-            // Calculate center points for positioning
-            const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
-            const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
-            
-            if (idx === 0) {
-              deltaBox.style.left = `${peer1Center}px`;
-              deltaBox.style.top = `${peer1Rect.top + scrollTop - 20}px`;
-            } else {
-              deltaBox.style.left = `${peer2Center}px`;
-              deltaBox.style.top = `${peer2Rect.top + scrollTop - 20}px`;
-            }
-            
-            peerState[peerId].delta.forEach(icon => {
-              const li = document.createElement('li');
-              const iconElement = document.createElement('i');
-              iconElement.className = icon.class;
-              iconElement.style.fontSize = '1.2rem';
-              li.appendChild(iconElement);
-              li.style.backgroundColor = '#f0fffc';
-              deltaList.appendChild(li);
-            });
-            
-            deltaBox.classList.add('visible');
-          });
           
           // Hide summaries
           summary1.classList.remove('visible');
@@ -406,13 +366,43 @@
         // Calculate center points for positioning
         const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
         const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-        // Animate deltas moving to opposite peers
-        delta1.style.transition = delta2.style.transition = 'all 0.5s ease-in-out';
+        // First show the delta boxes in their initial positions
+        ['peer1', 'peer2'].forEach((peerId, idx) => {
+          const deltaBox = document.getElementById(`delta${idx + 1}`);
+          const deltaList = deltaBox.querySelector('.summary-list');
+          deltaList.innerHTML = '';
+          
+          if (idx === 0) {
+            deltaBox.style.left = `${peer1Center}px`;
+            deltaBox.style.top = `${peer1Rect.top + scrollTop - 20}px`;
+          } else {
+            deltaBox.style.left = `${peer2Center}px`;
+            deltaBox.style.top = `${peer2Rect.top + scrollTop - 20}px`;
+          }
+          
+          peerState[peerId].delta.forEach(icon => {
+            const li = document.createElement('li');
+            const iconElement = document.createElement('i');
+            iconElement.className = icon.class;
+            iconElement.style.fontSize = '1.2rem';
+            li.appendChild(iconElement);
+            li.style.backgroundColor = '#f0fffc';
+            deltaList.appendChild(li);
+          });
+          
+          deltaBox.classList.add('visible');
+        });
+
+        // After a short delay, animate deltas moving to opposite peers
+        setTimeout(() => {
+          delta1.style.transition = delta2.style.transition = 'all 0.5s ease-in-out';
+          delta1.style.left = `${peer2Center}px`;
+          delta2.style.left = `${peer1Center}px`;
+        }, 500);
         
-        delta1.style.left = `${peer2Center}px`;
-        delta2.style.left = `${peer1Center}px`;
-        
+        // After animation completes, update the peers
         setTimeout(() => {
           // Add missing icons to each peer
           peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...peerState.peer2.delta])];
