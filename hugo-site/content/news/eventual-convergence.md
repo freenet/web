@@ -55,7 +55,7 @@ These summaries and deltas can be extremely efficient because they’re represen
 arrays, and their structure is defined by the Wasm contract. This efficiency means that nodes can
 converge without having to exchange large amounts of redundant information.
 
-#### 3. Eventual Convergence in a Small-World Network
+#### 3. Summary-Delta Synchronization in a Small-World Network
 
 In Freenet, the key-values are stored using a **small-world network** topology, which has
 interesting properties for distributed consistency. For a given key, nodes subscribe to the value,
@@ -84,7 +84,7 @@ consistency:
   relying instead on local operations and efficient propagation through a structured small-world
   network.
 
-Thus, **Freenet's Summary-Delta Convergence** not only simplifies the problem of achieving eventual consistency in
+Thus, **Freenet's Summary-Delta Synchronization** not only simplifies the problem of achieving eventual consistency in
 distributed systems but also provides the flexibility and efficiency needed for diverse,
 decentralized applications.
 
