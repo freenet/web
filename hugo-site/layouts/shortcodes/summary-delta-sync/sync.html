@@ -671,6 +671,8 @@
         element.style.opacity = '0';
         element.style.transform = 'scale(1)';
         element.style.transition = 'none';
+        element.style.top = '';  // Reset vertical position
+        element.style.left = ''; // Reset horizontal position
         
         // Clear the summary/delta lists
         const list = element.querySelector('.summary-list');
