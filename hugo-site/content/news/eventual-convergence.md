@@ -1,5 +1,5 @@
 ---
-title: "Understanding Eventual Convergence"
+title: "Understanding Summary-Delta Convergence"
 date: 2024-11-30
 draft: false
 tags: ["front-page", "university"]
@@ -60,9 +60,9 @@ converge without having to exchange large amounts of redundant information.
 In Freenet, the key-values are stored using a **small-world network** topology, which has
 interesting properties for distributed consistency. For a given key, nodes subscribe to the value,
 forming a connected "tree" structure, with the root being the node closest to the key. Updates
-propagate through this tree using the **Eventual Convergence** mechanism—similar to a virus
+propagate through this tree using the **Summary-Delta Convergence** mechanism—similar to a virus
 spreading through a network. This ensures that changes are efficiently propagated to all subscribing
-nodes, leading them to converge on a consistent state over time.
+nodes, achieving eventual consistency over time.
 
 #### Illustrating Eventual Convergence: The Color Mixing Analogy
 
@@ -72,7 +72,7 @@ through the tree of nodes. As updates propagate and meet at nodes, their colors 
 updates might reach different nodes in different orders, the merging process ensures that, in the
 end, each node arrives at the same color—demonstrating a consistent and commutative outcome.
 
-By using **Eventual Convergence**, Freenet sidesteps the traditional difficulties of strong
+By using **Summary-Delta Convergence**, Freenet sidesteps the traditional difficulties of strong
 consistency:
 
 - **No Need for Heavy Coordination**: Instead of relying on consensus, Freenet nodes independently
@@ -84,7 +84,7 @@ consistency:
   relying instead on local operations and efficient propagation through a structured small-world
   network.
 
-Thus, **Freenet's Eventual Convergence** not only simplifies the problem of achieving consistency in
+Thus, **Freenet's Summary-Delta Convergence** not only simplifies the problem of achieving eventual consistency in
 distributed systems but also provides the flexibility and efficiency needed for diverse,
 decentralized applications.
 
