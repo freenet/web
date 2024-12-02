@@ -406,24 +406,46 @@
 
     async function exchangeSummaries() {
       return new Promise((resolve) => {
+        console.log('Step 2: Starting exchangeSummaries');
         const summary1 = document.getElementById('summary1');
         const summary2 = document.getElementById('summary2');
         
         const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
+        const container = document.querySelector('.sync-visualization-wrapper');
+        const containerRect = container.getBoundingClientRect();
         
-        // Calculate center points
-        const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
-        const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
+        console.log('Step 2: Initial positions:', {
+          summary1Left: summary1.style.left,
+          summary1Top: summary1.style.top,
+          summary2Left: summary2.style.left,
+          summary2Top: summary2.style.top
+        });
+        
+        // Calculate new positions relative to container
+        const summary1NewLeft = (peer2Rect.left - containerRect.left) - summary1.offsetWidth - 20;
+        const summary2NewLeft = (peer1Rect.right - containerRect.left) + 20;
+        
+        console.log('Step 2: Calculated new positions:', {
+          summary1NewLeft,
+          summary2NewLeft,
+          peer1Right: peer1Rect.right - containerRect.left,
+          peer2Left: peer2Rect.left - containerRect.left,
+          containerLeft: containerRect.left,
+          summary1Width: summary1.offsetWidth,
+          summary2Width: summary2.offsetWidth
+        });
         
         // Animate summaries moving to opposite peers
         summary1.style.transition = summary2.style.transition = 'all 0.5s ease-in-out';
         
-        // Move summary1 to just left of peer2
-        summary1.style.left = `${peer2Rect.left - summary1.offsetWidth - 20}px`;
+        summary1.style.left = `${summary1NewLeft}px`;
+        summary2.style.left = `${summary2NewLeft}px`;
         
-        // Move summary2 to just right of peer1
-        summary2.style.left = `${peer1Rect.right + 20}px`;
+        console.log('Step 2: Applied new positions:', {
+          summary1Left: summary1.style.left,
+          summary2Left: summary2.style.left
+        });
         
         setTimeout(resolve, 600);
       });
