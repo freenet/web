@@ -198,12 +198,16 @@
       // Shuffle available icons
       const shuffled = [...availableIcons].sort(() => Math.random() - 0.5);
       
-      // Assign 2-4 random icons to each peer
-      const peer1Count = Math.floor(Math.random() * 3) + 2; // 2-4 icons
-      const peer2Count = Math.floor(Math.random() * 3) + 2; // 2-4 icons
+      // Select one common icon that both peers will have
+      const commonIcon = shuffled[0];
       
-      peerState.peer1.icons = shuffled.slice(0, peer1Count);
-      peerState.peer2.icons = shuffled.slice(shuffled.length - peer2Count);
+      // Assign 2-4 random icons to each peer, including the common icon
+      const peer1Count = Math.floor(Math.random() * 2) + 2; // 2-3 additional icons
+      const peer2Count = Math.floor(Math.random() * 2) + 2; // 2-3 additional icons
+      
+      // Assign unique icons to each peer, plus the common icon
+      peerState.peer1.icons = [commonIcon, ...shuffled.slice(1, peer1Count + 1)];
+      peerState.peer2.icons = [commonIcon, ...shuffled.slice(peer1Count + 1, peer1Count + peer2Count + 1)];
 
       // Update UI
       updatePeerUI('peer1');
