@@ -300,7 +300,7 @@
           if (idx === 0) {
             summary.style.left = `${peer1Center + peer1Rect.width/2 + 40}px`; // Start right of peer1
           } else {
-            summary.style.left = `${peer2Center - peer2Rect.width/2 - summaryWidth - 40}px`; // Start left of peer2
+            summary.style.left = `${peer2Center + peer2Rect.width/2 + 40}px`; // Start right of peer2
           }
             
           // Fade in all items together
@@ -349,7 +349,7 @@
         // Animate summaries moving to opposite peers
         summary1.style.transition = summary2.style.transition = 'all 0.5s ease-in-out';
         
-        summary1.style.left = `${peer2Center - peer2Rect.width/2 - summary1Width - 40}px`; // Move to left of peer2
+        summary1.style.left = `${peer2Center + peer2Rect.width/2 + 40}px`; // Move to right of peer2
         summary2.style.left = `${peer1Center + peer1Rect.width/2 + 40}px`; // Move to right of peer1
         
         // Calculate and show deltas after summaries have moved
