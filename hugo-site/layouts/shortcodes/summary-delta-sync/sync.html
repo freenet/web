@@ -292,13 +292,17 @@
         summary1.style.transition = 'none';
         summary2.style.transition = 'none';
         
-        // Position summary1 to the right of peer1
-        summary1.style.left = `${peer1Rect.right + 20}px`;
-        summary1.style.top = `${peer1Rect.top + scrollTop + (peer1Rect.height - summary1.offsetHeight) / 2}px`;
+        // Get the container's position
+        const container = document.querySelector('.peer-container');
+        const containerRect = container.getBoundingClientRect();
         
-        // Position summary2 to the left of peer2
-        summary2.style.left = `${peer2Rect.left - summary2.offsetWidth - 20}px`;
-        summary2.style.top = `${peer2Rect.top + scrollTop + (peer2Rect.height - summary2.offsetHeight) / 2}px`;
+        // Position summary1 to the right of peer1, relative to container
+        summary1.style.left = `${peer1Rect.right - containerRect.left + 20}px`;
+        summary1.style.top = `${peer1Rect.top - containerRect.top + (peer1Rect.height - summary1.offsetHeight) / 2}px`;
+        
+        // Position summary2 to the left of peer2, relative to container
+        summary2.style.left = `${peer2Rect.left - containerRect.left - summary2.offsetWidth - 20}px`;
+        summary2.style.top = `${peer2Rect.top - containerRect.top + (peer2Rect.height - summary2.offsetHeight) / 2}px`;
         
         // Log initial positions and dimensions
         console.log('Peer1 rect:', {
