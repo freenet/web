@@ -683,6 +683,14 @@
       // Reset peer states and UI
       initializePeers();
       
+      // Reset peer positions
+      ['peer1', 'peer2'].forEach(id => {
+        const peer = document.getElementById(id);
+        peer.style.position = '';
+        peer.style.top = '';
+        peer.style.left = '';
+      });
+      
       // Force a reflow to ensure clean state
       document.querySelector('.sync-visualization-wrapper').offsetHeight;
       
