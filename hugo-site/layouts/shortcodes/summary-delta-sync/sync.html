@@ -662,14 +662,41 @@
     }
 
     function resetAnimation() {
+      // Reset state variables
       currentStep = 0;
       isAnimating = false;
       nextStepQueued = false;
-      updateStepCaption();
-      document.getElementById('summary1').classList.remove('visible');
-      document.getElementById('summary2').classList.remove('visible');
+      
+      // Reset UI elements
       document.getElementById('syncNextBtn').disabled = false;
+      updateStepCaption();
+      
+      // Hide all summary and delta displays
+      ['summary1', 'summary2', 'delta1', 'delta2'].forEach(id => {
+        const element = document.getElementById(id);
+        element.classList.remove('visible');
+        element.style.display = 'none';
+        element.style.opacity = '0';
+        element.style.transition = 'none';
+        
+        // Clear the summary/delta lists
+        const list = element.querySelector('.summary-list');
+        if (list) list.innerHTML = '';
+      });
+      
+      // Reset peer states and UI
       initializePeers();
+      
+      // Force a reflow to ensure clean state
+      document.querySelector('.sync-visualization-wrapper').offsetHeight;
+      
+      // Restore transitions after reset
+      setTimeout(() => {
+        ['summary1', 'summary2', 'delta1', 'delta2'].forEach(id => {
+          const element = document.getElementById(id);
+          element.style.transition = 'all 0.5s ease-in-out';
+        });
+      }, 50);
     }
 
     // Set up event listeners
