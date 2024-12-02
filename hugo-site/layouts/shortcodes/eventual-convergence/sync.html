@@ -321,14 +321,9 @@
           summary1.style.transition = summary2.style.transition = 'all 0.5s ease-in-out';
           summary1.style.left = `${peer2Center - peer2Rect.width/2 - summary1Width - 40}px`; // Move to left of peer2
           summary2.style.left = `${peer1Center + peer1Rect.width/2 + 40}px`; // Move to right of peer1
-          // Wait for summaries to reach their destinations, show for a moment, then fade
+          // Wait for summaries to reach their destinations
           setTimeout(() => {
-            // Keep summaries visible for 1.5 seconds before fading
-            setTimeout(() => {
-              summary1.style.opacity = '0';
-              summary2.style.opacity = '0';
-              setTimeout(resolve, 500);
-            }, 1500);
+            resolve();
           }, 500);
         }, 500); // Start movement after summaries are visible
       });
