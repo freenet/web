@@ -50,7 +50,6 @@
       visibility: hidden;
       transition: all 0.5s ease-in-out;
       pointer-events: none;
-      transform: translateX(-50%);
       z-index: 1000;
       position: fixed;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -289,13 +288,16 @@
         const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
         const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
         
-        // Position summaries above their respective peers
+        // Position summaries beside their respective peers
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        summary1.style.left = `${peer1Center}px`;
-        summary1.style.top = `${peer1Rect.top + scrollTop - summary1.offsetHeight - 20}px`;
         
-        summary2.style.left = `${peer2Center}px`;
-        summary2.style.top = `${peer2Rect.top + scrollTop - summary2.offsetHeight - 20}px`;
+        // Position summary1 to the right of peer1
+        summary1.style.left = `${peer1Rect.right + 20}px`;
+        summary1.style.top = `${peer1Rect.top + scrollTop}px`;
+        
+        // Position summary2 to the left of peer2
+        summary2.style.left = `${peer2Rect.left - summary2.offsetWidth - 20}px`;
+        summary2.style.top = `${peer2Rect.top + scrollTop}px`;
         
         // Make summaries visible but transparent
         summary1.classList.add('visible');
