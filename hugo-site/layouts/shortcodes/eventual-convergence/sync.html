@@ -121,17 +121,24 @@
     </div>
   </div>
 
-  <div class="buttons has-addons is-centered" style="margin: 1rem;">
-    <button id="syncPlayPauseBtn" class="button is-medium is-primary">
-      <span class="icon">
-        <i class="fas fa-play"></i>
-      </span>
-    </button>
-    <button id="resetSyncBtn" class="button is-medium">
-      <span class="icon">
-        <i class="fas fa-undo"></i>
-      </span>
-    </button>
+  <div class="visualization-controls" style="text-align: center; margin: 1rem;">
+    <div class="buttons has-addons is-centered" style="margin-bottom: 0.5rem;">
+      <button id="syncNextBtn" class="button is-medium is-primary">
+        <span class="icon">
+          <i class="fas fa-step-forward"></i>
+        </span>
+        <span>Next</span>
+      </button>
+      <button id="resetSyncBtn" class="button is-medium">
+        <span class="icon">
+          <i class="fas fa-undo"></i>
+        </span>
+        <span>Reset</span>
+      </button>
+    </div>
+    <p id="stepCaption" class="has-text-centered" style="margin: 1rem; font-style: italic;">
+      Click "Next" to begin the synchronization process.
+    </p>
   </div>
 
   <div id="summary1" class="summary-display">
@@ -224,26 +231,21 @@
     const ANIMATION_DELAY = 1000;
 
     async function runSyncAnimation() {
-      if (!isPlaying) return;
-      
       switch(currentStep) {
-        case 0: // Generate and show summaries
+        case 1: // Generate and show summaries
           await generateAndAnimateSummaries();
-          currentStep++;
-          setTimeout(runSyncAnimation, ANIMATION_DELAY);
           break;
           
-        case 1: // Exchange summaries and generate deltas
+        case 2: // Exchange summaries
           await exchangeSummariesAndGenerateDeltas();
-          currentStep++;
-          setTimeout(runSyncAnimation, ANIMATION_DELAY);
           break;
           
-        case 2: // Exchange deltas
+        case 3: // Exchange deltas
           await exchangeDeltas();
-          // Animation complete
-          isPlaying = false;
-          document.querySelector('#syncPlayPauseBtn i').className = 'fas fa-play';
+          break;
+          
+        case 4: // Final state
+          // Show completion message
           break;
       }
     }
@@ -440,33 +442,48 @@
       });
     }
 
-    function togglePlayPause() {
-      if (!isPlaying) {
-        AnimationCoordinator.setActive('sync');
-        isPlaying = true;
-        document.querySelector('#syncPlayPauseBtn i').className = 'fas fa-pause';
-        runSyncAnimation();
+    const stepDescriptions = [
+      "Click 'Next' to begin the synchronization process.",
+      "Each peer generates a summary of its current state.",
+      "Peers exchange their summaries to identify differences.",
+      "Based on the differences, peers generate and exchange deltas.",
+      "Peers apply the received deltas to achieve a consistent state."
+    ];
+
+    let currentStep = 0;
+    
+    function updateStepCaption() {
+      const caption = document.getElementById('stepCaption');
+      caption.textContent = stepDescriptions[currentStep];
+    }
+
+    async function handleNextStep() {
+      AnimationCoordinator.setActive('sync');
+      
+      if (currentStep < stepDescriptions.length - 1) {
+        currentStep++;
+        updateStepCaption();
+        await runSyncAnimation();
       }
     }
 
     function resetAnimation() {
-      isPlaying = false;
       currentStep = 0;
-      document.querySelector('#syncPlayPauseBtn i').className = 'fas fa-play';
+      updateStepCaption();
       document.getElementById('summary1').classList.remove('visible');
       document.getElementById('summary2').classList.remove('visible');
       initializePeers();
     }
 
     // Set up event listeners
-    document.getElementById('syncPlayPauseBtn').addEventListener('click', togglePlayPause);
+    document.getElementById('syncNextBtn').addEventListener('click', handleNextStep);
     document.getElementById('resetSyncBtn').addEventListener('click', resetAnimation);
 
     // Listen for pause events from other animations
     document.addEventListener('pause-other-animations', (event) => {
-      if (event.detail.except !== 'sync' && isPlaying) {
-        isPlaying = false;
-        document.querySelector('#syncPlayPauseBtn i').className = 'fas fa-play';
+      if (event.detail.except !== 'sync') {
+        currentStep = 0;
+        updateStepCaption();
       }
     });
 
