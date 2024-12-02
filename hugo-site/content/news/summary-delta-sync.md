@@ -101,15 +101,11 @@ Below is a simple visualization of how two peers synchronize their data using su
 
 #### Network-wide Propagation
 
-The visualization below shows how updates propagate through the entire network:
-
-Click different nodes to see how information spreads through the network. Notice how:
-
-{{< summary-delta-sync/propagation >}}
+The visualization below shows how updates propagate through the entire network, click individual
+nodes to trigger updates. Notice how:
 
 - Updates propagate gradually from node to node
 - Multiple updates can spread simultaneously
 - The network eventually reaches a consistent state
-- Each node maintains a history of updates it has received
 
-More detailed explanations and additional visualizations coming soon...
+{{< summary-delta-sync/propagation >}}
