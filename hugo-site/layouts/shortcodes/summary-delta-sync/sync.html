@@ -51,7 +51,7 @@
       transition: all 0.5s ease-in-out;
       pointer-events: none;
       z-index: 1000;
-      position: fixed;
+      position: absolute;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       border-radius: 6px;
     }
@@ -66,8 +66,9 @@
       background: #f0fffc;
     }
     .summary-display.visible, .delta-display.visible {
-      opacity: 1;
-      visibility: visible;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto;
     }
     .summary-title {
       font-weight: bold;
