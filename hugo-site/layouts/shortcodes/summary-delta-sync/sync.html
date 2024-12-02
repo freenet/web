@@ -50,8 +50,9 @@
       pointer-events: none;
       z-index: 100;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, 0);
       border-radius: 6px;
+      margin-top: -120px;  /* Move up above the peer */
     }
     .summary-display {
       border: 2px solid #3273dc;
@@ -285,11 +286,11 @@
         const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
         const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
         
-        // Position summaries beside their respective peers initially
-        summary1.style.left = `${peer1Rect.right + 20}px`; // Right of peer1
-        summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
-        summary2.style.left = `${peer2Rect.left - 20}px`; // Left of peer2
-        summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
+        // Position summaries above their respective peers initially
+        summary1.style.left = `${peer1Center}px`;
+        summary1.style.top = `${peer1Rect.top + scrollTop}px`;
+        summary2.style.left = `${peer2Center}px`;
+        summary2.style.top = `${peer2Rect.top + scrollTop}px`;
         
         // Make summaries visible but transparent
         summary1.classList.add('visible');
