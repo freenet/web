@@ -1,5 +1,5 @@
 ---
-title: "Understanding Summary-Delta Convergence"
+title: "Understanding Summary-Delta Synchronization"
 date: 2024-11-30
 draft: false
 tags: ["front-page", "university"]
@@ -64,7 +64,7 @@ propagate through this tree using the **Summary-Delta Convergence** mechanism—
 spreading through a network. This ensures that changes are efficiently propagated to all subscribing
 nodes, achieving eventual consistency over time.
 
-#### Illustrating Eventual Convergence: The Color Mixing Analogy
+#### Illustrating Summary-Delta Synchronization: The Color Mixing Analogy
 
 To help understand how multiple updates can occur simultaneously yet lead to the same end result, we
 can use a **color mixing** analogy. Imagine updates represented by different colors spreading
@@ -72,7 +72,7 @@ through the tree of nodes. As updates propagate and meet at nodes, their colors 
 updates might reach different nodes in different orders, the merging process ensures that, in the
 end, each node arrives at the same color—demonstrating a consistent and commutative outcome.
 
-By using **Summary-Delta Convergence**, Freenet sidesteps the traditional difficulties of strong
+By using **Summary-Delta Synchronization**, Freenet sidesteps the traditional difficulties of strong
 consistency:
 
 - **No Need for Heavy Coordination**: Instead of relying on consensus, Freenet nodes independently
