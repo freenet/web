@@ -300,7 +300,7 @@
           if (idx === 0) {
             summary.style.left = `${peer1Center + peer1Rect.width/2 + 40}px`; // Right of peer1
           } else {
-            summary.style.left = `${peer2Center + peer2Rect.width/2 + 40}px`; // Right of peer2
+            summary.style.left = `${peer2Center - peer2Rect.width/2 - summaryWidth - 40}px`; // Left of peer2
           }
             
           // Fade in all items together
