@@ -336,9 +336,12 @@
         const peer1Rect = peer1.getBoundingClientRect();
         const peer2Rect = peer2.getBoundingClientRect();
         
-        const containerWidth = containerRect.width;
+        // Get container dimensions first
+        const container = document.querySelector('.sync-visualization-wrapper');
+        const containerRect = container.getBoundingClientRect();
+        
         console.log('Container and peer positions:', {
-          containerWidth,
+          containerWidth: containerRect.width,
           peer1Left: peer1Rect.left,
           peer1Right: peer1Rect.right,
           peer1Top: peer1Rect.top,
@@ -352,10 +355,6 @@
         
         // Simple fixed spacing from peers
         const PEER_SPACING = 20;
-        
-        // Position summaries relative to container
-        const container = document.querySelector('.sync-visualization-wrapper');
-        const containerRect = container.getBoundingClientRect();
         
         // Calculate positions relative to container
         const summary1Left = (peer1Rect.right - containerRect.left) + PEER_SPACING;
