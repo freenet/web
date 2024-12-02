@@ -235,12 +235,8 @@
 
     let isAnimating = false;
     let currentStep = 0;
+    let nextStepQueued = false;
     const ANIMATION_DELAY = 1000;
-
-    function setNextButtonState() {
-      const nextBtn = document.getElementById('syncNextBtn');
-      nextBtn.disabled = isAnimating || currentStep === stepDescriptions.length - 1;
-    }
 
 
     async function runSyncAnimation() {
@@ -485,30 +481,38 @@
     }
 
     async function handleNextStep() {
-      if (isAnimating) return;
+      if (currentStep >= stepDescriptions.length - 1) {
+        document.getElementById('syncNextBtn').disabled = true;
+        return;
+      }
+      
+      if (isAnimating) {
+        nextStepQueued = true;
+        return;
+      }
       
       AnimationCoordinator.setActive('sync');
       
-      if (currentStep < stepDescriptions.length - 1) {
-        isAnimating = true;
-        setNextButtonState();
-        
-        currentStep++;
-        updateStepCaption();
-        await runSyncAnimation();
-        
-        isAnimating = false;
-        setNextButtonState();
+      isAnimating = true;
+      currentStep++;
+      updateStepCaption();
+      await runSyncAnimation();
+      isAnimating = false;
+      
+      if (nextStepQueued) {
+        nextStepQueued = false;
+        handleNextStep();
       }
     }
 
     function resetAnimation() {
       currentStep = 0;
       isAnimating = false;
+      nextStepQueued = false;
       updateStepCaption();
       document.getElementById('summary1').classList.remove('visible');
       document.getElementById('summary2').classList.remove('visible');
-      setNextButtonState();
+      document.getElementById('syncNextBtn').disabled = false;
       initializePeers();
     }
 
