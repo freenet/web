@@ -230,9 +230,14 @@
       });
     }
 
-    let isPlaying = false;
+    let isAnimating = false;
     let currentStep = 0;
     const ANIMATION_DELAY = 1000;
+
+    function setNextButtonState() {
+      const nextBtn = document.getElementById('syncNextBtn');
+      nextBtn.disabled = isAnimating || currentStep === stepDescriptions.length - 1;
+    }
 
 
     async function runSyncAnimation() {
@@ -477,26 +482,30 @@
     }
 
     async function handleNextStep() {
+      if (isAnimating) return;
+      
       AnimationCoordinator.setActive('sync');
       
       if (currentStep < stepDescriptions.length - 1) {
+        isAnimating = true;
+        setNextButtonState();
+        
         currentStep++;
         updateStepCaption();
         await runSyncAnimation();
         
-        // Disable Next button at the last step
-        if (currentStep === stepDescriptions.length - 1) {
-          document.getElementById('syncNextBtn').disabled = true;
-        }
+        isAnimating = false;
+        setNextButtonState();
       }
     }
 
     function resetAnimation() {
       currentStep = 0;
+      isAnimating = false;
       updateStepCaption();
       document.getElementById('summary1').classList.remove('visible');
       document.getElementById('summary2').classList.remove('visible');
-      document.getElementById('syncNextBtn').disabled = false;
+      setNextButtonState();
       initializePeers();
     }
 
