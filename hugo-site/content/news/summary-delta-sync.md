@@ -103,9 +103,9 @@ Below is a simple visualization of how two peers synchronize their data using su
 
 The visualization below shows how updates propagate through the entire network:
 
-{{< summary-delta-sync/propagation >}}
-
 Click different nodes to see how information spreads through the network. Notice how:
+
+{{< summary-delta-sync/propagation >}}
 
 - Updates propagate gradually from node to node
 - Multiple updates can spread simultaneously

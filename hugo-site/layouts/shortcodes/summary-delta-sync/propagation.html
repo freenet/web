@@ -49,16 +49,12 @@
   </style>
 
   <div class="visualization-content">
-    <div class="buttons has-addons is-centered" style="margin: 0.25rem;">
-      <button id="convergencePlayPauseBtn" class="button is-medium is-primary">
-        <span class="icon">
-          <i class="fas fa-play"></i>
-        </span>
-      </button>
+    <div class="buttons is-centered" style="margin: 0.25rem;">
       <button id="resetConvergenceBtn" class="button is-medium">
         <span class="icon">
           <i class="fas fa-undo"></i>
         </span>
+        <span>Reset</span>
       </button>
     </div>
   </div>
@@ -298,72 +294,11 @@
         });
     }
 
-    // Control variables for propagation animation
-    let propagationIsPlaying = false;
-    let updateInterval;
-    const UPDATE_DELAY = 2000; // 2 seconds between updates
-
-    function togglePlayPause() {
-      propagationIsPlaying = !propagationIsPlaying;
-      const btn = document.getElementById('convergencePlayPauseBtn');
-      if (!btn) return;
-      
-      if (propagationIsPlaying) {
-        AnimationCoordinator.setActive('convergence');
-        btn.querySelector('i').className = 'fas fa-pause';
-        startAutoUpdates();
-      } else {
-        btn.querySelector('i').className = 'fas fa-play';
-        stopAutoUpdates();
-      }
-    }
-
-    function startAutoUpdates() {
-      if (!updateInterval) {
-        // Trigger first propagation immediately
-        const nodes = root.descendants();
-        const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
-        initiatePropagation(randomNode);
-
-        // Set up interval for subsequent propagations
-        updateInterval = setInterval(() => {
-          if (propagationIsPlaying) {
-            const nodes = root.descendants();
-            const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
-            initiatePropagation(randomNode);
-          }
-        }, UPDATE_DELAY);
-      }
-    }
-
-    function stopAutoUpdates() {
-      if (updateInterval) {
-        clearInterval(updateInterval);
-        updateInterval = null;
-      }
-    }
-
-    // Listen for pause events from other animations
-    document.addEventListener('pause-other-animations', (event) => {
-      if (event.detail.except !== 'convergence' && propagationIsPlaying) {
-        propagationIsPlaying = false;
-        const btn = document.getElementById('convergencePlayPauseBtn');
-        if (btn) {
-          btn.querySelector('i').className = 'fas fa-play';
-        }
-        stopAutoUpdates();
-      }
-    });
 
     // Initial visualization
     initializeVisualization();
 
-    // Setup button listeners
-    const playPauseBtn = document.getElementById('convergencePlayPauseBtn');
-    if (playPauseBtn) {
-      playPauseBtn.addEventListener('click', togglePlayPause);
-    }
-
+    // Setup reset button listener
     const resetBtn = document.getElementById('resetConvergenceBtn');
     if (resetBtn) {
       resetBtn.addEventListener('click', resetVisualization);
@@ -371,13 +306,6 @@
 
     // Function to reset the visualization
     function resetVisualization() {
-      // Stop any ongoing updates
-      propagationIsPlaying = false;
-      stopAutoUpdates();
-      const playPauseBtn = document.getElementById('convergencePlayPauseBtn');
-      if (playPauseBtn) {
-        playPauseBtn.querySelector('i').className = 'fas fa-play';
-      }
 
       // Reset global state
       lastColorIndex = 0;
