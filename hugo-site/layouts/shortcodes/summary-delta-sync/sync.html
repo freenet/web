@@ -468,8 +468,7 @@
       "Peers exchange their summaries to identify differences.",
       "Each peer calculates what data the other peer is missing.",
       "Peers exchange their calculated deltas.",
-      "Peers merge received deltas to achieve consistent state.",
-      "Synchronization complete!"
+      "Peers merge received deltas to achieve consistent state."
     ];
 
     function updateStepCaption() {
@@ -484,6 +483,11 @@
         currentStep++;
         updateStepCaption();
         await runSyncAnimation();
+        
+        // Disable Next button at the last step
+        if (currentStep === stepDescriptions.length - 1) {
+          document.getElementById('syncNextBtn').disabled = true;
+        }
       }
     }
 
@@ -492,6 +496,7 @@
       updateStepCaption();
       document.getElementById('summary1').classList.remove('visible');
       document.getElementById('summary2').classList.remove('visible');
+      document.getElementById('syncNextBtn').disabled = false;
       initializePeers();
     }
 
