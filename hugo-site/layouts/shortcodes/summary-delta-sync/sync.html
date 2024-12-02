@@ -238,14 +238,18 @@
           break;
           
         case 2: // Exchange summaries
-          await exchangeSummariesAndGenerateDeltas();
+          await exchangeSummaries();
           break;
           
-        case 3: // Exchange and merge deltas
+        case 3: // Generate deltas
+          await generateDeltas();
+          break;
+          
+        case 4: // Exchange and merge deltas
           await exchangeDeltas();
           break;
           
-        case 4: // Final state
+        case 5: // Final state
           // Show completion message
           break;
       }
@@ -321,7 +325,7 @@
       });
     }
 
-    async function exchangeSummariesAndGenerateDeltas() {
+    async function exchangeSummaries() {
       return new Promise((resolve) => {
         const summary1 = document.getElementById('summary1');
         const summary2 = document.getElementById('summary2');
@@ -339,17 +343,32 @@
         summary1.style.left = `${peer2Center}px`; // Move to center above peer2
         summary2.style.left = `${peer1Center}px`; // Move to center above peer1
         
-        setTimeout(() => {
-          // Calculate deltas (but don't show them yet)
-          peerState.peer1.delta = peerState.peer1.icons.filter(icon1 => 
-            !peerState.peer2.icons.some(icon2 => icon2.name === icon1.name)
-          );
-          peerState.peer2.delta = peerState.peer2.icons.filter(icon2 => 
-            !peerState.peer1.icons.some(icon1 => icon1.name === icon2.name)
-          );
-          
-          resolve();
-        }, 600);
+        setTimeout(resolve, 600);
+      });
+    }
+
+    async function generateDeltas() {
+      return new Promise((resolve) => {
+        // Calculate deltas
+        peerState.peer1.delta = peerState.peer1.icons.filter(icon1 => 
+          !peerState.peer2.icons.some(icon2 => icon2.name === icon1.name)
+        );
+        peerState.peer2.delta = peerState.peer2.icons.filter(icon2 => 
+          !peerState.peer1.icons.some(icon1 => icon1.name === icon2.name)
+        );
+
+        // Highlight the items that will become deltas
+        document.querySelectorAll('#summary1 .summary-list li, #summary2 .summary-list li').forEach(li => {
+          const iconName = li.textContent;
+          if (peerState.peer1.delta.some(icon => icon.name === iconName) ||
+              peerState.peer2.delta.some(icon => icon.name === iconName)) {
+            li.style.backgroundColor = '#00d1b2';
+            li.style.color = 'white';
+            li.style.transition = 'all 0.3s ease-in-out';
+          }
+        });
+
+        setTimeout(resolve, 1000);
       });
     }
 
@@ -434,6 +453,7 @@
       "Click 'Next' to begin the synchronization process.",
       "Each peer generates a summary of its current state.",
       "Peers exchange their summaries to identify differences.",
+      "Each peer calculates what data the other peer is missing.",
       "Peers exchange and merge deltas to achieve consistent state.",
       "Synchronization complete!"
     ];
