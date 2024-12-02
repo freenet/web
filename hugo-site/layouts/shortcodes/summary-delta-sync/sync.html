@@ -663,23 +663,25 @@
       document.getElementById('syncNextBtn').disabled = false;
       updateStepCaption();
 
-      // Function to completely reset an element's styles
+      // Function to selectively reset an element's styles
       function resetElementStyles(element) {
-        // Remove all inline styles
-        element.removeAttribute('style');
-        // Remove all classes
-        element.classList.remove('visible');
-        // Reset basic display properties
-        element.style.display = 'none';
-        element.style.opacity = '0';
-        // Clear any transforms
+        // Only remove animation-related inline styles
+        element.style.display = element.classList.contains('summary-display') || 
+                              element.classList.contains('delta-display') ? 'none' : '';
+        element.style.opacity = '';
         element.style.transform = '';
-        // Reset positioning
-        element.style.position = '';
         element.style.top = '';
         element.style.left = '';
-        // Clear transitions
         element.style.transition = 'none';
+        
+        // Only remove the visible class
+        element.classList.remove('visible');
+        
+        // Preserve essential positioning for peer container elements
+        if (!element.classList.contains('peer-container') && 
+            !element.classList.contains('peer')) {
+          element.style.position = '';
+        }
       }
       
       // Reset all summary and delta displays
