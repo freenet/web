@@ -230,35 +230,6 @@
     let currentStep = 0;
     const ANIMATION_DELAY = 1000;
 
-    async function mergeDeltasAndFinalize() {
-      return new Promise((resolve) => {
-        // Add missing icons to each peer
-        peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...peerState.peer2.delta])];
-        peerState.peer2.icons = [...new Set([...peerState.peer2.icons, ...peerState.peer1.delta])];
-        
-        // Sort icons by name for consistent display
-        peerState.peer1.icons.sort((a, b) => a.name.localeCompare(b.name));
-        peerState.peer2.icons.sort((a, b) => a.name.localeCompare(b.name));
-        
-        // Update UI
-        updatePeerUI('peer1');
-        updatePeerUI('peer2');
-        
-        // Hide deltas with animation
-        const delta1 = document.getElementById('delta1');
-        const delta2 = document.getElementById('delta2');
-        
-        delta1.style.transition = delta2.style.transition = 'opacity 0.5s ease-in-out';
-        delta1.style.opacity = '0';
-        delta2.style.opacity = '0';
-        
-        setTimeout(() => {
-          delta1.classList.remove('visible');
-          delta2.classList.remove('visible');
-          resolve();
-        }, 600);
-      });
-    }
 
     async function runSyncAnimation() {
       switch(currentStep) {
@@ -270,15 +241,11 @@
           await exchangeSummariesAndGenerateDeltas();
           break;
           
-        case 3: // Exchange deltas
+        case 3: // Exchange and merge deltas
           await exchangeDeltas();
           break;
           
-        case 4: // Merge deltas
-          await mergeDeltasAndFinalize();
-          break;
-          
-        case 5: // Final state
+        case 4: // Final state
           // Show completion message
           break;
       }
@@ -434,11 +401,32 @@
           delta1.style.transition = delta2.style.transition = 'all 0.5s ease-in-out';
           delta1.style.left = `${peer2Center}px`;
           delta2.style.left = `${peer1Center}px`;
+          
+          // After deltas have moved, merge them and update the UI
+          setTimeout(() => {
+            // Add missing icons to each peer
+            peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...peerState.peer2.delta])];
+            peerState.peer2.icons = [...new Set([...peerState.peer2.icons, ...peerState.peer1.delta])];
+            
+            // Sort icons by name for consistent display
+            peerState.peer1.icons.sort((a, b) => a.name.localeCompare(b.name));
+            peerState.peer2.icons.sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Update UI
+            updatePeerUI('peer1');
+            updatePeerUI('peer2');
+            
+            // Fade out deltas
+            delta1.style.opacity = '0';
+            delta2.style.opacity = '0';
+            
+            setTimeout(() => {
+              delta1.classList.remove('visible');
+              delta2.classList.remove('visible');
+              resolve();
+            }, 500);
+          }, 600);
         }, 500);
-        
-        setTimeout(() => {
-          resolve();
-        }, 600);
       });
     }
 
@@ -446,9 +434,8 @@
       "Click 'Next' to begin the synchronization process.",
       "Each peer generates a summary of its current state.",
       "Peers exchange their summaries to identify differences.",
-      "Based on the differences, peers generate and exchange deltas.",
-      "Peers merge the received deltas into their states.",
-      "Synchronization complete - peers have achieved consistent state."
+      "Peers exchange and merge deltas to achieve consistent state.",
+      "Synchronization complete!"
     ];
 
     function updateStepCaption() {
