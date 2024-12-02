@@ -451,8 +451,6 @@
       "Peers apply the received deltas to achieve a consistent state."
     ];
 
-    let currentStep = 0;
-    
     function updateStepCaption() {
       const caption = document.getElementById('stepCaption');
       caption.textContent = stepDescriptions[currentStep];
