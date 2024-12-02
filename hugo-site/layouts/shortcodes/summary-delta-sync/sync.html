@@ -287,11 +287,9 @@
         const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
         
         // Position summaries beside their respective peers initially
-        // For peer1's summary, left edge starts 20px right of peer1's right edge
-        summary1.style.left = `${peer1Rect.right + 20}px`;
+        summary1.style.left = `${peer1Rect.right + 20}px`; // Left edge 20px right of peer1
         summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
-        // For peer2's summary, right edge ends 20px left of peer2's left edge 
-        summary2.style.left = `${peer2Rect.left - summary2.offsetWidth - 20}px`;
+        summary2.style.left = `${peer2Rect.left - 20 - summary2.offsetWidth}px`; // Right edge 20px left of peer2
         summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
         
         // Make summaries visible but transparent
@@ -355,10 +353,8 @@
         // Animate summaries moving to opposite peers
         summary1.style.transition = summary2.style.transition = 'all 0.5s ease-in-out';
         
-        // Move peer1's summary so its right edge ends 20px left of peer2's left edge
-        summary1.style.left = `${peer2Rect.left - summary1.offsetWidth - 20}px`;
-        // Move peer2's summary so its left edge starts 20px right of peer1's right edge
-        summary2.style.left = `${peer1Rect.right + 20}px`;
+        summary1.style.left = `${peer2Rect.left - 20 - summary1.offsetWidth}px`; // Right edge 20px left of peer2
+        summary2.style.left = `${peer1Rect.right + 20}px`; // Left edge 20px right of peer1
         
         setTimeout(resolve, 600);
       });
