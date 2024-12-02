@@ -662,45 +662,74 @@
       // Reset UI elements
       document.getElementById('syncNextBtn').disabled = false;
       updateStepCaption();
-      
-      // Hide all summary and delta displays
-      ['summary1', 'summary2', 'delta1', 'delta2'].forEach(id => {
-        const element = document.getElementById(id);
+
+      // Function to completely reset an element's styles
+      function resetElementStyles(element) {
+        // Remove all inline styles
+        element.removeAttribute('style');
+        // Remove all classes
         element.classList.remove('visible');
+        // Reset basic display properties
         element.style.display = 'none';
         element.style.opacity = '0';
-        element.style.transform = 'scale(1)';
+        // Clear any transforms
+        element.style.transform = '';
+        // Reset positioning
+        element.style.position = '';
+        element.style.top = '';
+        element.style.left = '';
+        // Clear transitions
         element.style.transition = 'none';
-        element.style.top = '';  // Reset vertical position
-        element.style.left = ''; // Reset horizontal position
-        element.style.display = 'none';  // Ensure display is reset
+      }
+      
+      // Reset all summary and delta displays
+      ['summary1', 'summary2', 'delta1', 'delta2'].forEach(id => {
+        const element = document.getElementById(id);
+        resetElementStyles(element);
         
         // Clear the summary/delta lists
         const list = element.querySelector('.summary-list');
-        if (list) list.innerHTML = '';
+        if (list) {
+          list.innerHTML = '';
+          resetElementStyles(list);
+        }
       });
       
       // Reset peer states and UI
       initializePeers();
       
-      // Reset peer positions
+      // Reset peer containers and their children
       ['peer1', 'peer2'].forEach(id => {
         const peer = document.getElementById(id);
-        peer.style.position = '';
-        peer.style.top = '';
-        peer.style.left = '';
+        resetElementStyles(peer);
+        
+        // Also reset all child elements
+        peer.querySelectorAll('*').forEach(resetElementStyles);
+        
+        // Restore only the essential styles from CSS classes
+        peer.className = 'peer';
+        peer.querySelector('.peer-title').className = 'peer-title';
+        peer.querySelector('.peer-icons').className = 'peer-icons';
       });
       
-      // Force a reflow to ensure clean state
-      document.querySelector('.sync-visualization-wrapper').offsetHeight;
+      // Reset the peer container itself
+      const peerContainer = document.querySelector('.peer-container');
+      resetElementStyles(peerContainer);
+      peerContainer.className = 'peer-container';
       
-      // Restore transitions after reset
+      // Force multiple reflows to ensure clean state
+      void document.querySelector('.sync-visualization-wrapper').offsetHeight;
+      void document.querySelector('.peer-container').offsetHeight;
+      void document.querySelector('#peer1').offsetHeight;
+      void document.querySelector('#peer2').offsetHeight;
+      
+      // Restore transitions after a delay
       setTimeout(() => {
         ['summary1', 'summary2', 'delta1', 'delta2'].forEach(id => {
           const element = document.getElementById(id);
           element.style.transition = 'all 0.5s ease-in-out';
         });
-      }, 50);
+      }, 100);
     }
 
     // Set up event listeners
