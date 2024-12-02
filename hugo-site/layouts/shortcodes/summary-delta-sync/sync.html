@@ -80,16 +80,10 @@
     .summary-list {
       margin: 0;
       padding: 0;
-      list-style: none;
     }
-    .summary-list li {
-      list-style-type: none;
-      margin: 2px 0;
-      padding: 2px 0;
-      text-align: center;
+    .summary-list > div {
       border-radius: 2px;
       transition: opacity 0.3s;
-      display: block;
     }
     .summary-title {
       font-weight: bold;
@@ -154,19 +148,19 @@
 
   <div id="summary1" class="summary-display">
     <div class="summary-title">Summary</div>
-    <ul class="summary-list"></ul>
+    <div class="summary-list"></div>
   </div>
   <div id="summary2" class="summary-display">
     <div class="summary-title">Summary</div>
-    <ul class="summary-list"></ul>
+    <div class="summary-list"></div>
   </div>
   <div id="delta1" class="delta-display">
     <div class="summary-title">Delta</div>
-    <ul class="summary-list"></ul>
+    <div class="summary-list"></div>
   </div>
   <div id="delta2" class="delta-display">
     <div class="summary-title">Delta</div>
-    <ul class="summary-list"></ul>
+    <div class="summary-list"></div>
   </div>
 
   <script>
@@ -301,11 +295,14 @@
           console.log(`Populating summary${idx + 1} with icons:`, icons);
           
           icons.forEach(icon => {
-            const li = document.createElement('li');
-            li.textContent = icon.name;
-            li.style.opacity = '0';
-            li.style.backgroundColor = idx === 0 ? '#f5f9ff' : '#f0fffc';
-            summaryList.appendChild(li);
+            const item = document.createElement('div');
+            item.textContent = icon.name;
+            item.style.opacity = '0';
+            item.style.backgroundColor = idx === 0 ? '#f5f9ff' : '#f0fffc';
+            item.style.margin = '2px 0';
+            item.style.padding = '2px 0';
+            item.style.textAlign = 'center';
+            summaryList.appendChild(item);
           });
         });
 
@@ -472,13 +469,13 @@
         });
 
         // Highlight the items that will become deltas
-        document.querySelectorAll('#summary1 .summary-list li, #summary2 .summary-list li').forEach(li => {
-          const iconName = li.textContent;
+        document.querySelectorAll('#summary1 .summary-list > div, #summary2 .summary-list > div').forEach(item => {
+          const iconName = item.textContent;
           if (peerState.peer1.delta.some(icon => icon.name === iconName) ||
               peerState.peer2.delta.some(icon => icon.name === iconName)) {
-            li.style.backgroundColor = '#00d1b2';
-            li.style.color = 'white';
-            li.style.transition = 'all 0.3s ease-in-out';
+            item.style.backgroundColor = '#00d1b2';
+            item.style.color = 'white';
+            item.style.transition = 'all 0.3s ease-in-out';
           }
         });
 
@@ -516,13 +513,16 @@
           deltaList.innerHTML = '';
           
           peerState[peerId].delta.forEach(icon => {
-            const li = document.createElement('li');
+            const item = document.createElement('div');
             const iconElement = document.createElement('i');
             iconElement.className = icon.class;
             iconElement.style.fontSize = '1.2rem';
-            li.appendChild(iconElement);
-            li.style.backgroundColor = '#f0fffc';
-            deltaList.appendChild(li);
+            item.appendChild(iconElement);
+            item.style.backgroundColor = '#f0fffc';
+            item.style.margin = '2px 0';
+            item.style.padding = '2px 0';
+            item.style.textAlign = 'center';
+            deltaList.appendChild(item);
           });
         });
 
