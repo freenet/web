@@ -315,7 +315,8 @@
         summary1.style.top = `${peer1Rect.top + scrollTop + (peer1Rect.height - summary1.offsetHeight) / 2}px`;
         console.log('Summary1 position:', {
             left: summary1Left,
-            offsetWidth: summary1.offsetWidth
+            offsetWidth: summary1.offsetWidth,
+            calculatedRight: summary1Left + summary1.offsetWidth
         });
         
         // Position summary2 20px to the left of peer2
@@ -324,7 +325,15 @@
         summary2.style.top = `${peer2Rect.top + scrollTop + (peer2Rect.height - summary2.offsetHeight) / 2}px`;
         console.log('Summary2 position:', {
             left: summary2Left,
-            offsetWidth: summary2.offsetWidth
+            offsetWidth: summary2.offsetWidth,
+            distanceFromPeer1Summary: summary2Left - (summary1Left + summary1.offsetWidth)
+        });
+
+        // Log the gap between summaries
+        console.log('Gap between summaries:', {
+            summary1Right: summary1Left + summary1.offsetWidth,
+            summary2Left: summary2Left,
+            gap: summary2Left - (summary1Left + summary1.offsetWidth)
         });
         
         // Force reflow
