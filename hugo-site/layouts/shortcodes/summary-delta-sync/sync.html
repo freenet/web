@@ -596,12 +596,16 @@
     function updateStepCaption() {
       const caption = document.getElementById('stepCaption');
       caption.textContent = stepDescriptions[currentStep];
+      
+      // Disable next button when showing the final step
+      if (caption.textContent === "Peers exchange and merge deltas to achieve consistent state.") {
+        document.getElementById('syncNextBtn').disabled = true;
+      }
     }
 
     async function handleNextStep() {
-      if (currentStep >= stepDescriptions.length - 1) {
+      if (currentStep >= stepDescriptions.length - 2) {
         document.getElementById('syncNextBtn').disabled = true;
-        return;
       }
       
       if (isAnimating) {
