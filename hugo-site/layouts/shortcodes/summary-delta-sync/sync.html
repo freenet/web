@@ -55,9 +55,9 @@
       margin-top: -120px;  /* Move up above the peer */
     }
     .summary-display {
-      border: 2px solid #3273dc;
+      border: 2px solid #ff3860;
       border-radius: 4px;
-      background: #f5f9ff;
+      background: #fff0f4;
     }
     .delta-display {
       border: 2px solid #00d1b2;
@@ -286,13 +286,18 @@
         const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
         const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
         
-        // Position summary1 just to the right of peer1
-        summary1.style.left = `${peer1Rect.right + 20}px`;
-        summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
+        // Position summaries relative to their peers
+        summary1.style.left = `${peer1Rect.right + 10}px`;
+        summary1.style.top = `${peer1Rect.top + scrollTop}px`;
         
-        // Position summary2 just to the left of peer2, accounting for its own width
-        summary2.style.left = `${peer2Rect.left - summary2.offsetWidth - 20}px`;
-        summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
+        summary2.style.left = `${peer2Rect.left - summary2.offsetWidth - 10}px`;
+        summary2.style.top = `${peer2Rect.top + scrollTop}px`;
+
+        // Log positions for debugging
+        console.log('Peer1 right:', peer1Rect.right);
+        console.log('Summary1 left:', summary1.style.left);
+        console.log('Peer2 left:', peer2Rect.left);
+        console.log('Summary2 left:', summary2.style.left);
         
         // Make summaries visible but transparent
         summary1.classList.add('visible');
