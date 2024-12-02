@@ -500,95 +500,69 @@
         const container = document.querySelector('.sync-visualization-wrapper');
         const containerRect = container.getBoundingClientRect();
 
-        console.log('Step 4: Initial container and peer positions:', {
-          containerLeft: containerRect.left,
-          peer1Left: peer1Rect.left - containerRect.left,
-          peer1Right: peer1Rect.right - containerRect.left,
-          peer2Left: peer2Rect.left - containerRect.left,
-          peer2Right: peer2Rect.right - containerRect.left
-        });
-
         // Clear and populate delta boxes
         ['peer1', 'peer2'].forEach((peerId, idx) => {
           const deltaBox = document.getElementById(`delta${idx + 1}`);
           const deltaList = deltaBox.querySelector('.summary-list');
           deltaList.innerHTML = '';
           
-          peerState[peerId].delta.forEach(icon => {
-            const item = document.createElement('div');
-            const iconElement = document.createElement('i');
-            iconElement.className = icon.class;
-            iconElement.style.fontSize = '1.2rem';
-            item.appendChild(iconElement);
-            item.style.backgroundColor = '#f0fffc';
-            item.style.margin = '2px 0';
-            item.style.padding = '2px 0';
-            item.style.textAlign = 'center';
-            deltaList.appendChild(item);
-          });
+          // Only show deltas that this peer has to send
+          if (peerState[peerId].delta.length > 0) {
+            peerState[peerId].delta.forEach(icon => {
+              const item = document.createElement('div');
+              const iconElement = document.createElement('i');
+              iconElement.className = icon.class;
+              iconElement.style.fontSize = '1.2rem';
+              item.appendChild(iconElement);
+              item.style.backgroundColor = '#f0fffc';
+              item.style.margin = '2px 0';
+              item.style.padding = '2px 0';
+              item.style.textAlign = 'center';
+              deltaList.appendChild(item);
+            });
+          }
         });
 
-        // Make deltas temporarily visible but transparent for measurement
-        delta1.style.display = 'block';
-        delta2.style.display = 'block';
-        delta1.style.opacity = '0';
-        delta2.style.opacity = '0';
+        // Calculate positions relative to container
+        const PEER_SPACING = 20;
+        
+        // Position deltas next to their source peers
+        if (peerState.peer1.delta.length > 0) {
+          delta1.style.display = 'block';
+          delta1.style.opacity = '0';
+          delta1.style.left = `${(peer1Rect.right - containerRect.left) + PEER_SPACING}px`;
+          delta1.style.top = `${(peer1Rect.top - containerRect.top) + (peer1Rect.height / 2)}px`;
+          delta1.style.transition = 'all 0.5s ease-in-out';
+        }
+        
+        if (peerState.peer2.delta.length > 0) {
+          delta2.style.display = 'block';
+          delta2.style.opacity = '0';
+          delta2.style.left = `${(peer2Rect.left - containerRect.left) - delta2.offsetWidth - PEER_SPACING}px`;
+          delta2.style.top = `${(peer2Rect.top - containerRect.top) + (peer2Rect.height / 2)}px`;
+          delta2.style.transition = 'all 0.5s ease-in-out';
+        }
 
         // Force reflow
-        delta1.offsetHeight;
-        delta2.offsetHeight;
+        container.offsetHeight;
 
-        console.log('Step 4: Delta dimensions:', {
-          delta1Width: delta1.offsetWidth,
-          delta1Height: delta1.offsetHeight,
-          delta2Width: delta2.offsetWidth,
-          delta2Height: delta2.offsetHeight
-        });
-
-        // Calculate initial positions relative to container
-        const PEER_SPACING = 20;
-        const delta1Left = (peer1Rect.right - containerRect.left) + PEER_SPACING;
-        const delta1Top = (peer1Rect.top - containerRect.top) + (peer1Rect.height / 2);
-        const delta2Left = (peer2Rect.left - containerRect.left) - delta2.offsetWidth - PEER_SPACING;
-        const delta2Top = (peer2Rect.top - containerRect.top) + (peer2Rect.height / 2);
-
-        console.log('Step 4: Initial positions:', {
-          delta1Left,
-          delta1Top,
-          delta2Left,
-          delta2Top
-        });
-
-        // Set initial positions
-        delta1.style.left = `${delta1Left}px`;
-        delta1.style.top = `${delta1Top}px`;
-        delta2.style.left = `${delta2Left}px`;
-        delta2.style.top = `${delta2Top}px`;
-
-        // Add transitions
-        delta1.style.transition = delta2.style.transition = 'all 0.5s ease-in-out';
-
-        // Make deltas visible
+        // Make deltas visible and animate them to their destinations
         requestAnimationFrame(() => {
-          delta1.classList.add('visible');
-          delta2.classList.add('visible');
-
-          // Calculate exchange positions
-          const delta1NewLeft = (peer2Rect.left - containerRect.left) - delta1.offsetWidth - PEER_SPACING;
-          const delta2NewLeft = (peer1Rect.right - containerRect.left) + PEER_SPACING;
-
-          console.log('Step 4: Exchange positions:', {
-            delta1NewLeft,
-            delta2NewLeft
-          });
-
-          // Animate to exchange positions after a short delay
-          setTimeout(() => {
-            delta1.style.left = `${delta1NewLeft}px`;
-            delta2.style.left = `${delta2NewLeft}px`;
-            
-            setTimeout(resolve, 600);
-          }, 500);
+          if (peerState.peer1.delta.length > 0) {
+            delta1.classList.add('visible');
+            setTimeout(() => {
+              delta1.style.left = `${(peer2Rect.left - containerRect.left) - delta1.offsetWidth - PEER_SPACING}px`;
+            }, 100);
+          }
+          
+          if (peerState.peer2.delta.length > 0) {
+            delta2.classList.add('visible');
+            setTimeout(() => {
+              delta2.style.left = `${(peer1Rect.right - containerRect.left) + PEER_SPACING}px`;
+            }, 100);
+          }
+          
+          setTimeout(resolve, 600);
         });
       });
     }
