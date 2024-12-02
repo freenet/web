@@ -453,6 +453,8 @@
 
     async function generateDeltas() {
       return new Promise((resolve) => {
+        console.log('Step 3: Starting generateDeltas');
+        
         // Calculate deltas
         peerState.peer1.delta = peerState.peer1.icons.filter(icon1 => 
           !peerState.peer2.icons.some(icon2 => icon2.name === icon1.name)
@@ -460,6 +462,11 @@
         peerState.peer2.delta = peerState.peer2.icons.filter(icon2 => 
           !peerState.peer1.icons.some(icon1 => icon1.name === icon2.name)
         );
+
+        console.log('Step 3: Calculated deltas:', {
+          peer1Delta: peerState.peer1.delta.map(i => i.name),
+          peer2Delta: peerState.peer2.delta.map(i => i.name)
+        });
 
         // Highlight the items that will become deltas
         document.querySelectorAll('#summary1 .summary-list li, #summary2 .summary-list li').forEach(li => {
@@ -478,6 +485,8 @@
 
     async function exchangeDeltas() {
       return new Promise((resolve) => {
+        console.log('Step 4: Starting exchangeDeltas');
+        
         // Hide summaries from previous step
         document.getElementById('summary1').classList.remove('visible');
         document.getElementById('summary2').classList.remove('visible');
@@ -486,25 +495,22 @@
         const delta2 = document.getElementById('delta2');
         const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
-        
-        // Calculate center points for positioning
-        const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
-        const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const container = document.querySelector('.sync-visualization-wrapper');
+        const containerRect = container.getBoundingClientRect();
 
-        // First show the delta boxes in their initial positions
+        console.log('Step 4: Initial container and peer positions:', {
+          containerLeft: containerRect.left,
+          peer1Left: peer1Rect.left - containerRect.left,
+          peer1Right: peer1Rect.right - containerRect.left,
+          peer2Left: peer2Rect.left - containerRect.left,
+          peer2Right: peer2Rect.right - containerRect.left
+        });
+
+        // Clear and populate delta boxes
         ['peer1', 'peer2'].forEach((peerId, idx) => {
           const deltaBox = document.getElementById(`delta${idx + 1}`);
           const deltaList = deltaBox.querySelector('.summary-list');
           deltaList.innerHTML = '';
-          
-          if (idx === 0) {
-            deltaBox.style.left = `${peer1Rect.right + 20}px`; // 20px right of peer1
-            deltaBox.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
-          } else {
-            deltaBox.style.left = `${peer2Rect.left - deltaBox.offsetWidth - 20}px`; // 20px left of peer2
-            deltaBox.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
-          }
           
           peerState[peerId].delta.forEach(icon => {
             const li = document.createElement('li');
@@ -515,17 +521,70 @@
             li.style.backgroundColor = '#f0fffc';
             deltaList.appendChild(li);
           });
-          
-          deltaBox.classList.add('visible');
         });
 
-        // After a short delay, animate deltas moving to opposite peers
-        setTimeout(() => {
-          delta1.style.transition = delta2.style.transition = 'all 0.5s ease-in-out';
-          delta1.style.left = `${peer2Rect.left - delta1.offsetWidth - 20}px`; // Move to left of peer2
-          delta2.style.left = `${peer1Rect.right + 20}px`; // Move to right of peer1
-          setTimeout(resolve, 600);
-        }, 500);
+        // Make deltas temporarily visible but transparent for measurement
+        delta1.style.display = 'block';
+        delta2.style.display = 'block';
+        delta1.style.opacity = '0';
+        delta2.style.opacity = '0';
+
+        // Force reflow
+        delta1.offsetHeight;
+        delta2.offsetHeight;
+
+        console.log('Step 4: Delta dimensions:', {
+          delta1Width: delta1.offsetWidth,
+          delta1Height: delta1.offsetHeight,
+          delta2Width: delta2.offsetWidth,
+          delta2Height: delta2.offsetHeight
+        });
+
+        // Calculate initial positions relative to container
+        const PEER_SPACING = 20;
+        const delta1Left = (peer1Rect.right - containerRect.left) + PEER_SPACING;
+        const delta1Top = (peer1Rect.top - containerRect.top) + (peer1Rect.height / 2);
+        const delta2Left = (peer2Rect.left - containerRect.left) - delta2.offsetWidth - PEER_SPACING;
+        const delta2Top = (peer2Rect.top - containerRect.top) + (peer2Rect.height / 2);
+
+        console.log('Step 4: Initial positions:', {
+          delta1Left,
+          delta1Top,
+          delta2Left,
+          delta2Top
+        });
+
+        // Set initial positions
+        delta1.style.left = `${delta1Left}px`;
+        delta1.style.top = `${delta1Top}px`;
+        delta2.style.left = `${delta2Left}px`;
+        delta2.style.top = `${delta2Top}px`;
+
+        // Add transitions
+        delta1.style.transition = delta2.style.transition = 'all 0.5s ease-in-out';
+
+        // Make deltas visible
+        requestAnimationFrame(() => {
+          delta1.classList.add('visible');
+          delta2.classList.add('visible');
+
+          // Calculate exchange positions
+          const delta1NewLeft = (peer2Rect.left - containerRect.left) - delta1.offsetWidth - PEER_SPACING;
+          const delta2NewLeft = (peer1Rect.right - containerRect.left) + PEER_SPACING;
+
+          console.log('Step 4: Exchange positions:', {
+            delta1NewLeft,
+            delta2NewLeft
+          });
+
+          // Animate to exchange positions after a short delay
+          setTimeout(() => {
+            delta1.style.left = `${delta1NewLeft}px`;
+            delta2.style.left = `${delta2NewLeft}px`;
+            
+            setTimeout(resolve, 600);
+          }, 500);
+        });
       });
     }
 
