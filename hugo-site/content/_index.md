@@ -1,5 +1,5 @@
 ---
-title: "Reboot the Internet"
+title: "Decentralize Everything"
 date: 2024-06-11T00:00:00Z
 draft: false
 layout: "single"
