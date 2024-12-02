@@ -42,15 +42,16 @@
       position: absolute;
       background: #fff;
       padding: 1rem;
-      min-width: 80px;
+      min-width: 120px;
       font-family: monospace;
       opacity: 0;
       visibility: hidden;
-      transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+      transition: all 0.5s ease-in-out;
       pointer-events: none;
       z-index: 100;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       border-radius: 6px;
+      transform-origin: center center;
     }
     .summary-display {
       border: 2px solid #ff3860;
@@ -284,23 +285,25 @@
         const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
         const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
         
-        // Position summaries relative to their peers with fixed offsets
-        const containerRect = document.querySelector('.peer-container').getBoundingClientRect();
+        // Position summaries relative to viewport
+        const viewportOffset = window.pageYOffset;
         
         // Position summary1 to the right of peer1
-        summary1.style.left = `${peer1Rect.right - containerRect.left + 10}px`;
-        summary1.style.top = `${peer1Rect.top - containerRect.top}px`;
+        summary1.style.position = 'absolute';
+        summary1.style.left = `${peer1Rect.right + 10}px`;
+        summary1.style.top = `${peer1Rect.top + viewportOffset}px`;
         
         // Position summary2 to the left of peer2
-        summary2.style.left = `${peer2Rect.left - containerRect.left - summary2.offsetWidth - 10}px`;
-        summary2.style.top = `${peer2Rect.top - containerRect.top}px`;
+        summary2.style.position = 'absolute';
+        summary2.style.left = `${peer2Rect.left - summary2.offsetWidth - 10}px`;
+        summary2.style.top = `${peer2Rect.top + viewportOffset}px`;
 
         // Log positions for debugging
-        console.log('Container left:', containerRect.left);
+        console.log('Viewport offset:', viewportOffset);
         console.log('Peer1 right:', peer1Rect.right);
-        console.log('Summary1 left:', summary1Left);
+        console.log('Summary1 position:', summary1.style.left, summary1.style.top);
         console.log('Peer2 left:', peer2Rect.left);
-        console.log('Summary2 left:', summary2Left);
+        console.log('Summary2 position:', summary2.style.left, summary2.style.top);
         
         // Make summaries visible but transparent
         summary1.classList.add('visible');
