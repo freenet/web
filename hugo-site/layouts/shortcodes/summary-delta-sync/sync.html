@@ -286,10 +286,18 @@
         const peer1Center = peer1Rect.left + (peer1Rect.width / 2);
         const peer2Center = peer2Rect.left + (peer2Rect.width / 2);
         
-        // Position summaries beside their respective peers initially
-        summary1.style.left = `${peer1Rect.right + 20}px`; // Left edge 20px right of peer1
+        // Position summaries between their respective peers
+        const containerWidth = document.querySelector('.peer-container').getBoundingClientRect().width;
+        const midpoint = containerWidth / 2;
+        
+        // Position summary1 halfway between peer1's right edge and midpoint
+        const summary1Position = peer1Rect.right + (midpoint - peer1Rect.right) / 2;
+        summary1.style.left = `${summary1Position - summary1.offsetWidth/2}px`;
         summary1.style.top = `${peer1Rect.top + scrollTop + peer1Rect.height/2}px`;
-        summary2.style.left = `${peer2Rect.left - 20 - summary2.offsetWidth}px`; // Right edge 20px left of peer2
+        
+        // Position summary2 halfway between midpoint and peer2's left edge
+        const summary2Position = midpoint + (peer2Rect.left - midpoint) / 2;
+        summary2.style.left = `${summary2Position - summary2.offsetWidth/2}px`;
         summary2.style.top = `${peer2Rect.top + scrollTop + peer2Rect.height/2}px`;
         
         // Make summaries visible but transparent
@@ -353,8 +361,17 @@
         // Animate summaries moving to opposite peers
         summary1.style.transition = summary2.style.transition = 'all 0.5s ease-in-out';
         
-        summary1.style.left = `${peer2Rect.left - 20 - summary1.offsetWidth}px`; // Right edge 20px left of peer2
-        summary2.style.left = `${peer1Rect.right + 20}px`; // Left edge 20px right of peer1
+        // Exchange positions while staying between peers
+        const containerWidth = document.querySelector('.peer-container').getBoundingClientRect().width;
+        const midpoint = containerWidth / 2;
+        
+        // Move summary1 to halfway between midpoint and peer2's left edge
+        const summary1NewPosition = midpoint + (peer2Rect.left - midpoint) / 2;
+        summary1.style.left = `${summary1NewPosition - summary1.offsetWidth/2}px`;
+        
+        // Move summary2 to halfway between peer1's right edge and midpoint
+        const summary2NewPosition = peer1Rect.right + (midpoint - peer1Rect.right) / 2;
+        summary2.style.left = `${summary2NewPosition - summary2.offsetWidth/2}px`;
         
         setTimeout(resolve, 600);
       });
