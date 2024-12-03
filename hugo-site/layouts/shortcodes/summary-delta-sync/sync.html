@@ -380,12 +380,16 @@
         // Calculate the midpoint between peers
         const midpoint = (peer1Rect.right + peer2Rect.left) / 2;
         
+        // Calculate vertical centers for peers
+        const peer1VerticalCenter = peer1Rect.top + (peer1Rect.height / 2);
+        const peer2VerticalCenter = peer2Rect.top + (peer2Rect.height / 2);
+        
         // Position summaries with fixed spacing from midpoint
         const SPACING = 60; // pixels from midpoint
         const summary1Left = midpoint - SPACING - summary1.offsetWidth;
         const summary2Left = midpoint + SPACING;
         
-        // Vertically align summaries with their peers and adjust for scroll position
+        // Vertically align summaries with their peers
         const summary1Top = peer1VerticalCenter - (summary1.offsetHeight / 2);
         const summary2Top = peer2VerticalCenter - (summary2.offsetHeight / 2);
         
