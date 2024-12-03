@@ -502,6 +502,8 @@
         const peer2Center = peer2Rect.top + (peer2Rect.height / 2) - containerTop;
 
         // Calculate horizontal positions for summaries
+        const summary1NewLeft = peer2Rect.left - containerRect.left - summary1.offsetWidth - PEER_SPACING;
+        const summary2NewLeft = peer1Rect.right - containerRect.left + PEER_SPACING;
         const midpoint = (peer1Rect.right + peer2Rect.left) / 2;
         const SPACING = 60; // pixels from midpoint
         const summary1Left = midpoint - SPACING - summary1.offsetWidth;
