@@ -43,13 +43,12 @@ the latest timestamp.
 
 #### 2. Efficient Synchronization via Summary and Delta
 
-Freenet’s approach involves a **two-step process** designed to minimize the
-amount of data transferred. Freenet’s approach involves a **two-step process** designed to minimize
-the amount of data transferred. ======= Freenet’s approach involves a **two-step process** designed
-to minimize the amount of data transferred. Freenet’s approach involves a **two-step process**
-designed to minimize the amount of data transferred.
 Freenet’s approach involves a **two-step process** designed to minimize the amount of data
-transferred.
+transferred. Freenet’s approach involves a **two-step process** designed to minimize the amount of
+data transferred. ======= Freenet’s approach involves a **two-step process** designed to minimize
+the amount of data transferred. Freenet’s approach involves a **two-step process** designed to
+minimize the amount of data transferred. Freenet’s approach involves a **two-step process** designed
+to minimize the amount of data transferred.
 
 - Each node generates a **summary** of its current state, which is a compact representation of what
   it knows.
@@ -61,7 +60,8 @@ arrays, and their structure is defined by the Wasm contract.
 
 #### 3. Summary-Delta Synchronization in a Small-World Network
 
-In Freenet, the key-values are stored using a [small world]({{< relref "small-world-networks.md" >}}) topology, which has interesting properties for distributed
+In Freenet, the key-values are stored using a [small
+world]({{< relref "small-world-networks.md" >}}) topology, which has interesting properties for distributed
 consistency. For a given key, nodes subscribe to the value, forming a connected "tree" structure, with
 the root being the node closest to the key. Updates propagate through this tree using the **Summary-Delta
 Convergence** mechanism—similar to a virus spreading through a network. This ensures that changes are
@@ -87,7 +87,7 @@ consistency:
   relying instead on local operations and efficient propagation through a structured small-world
   network.
 
-Thus, **Freenet's Summary-Delta Synchronization** not only simplifies the problem of achieving
+**Freenet's Summary-Delta Synchronization** not only simplifies the problem of achieving
 eventual consistency in distributed systems but also provides the flexibility and efficiency needed
 for diverse, decentralized applications.
 
@@ -104,8 +104,8 @@ Below is a simple visualization of how two peers synchronize their data using su
 
 #### Network-wide Propagation
 
-The visualization below shows how updates propagate through the entire network, click individual
-nodes to trigger updates. Notice how:
+The visualization below shows how updates propagate through the entire network using color to represent
+state updates, just click individual nodes to trigger updates. Notice how:
 
 - Updates propagate gradually from node to node
 - Multiple updates can spread simultaneously
