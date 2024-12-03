@@ -386,11 +386,11 @@
         // Calculate available space between peers
         const spaceBetweenPeers = peer2LeftEdge - peer1RightEdge;
         
-        // Position summaries with equal spacing from their respective peers
-        const summary1Left = peer1RightEdge + (spaceBetweenPeers * 0.2); // 20% from peer1
-        const summary2Left = peer2LeftEdge - summary2.offsetWidth - (spaceBetweenPeers * 0.2); // 20% from peer2
+        // Position summaries horizontally with proper spacing
+        const summary1Left = peer1RightEdge + (spaceBetweenPeers * 0.25); // 25% from peer1
+        const summary2Left = peer2LeftEdge - summary2.offsetWidth - (spaceBetweenPeers * 0.25); // 25% from peer2
         
-        // Vertically center summaries with slight offset for visual balance
+        // Vertically align summaries with their peers
         const summary1Top = peer1VerticalCenter - (summary1.offsetHeight / 2);
         const summary2Top = peer2VerticalCenter - (summary2.offsetHeight / 2);
         
