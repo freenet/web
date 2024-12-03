@@ -422,10 +422,13 @@
           summary2Top
         });
         
+        // Position summaries with absolute positioning relative to container
+        summary1.style.position = 'absolute';
+        summary2.style.position = 'absolute';
         summary1.style.left = `${summary1Left}px`;
-        summary1.style.top = `${summary1Top}px`;
+        summary1.style.top = `${peer1Center}px`;
         summary2.style.left = `${summary2Left}px`;
-        summary2.style.top = `${summary2Top}px`;
+        summary2.style.top = `${peer2Center}px`;
         
         // Add transitions
         summary1.style.transition = 'opacity 0.3s ease-in-out';
@@ -493,9 +496,9 @@
           height: peer2Rect.height
         };
 
-        // Calculate positions relative to the viewport
-        const peer1Center = (peer1Rect.top - containerRect.top) + (peer1Rect.height / 2);
-        const peer2Center = (peer2Rect.top - containerRect.top) + (peer2Rect.height / 2);
+        // Calculate positions relative to the container
+        const peer1Center = peer1Rect.top - containerRect.top + (peer1Rect.height / 2);
+        const peer2Center = peer2Rect.top - containerRect.top + (peer2Rect.height / 2);
 
         console.log('Vertical positioning calculations:', {
             peer1: {
