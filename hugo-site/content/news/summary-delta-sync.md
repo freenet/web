@@ -25,7 +25,7 @@ can only guarantee two of three properties—**Consistency, Availability, and Pa
 any given time, making it hard to achieve strong consistency while keeping a system always available
 and partition-tolerant.
 
-### How Freenet's Eventual Convergence Sidesteps This Challenge
+### How Freenet Sidesteps This Challenge
 
 Instead of relying on heavyweight consensus mechanisms, Freenet adopts an **eventual consistency**
 model, but with a unique twist called **Eventual Convergence**. Here’s why this approach is
