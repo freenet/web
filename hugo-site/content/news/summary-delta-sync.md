@@ -45,10 +45,7 @@ the latest timestamp.
 
 Freenet’s approach involves a **two-step process** designed to minimize the amount of data
 transferred. Freenet’s approach involves a **two-step process** designed to minimize the amount of
-data transferred. ======= Freenet’s approach involves a **two-step process** designed to minimize
-the amount of data transferred. Freenet’s approach involves a **two-step process** designed to
-minimize the amount of data transferred. Freenet’s approach involves a **two-step process** designed
-to minimize the amount of data transferred.
+data transferred.
 
 - Each node generates a **summary** of its current state, which is a compact representation of what
   it knows.
@@ -87,9 +84,9 @@ consistency:
   relying instead on local operations and efficient propagation through a structured small-world
   network.
 
-**Freenet's Summary-Delta Synchronization** not only simplifies the problem of achieving
-eventual consistency in distributed systems but also provides the flexibility and efficiency needed
-for diverse, decentralized applications.
+**Freenet's Summary-Delta Synchronization** not only simplifies the problem of achieving eventual
+consistency in distributed systems but also provides the flexibility and efficiency needed for
+diverse, decentralized applications.
 
 #### Peer Synchronization Example
 
@@ -104,8 +101,8 @@ Below is a simple visualization of how two peers synchronize their data using su
 
 #### Network-wide Propagation
 
-The visualization below shows how updates propagate through the entire network using color to represent
-state updates, just click individual nodes to trigger updates. Notice how:
+The visualization below shows how updates propagate through the entire network using color to
+represent state updates, just click individual nodes to trigger updates. Notice how:
 
 - Updates propagate gradually from node to node
 - Multiple updates can spread simultaneously
