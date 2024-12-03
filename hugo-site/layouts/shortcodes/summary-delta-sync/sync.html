@@ -498,24 +498,28 @@
 
         // Calculate positions relative to container
         const containerTop = containerRect.top;
-        const peer1Center = peer1Rect.top - containerTop + (peer1Rect.height / 2);
-        const peer2Center = peer2Rect.top - containerTop + (peer2Rect.height / 2);
+        const peer1Center = peer1Rect.top + (peer1Rect.height / 2);
+        const peer2Center = peer2Rect.top + (peer2Rect.height / 2);
 
-        // Calculate horizontal positions
+        // Calculate horizontal positions for summaries
         const midpoint = (peer1Rect.right + peer2Rect.left) / 2;
         const SPACING = 60; // pixels from midpoint
         const summary1Left = midpoint - SPACING - summary1.offsetWidth;
         const summary2Left = midpoint + SPACING;
 
+        // Calculate vertical positions relative to container
+        const summary1Top = peer1Center - containerTop;
+        const summary2Top = peer2Center - containerTop;
+
         // Position summaries with absolute positioning
         summary1.style.position = 'absolute';
         summary2.style.position = 'absolute';
         summary1.style.left = `${summary1Left}px`;
-        summary1.style.top = `${peer1Center - containerTop}px`;
+        summary1.style.top = `${summary1Top}px`;
         summary1.style.transform = 'translateY(-50%)';
         
         summary2.style.left = `${summary2Left}px`;
-        summary2.style.top = `${peer2Center - containerTop}px`;
+        summary2.style.top = `${summary2Top}px`;
         summary2.style.transform = 'translateY(-50%)';
 
         console.log('Applied positions:', {
