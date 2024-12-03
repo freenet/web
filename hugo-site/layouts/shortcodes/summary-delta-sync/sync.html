@@ -567,12 +567,17 @@
       return new Promise((resolve) => {
         console.log('Step 4: Starting exchangeDeltas');
         
-        // Hide summaries from previous step
-        document.getElementById('summary1').classList.remove('visible');
-        document.getElementById('summary2').classList.remove('visible');
-
+        const summary1 = document.getElementById('summary1');
+        const summary2 = document.getElementById('summary2');
         const delta1 = document.getElementById('delta1');
         const delta2 = document.getElementById('delta2');
+
+        // First fade out summaries
+        summary1.classList.remove('visible');
+        summary2.classList.remove('visible');
+
+        // Wait for summaries to fade out before showing deltas
+        setTimeout(() => {
         const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
         const container = document.querySelector('.sync-visualization-wrapper');
@@ -662,6 +667,7 @@
             
             resolve();
           }, 600);
+        }, 500); // Wait 500ms after summaries fade out
         });
       });
     }
