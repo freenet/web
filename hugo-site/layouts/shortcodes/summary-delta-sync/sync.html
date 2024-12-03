@@ -20,7 +20,7 @@
       display: flex;
       justify-content: space-around;
       align-items: flex-start;
-      gap: 12rem;
+      gap: 20rem;
       margin: 2rem;
       min-height: 150px;
       padding: 0.5rem;
@@ -122,7 +122,7 @@
     }
     @media (max-width: 768px) {
       .peer-container {
-        gap: 6rem;
+        gap: 10rem;
         margin: 1rem;
       }
       .peer {
@@ -376,7 +376,7 @@
         });
         
         // Adjust spacing based on screen size
-        const PEER_SPACING = window.innerWidth <= 768 ? 5 : 10;
+        const PEER_SPACING = window.innerWidth <= 768 ? 10 : 20;
         
         // Create Popper instances for positioning
         const summary1Popper = Popper.createPopper(peer1, summary1, {
