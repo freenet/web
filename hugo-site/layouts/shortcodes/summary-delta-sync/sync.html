@@ -68,8 +68,9 @@
     }
     @media (max-width: 768px) {
       .summary-display, .delta-display {
-        width: 90px;
-        padding: 0.5rem;
+        width: 80px;
+        padding: 0.4rem;
+        font-size: 0.8rem;
       }
     }
     .summary-display {
@@ -378,9 +379,9 @@
         
         // Calculate positions relative to container with adjusted spacing
         const summary1Left = (peer1Rect.right - containerRect.left) + PEER_SPACING;
-        const summary1Top = (peer1Rect.top - containerRect.top) + (peer1Rect.height / 2);
+        const summary1Top = (peer1Rect.top - containerRect.top) + (peer1Rect.height / 2) - 20;
         const summary2Left = (peer2Rect.left - containerRect.left) - summary2.offsetWidth - PEER_SPACING;
-        const summary2Top = (peer2Rect.top - containerRect.top) + (peer2Rect.height / 2) + (window.innerWidth <= 768 ? 10 : 0);
+        const summary2Top = (peer2Rect.top - containerRect.top) + (peer2Rect.height / 2) + 20;
         
         console.log('Calculated positions:', {
           summary1Left,
