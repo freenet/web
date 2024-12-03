@@ -59,9 +59,9 @@ arrays, and their structure is defined by the Wasm contract.
 In Freenet, the key-values are stored using a [small
 world]({{< relref "small-world-networks.md" >}}) topology, which has interesting properties for distributed
 consistency. For a given key, nodes subscribe to the value, forming a connected "tree" structure, with
-the root being the node closest to the key. Updates propagate through this tree using the **Summary-Delta
-Convergence** mechanism—similar to a virus spreading through a network. This ensures that changes are
-efficiently propagated to all subscribing nodes, achieving eventual consistency over time.
+the root being the node closest to the key. Updates propagate through this tree using a mechanism—similar 
+to a virus spreading through a network. This ensures that changes are efficiently propagated to all 
+subscribing nodes, quickly achieving eventual consistency.
 
 #### Illustrating Summary-Delta Synchronization: The Color Mixing Analogy
 
