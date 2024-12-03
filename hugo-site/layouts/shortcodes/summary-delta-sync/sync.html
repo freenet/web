@@ -562,24 +562,37 @@
           }
         });
 
-        // Calculate positions relative to container
-        const PEER_SPACING = 20;
-        
-        // Position deltas next to their source peers
+        // Create Popper instances for deltas
         if (peerState.peer1.delta.length > 0) {
           delta1.style.display = 'block';
           delta1.style.opacity = '0';
-          delta1.style.left = `${(peer1Rect.right - containerRect.left) + PEER_SPACING}px`;
-          delta1.style.top = `${(peer1Rect.top - containerRect.top) + (peer1Rect.height / 2)}px`;
-          delta1.style.transition = 'all 0.5s ease-in-out';
+          const delta1Popper = Popper.createPopper(peer1, delta1, {
+            placement: 'right',
+            modifiers: [
+              {
+                name: 'offset',
+                options: {
+                  offset: [0, 20],
+                },
+              },
+            ],
+          });
         }
         
         if (peerState.peer2.delta.length > 0) {
           delta2.style.display = 'block';
           delta2.style.opacity = '0';
-          delta2.style.left = `${(peer2Rect.left - containerRect.left) - delta2.offsetWidth - PEER_SPACING}px`;
-          delta2.style.top = `${(peer2Rect.top - containerRect.top) + (peer2Rect.height / 2)}px`;
-          delta2.style.transition = 'all 0.5s ease-in-out';
+          const delta2Popper = Popper.createPopper(peer2, delta2, {
+            placement: 'left',
+            modifiers: [
+              {
+                name: 'offset',
+                options: {
+                  offset: [0, 20],
+                },
+              },
+            ],
+          });
         }
 
         // Force reflow
@@ -590,7 +603,18 @@
           if (peerState.peer1.delta.length > 0) {
             delta1.classList.add('visible');
             setTimeout(() => {
-              delta1.style.left = `${(peer2Rect.left - containerRect.left)}px`;
+              // Update Popper instance to move delta1 to peer2
+              const delta1Popper = Popper.createPopper(peer2, delta1, {
+                placement: 'left',
+                modifiers: [
+                  {
+                    name: 'offset',
+                    options: {
+                      offset: [0, 20],
+                    },
+                  },
+                ],
+              });
               delta1.style.opacity = '0';
               delta1.style.transform = 'scale(0.5)';
             }, 100);
@@ -599,7 +623,18 @@
           if (peerState.peer2.delta.length > 0) {
             delta2.classList.add('visible');
             setTimeout(() => {
-              delta2.style.left = `${(peer1Rect.left - containerRect.left)}px`;
+              // Update Popper instance to move delta2 to peer1
+              const delta2Popper = Popper.createPopper(peer1, delta2, {
+                placement: 'right',
+                modifiers: [
+                  {
+                    name: 'offset',
+                    options: {
+                      offset: [0, 20],
+                    },
+                  },
+                ],
+              });
               delta2.style.opacity = '0';
               delta2.style.transform = 'scale(0.5)';
             }, 100);
