@@ -120,11 +120,15 @@
         60
       );
       
-      // Increase base node size for mobile
-      const baseSizeFactor = containerWidth < 768 ? 0.035 : 0.02;
+      // Calculate node size based on viewport width
+      const viewportScale = Math.min(containerWidth / 1000, 1); // Scale factor based on viewport width
+      const baseSizeFactor = containerWidth < 768 ? 0.06 : 0.025;
+      const minSize = containerWidth < 768 ? 30 : 20;
+      const maxSize = containerWidth < 768 ? 60 : 35;
+      
       const optimalNodeSize = Math.min(
-        Math.max(15, Math.floor(Math.sqrt(availableArea) * baseSizeFactor)),
-        containerWidth < 768 ? 40 : 30
+        Math.max(minSize, Math.floor(Math.sqrt(availableArea) * baseSizeFactor * viewportScale)),
+        maxSize
       );
       
       return {
