@@ -27,9 +27,8 @@ and partition-tolerant.
 
 ### How Freenet Sidesteps This Challenge
 
-Instead of relying on heavyweight consensus mechanisms, Freenet adopts an **eventual consistency**
-model, but with a unique twist called **Eventual Convergence**. Here’s why this approach is
-especially powerful and flexible:
+Instead of relying on heavyweight consensus mechanisms, Freenet adopts a novel **eventual
+consistency** approach. Here’s why this approach is especially powerful and flexible:
 
 #### 1. Flexible Merge Mechanism Defined by Contracts
 
