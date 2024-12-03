@@ -493,13 +493,9 @@
           height: peer2Rect.height
         };
 
-        // Calculate positions relative to the viewport, accounting for scroll and container offset
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const containerTop = containerRect.top + scrollTop;
-        
-        // Calculate peer centers relative to container
-        const peer1Center = (peer1Rect.top + scrollTop - containerTop) + (peer1Rect.height / 2);
-        const peer2Center = (peer2Rect.top + scrollTop - containerTop) + (peer2Rect.height / 2);
+        // Calculate positions relative to the viewport
+        const peer1Center = (peer1Rect.top - containerRect.top) + (peer1Rect.height / 2);
+        const peer2Center = (peer2Rect.top - containerRect.top) + (peer2Rect.height / 2);
 
         console.log('Vertical positioning calculations:', {
             peer1: {
