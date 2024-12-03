@@ -573,12 +573,17 @@
         const delta1 = document.getElementById('delta1');
         const delta2 = document.getElementById('delta2');
 
-        // First fade out summaries and wait for them to complete
+        // First fade out summaries
         summary1.classList.remove('visible');
         summary2.classList.remove('visible');
-
-        // Wait for summaries to completely fade out before proceeding with deltas
+        
+        // Clear summaries after fade out
         setTimeout(() => {
+          summary1.style.display = 'none';
+          summary2.style.display = 'none';
+          
+          // Wait additional time before showing deltas
+          setTimeout(() => {
         const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
         const container = document.querySelector('.sync-visualization-wrapper');
@@ -668,7 +673,8 @@
             
             resolve();
           }, 600);
-        }, 1000); // Increased wait time to ensure summaries are fully faded out
+        }, 500); // Wait for summaries fade out
+        }, 500); // Wait for summaries to be hidden
         });
       });
     }
