@@ -497,12 +497,50 @@
         const peer1Center = peer1RelativeRect.top + (peer1RelativeRect.height / 2);
         const peer2Center = peer2RelativeRect.top + (peer2RelativeRect.height / 2);
 
-        // Position summaries beside their peers
+        console.log('Vertical positioning calculations:', {
+            peer1: {
+                top: peer1RelativeRect.top,
+                height: peer1RelativeRect.height,
+                center: peer1Center,
+                summaryHeight: summary1.offsetHeight,
+                finalTop: peer1Center - (summary1.offsetHeight / 2)
+            },
+            peer2: {
+                top: peer2RelativeRect.top,
+                height: peer2RelativeRect.height,
+                center: peer2Center,
+                summaryHeight: summary2.offsetHeight,
+                finalTop: peer2Center - (summary2.offsetHeight / 2)
+            },
+            container: {
+                scrollTop: container.scrollTop,
+                offsetTop: container.offsetTop,
+                clientTop: container.clientTop,
+                boundingTop: containerRect.top
+            }
+        });
+
+        // Position summaries beside their peers with transform
         summary1.style.left = `${peer1RelativeRect.right + PEER_SPACING}px`;
-        summary1.style.top = `${peer1Center - (summary1.offsetHeight / 2)}px`;
+        summary1.style.top = `${peer1Center}px`;
+        summary1.style.transform = 'translateY(-50%)';
         
         summary2.style.left = `${peer2RelativeRect.left - PEER_SPACING - summary2.offsetWidth}px`;
-        summary2.style.top = `${peer2Center - (summary2.offsetHeight / 2)}px`;
+        summary2.style.top = `${peer2Center}px`;
+        summary2.style.transform = 'translateY(-50%)';
+
+        console.log('Applied positions:', {
+            summary1: {
+                left: summary1.style.left,
+                top: summary1.style.top,
+                transform: summary1.style.transform
+            },
+            summary2: {
+                left: summary2.style.left,
+                top: summary2.style.top,
+                transform: summary2.style.transform
+            }
+        });
         
         console.log('Step 2: Calculated new positions:', {
           summary1NewLeft,
