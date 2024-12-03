@@ -44,8 +44,7 @@ the latest timestamp.
 #### 2. Efficient Synchronization via Summary and Delta
 
 Freenet’s approach involves a **two-step process** designed to minimize the amount of data
-transferred. Freenet’s approach involves a **two-step process** designed to minimize the amount of
-data transferred.
+transferred.
 
 - Each node generates a **summary** of its current state, which is a compact representation of what
   it knows.
