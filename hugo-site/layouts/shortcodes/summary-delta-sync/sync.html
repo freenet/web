@@ -510,13 +510,14 @@
           if (deltas.length > 0) {
             deltas.forEach(icon => {
               const item = document.createElement('div');
-              item.textContent = icon.name;
+              const iconElement = document.createElement('i');
+              iconElement.className = `peer-icon ${icon.class}`;
+              iconElement.style.fontSize = '1.2rem';
+              item.appendChild(iconElement);
               item.style.backgroundColor = '#f0fffc';
               item.style.margin = '2px 0';
               item.style.padding = '2px 4px';
               item.style.textAlign = 'center';
-              item.style.color = '#363636';
-              item.style.fontSize = '0.45rem';
               deltaList.appendChild(item);
             });
           }
@@ -572,11 +573,11 @@
         const delta1 = document.getElementById('delta1');
         const delta2 = document.getElementById('delta2');
 
-        // First fade out summaries
+        // First fade out summaries and wait for them to complete
         summary1.classList.remove('visible');
         summary2.classList.remove('visible');
 
-        // Wait for summaries to fade out before showing deltas
+        // Wait for summaries to completely fade out before proceeding with deltas
         setTimeout(() => {
         const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
@@ -667,7 +668,7 @@
             
             resolve();
           }, 600);
-        }, 500); // Wait 500ms after summaries fade out
+        }, 1000); // Increased wait time to ensure summaries are fully faded out
         });
       });
     }
