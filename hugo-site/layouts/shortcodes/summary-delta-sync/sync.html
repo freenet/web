@@ -498,8 +498,8 @@
 
         // Calculate positions relative to container
         const containerTop = containerRect.top;
-        const peer1Center = peer1Rect.top + (peer1Rect.height / 2);
-        const peer2Center = peer2Rect.top + (peer2Rect.height / 2);
+        const peer1Center = peer1Rect.top + (peer1Rect.height / 2) - containerTop;
+        const peer2Center = peer2Rect.top + (peer2Rect.height / 2) - containerTop;
 
         // Calculate horizontal positions for summaries
         const midpoint = (peer1Rect.right + peer2Rect.left) / 2;
