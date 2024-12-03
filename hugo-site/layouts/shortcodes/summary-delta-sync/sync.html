@@ -582,7 +582,7 @@
           summary1.style.display = 'none';
           summary2.style.display = 'none';
           
-          // Wait additional time before showing deltas
+          // Wait for summaries to be fully hidden before proceeding with deltas
           setTimeout(() => {
         const peer1Rect = document.getElementById('peer1').getBoundingClientRect();
         const peer2Rect = document.getElementById('peer2').getBoundingClientRect();
@@ -673,8 +673,8 @@
             
             resolve();
           }, 600);
-        }, 500); // Wait for summaries fade out
-        }, 500); // Wait for summaries to be hidden
+        }, 1000); // Extended wait for summaries fade out
+        }, 1000); // Extended wait for summaries to be hidden
         });
       });
     }
