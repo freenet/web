@@ -377,11 +377,11 @@
         // Adjust spacing based on screen size
         const PEER_SPACING = window.innerWidth <= 768 ? 5 : 10;
         
-        // Get positions relative to the container
-        const peer1RightEdge = peer1Rect.right - containerRect.left;
-        const peer2LeftEdge = peer2Rect.left - containerRect.left;
-        const peer1VerticalCenter = peer1Rect.top - containerRect.top + (peer1Rect.height / 2);
-        const peer2VerticalCenter = peer2Rect.top - containerRect.top + (peer2Rect.height / 2);
+        // Get positions relative to the viewport
+        const peer1RightEdge = peer1Rect.right;
+        const peer2LeftEdge = peer2Rect.left;
+        const peer1VerticalCenter = peer1Rect.top + (peer1Rect.height / 2);
+        const peer2VerticalCenter = peer2Rect.top + (peer2Rect.height / 2);
         
         // Calculate available space between peers
         const spaceBetweenPeers = peer2LeftEdge - peer1RightEdge;
@@ -390,7 +390,7 @@
         const summary1Left = peer1RightEdge + (spaceBetweenPeers * 0.25); // 25% from peer1
         const summary2Left = peer2LeftEdge - summary2.offsetWidth - (spaceBetweenPeers * 0.25); // 25% from peer2
         
-        // Vertically align summaries with their peers
+        // Vertically align summaries with their peers and adjust for scroll position
         const summary1Top = peer1VerticalCenter - (summary1.offsetHeight / 2);
         const summary2Top = peer2VerticalCenter - (summary2.offsetHeight / 2);
         
