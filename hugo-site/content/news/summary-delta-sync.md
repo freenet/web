@@ -43,7 +43,13 @@ the latest timestamp.
 
 #### 2. Efficient Synchronization via Summary and Delta
 
-Freenet’s approach involves a **two-step process** that ensures eventual convergence efficiently:
+Freenet’s approach involves a **two-step process** designed to minimize the
+amount of data transferred. Freenet’s approach involves a **two-step process** designed to minimize
+the amount of data transferred. ======= Freenet’s approach involves a **two-step process** designed
+to minimize the amount of data transferred. Freenet’s approach involves a **two-step process**
+designed to minimize the amount of data transferred.
+Freenet’s approach involves a **two-step process** designed to minimize the amount of data
+transferred.
 
 - Each node generates a **summary** of its current state, which is a compact representation of what
   it knows.
@@ -51,17 +57,15 @@ Freenet’s approach involves a **two-step process** that ensures eventual conve
   bring their state up to date with the other node's state.
 
 These summaries and deltas can be extremely efficient because they’re represented as arbitrary byte
-arrays, and their structure is defined by the Wasm contract. This efficiency means that nodes can
-converge without having to exchange large amounts of redundant information.
+arrays, and their structure is defined by the Wasm contract.
 
 #### 3. Summary-Delta Synchronization in a Small-World Network
 
-In Freenet, the key-values are stored using a **small-world network** topology, which has
-interesting properties for distributed consistency. For a given key, nodes subscribe to the value,
-forming a connected "tree" structure, with the root being the node closest to the key. Updates
-propagate through this tree using the **Summary-Delta Convergence** mechanism—similar to a virus
-spreading through a network. This ensures that changes are efficiently propagated to all subscribing
-nodes, achieving eventual consistency over time.
+In Freenet, the key-values are stored using a [small world]({{< relref "small-world-networks.md" >}}) topology, which has interesting properties for distributed
+consistency. For a given key, nodes subscribe to the value, forming a connected "tree" structure, with
+the root being the node closest to the key. Updates propagate through this tree using the **Summary-Delta
+Convergence** mechanism—similar to a virus spreading through a network. This ensures that changes are
+efficiently propagated to all subscribing nodes, achieving eventual consistency over time.
 
 #### Illustrating Summary-Delta Synchronization: The Color Mixing Analogy
 
