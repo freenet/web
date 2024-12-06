@@ -1,5 +1,5 @@
 ---
-title: "Understanding Summary-Delta Synchronization"
+title: "Understanding Freenet's Delta-Sync"
 date: 2024-11-30
 draft: false
 tags: ["front-page", "university"]
