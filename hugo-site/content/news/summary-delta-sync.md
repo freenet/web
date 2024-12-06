@@ -102,7 +102,7 @@ Below is a simple visualization of how two peers synchronize their data using su
 
 #### Network-wide Propagation
 
-The visualization below shows how updates propagate through the entire network using color to
+The visualization below shows how updates propagate through a contract subscription tree using color to
 represent state updates, just click individual nodes to trigger updates. Notice how:
 
 - Updates propagate gradually from node to node
