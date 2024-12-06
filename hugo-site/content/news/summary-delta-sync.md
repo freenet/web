@@ -100,7 +100,7 @@ Below is a simple visualization of how two peers synchronize their data using su
 3. By comparing summaries, each peer determines what data to send (the delta)
 4. After exchanging deltas, both peers have the same complete set of data
 
-#### Network-wide Propagation
+#### Subscription Tree Propagation
 
 The visualization below shows how updates propagate through a contract subscription tree using color to
 represent state updates, just click individual nodes to trigger updates. Notice how:
