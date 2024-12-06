@@ -58,6 +58,12 @@ theme = "freenet"
     parent = "Resources"
 
   [[menu.main]]
+    name = "University"
+    url = "/resources/university/"
+    weight = 9
+    parent = "Resources"
+
+  [[menu.main]]
     name = "FAQ"
     url = "/faq/"
     weight = 9

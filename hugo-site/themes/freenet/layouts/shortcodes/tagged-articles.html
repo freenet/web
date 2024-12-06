@@ -1,0 +1,13 @@
+{{ $tag := .Get "tag" }}
+{{ $articles := where .Site.RegularPages "Params.tags" "intersect" (slice $tag) }}
+{{ $sortedArticles := sort $articles "Date" "desc" }}
+
+<ul>
+{{ range $sortedArticles }}
+  <li>
+    <i class="fas fa-graduation-cap"></i>
+    <a href="{{ .Permalink }}">{{ .Title }}</a>
+    <p class="article-description">{{ .Description }}</p>
+  </li>
+{{ end }}
+</ul>
