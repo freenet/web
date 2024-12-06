@@ -77,15 +77,15 @@
     ];
     const animationQueue = new Map(); // Track ongoing animations per node
     let lastColorIndex = 0; // Start at 0 since we're using the first color for initialization
-    const globalColors = [COLOR_PALETTE[0]]; // Initialize with first color
-    const MAX_COLORS = 5; // Show 5 most recent colors per node
+    let globalSequence = 0; // Global sequence counter
+    const MAX_COLORS = 4; // Show 4 most recent colors per node
 
     // Generate a random tree-like structure
     function generateRandomTree(numNodes) {
       const nodes = Array.from({ length: numNodes }, (_, i) => ({
         id: i,
         color: COLOR_PALETTE[0],
-        receivedColors: [COLOR_PALETTE[0]],
+        receivedColors: [{color: COLOR_PALETTE[0], seq: 0}],
       }));
       const links = [];
 
@@ -320,8 +320,7 @@
 
       // Reset global state
       lastColorIndex = 0;
-      globalColors.length = 0;
-      globalColors.push(COLOR_PALETTE[0]);
+      globalSequence = 0;
       
       // Generate new tree data with mobile-aware node count
       randomTreeData = generateRandomTree(window.innerWidth < 768 ? 5 : 60);
@@ -341,15 +340,10 @@
       initializeVisualization();
     }
 
-    function drawPie(nodeGroup, allColors) {
-      let displayColors;
-      // For propagated colors, show only the most recent MAX_COLORS from global tracking
-      const visibleColors = allColors.filter(color => globalColors.includes(color));
-      displayColors = visibleColors.slice(-MAX_COLORS);
-      // If no colors would be shown, keep the node's existing colors
-      if (displayColors.length === 0) {
-        displayColors = allColors;
-      }
+    function drawPie(nodeGroup, colorData) {
+      // Sort by sequence number and take most recent MAX_COLORS
+      const sortedColors = [...colorData].sort((a, b) => b.seq - a.seq);
+      const displayColors = sortedColors.slice(0, MAX_COLORS);
       
       const arcs = pieGenerator(displayColors);
       nodeGroup.selectAll("path").remove(); // Clear existing paths before drawing
@@ -357,7 +351,7 @@
         nodeGroup
           .append("path")
           .attr("d", arcGenerator(arc))
-          .attr("fill", displayColors[i])
+          .attr("fill", displayColors[i].color)
           .attr("stroke", "#5f9ea0")
           .attr("stroke-width", 0.5);
       });
@@ -371,16 +365,16 @@
         return;
       }
 
-      // Filter out any undefined colors
-      const validColors = colors.filter(color => color !== undefined);
-      if (validColors.length === 0) return;
+      // Filter out any undefined entries
+      const validEntries = colors.filter(entry => entry !== undefined);
+      if (validEntries.length === 0) return;
 
       // Mark this specific animation as in progress
       animationQueue.set(animationKey, true);
 
       try {
         // For animation, only show the colors being propagated
-        const arcs = pieGenerator(validColors);
+        const arcs = pieGenerator(validEntries);
         const messageGroup = svg
           .append("g")
           .attr("class", "message")
@@ -390,7 +384,7 @@
           messageGroup
             .append("path")
             .attr("d", messageArcGenerator(arc))
-            .attr("fill", validColors[i])
+            .attr("fill", validEntries[i].color)
             .attr("stroke", "#4682b4")
             .attr("stroke-width", 0.5);
         });
@@ -442,21 +436,21 @@
 
     // Function to initiate color propagation from a clicked node
     async function initiatePropagation(startNode) {
-      // Clean up any undefined colors first
-      startNode.data.receivedColors = startNode.data.receivedColors.filter(color => color !== undefined);
+      // Clean up any undefined entries first
+      startNode.data.receivedColors = startNode.data.receivedColors.filter(entry => entry !== undefined);
       
       // Rotate through the color palette sequentially
       lastColorIndex = (lastColorIndex + 1) % COLOR_PALETTE.length;
       const newColor = COLOR_PALETTE[lastColorIndex];
-
-      // Add new color to global tracking and keep only most recent MAX_COLORS
-      globalColors.push(newColor);
-      if (globalColors.length > MAX_COLORS) {
-          globalColors.shift(); // Remove oldest color from tracking, but don't force-remove from nodes
-      }
       
-      // Add the new color to the clicked node
-      startNode.data.receivedColors.push(newColor);
+      // Increment global sequence number
+      globalSequence++;
+      
+      // Add the new color with sequence number to the clicked node
+      startNode.data.receivedColors.push({
+        color: newColor,
+        seq: globalSequence
+      });
       
       // Update the clicked node's colors and start propagation
       updateNodeColors(startNode);
@@ -514,7 +508,9 @@
             targetNode.data.receivedColors = targetNode.data.receivedColors.filter(color => color !== undefined);
             
             const colorsToPropagate = sourceNode.data.receivedColors.filter(
-              color => !targetNode.data.receivedColors.includes(color)
+              entry => !targetNode.data.receivedColors.some(
+                targetEntry => targetEntry.seq === entry.seq
+              )
             );
             
             if (colorsToPropagate.length > 0) {
