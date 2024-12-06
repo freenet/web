@@ -27,7 +27,7 @@ and partition-tolerant.
 
 ### How Freenet Sidesteps This Challenge
 
-Instead of relying on heavyweight consensus mechanisms, Freenet adopts a (to my knowledge) novel 
+Instead of relying on heavyweight consensus mechanisms, Freenet adopts a (to our knowledge) novel 
 **eventual consistency** approach. Here’s why this approach is especially powerful and flexible:
 
 #### 1. Flexible Merge Mechanism Defined by Contracts
