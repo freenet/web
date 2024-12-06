@@ -281,6 +281,12 @@
         .attr("transform", (d) => `translate(${d.x},${d.y})`)
         .attr("id", (d) => `node-${d.data.id}`);
 
+      // Add invisible larger circle for better touch targets
+      node.append("circle")
+        .attr("r", params.nodeSize * 1.5) // 50% larger than visible node
+        .attr("fill", "transparent")
+        .style("cursor", "pointer");
+
       // Initialize node colors and event handlers
       node.each(function (d) {
         const nodeGroup = d3.select(this);
