@@ -397,18 +397,15 @@
           .remove()
           .end();
 
-        // Add colors to target after animation completes
-        let colorsAdded = false;
-        validColors.forEach(color => {
-          if (!target.data.receivedColors.includes(color)) {
-            target.data.receivedColors.push(color);
-            colorsAdded = true;
+        // Add new colors to target after animation completes
+        colors.forEach(colorEntry => {
+          if (!target.data.receivedColors.some(existing => existing.seq === colorEntry.seq)) {
+            target.data.receivedColors.push(colorEntry);
           }
         });
         
-        if (colorsAdded) {
-          updateNodeColors(target);
-        }
+        // Update the node's visual appearance
+        updateNodeColors(target);
       } finally {
         // Clear animation flag when done
         animationQueue.delete(animationKey);
