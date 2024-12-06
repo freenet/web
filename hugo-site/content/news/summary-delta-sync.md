@@ -105,8 +105,8 @@ Below is a simple visualization of how two peers synchronize their data using su
 The visualization below shows how updates propagate through a contract subscription tree using color to
 represent state updates, just click individual nodes to trigger updates. Notice how:
 
-- Updates propagate gradually from node to node
+- Updates propagate from node to node like a virus
 - Multiple updates can spread simultaneously
-- The network eventually reaches a consistent state
+- The network quickly reaches a consistent state
 
 {{< summary-delta-sync/propagation >}}
