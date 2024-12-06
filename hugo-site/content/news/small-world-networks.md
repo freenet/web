@@ -89,13 +89,6 @@ The next animation shows the average path length as the network grows.
 
 {{< small-world-scale >}}
 
-In small world networks, the average path length grows logarithmically with the number of nodes,
-which is far more efficient than the linear growth typical of regular networks. This means that even
-as the network expands to include millions of nodes, the average number of steps required to reach
-any other node remains relatively low—a critical feature for scalability. This property is precisely
-what allows Freenet to maintain efficient data retrieval, regardless of how large the network
-becomes.
-
 The blend of local and long-range connections in small world networks creates a structure that is
 both resilient and highly efficient. This pattern has been discovered repeatedly in nature, from
 social networks to neural pathways. Freenet leverages this natural efficiency to create a truly
