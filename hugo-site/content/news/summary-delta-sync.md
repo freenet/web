@@ -27,19 +27,21 @@ and partition-tolerant.
 
 ### How Freenet Sidesteps This Challenge
 
-Instead of relying on heavyweight consensus mechanisms, Freenet adopts a (to our knowledge) novel 
+Instead of relying on heavyweight consensus mechanisms, Freenet adopts a (to our knowledge) novel
 **eventual consistency** approach. Here’s why this approach is especially powerful and flexible:
 
 #### 1. Flexible Merge Mechanism Defined by Contracts
 
-In Freenet, every value stored under a given key is required to be **mergeable**—meaning that
-different versions can be combined into a consistent state. But instead of enforcing a rigid,
-one-size-fits-all merge strategy, Freenet uses **WebAssembly (Wasm) contracts** to define how data
-should be synchronized. The author of each Wasm contract specifies the rules for merging data,
-allowing them to tailor the synchronization process to the specific needs of the application. This
-flexibility is crucial because not all data requires the same kind of consistency. For some use
-cases, merging could mean taking the union of two sets, while for others, it might involve choosing
-the latest timestamp.
+In Freenet, every value stored under a given key must be **mergeable**, meaning that different
+versions can be combined into a consistent state. To ensure consistency, merging must be
+order-independent, always producing the same result regardless of the sequence in which states are
+combined (a property known as a commutative monoid). Rather than imposing a rigid, universal merge
+strategy, Freenet leverages **WebAssembly (Wasm) contracts** to define custom synchronization rules.
+Each Wasm contract is authored to specify how data should be merged, allowing synchronization to be
+tailored to the unique requirements of the application. This flexibility is essential because
+different types of data demand different approaches to consistency. For example, merging might
+involve taking the union of two sets for one use case, while another might prioritize the version
+with the latest timestamp.
 
 #### 2. Efficient Synchronization via Summary and Delta
 
@@ -59,9 +61,9 @@ arrays, and their structure is defined by the Wasm contract.
 In Freenet, the key-values are stored using a [small
 world]({{< relref "small-world-networks.md" >}}) topology, which has interesting properties for distributed
 consistency. For a given key, nodes subscribe to the value, forming a connected "tree" structure, with
-the root being the node closest to the key. Updates propagate through this tree using a mechanism—similar 
-to a virus spreading through a network. This ensures that changes are efficiently propagated to all 
-subscribing nodes, quickly achieving eventual consistency.
+the root being the node closest to the key. Updates propagate through this tree using a mechanism—similar
+to a virus spreading through a network. This ensures that changes are efficiently propagated to all subscribing
+nodes, quickly achieving eventual consistency.
 
 #### Illustrating Summary-Delta Synchronization: The Color Mixing Analogy
 
