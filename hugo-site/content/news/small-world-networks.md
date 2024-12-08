@@ -93,3 +93,8 @@ The blend of local and long-range connections in small world networks creates a 
 both resilient and highly efficient. This pattern has been discovered repeatedly in nature, from
 social networks to neural pathways. Freenet leverages this natural efficiency to create a truly
 decentralized and scalable method for sharing information.
+
+## Learn more
+
+This article just scratches the surface, for much more detail on how Freenet uses small world networks
+please watch Ian's video talk [How Freenet Works]({{< ref "/news/how-freenet-works-video-talk.md" >}}).
