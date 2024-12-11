@@ -626,8 +626,16 @@
             }, 100);
           }
           
-          // Add missing icons to each peer after animation
+          // Remove highlights from previous step and add missing icons
           setTimeout(() => {
+            // Remove highlights from peer icons
+            document.querySelectorAll('.peer-icons i').forEach(icon => {
+              icon.style.boxShadow = '';
+              icon.style.color = '';
+              icon.style.backgroundColor = '';
+              icon.style.borderRadius = '';
+              icon.style.transition = 'all 0.3s ease-in-out';
+            });
             peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...peerState.peer2.delta])];
             peerState.peer2.icons = [...new Set([...peerState.peer2.icons, ...peerState.peer1.delta])];
             
