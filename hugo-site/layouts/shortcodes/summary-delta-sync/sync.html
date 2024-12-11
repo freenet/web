@@ -671,7 +671,7 @@
       caption.textContent = stepDescriptions[currentStep];
       
       // Disable next button when showing the final step
-      if (caption.textContent === "Peers exchange and merge deltas to achieve consistent state.") {
+      if (currentStep >= stepDescriptions.length - 1) {
         document.getElementById('syncNextBtn').disabled = true;
       }
     }
