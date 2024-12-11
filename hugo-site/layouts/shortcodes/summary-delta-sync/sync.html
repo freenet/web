@@ -475,6 +475,11 @@
       return new Promise((resolve) => {
         console.log('Step 3: Starting generateDeltas');
         
+        console.log('Peer states:', {
+          peer1Icons: peerState.peer1.icons.map(i => i.name),
+          peer2Icons: peerState.peer2.icons.map(i => i.name)
+        });
+        
         // Calculate deltas by looking at what each peer has that's missing from the other's summary
         peerState.peer1.delta = peerState.peer1.icons.filter(icon1 => 
           !peerState.peer2.icons.some(icon2 => icon2.name === icon1.name)
@@ -509,6 +514,11 @@
         document.querySelectorAll('#peer1 .peer-icons i').forEach(icon => {
           const iconClass = icon.className.split(' ')[1]; // Get the FA class
           const iconName = availableIcons.find(i => i.class === iconClass)?.name;
+          console.log('Checking peer1 icon:', {
+            iconClass,
+            iconName,
+            shouldHighlight: iconName && !peerState.peer2.icons.some(i => i.name === iconName)
+          });
           if (iconName && !peerState.peer2.icons.some(i => i.name === iconName)) {
             highlightIcon(icon);
           }
@@ -518,6 +528,11 @@
         document.querySelectorAll('#peer2 .peer-icons i').forEach(icon => {
           const iconClass = icon.className.split(' ')[1]; // Get the FA class
           const iconName = availableIcons.find(i => i.class === iconClass)?.name;
+          console.log('Checking peer2 icon:', {
+            iconClass,
+            iconName,
+            shouldHighlight: iconName && !peerState.peer1.icons.some(i => i.name === iconName)
+          });
           if (iconName && !peerState.peer1.icons.some(i => i.name === iconName)) {
             highlightIcon(icon);
           }
