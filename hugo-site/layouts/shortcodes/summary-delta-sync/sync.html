@@ -606,6 +606,15 @@
         // Force reflow
         container.offsetHeight;
 
+        // Remove highlights from peer icons before starting delta animation
+        document.querySelectorAll('.peer-icons i').forEach(icon => {
+          icon.style.boxShadow = '';
+          icon.style.color = '';
+          icon.style.backgroundColor = '';
+          icon.style.borderRadius = '';
+          icon.style.transition = 'all 0.3s ease-in-out';
+        });
+
         // Make deltas visible and animate them to their destinations
         requestAnimationFrame(() => {
           if (peerState.peer1.delta.length > 0) {
@@ -626,16 +635,8 @@
             }, 100);
           }
           
-          // Remove highlights from previous step and add missing icons
+          // Add missing icons
           setTimeout(() => {
-            // Remove highlights from peer icons
-            document.querySelectorAll('.peer-icons i').forEach(icon => {
-              icon.style.boxShadow = '';
-              icon.style.color = '';
-              icon.style.backgroundColor = '';
-              icon.style.borderRadius = '';
-              icon.style.transition = 'all 0.3s ease-in-out';
-            });
             peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...peerState.peer2.delta])];
             peerState.peer2.icons = [...new Set([...peerState.peer2.icons, ...peerState.peer1.delta])];
             
