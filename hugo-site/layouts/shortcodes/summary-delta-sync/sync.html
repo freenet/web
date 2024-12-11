@@ -512,28 +512,28 @@
 
         // Highlight icons in peer1 that peer2 is missing
         document.querySelectorAll('#peer1 .peer-icons i').forEach(icon => {
-          const iconClass = icon.className.split(' ')[1]; // Get the FA class
-          const iconName = availableIcons.find(i => i.class === iconClass)?.name;
+          const iconClass = icon.className; // Get the full class string
+          const matchingIcon = availableIcons.find(i => iconClass.includes(i.class));
           console.log('Checking peer1 icon:', {
             iconClass,
-            iconName,
-            shouldHighlight: iconName && !peerState.peer2.icons.some(i => i.name === iconName)
+            iconName: matchingIcon?.name,
+            shouldHighlight: matchingIcon?.name && !peerState.peer2.icons.some(i => i.name === matchingIcon.name)
           });
-          if (iconName && !peerState.peer2.icons.some(i => i.name === iconName)) {
+          if (matchingIcon?.name && !peerState.peer2.icons.some(i => i.name === matchingIcon.name)) {
             highlightIcon(icon);
           }
         });
 
         // Highlight icons in peer2 that peer1 is missing
         document.querySelectorAll('#peer2 .peer-icons i').forEach(icon => {
-          const iconClass = icon.className.split(' ')[1]; // Get the FA class
-          const iconName = availableIcons.find(i => i.class === iconClass)?.name;
+          const iconClass = icon.className; // Get the full class string
+          const matchingIcon = availableIcons.find(i => iconClass.includes(i.class));
           console.log('Checking peer2 icon:', {
             iconClass,
-            iconName,
-            shouldHighlight: iconName && !peerState.peer1.icons.some(i => i.name === iconName)
+            iconName: matchingIcon?.name,
+            shouldHighlight: matchingIcon?.name && !peerState.peer1.icons.some(i => i.name === matchingIcon.name)
           });
-          if (iconName && !peerState.peer1.icons.some(i => i.name === iconName)) {
+          if (matchingIcon?.name && !peerState.peer1.icons.some(i => i.name === matchingIcon.name)) {
             highlightIcon(icon);
           }
         });
