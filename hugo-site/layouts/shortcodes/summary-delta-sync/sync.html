@@ -488,11 +488,20 @@
           peer2Delta: peerState.peer2.delta.map(i => i.name)
         });
 
-        // Highlight the items that will become deltas
-        document.querySelectorAll('#summary1 .summary-list > div, #summary2 .summary-list > div').forEach(item => {
+        // Highlight items in summary1 that are in peer1's delta
+        document.querySelectorAll('#summary1 .summary-list > div').forEach(item => {
           const iconName = item.textContent;
-          if (peerState.peer1.delta.some(icon => icon.name === iconName) ||
-              peerState.peer2.delta.some(icon => icon.name === iconName)) {
+          if (peerState.peer1.delta.some(icon => icon.name === iconName)) {
+            item.style.backgroundColor = '#00d1b2';
+            item.style.color = 'white';
+            item.style.transition = 'all 0.3s ease-in-out';
+          }
+        });
+
+        // Highlight items in summary2 that are in peer2's delta
+        document.querySelectorAll('#summary2 .summary-list > div').forEach(item => {
+          const iconName = item.textContent;
+          if (peerState.peer2.delta.some(icon => icon.name === iconName)) {
             item.style.backgroundColor = '#00d1b2';
             item.style.color = 'white';
             item.style.transition = 'all 0.3s ease-in-out';
