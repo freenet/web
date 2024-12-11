@@ -496,29 +496,30 @@
           icon.style.borderRadius = '';
         });
 
-        // Highlight icons in peer1 that peer2 needs (icons in peer1's delta)
+        // Helper function to apply highlight styles
+        const highlightIcon = (icon) => {
+          icon.style.backgroundColor = '#00d1b2';
+          icon.style.color = 'white';
+          icon.style.padding = '5px';
+          icon.style.borderRadius = '4px';
+          icon.style.transition = 'all 0.3s ease-in-out';
+        };
+
+        // Highlight icons in peer1 that peer2 is missing
         document.querySelectorAll('#peer1 .peer-icons i').forEach(icon => {
           const iconClass = icon.className.split(' ')[1]; // Get the FA class
           const iconName = availableIcons.find(i => i.class === iconClass)?.name;
-          if (iconName && peerState.peer1.delta.some(i => i.name === iconName)) {
-            icon.style.backgroundColor = '#00d1b2';
-            icon.style.color = 'white';
-            icon.style.padding = '5px';
-            icon.style.borderRadius = '4px';
-            icon.style.transition = 'all 0.3s ease-in-out';
+          if (iconName && !peerState.peer2.icons.some(i => i.name === iconName)) {
+            highlightIcon(icon);
           }
         });
 
-        // Highlight icons in peer2 that peer1 needs (icons in peer2's delta)
+        // Highlight icons in peer2 that peer1 is missing
         document.querySelectorAll('#peer2 .peer-icons i').forEach(icon => {
           const iconClass = icon.className.split(' ')[1]; // Get the FA class
           const iconName = availableIcons.find(i => i.class === iconClass)?.name;
-          if (iconName && peerState.peer2.delta.some(i => i.name === iconName)) {
-            icon.style.backgroundColor = '#00d1b2';
-            icon.style.color = 'white';
-            icon.style.padding = '5px';
-            icon.style.borderRadius = '4px';
-            icon.style.transition = 'all 0.3s ease-in-out';
+          if (iconName && !peerState.peer1.icons.some(i => i.name === iconName)) {
+            highlightIcon(icon);
           }
         });
 
