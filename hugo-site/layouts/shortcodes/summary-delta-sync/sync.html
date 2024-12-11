@@ -531,17 +531,7 @@
           }
         });
 
-        // After a delay, remove highlights from peer icons as they're added to delta
-        setTimeout(() => {
-          [...peer1Missing, ...peer2Missing].forEach(icon => {
-            icon.style.boxShadow = '';
-            icon.style.color = '';
-            icon.style.backgroundColor = '';
-            icon.style.borderRadius = '';
-            icon.style.transition = 'all 0.3s ease-in-out';
-          });
-          setTimeout(resolve, 500);
-        }, 1000);
+        setTimeout(resolve, 1000);
       });
     }
 
