@@ -503,11 +503,16 @@
 
         // Helper function to apply highlight styles
         const highlightIcon = (icon) => {
-          icon.style.backgroundColor = '#00d1b2';
+          icon.style.boxShadow = '0 0 0 5px #00d1b2';
           icon.style.color = 'white';
-          icon.style.padding = '5px';
           icon.style.borderRadius = '4px';
+          icon.style.backgroundColor = '#00d1b2';
           icon.style.transition = 'all 0.3s ease-in-out';
+          icon.style.display = 'inline-flex';  // Maintain consistent size
+          icon.style.width = '2rem';           // Match font-size
+          icon.style.height = '2rem';          // Match font-size
+          icon.style.alignItems = 'center';    // Center vertically
+          icon.style.justifyContent = 'center'; // Center horizontally
         };
 
         // Highlight icons in peer1 that peer2 is missing
