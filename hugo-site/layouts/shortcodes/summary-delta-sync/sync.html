@@ -475,7 +475,7 @@
       return new Promise((resolve) => {
         console.log('Step 3: Starting generateDeltas');
         
-        // Calculate deltas
+        // Calculate deltas by looking at what each peer has that's missing from the other's summary
         peerState.peer1.delta = peerState.peer1.icons.filter(icon1 => 
           !peerState.peer2.icons.some(icon2 => icon2.name === icon1.name)
         );
@@ -488,23 +488,29 @@
           peer2Delta: peerState.peer2.delta.map(i => i.name)
         });
 
-        // Highlight items in summary1 that are in peer1's delta
-        document.querySelectorAll('#summary1 .summary-list > div').forEach(item => {
-          const iconName = item.textContent;
-          if (peerState.peer1.delta.some(icon => icon.name === iconName)) {
-            item.style.backgroundColor = '#00d1b2';
-            item.style.color = 'white';
-            item.style.transition = 'all 0.3s ease-in-out';
+        // Highlight icons in peer1 that are missing from peer2's summary
+        document.querySelectorAll('#peer1 .peer-icons i').forEach(icon => {
+          const iconClass = icon.className.split(' ')[1]; // Get the FA class
+          const iconName = availableIcons.find(i => i.class === iconClass)?.name;
+          if (iconName && peerState.peer1.delta.some(i => i.name === iconName)) {
+            icon.style.backgroundColor = '#00d1b2';
+            icon.style.color = 'white';
+            icon.style.padding = '5px';
+            icon.style.borderRadius = '4px';
+            icon.style.transition = 'all 0.3s ease-in-out';
           }
         });
 
-        // Highlight items in summary2 that are in peer2's delta
-        document.querySelectorAll('#summary2 .summary-list > div').forEach(item => {
-          const iconName = item.textContent;
-          if (peerState.peer2.delta.some(icon => icon.name === iconName)) {
-            item.style.backgroundColor = '#00d1b2';
-            item.style.color = 'white';
-            item.style.transition = 'all 0.3s ease-in-out';
+        // Highlight icons in peer2 that are missing from peer1's summary
+        document.querySelectorAll('#peer2 .peer-icons i').forEach(icon => {
+          const iconClass = icon.className.split(' ')[1]; // Get the FA class
+          const iconName = availableIcons.find(i => i.class === iconClass)?.name;
+          if (iconName && peerState.peer2.delta.some(i => i.name === iconName)) {
+            icon.style.backgroundColor = '#00d1b2';
+            icon.style.color = 'white';
+            icon.style.padding = '5px';
+            icon.style.borderRadius = '4px';
+            icon.style.transition = 'all 0.3s ease-in-out';
           }
         });
 
