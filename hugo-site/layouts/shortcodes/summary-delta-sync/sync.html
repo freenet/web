@@ -493,14 +493,6 @@
           peer2Delta: peerState.peer2.delta.map(i => i.name)
         });
 
-        // Reset any previous highlights
-        document.querySelectorAll('.peer-icons i').forEach(icon => {
-          icon.style.backgroundColor = '';
-          icon.style.color = '';
-          icon.style.padding = '';
-          icon.style.borderRadius = '';
-        });
-
         // Helper function to apply highlight styles
         const highlightIcon = (icon) => {
           icon.style.boxShadow = '0 0 0 5px #00d1b2';
@@ -515,35 +507,41 @@
           icon.style.justifyContent = 'center'; // Center horizontally
         };
 
-        // Highlight icons in peer1 that peer2 is missing
+        // Reset any previous highlights and identify missing icons
+        const peer1Missing = [];
+        const peer2Missing = [];
+
+        // Find missing icons in peer1
         document.querySelectorAll('#peer1 .peer-icons i').forEach(icon => {
-          const iconClass = icon.className; // Get the full class string
+          const iconClass = icon.className;
           const matchingIcon = availableIcons.find(i => iconClass.includes(i.class));
-          console.log('Checking peer1 icon:', {
-            iconClass,
-            iconName: matchingIcon?.name,
-            shouldHighlight: matchingIcon?.name && !peerState.peer2.icons.some(i => i.name === matchingIcon.name)
-          });
           if (matchingIcon?.name && !peerState.peer2.icons.some(i => i.name === matchingIcon.name)) {
+            peer1Missing.push(icon);
             highlightIcon(icon);
           }
         });
 
-        // Highlight icons in peer2 that peer1 is missing
+        // Find missing icons in peer2
         document.querySelectorAll('#peer2 .peer-icons i').forEach(icon => {
-          const iconClass = icon.className; // Get the full class string
+          const iconClass = icon.className;
           const matchingIcon = availableIcons.find(i => iconClass.includes(i.class));
-          console.log('Checking peer2 icon:', {
-            iconClass,
-            iconName: matchingIcon?.name,
-            shouldHighlight: matchingIcon?.name && !peerState.peer1.icons.some(i => i.name === matchingIcon.name)
-          });
           if (matchingIcon?.name && !peerState.peer1.icons.some(i => i.name === matchingIcon.name)) {
+            peer2Missing.push(icon);
             highlightIcon(icon);
           }
         });
 
-        setTimeout(resolve, 1000);
+        // After a delay, remove highlights from peer icons as they're added to delta
+        setTimeout(() => {
+          [...peer1Missing, ...peer2Missing].forEach(icon => {
+            icon.style.boxShadow = '';
+            icon.style.color = '';
+            icon.style.backgroundColor = '';
+            icon.style.borderRadius = '';
+            icon.style.transition = 'all 0.3s ease-in-out';
+          });
+          setTimeout(resolve, 500);
+        }, 1000);
       });
     }
 
