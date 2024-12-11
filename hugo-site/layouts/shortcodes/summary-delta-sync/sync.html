@@ -488,11 +488,19 @@
           peer2Delta: peerState.peer2.delta.map(i => i.name)
         });
 
-        // Highlight icons in peer1 that are missing from peer2's summary
+        // Reset any previous highlights
+        document.querySelectorAll('.peer-icons i').forEach(icon => {
+          icon.style.backgroundColor = '';
+          icon.style.color = '';
+          icon.style.padding = '';
+          icon.style.borderRadius = '';
+        });
+
+        // Highlight icons in peer1 that peer2 needs
         document.querySelectorAll('#peer1 .peer-icons i').forEach(icon => {
           const iconClass = icon.className.split(' ')[1]; // Get the FA class
           const iconName = availableIcons.find(i => i.class === iconClass)?.name;
-          if (iconName && peerState.peer1.delta.some(i => i.name === iconName)) {
+          if (iconName && !peerState.peer2.icons.some(i => i.name === iconName)) {
             icon.style.backgroundColor = '#00d1b2';
             icon.style.color = 'white';
             icon.style.padding = '5px';
@@ -501,11 +509,11 @@
           }
         });
 
-        // Highlight icons in peer2 that are missing from peer1's summary
+        // Highlight icons in peer2 that peer1 needs
         document.querySelectorAll('#peer2 .peer-icons i').forEach(icon => {
           const iconClass = icon.className.split(' ')[1]; // Get the FA class
           const iconName = availableIcons.find(i => i.class === iconClass)?.name;
-          if (iconName && peerState.peer2.delta.some(i => i.name === iconName)) {
+          if (iconName && !peerState.peer1.icons.some(i => i.name === iconName)) {
             icon.style.backgroundColor = '#00d1b2';
             icon.style.color = 'white';
             icon.style.padding = '5px';
