@@ -1,5 +1,5 @@
 +++
-tags = ["dev-meeting", "front-page"]
+tags = ["dev-meeting"]
 title = "Weekly Dev Update - WebSocket Stability and Final Testing Nearing Completion"
 date = 2024-11-22
 +++

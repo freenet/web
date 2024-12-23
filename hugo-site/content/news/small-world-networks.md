@@ -96,5 +96,6 @@ decentralized and scalable method for sharing information.
 
 ## Learn more
 
-This article just scratches the surface, for much more detail on how Freenet uses small world networks
-please watch Ian's video talk [How Freenet Works]({{< ref "/news/how-freenet-works-video-talk.md" >}}).
+This article just scratches the surface, for much more detail on how Freenet uses small world
+networks please watch Ian's video talk [How
+Freenet Works]({{< ref "/news/how-freenet-works-video-talk.md" >}}).

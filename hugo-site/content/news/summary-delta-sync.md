@@ -102,8 +102,8 @@ Below is a simple visualization of how two peers synchronize their data using su
 
 #### Subscription Tree Propagation
 
-The visualization below shows how updates propagate through a contract subscription tree using color to
-represent state updates, just click individual nodes to trigger updates. Notice how:
+The visualization below shows how updates propagate through a contract subscription tree using color
+to represent state updates, just click individual nodes to trigger updates. Notice how:
 
 - Updates propagate from node to node like a virus
 - Multiple updates can spread simultaneously
