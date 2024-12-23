@@ -195,7 +195,7 @@
             if (numPeers > maxPeers) return;
 
             initializeNetwork();
-            draw();w
+            draw();
             const avgPathLength = simulateRoutingTrials();
             averagePathLengths.push({ numPeers, pathLength: avgPathLength });
             plotAveragePathLength();
