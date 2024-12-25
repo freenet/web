@@ -17,8 +17,8 @@ special interests.
 #### Donate via Cryptocurrency
 
 Freenet is **not** a cryptocurrency, but we do accept cryptocurrency donations. For large donations
-(over \$5,000) please contact us before sending. For smaller donations, please use the following
-wallets:
+(over \$5,000) please {{< email-protect "gro.teneerf@nai" "contact us" >}} before sending. For smaller 
+donations, please use the following wallets:
 
 | Cryptocurrency | Address                                      |
 | -------------- | -------------------------------------------- |
