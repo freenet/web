@@ -1,0 +1,11 @@
+[[gateways]]
+public_key = "keys/public.vega.gw.pem"
+
+[gateways.address]
+hostname = "vega.locut.us"
+
+[[gateways]]
+public_key = "keys/public.ziggy.gw.pem"
+
+[gateways.address]
+hostname = "technic.locut.us"
