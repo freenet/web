@@ -2,10 +2,10 @@
 public_key = "keys/public.vega.gw.pem"
 
 [gateways.address]
-hostname = "vega.locut.us"
+hostname = "vega.locut.us:31337"
 
 [[gateways]]
 public_key = "keys/public.ziggy.gw.pem"
 
 [gateways.address]
-hostname = "technic.locut.us"
+hostname = "technic.locut.us:31337"
