@@ -75,7 +75,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: hugo-site/public  # Point to the correct directory
+          path: hugo-site/public
 
   deploy:
     needs: build
