@@ -73,7 +73,7 @@ jobs:
 
       # Upload the built site to GitHub Pages artifact
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
           path: hugo-site/public
 
