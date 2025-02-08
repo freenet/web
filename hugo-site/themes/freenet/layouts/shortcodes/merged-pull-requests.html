@@ -7,7 +7,7 @@
     const response = await fetch('https://api.github.com/repos/freenet/freenet-core/pulls?state=closed&per_page=30');
     const pullRequests = await response.json();
     const mergedPullRequests = pullRequests
-      .filter(pr => pr.merged_at && !pr.title.includes('Bump'))
+      .filter(pr => pr.merged_at && pr.user.login !== 'dependabot[bot]')
       .slice(0, 5);
 
     const container = document.getElementById('merged-pull-requests');
