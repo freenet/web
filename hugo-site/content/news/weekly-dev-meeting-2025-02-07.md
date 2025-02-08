@@ -4,8 +4,6 @@ title = "Weekly Developer Meeting"
 date = 2025-02-07
 +++
 
-### **Freenet Sync Meeting Summary – Ian Clarke & Ignacio Duart (2025/02/07 08:45 CST)**  
-
 #### **Attendees**  
 - Ian Clarke  
 - Ignacio Duart  
@@ -57,4 +55,3 @@ date = 2025-02-07
 
 #### **Closing Notes**  
 - Ignacio mentioned a tool for creating realistic AI-generated demo videos with avatars; he will follow up with Ian on its name.  
-- Ignacio had to leave for family obligations, and the meeting concluded at **00:56:00**.
