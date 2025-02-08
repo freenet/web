@@ -28,21 +28,14 @@ date = 2025-02-07
    - An issue was discovered where state updates are not propagating, likely caused by a previous efficiency optimization that prevented redundant updates.  
    - The get function may also not be retrieving the contract correctly.  
 
-4. **Demo & Deliverable Strategy for Filecoin**  
-   - Filecoin's representative likely just needs documentation proving progress rather than a live demo.  
-   - The plan is to:  
-     - Ensure a version is published that users can install.  
-     - Demonstrate the ping contract working via a recorded video rather than a live presentation.  
-   - Aiming to send materials by **Friday, February 14**, avoiding a last-minute submission.  
-
-5. **Persistent Contract Updates for Demo**  
+4. **Persistent Contract Updates for Demo**  
    - To ensure the contract is continuously updated, the team will run the ping contract on a gateway to keep activity visible.  
 
-6. **Code & Technical Adjustments**  
+5. **Code & Technical Adjustments**  
    - Discussed removing an outdated connection filtering rule preventing multiple nodes on the same local network from connecting.  
    - Ensured that the network can support multiple peers with the same location, using historical response times for routing decisions.  
 
-7. **River Chat Integration & Serialization Issue**  
+6. **River Chat Integration & Serialization Issue**  
    - Ian is working on integrating River with Freenet.  
    - Encountering a serialization error when sending messages via WebSockets.  
    - Ignacio suggested debugging the contract execution process by adding logging inside the contract functions.  
