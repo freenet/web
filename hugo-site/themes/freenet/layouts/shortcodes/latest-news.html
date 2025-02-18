@@ -1,5 +1,5 @@
 {{ $tag := .Get "tag" | default "front-page" }}
-{{ $news := where .Site.RegularPages "Section" "news" }}
+{{ $news := where .Site.RegularPages "Section" "goals/news" }}
 {{ $news := where $news "Params.tags" "intersect" (slice $tag) }}
 {{ $sortedNews := sort $news "Date" "desc" }}
 <ul>

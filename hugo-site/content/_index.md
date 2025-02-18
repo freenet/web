@@ -4,7 +4,7 @@ date: 2024-06-11T00:00:00Z
 draft: false
 layout: "single"
 links:
-  - url: "/resources/video-talks/"
+  - url: "/goals/video-talks/"
     text: "Video Talks"
     icon: "fas fa-video"
     color: "is-medium-blue"

@@ -23,68 +23,77 @@ theme = "freenet"
     url = "/"
     weight = 1
 
+# Tutorial
   [[menu.main]]
-    name = "Developers"
-    url = "/dev/"
-    weight = 3
+    name = "Visit"
+    url = "/use/"
+    weight = 1
 
   [[menu.main]]
-    name = "Platform"
-    url = "/dev/platform/"
-    weight = 4
-    parent = "Developers"
+    name = "Install"
+    url = "/use/platform/"
+    weight = 1
+    parent = "Visit"
+
+# Guide
+  [[menu.main]]
+    name = "Dev"
+    url = "/dev/"
+    weight = 2
 
   [[menu.main]]
     name = "Apps"
     url = "/dev/apps/"
-    weight = 5
-    parent = "Developers"
-
-  [[menu.main]]
-    name = "Resources"
-    url = "/resources/"
-    weight = 6
-
-  [[menu.main]]
-    name = "News"
-    url = "/news/"
-    weight = 7
-    parent = "Resources"
-
-  [[menu.main]]
-    name = "Video Talks"
-    url = "/resources/video-talks/"
-    weight = 8
-    parent = "Resources"
-
-  [[menu.main]]
-    name = "University"
-    url = "/resources/university/"
-    weight = 9
-    parent = "Resources"
-
-  [[menu.main]]
-    name = "FAQ"
-    url = "/faq/"
-    weight = 9
-    parent = "Resources"
-
-  [[menu.main]]
-    name = "Contribute"
-    weight = 10
-
-  [[menu.main]]
-    name = "Donate"
-    url = "/donate/"
-    weight = 11
-    parent = "Contribute"
+    weight = 1
+    parent = "Dev"
 
   [[menu.main]]
     name = "Get Ghost Key"
-    weight = 12
-    url= "/ghostkey/"
-    parent = "Contribute"
+    weight = 2
+    url= "/dev/ghostkey/"
+    parent = "Dev"
 
+  [[menu.main]]
+    name = "University"
+    url = "/dev/university/"
+    weight = 3
+    parent = "Dev"
+    
+# Dev api reference
+  [[menu.main]]
+    name = "Reference"
+    url = "/api-ref/"
+    weight = 3
+    
+# Explanation
+  [[menu.main]]
+    name = "Goals"
+    url = "/"
+    weight = 4
+
+  [[menu.main]]
+    name = "Video Talks About the goals of freenet"
+    url = "/goals/video-talks/"
+    weight = 1
+    parent = "Goals"
+    
+  [[menu.main]]
+    name = "News"
+    url = "/goals/news/"
+    weight = 2
+    parent = "Goals"
+
+  [[menu.main]]
+    name = "FAQ"
+    url = "/goals/faq/"
+    weight = 3
+    parent = "Goals"
+
+  [[menu.main]]
+    name = "Donate"
+    url = "/goals/donate/"
+    weight = 4
+    parent = "Goals"
 
 [params]
   stripePublishableKeyTest = "pk_test_51PUf6RCCPv9UL23G0yLdnS51VCStEcnqzd2AftFWiXAOjFOgonYRRBL6F5eKOCrr2yuEHCBDqqYa8H0w7ouRyW6d00awdNMKsf"
