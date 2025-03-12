@@ -193,13 +193,6 @@ the foundation for a decentralized reputation system that respects privacy.
 No filtering approach is perfect, especially in centralized systems, but we think a decentralized
 method can work as well or better.
 
-# What is the status of Freenet? {#what-is-the-status-of-freenet}
-
-As of September 2024, we are very close to getting the network up; see our
-[news page](https://freenet.org/news) for regular status updates. In the meantime you can already
-[experiment](https://docs.freenet.org/tutorial.html) with building a decentralized app to test on
-your own computer.
-
 # Can I follow Freenet on social media? {#can-i-follow-freenet-on-social-media}
 
 Yes, you can follow [\@FreenetOrg](https://twitter.com/freenetorg) on Twitter/X or discuss
