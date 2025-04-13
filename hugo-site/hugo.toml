@@ -74,6 +74,12 @@ theme = "freenet"
     weight = 10
 
   [[menu.main]]
+    name = "User Manual"
+    url = "/manual/"
+    weight = 14
+    parent = "Resources"
+
+  [[menu.main]]
     name = "Donate"
     url = "/donate/"
     weight = 11
@@ -84,7 +90,6 @@ theme = "freenet"
     weight = 12
     url= "/ghostkey/"
     parent = "Contribute"
-
 
 [params]
   stripePublishableKeyTest = "pk_test_51PUf6RCCPv9UL23G0yLdnS51VCStEcnqzd2AftFWiXAOjFOgonYRRBL6F5eKOCrr2yuEHCBDqqYa8H0w7ouRyW6d00awdNMKsf"

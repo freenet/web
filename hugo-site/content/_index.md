@@ -8,7 +8,7 @@ links:
     text: "Video Talks"
     icon: "fas fa-video"
     color: "is-medium-blue"
-  - url: "https://docs.freenet.org/"
+  - url: "/manual/"
     text: "User Manual"
     icon: "fas fa-book"
     color: "is-medium-teal"
