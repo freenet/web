@@ -80,6 +80,12 @@ theme = "freenet"
     parent = "Resources"
 
   [[menu.main]]
+    name = "Introduction"
+    url = "/manual/introduction/"
+    weight = 1
+    parent = "User Manual"
+
+  [[menu.main]]
     name = "Donate"
     url = "/donate/"
     weight = 11
