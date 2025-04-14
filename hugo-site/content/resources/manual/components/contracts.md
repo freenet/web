@@ -115,8 +115,17 @@ language for writing contracts.
 Rust contracts implement the [`ContractInterface`](https://docs.rs/freenet-stdlib/latest/freenet_stdlib/prelude/trait.ContractInterface.html) trait, which defines the
 functions that the core calls to interact with the contract.
 
-```rust,no_run,noplayground
-{{#include ../../../stdlib/rust/src/contract_interface.rs:contractifce}}
+```rust
+// TODO: Replace this comment with the actual code snippet for 'contractifce'.
+// Option 1: Manually paste the code here.
+// Option 2: Use Hugo's readFile function if the file is accessible
+//           (e.g., {{ readFile "assets/code/contract_interface.rs" | safeHTML }})
+//           Note: readFile includes the *entire* file.
+// Option 3: Implement a custom shortcode for dynamic section inclusion.
+
+pub trait ContractInterface {
+    // ... (Paste or dynamically include the relevant interface definition here)
+}
 ```
 
 #### Flexibility versus Convenience
