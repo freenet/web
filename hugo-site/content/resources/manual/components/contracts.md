@@ -2,10 +2,7 @@
 title: "Contracts"
 date: 2025-04-13
 draft: false
-weight: 2
 ---
-
-## Contracts
 
 Freenet is essentially a global decentralized key-value store where keys are
 WebAssembly code called Contracts. Contracts are stored in the network,
@@ -116,19 +113,41 @@ Rust contracts implement the [`ContractInterface`](https://docs.rs/freenet-stdli
 functions that the core calls to interact with the contract.
 
 ```rust
-// TODO: Replace this comment with the actual code snippet for 'contractifce'.
-// Option 1: Manually paste the code here.
-// Option 2: Use Hugo's readFile function if the file is accessible
-//           (e.g., {{ readFile "assets/code/contract_interface.rs" | safeHTML }})
-//           Note: readFile includes the *entire* file.
-// Option 3: Implement a custom shortcode for dynamic section inclusion.
-
 pub trait ContractInterface {
-    // ... (Paste or dynamically include the relevant interface definition here)
+    /// Verify that the state is valid, given the parameters.
+    fn validate_state(
+        parameters: Parameters<'static>,
+        state: State<'static>,
+        related: RelatedContracts<'static>,
+    ) -> Result<ValidateResult, ContractError>;
+
+    /// Update the state to account for the new data
+    fn update_state(
+        parameters: Parameters<'static>,
+        state: State<'static>,
+        data: Vec<UpdateData<'static>>,
+    ) -> Result<UpdateModification<'static>, ContractError>;
+
+    /// Generate a concise summary of a state that can be used to create deltas
+    /// relative to this state.
+    fn summarize_state(
+        parameters: Parameters<'static>,
+        state: State<'static>,
+    ) -> Result<StateSummary<'static>, ContractError>;
+
+    /// Generate a state delta using a summary from the current state.
+    /// This along with [`Self::summarize_state`] allows flexible and efficient
+    /// state synchronization between peers.
+    fn get_state_delta(
+        parameters: Parameters<'static>,
+        state: State<'static>,
+        summary: StateSummary<'static>,
+    ) -> Result<StateDelta<'static>, ContractError>;
 }
 ```
 
-#### Flexibility versus Convenience
+
+### Flexibility versus Convenience
 
 The `ContractInterface` trait is a low-level "Layer 0" API that provides direct
 access to the contract's state and parameters. This API is useful for contracts

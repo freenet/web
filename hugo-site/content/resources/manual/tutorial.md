@@ -1,11 +1,9 @@
 ---
-title: "Tutorial: Create an App"
+title: "Freenet Decentralized App Tutorial"
 date: 2025-04-13
 draft: false
 weight: 1
 ---
-
-# Freenet Decentralized App Tutorial
 
 This tutorial walks you through creating and running a simple web app and a backend contract on Freenet. By the end, you’ll have:
 

@@ -1,11 +1,9 @@
 ---
-title: "Docker"
+title: "Building with Docker Images"
 date: 2025-04-13
 draft: false
-weight: 3
 ---
 
-# Building with Docker Images
 
 ## Prerequisites
 

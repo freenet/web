@@ -2,23 +2,20 @@
 title: "Manifest Format"
 date: 2025-04-13
 draft: false
-weight: 3
 ---
-
-# The Manifest Format
 
 The `freenet.toml` file for each UI component/contract is called its _manifest_.
 It is written in the [TOML](https://toml.io/) format. Manifest files consist of
 the following sections:
 
-- [[contract]](./manifest.md#the-contract-section) — Defines a contract.
-  - [type](./manifest.md#the-type-field) — Contract type.
-  - [lang](./manifest.md#the-lang-field) — Contract source language.
-  - [output_dir](./manifest.md#the-output_dir-field) — Output path for build
+- [[contract]](/manual/manifest#the-contract-section) — Defines a contract.
+  - [type](/manual/manifest#the-type-field) — Contract type.
+  - [lang](/manual/manifest#the-lang-field) — Contract source language.
+  - [output_dir](/manual/manifest#the-output_dir-field) — Output path for build
     artifacts.
-- [[webapp]](./manifest.md#the-contract-section) — Configuration for UI
+- [[webapp]](/manual/manifest#the-contract-section) — Configuration for UI
   component containers.
-- [[state]](./manifest.md#the-state-section) — Optionally seed a state.
+- [[state]](/manual/manifest#the-state-section) — Optionally seed a state.
 
 ## The `[contract]` section
 
@@ -34,8 +31,8 @@ The type of the contract being packaged. Currently the following types are
 supported:
 
 - `standard`, the default type, it can be ellided. This is just a standard
-  [contract](./glossary.md#contract).
-- `webapp`, a web app [container contract](./glossary.md#container-contract).
+  [contract](/manual/glossary#contract).
+- `webapp`, a web app [container contract](/manual/glossary#container-contract).
   Additionally to the container contract the UI component source will be
   compiled and packaged as the state of the contract.
 

@@ -1,9 +1,8 @@
 ---
-title: "Blind Trust Tokens"
-weight: 2
+title: "Blind Attestations"
+date: 2025-04-13
+draft: false
 ---
-
-# Blind Attestations
 
 ## Overview
 

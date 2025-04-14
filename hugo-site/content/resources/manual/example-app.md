@@ -2,7 +2,6 @@
 title: "Example App"
 date: 2025-04-13
 draft: false
-weight: 3
 ---
 
 # Build freenet from source on Linux:

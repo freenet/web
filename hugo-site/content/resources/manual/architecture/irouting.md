@@ -5,8 +5,6 @@ draft: false
 weight: 2
 ---
 
-## Intelligent Routing
-
 Freenet's request routing mechanism plays a crucial role in the efficiency of
 the network.
 

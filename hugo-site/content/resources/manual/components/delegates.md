@@ -2,10 +2,7 @@
 title: "Delegates"
 date: 2025-04-13
 draft: false
-weight: 3
 ---
-
-# Delegates
 
 In Freenet, Delegates are software components that can act on the user's behalf.
 Think of them as a more sophisticated version of a web browser's local storage,

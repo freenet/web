@@ -1,11 +1,8 @@
 ---
-title: "Transport"
+title: "Freenet Transport Protocol (FrTP)"
 date: 2025-04-13
 draft: false
-weight: 3
 ---
-
-# Freenet Transport Protocol (FrTP)
 
 **Note**: This document is a work in progress and is subject to change, it is currently out-of-sync
 with the codebase and should be updated to reflect the current state of the codebase once it has

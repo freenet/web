@@ -1,9 +1,8 @@
 ---
-title: "Antiflood Tokens"
-weight: 1
+title: "Example: Antiflood Token System"
+date: 2025-04-13
+draft: false
 ---
-
-# Example: Antiflood Token System
 
 ## Purpose
 

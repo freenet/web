@@ -2,16 +2,14 @@
 title: "Glossary"
 date: 2025-04-13
 draft: false
-weight: 1
 ---
 
-# Glossary
 
 ## Application
 
 Software that uses Freenet as a back-end. This includes native software
 distributed independenly of Freenet but which uses Freenet as a back-end
-(perhaps bundling Freenet), and [web applications](glossary#web-application)
+(perhaps bundling Freenet), and [web applications](/manual/glossary#web-application)
 that are distributed over Freenet and run in a web browser.
 
 ## Contract
@@ -54,8 +52,8 @@ Represents a modification to some state - similar to a
 delta is determined by the contract. A contract will determine whether a delta
 is valid - perhaps by verifying it is signed by someone authorized to modify the
 contract state. A delta may be created in response to a [State
-Summary](glossary.md#state-summary) as part of the [State
-Synchronization](glossary.md#state-synchronization) mechanism.
+Summary](/manual/glossary#state-summary) as part of the [State
+Synchronization](/manual/glossary#state-synchronization) mechanism.
 
 ## Parameters
 
@@ -73,8 +71,8 @@ key](<http://justsolve.archiveteam.org/wiki/Content_Hash_Key_(Freenet)>).
 ## State Summary
 
 Given a contract state, this is a small piece of data that can be used to
-determine a [delta](glossary.md#delta) between two contracts as part of the
-[state synchronization](glossary.md#state-synchronization) mechanism. The format
+determine a [delta](/manual/glossary#delta) between two contracts as part of the
+[state synchronization](/manual/glossary#state-synchronization) mechanism. The format
 of a state summary is determined by the state's contract.
 
 ## State Synchronization
@@ -89,7 +87,7 @@ Software built on Freenet and distributed through Freenet.
 
 Applications run in the browser and can be built with tools like React,
 TypeScript, and Vue.js. An application may use multiple components and
-[contracts](glossary.md#contract).
+[contracts](/manual/glossary#contract).
 
 Applications are compressed and distributed via a [container
-contract](glossary.md#container-contract).
+contract](/manual/glossary#container-contract).

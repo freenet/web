@@ -2,24 +2,42 @@
 title: "Contract Interfaces"
 date: 2025-04-13
 draft: false
-weight: 2
 ---
-
-# Contract Interface
 
 ## Terms
 
-- [Contract State](glossary.md#contract-state) - data associated with a contract that can be retrieved by Applications and Delegates.
-- [Delta](glossary.md#delta) - Represents a modification to some state - similar to a [diff](https://en.wikipedia.org/wiki/Diff) in source code
-- [Parameters](glossary.md#parameters) - Data that forms part of a contract along with the WebAssembly code
-- [State Summary](glossary.md#state-summary) - A compact summary of a contract's state that can be used to create a delta
+- [Contract State](/manual/glossary#contract-state) - data associated with a contract that can be retrieved by Applications and Delegates.
+- [Delta](/manual/glossary#delta) - Represents a modification to some state - similar to a [diff](https://en.wikipedia.org/wiki/Diff) in source code
+- [Parameters](/manual/glossary#parameters) - Data that forms part of a contract along with the WebAssembly code
+- [State Summary](/manual/glossary#state-summary) - A compact summary of a contract's state that can be used to create a delta
 
 ## Interface
 
 Freenet contracts must implement the [`ContractInterface`](https://docs.rs/freenet-stdlib/latest/freenet_stdlib/prelude/trait.ContractInterface.html) trait:
 
-```rust,no_run,noplayground
-{{#include ../../stdlib/rust/src/contract_interface.rs:contractifce}}
+```rust
+pub trait ContractInterface {
+    // Required methods
+    fn validate_state(
+        parameters: Parameters<'static>,
+        state: State<'static>,
+        related: RelatedContracts<'static>,
+    ) -> Result<ValidateResult, ContractError>;
+    fn update_state(
+        parameters: Parameters<'static>,
+        state: State<'static>,
+        data: Vec<UpdateData<'static>>,
+    ) -> Result<UpdateModification<'static>, ContractError>;
+    fn summarize_state(
+        parameters: Parameters<'static>,
+        state: State<'static>,
+    ) -> Result<StateSummary<'static>, ContractError>;
+    fn get_state_delta(
+        parameters: Parameters<'static>,
+        state: State<'static>,
+        summary: StateSummary<'static>,
+    ) -> Result<StateDelta<'static>, ContractError>;
+}
 ```
 
 [`Parameters`](https://docs.rs/freenet-stdlib/latest/freenet_stdlib/prelude/struct.Parameters.html),

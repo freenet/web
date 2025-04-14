@@ -2,7 +2,6 @@
 title: "P2P Network"
 date: 2025-04-13
 draft: false
-weight: 1
 ---
 
 # Freenet Network Topology
@@ -14,7 +13,7 @@ a [small-world network](https://en.wikipedia.org/wiki/Small-world_network). This
 network topology is scalable and efficient, allowing contract state to be found
 quickly and without any reliance on a central authority.
 
-![Small World Network](p2p-network.svg)
+![Small World Network](/p2p-network.svg)
 
 ## Freenet Peers
 
