@@ -112,40 +112,7 @@ language for writing contracts.
 Rust contracts implement the [`ContractInterface`](https://docs.rs/freenet-stdlib/latest/freenet_stdlib/prelude/trait.ContractInterface.html) trait, which defines the
 functions that the core calls to interact with the contract.
 
-```rust
-pub trait ContractInterface {
-    /// Verify that the state is valid, given the parameters.
-    fn validate_state(
-        parameters: Parameters<'static>,
-        state: State<'static>,
-        related: RelatedContracts<'static>,
-    ) -> Result<ValidateResult, ContractError>;
-
-    /// Update the state to account for the new data
-    fn update_state(
-        parameters: Parameters<'static>,
-        state: State<'static>,
-        data: Vec<UpdateData<'static>>,
-    ) -> Result<UpdateModification<'static>, ContractError>;
-
-    /// Generate a concise summary of a state that can be used to create deltas
-    /// relative to this state.
-    fn summarize_state(
-        parameters: Parameters<'static>,
-        state: State<'static>,
-    ) -> Result<StateSummary<'static>, ContractError>;
-
-    /// Generate a state delta using a summary from the current state.
-    /// This along with [`Self::summarize_state`] allows flexible and efficient
-    /// state synchronization between peers.
-    fn get_state_delta(
-        parameters: Parameters<'static>,
-        state: State<'static>,
-        summary: StateSummary<'static>,
-    ) -> Result<StateDelta<'static>, ContractError>;
-}
-```
-
+{{< fetchcode repo="freenet/freenet-stdlib" path="rust/src/contract_interface.rs" lang="rust" >}}
 
 ### Flexibility versus Convenience
 
