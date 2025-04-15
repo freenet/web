@@ -11,7 +11,7 @@ components, architecture, and usage.
 
 ## Table of Contents
 
-1. [Introduction](#introduction)
+1. [Introduction](introduction)
 2. [Components](#components)
 3. [Architecture](#architecture)
 4. [Developer Guide](#developer-guide)
