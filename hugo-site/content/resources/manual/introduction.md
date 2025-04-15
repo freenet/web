@@ -1,19 +1,12 @@
 ---
 title: "Introduction"
-date: 2025-04-13
+date: 2025-04-15
 draft: false
 weight: 1
 ---
 
-Freenet is a distributed, decentralized alternative to the centralized World Wide Web, designed to
-unleash a new era of innovation and competition, while protecting freedom of speech and privacy.
+Freenet is a peer‑to‑peer network that replaces the client‑server structure of today’s web with a mesh of equal nodes. Every computer that runs the **Freenet Core** stores and serves data, so no single party can block, censor, or monetise access.
 
-The heart of Freenet is the [Core](https://github.com/freenet/freenet-core), which runs on users'
-computer, smartphone, or other devices. The Core is tiny, less than 5 MB, allowing it to be
-installed in a matter of seconds and is compatible with a wide range of hardware.
+The Core is a compact binary, under 5 MB, and installs in seconds on desktop, mobile, or embedded hardware. Once launched it finds nearby peers and self‑organises into a small‑world overlay that routes requests efficiently without any central directory.
 
-![Freenet in Context](/freenet_in_context.svg)
-
-Freenet is a [peer-to-peer network](/manual/architecture/p2p-network), which means that computers
-that are part of the network self-organize into a global network without any central authority, and
-the work of hosting services is distributed among the users.
+On this foundation you can build websites, group chat, marketplaces, or any real‑time app. A browser points to your local node, downloads the app code, and interacts with other Freenet apps through WebSocket APIs—no external servers, accounts, or tracking.
