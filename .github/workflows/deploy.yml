@@ -24,7 +24,7 @@ jobs:
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
-          hugo-version: '0.133.1'
+          hugo-version: '0.146.4'
           extended: true
 
       # Setup Rust environment
@@ -79,6 +79,8 @@ jobs:
 
   deploy:
     needs: build
+    # Only run on push to main branch
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-22.04
     permissions:
       pages: write
