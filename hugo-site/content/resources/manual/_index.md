@@ -2,6 +2,7 @@
 title: "Freenet Manual"
 date: 2025-04-13
 draft: false
+layout: "single"
 ---
 
 This guide provides **comprehensive documentation** on Freenet's components, architecture, and
@@ -29,7 +30,7 @@ Learn the basics of Freenet and its purpose.
 
 ---
 
-## ⚙️ Components {#components}
+## Components
 
 Explore the key components of Freenet:
 
