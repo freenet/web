@@ -5,13 +5,16 @@ draft: false
 weight: 1
 ---
 
-This tutorial walks you through creating and running a simple web app and a backend contract on Freenet. By the end, you’ll have:
+This tutorial walks you through creating and running a simple web app and a backend contract on
+Freenet. By the end, you’ll have:
 
 - A **web application** (frontend) that runs in the browser and talks to your local Freenet node.
 - A **container contract** that holds and distributes your web application over Freenet.
 - A **backend contract** that stores data and provides any server-like logic.
 
-Use the accompanying example ([freenet-email-app](https://github.com/freenet/freenet-core/tree/main/apps/freenet-email-app)) for reference.
+Use the accompanying example
+([freenet-email-app](https://github.com/freenet/freenet-core/tree/main/apps/freenet-email-app)) for
+reference.
 
 ---
 
@@ -25,7 +28,8 @@ Install Rust and Cargo (Linux/macOS example):
 curl https://sh.rustup.rs -sSf | sh
 ```
 
-> **Important for macOS:** Using Homebrew’s Rust can interfere with `fdev`. Use `rustup` above instead.
+> **Important for macOS:** Using Homebrew’s Rust can interfere with `fdev`. Use `rustup` above
+> instead.
 
 ### 1.2 Freenet Core & FDev (Git Installation)
 
@@ -78,7 +82,8 @@ tsc --version
 
 ## 2. Create Your Project Structure
 
-We’ll create two main pieces: a **web app** (which is essentially our frontend) and a **backend contract**.
+We’ll create two main pieces: a **web app** (which is essentially our frontend) and a **backend
+contract**.
 
 ### 2.1 Create a Web App (Container + Frontend)
 
@@ -117,7 +122,8 @@ impl ContractInterface for Contract {
 
 ## 3. Frontend (Web Application) Basics
 
-Your web files live under `my-app/web/src/`. A typical TypeScript setup might use `npm install` to pull in `@freenetorg/freenet-stdlib`. For example in `package.json`:
+Your web files live under `my-app/web/src/`. A typical TypeScript setup might use `npm install` to
+pull in `@freenetorg/freenet-stdlib`. For example in `package.json`:
 
 ```json
 {
@@ -220,7 +226,8 @@ impl ContractInterface for Contract {
 }
 ```
 
-Any time the contract receives an update, it takes the JSON-encoded “post” and appends it to the stored list. The front end can subscribe to these updates and reflect them in the UI.
+Any time the contract receives an update, it takes the JSON-encoded “post” and appends it to the
+stored list. The front end can subscribe to these updates and reflect them in the UI.
 
 ---
 
@@ -228,7 +235,8 @@ Any time the contract receives an update, it takes the JSON-encoded “post” a
 
 ### 5.1 Manifest Configuration
 
-Each contract folder has a `freenet.toml` specifying how to build/package. In the **web container** (`my-app/web`), you might see:
+Each contract folder has a `freenet.toml` specifying how to build/package. In the **web container**
+(`my-app/web`), you might see:
 
 ```toml
 [contract]
@@ -254,7 +262,8 @@ From inside `my-app/web`:
 fdev build
 ```
 
-This runs any necessary steps (like `npm install`, `webpack`, TypeScript compilation) before creating a `.wasm` file and `contract-state` in `build/freenet`.
+This runs any necessary steps (like `npm install`, `webpack`, TypeScript compilation) before
+creating a `.wasm` file and `contract-state` in `build/freenet`.
 
 Then do the same in `my-app/backend`:
 
@@ -324,9 +333,12 @@ The Freenet node treats these as regular contract updates.
 ## 8. Current Limitations
 
 - **No Real Network**: Publishing to the production Freenet network is still under development.
-- **Language Support**: Currently only Rust for contracts; additional languages (e.g., AssemblyScript) planned.
+- **Language Support**: Currently only Rust for contracts; additional languages (e.g.,
+  AssemblyScript) planned.
 - **Manual Install**: Binaries for `fdev` and `freenet` require manual build from source.
 
 ---
 
-**That’s it!** You’ve built a basic decentralized web app on Freenet using a container contract (for the UI) and a backend contract (for the data/logic). For a more complete example, check the [freenet-email-app](https://github.com/freenet/freenet-core/tree/main/apps/freenet-email-app).
+**That’s it!** You’ve built a basic decentralized web app on Freenet using a container contract (for
+the UI) and a backend contract (for the data/logic). For a more complete example, check the
+[freenet-email-app](https://github.com/freenet/freenet-core/tree/main/apps/freenet-email-app).
