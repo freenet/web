@@ -79,6 +79,8 @@ jobs:
 
   deploy:
     needs: build
+    # Only run on push to main branch
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-22.04
     permissions:
       pages: write
