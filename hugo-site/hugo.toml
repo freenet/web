@@ -92,43 +92,43 @@ theme = "freenet"
 
   [[menu.main]]
     name = "Introduction"
-    url = "/manual/introduction/"
+    url = "/resources/manual/introduction/"
     weight = 1
     parent = "User Manual"
 
   [[menu.main]]
     name = "Components"
-    url = "/manual/#components"
+    url = "/resources//manual/#components"
     weight = 2
     parent = "User Manual"
 
   [[menu.main]]
     name = "Architecture"
-    url = "/manual/#architecture"
+    url = "/resources//manual/#architecture"
     weight = 3
     parent = "User Manual"
 
   [[menu.main]]
     name = "Developer Guide"
-    url = "/manual/#developer-guide"
+    url = "/resources//manual/#developer-guide"
     weight = 4
     parent = "User Manual"
 
   [[menu.main]]
     name = "Examples"
-    url = "/manual/#examples"
+    url = "/resources//manual/#examples"
     weight = 5
     parent = "User Manual"
 
   [[menu.main]]
     name = "Community and Support"
-    url = "/manual/#community-and-support"
+    url = "/resources//manual/#community-and-support"
     weight = 6
     parent = "User Manual"
 
   [[menu.main]]
     name = "Reference"
-    url = "/manual/#reference"
+    url = "resources//manual/#reference"
     weight = 7
     parent = "User Manual"
 
