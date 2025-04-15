@@ -40,18 +40,18 @@ scalability. Keys in this key-value store are
 - How can the value be efficiently synchronized between peers in the network
 
 These webassembly keys are also known as
-[contracts](https://docs.freenet.org/components/contracts.html), and the values are also known as
+[contracts](https://freenet.org/resources/manual/components/contracts/), and the values are also known as
 the contract's **state**.
 
 Like the web, most people will interact with Freenet through their web browser. Freenet provides a
-local [HTTP proxy](https://docs.freenet.org/components/ui.html) that allows data such as a
+local [HTTP proxy](https://freenet.org/resources/manual/components/ui/) that allows data such as a
 [single-page application](https://en.wikipedia.org/wiki/Single-page_application) to be downloaded to
 a web browser. This application can then connect to the Freenet peer through a
 [websocket](https://en.wikipedia.org/wiki/WebSocket) connection and through this interact with the
 Freenet network, including creating, reading, and modifying contracts and their state.
 
 For a much more detailed explanation please see our
-[user manual](https://docs.freenet.org/introduction.html).
+[user manual](https://freenet.org/resources/manual/introduction/).
 
 # What is the project's history? {#what-is-the-projects-history}
 
