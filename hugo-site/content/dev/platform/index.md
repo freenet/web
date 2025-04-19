@@ -14,6 +14,8 @@ to the core software or who would like to learn more about it.
 
 [![GitHub](https://img.shields.io/badge/GitHub-freenet--core-blue?logo=github)](https://github.com/freenet/freenet-core)
 [![Crates.io](https://img.shields.io/badge/Crates.io-freenet-orange?logo=rust)](https://crates.io/crates/freenet)
+[![GitHub](https://img.shields.io/badge/GitHub-freenet--scaffold-blue?logo=github)](https://github.com/freenet/freenet-scaffold)
+> freenet-scaffold is a Rust utility crate that simplifies the development of Freenet contracts by providing tools to implement efficient, mergeable state synchronization.
 
 ## Weekly Developer Meetings
 
