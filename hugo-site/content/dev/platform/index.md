@@ -17,8 +17,7 @@ to the core software or who would like to learn more about it.
 
 ## Developer Tools
 
-[![GitHub](https://img.shields.io/badge/GitHub-freenet--scaffold-blue?logo=github)](https://github.com/freenet/freenet-scaffold)
-> freenet-scaffold is a Rust utility crate that simplifies the development of Freenet contracts by providing tools to implement efficient, mergeable state synchronization.
+*   **[freenet-scaffold](https://github.com/freenet/freenet-scaffold)**: A Rust utility crate that simplifies the development of Freenet contracts by providing tools to implement efficient, mergeable state synchronization.
 
 ## Weekly Developer Meetings
 
