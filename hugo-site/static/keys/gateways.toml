@@ -1,8 +1,16 @@
+# Vega gateway temporarily disabled due to AWS UDP network issues
+#[[gateways]]
+#public_key = "keys/public.vega.gw.pem"
+#
+#[gateways.address]
+#hostname = "vega.locut.us:31337"
+
+# Nova gateway (Hetzner) - Primary gateway
 [[gateways]]
-public_key = "keys/public.vega.gw.pem"
+public_key = "keys/public.nova.gw.pem"
 
 [gateways.address]
-hostname = "vega.locut.us:31337"
+hostname = "nova.locut.us:31337"
 
 
 # Disable during testing to reduce noise
