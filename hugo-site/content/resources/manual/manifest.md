@@ -7,12 +7,12 @@ draft: false
 The `freenet.toml` file for each UI component/contract is called its _manifest_. It is written in
 the [TOML](https://toml.io/) format. Manifest files consist of the following sections:
 
-- [[contract]](/manual/manifest#the-contract-section) — Defines a contract.
-  - [type](/manual/manifest#the-type-field) — Contract type.
-  - [lang](/manual/manifest#the-lang-field) — Contract source language.
-  - [output_dir](/manual/manifest#the-output_dir-field) — Output path for build artifacts.
-- [[webapp]](/manual/manifest#the-contract-section) — Configuration for UI component containers.
-- [[state]](/manual/manifest#the-state-section) — Optionally seed a state.
+- [[contract]](#the-contract-section) — Defines a contract.
+  - [type](#the-type-field) — Contract type.
+  - [lang](#the-lang-field) — Contract source language.
+  - [output_dir](#the-output_dir-field) — Output path for build artifacts.
+- [[webapp]](#the-contract-section) — Configuration for UI component containers.
+- [[state]](#the-state-section) — Optionally seed a state.
 
 ## The `[contract]` section
 
@@ -26,9 +26,9 @@ type = "webapp"
 
 The type of the contract being packaged. Currently the following types are supported:
 
-- `standard`, the default type, it can be ellided. This is just a standard
-  [contract](/manual/glossary#contract).
-- `webapp`, a web app [container contract](/manual/glossary#container-contract). Additionally to the
+- `standard`, the default type, it can be elided. This is just a standard
+  [contract](/resources/manual/glossary#contract).
+- `webapp`, a web app [container contract](/resources/manual/glossary#container-contract). Additionally to the
   container contract the UI component source will be compiled and packaged as the state of the
   contract.
 
@@ -84,7 +84,7 @@ An optional path to the metadata for the webapp, if not set the metadata will be
 
 ### The `[webapp.typescript]` options section
 
-Optional section specified in case of the the `typescript` lang.
+Optional section specified in case of the `typescript` lang.
 
 The following fields are supported:
 
@@ -97,7 +97,7 @@ webpack =  true
 
 ### The `[webapp.javascript]` options section
 
-Optional section specified in case of the the `javascript` lang.
+Optional section specified in case of the `javascript` lang.
 
 The following fields are supported:
 
@@ -117,11 +117,11 @@ files = ["*/src/**.js"]
 ```
 
 Specifies the sources for the state of the contract, this will be later on unpacked and accessible
-at the HTTP gateway from the Locutus node. Includes any web sources (like .html or .js files). The
+at the HTTP gateway from the Freenet node. Includes any web sources (like .html or .js files). The
 `source_dirs` field is a comma separated array of directories that should be appended to the root of
 the state, the `files` field is a comma separated array of
 [glob](<https://en.wikipedia.org/wiki/Glob_(programming)>) compatible patterns to files that will be
-appendeded to the state.
+appended to the state.
 
 At least one of `source_dirs`or `files` fields are required.
 
