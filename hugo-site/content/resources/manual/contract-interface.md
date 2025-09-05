@@ -6,13 +6,13 @@ draft: false
 
 ## Terms
 
-- [Contract State](/manual/glossary#contract-state) - data associated with a contract that can be
+- [Contract State](/resources/manual/glossary#contract-state) - data associated with a contract that can be
   retrieved by Applications and Delegates.
-- [Delta](/manual/glossary#delta) - Represents a modification to some state - similar to a
+- [Delta](/resources/manual/glossary#delta) - Represents a modification to some state - similar to a
   [diff](https://en.wikipedia.org/wiki/Diff) in source code
-- [Parameters](/manual/glossary#parameters) - Data that forms part of a contract along with the
+- [Parameters](/resources/manual/glossary#parameters) - Data that forms part of a contract along with the
   WebAssembly code
-- [State Summary](/manual/glossary#state-summary) - A compact summary of a contract's state that can
+- [State Summary](/resources/manual/glossary#state-summary) - A compact summary of a contract's state that can
   be used to create a delta
 
 ## Interface

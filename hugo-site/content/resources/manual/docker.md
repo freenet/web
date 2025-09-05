@@ -13,20 +13,20 @@ Make sure docker is installed and working, and has the `docker compose` command.
 The docker image stores its data at `/root/.local/share/freenet` inside the container. This is
 mapped to `/tmp/freenet-docker` outside the container.
 
-## Build the base docker image of Locutus
+## Build the base Docker image of Freenet
 
 All the docker related files are in the `docker` subdirectory.
 
 Requires that Docker be installed and working. Then, in the root directory of the repo:
 
-To build the docker freenet container:
+To build the Docker Freenet container:
 
 ```sh
 cd docker
 docker compose build
 ```
 
-## Running Freenet from the docker image
+## Running Freenet from the Docker image
 
 Note: Currently the node will not pick up new contracts when they are published. Make sure the node
 is stopped and re-started after new contracts are added.
