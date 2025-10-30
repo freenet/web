@@ -224,6 +224,10 @@ p.page-end-spacer {
 
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
+    html {
+        background-color: #121212;
+    }
+
     body {
         background-color: #121212;
         color: #e0e0e0;
