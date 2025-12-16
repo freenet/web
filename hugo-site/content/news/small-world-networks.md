@@ -15,7 +15,7 @@ head:
 
 In the 1960s psychologist Stanley Milgram conducted an influential experiment that revealed
 something amazing about human relationships. Milgram chose people at random in cities like Kansas
-and gave each a letter with the address of someone they didn't know in Boson, Massachusetts. They
+and gave each a letter with the address of someone they didn't know in Boston, Massachusetts. They
 were instructed to get the letter to that person but only by sending it to someone they know
 personally, who would send it to someone they know personally - and so on. Milgram repeated this
 letter-sending experiment nearly 200 times. On average, these letters reached their target in just
