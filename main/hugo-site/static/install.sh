@@ -119,6 +119,37 @@ download() {
     fi
 }
 
+# Verify SHA256 checksum of a file
+verify_checksum() {
+    file=$1
+    expected_hash=$2
+    filename=$(basename "$file")
+
+    if has_cmd sha256sum; then
+        actual_hash=$(sha256sum "$file" | cut -d' ' -f1)
+    elif has_cmd shasum; then
+        actual_hash=$(shasum -a 256 "$file" | cut -d' ' -f1)
+    else
+        warn "Neither sha256sum nor shasum found. Skipping checksum verification."
+        return 0
+    fi
+
+    if [ "$actual_hash" != "$expected_hash" ]; then
+        error "Checksum verification failed for $filename
+Expected: $expected_hash
+Got:      $actual_hash
+The download may be corrupted or tampered with."
+    fi
+}
+
+# Get expected checksum from SHA256SUMS.txt
+get_expected_checksum() {
+    checksums_file=$1
+    filename=$2
+
+    grep "$filename" "$checksums_file" | cut -d' ' -f1
+}
+
 # Get the latest version from GitHub API
 get_latest_version() {
     url="https://api.github.com/repos/freenet/freenet-core/releases/latest"
@@ -221,15 +252,49 @@ main() {
     tmp_dir=$(mktemp -d)
     trap 'rm -rf "$tmp_dir"' EXIT
 
+    # Download checksums first
+    info "Downloading checksums..."
+    checksums_url="https://github.com/freenet/freenet-core/releases/download/v${version}/SHA256SUMS.txt"
+    if ! download "$checksums_url" "$tmp_dir/SHA256SUMS.txt" 2>/dev/null; then
+        warn "SHA256SUMS.txt not available for this release. Skipping checksum verification."
+        checksums_available=false
+    else
+        checksums_available=true
+    fi
+
     # Download freenet
     info "Downloading freenet..."
-    freenet_url="https://github.com/freenet/freenet-core/releases/download/v${version}/freenet-${target}.tar.gz"
+    freenet_archive="freenet-${target}.tar.gz"
+    freenet_url="https://github.com/freenet/freenet-core/releases/download/v${version}/${freenet_archive}"
     download "$freenet_url" "$tmp_dir/freenet.tar.gz"
+
+    # Verify freenet checksum
+    if [ "$checksums_available" = true ]; then
+        expected_hash=$(get_expected_checksum "$tmp_dir/SHA256SUMS.txt" "$freenet_archive")
+        if [ -n "$expected_hash" ]; then
+            info "Verifying freenet checksum..."
+            verify_checksum "$tmp_dir/freenet.tar.gz" "$expected_hash"
+        else
+            warn "Checksum not found for $freenet_archive"
+        fi
+    fi
 
     # Download fdev
     info "Downloading fdev..."
-    fdev_url="https://github.com/freenet/freenet-core/releases/download/v${version}/fdev-${target}.tar.gz"
+    fdev_archive="fdev-${target}.tar.gz"
+    fdev_url="https://github.com/freenet/freenet-core/releases/download/v${version}/${fdev_archive}"
     download "$fdev_url" "$tmp_dir/fdev.tar.gz"
+
+    # Verify fdev checksum
+    if [ "$checksums_available" = true ]; then
+        expected_hash=$(get_expected_checksum "$tmp_dir/SHA256SUMS.txt" "$fdev_archive")
+        if [ -n "$expected_hash" ]; then
+            info "Verifying fdev checksum..."
+            verify_checksum "$tmp_dir/fdev.tar.gz" "$expected_hash"
+        else
+            warn "Checksum not found for $fdev_archive"
+        fi
+    fi
 
     # Extract binaries
     info "Extracting binaries..."
@@ -257,11 +322,24 @@ main() {
         fi
     fi
 
-    # Install binaries
+    # Verify extracted binaries exist
+    if [ ! -f "$tmp_dir/freenet" ]; then
+        error "Failed to extract freenet binary from archive"
+    fi
+    if [ ! -f "$tmp_dir/fdev" ]; then
+        error "Failed to extract fdev binary from archive"
+    fi
+
+    # Install binaries (all paths quoted for safety with spaces/special chars)
     info "Installing to $install_dir..."
-    mv "$tmp_dir/freenet" "$install_dir/freenet"
-    mv "$tmp_dir/fdev" "$install_dir/fdev"
+    mv -- "$tmp_dir/freenet" "$install_dir/freenet"
+    mv -- "$tmp_dir/fdev" "$install_dir/fdev"
     chmod +x "$install_dir/freenet" "$install_dir/fdev"
+
+    # Verify the installed binary works
+    if ! "$install_dir/freenet" --version >/dev/null 2>&1; then
+        error "Installed binary verification failed. The binary may be corrupted or incompatible with your system."
+    fi
 
     success "Freenet $version installed successfully!"
     echo ""
