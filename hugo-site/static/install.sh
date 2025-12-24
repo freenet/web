@@ -352,7 +352,7 @@ main() {
     # Ask about service installation (unless FREENET_NO_SERVICE is set)
     if [ "${FREENET_NO_SERVICE:-0}" != "1" ]; then
         echo ""
-        printf "Would you like to install Freenet as a system service? [y/N] "
+        printf "Would you like to install Freenet as a user service (auto-starts on login)? [y/N] "
         read -r response </dev/tty
         case "$response" in
             [yY]|[yY][eE][sS])
