@@ -8,9 +8,9 @@ weight: 1
 ## Components of Decentralized Software
 
 Delegates, contracts, and user interfaces (UIs) each serve distinct roles in the Freenet ecosystem.
-[Contracts](/manual/components/contracts) control public data, or "shared state".
-[Delegates](/manual/components/delegates) act as the user's agent and can store private data on the
-user's behalf, while [User Interfaces](/manual/components/ui) provide an interface between these and
+[Contracts](/resources/manual/components/contracts) control public data, or "shared state".
+[Delegates](/resources/manual/components/delegates) act as the user's agent and can store private data on the
+user's behalf, while [User Interfaces](/resources/manual/components/ui) provide an interface between these and
 the user through a web browser. UIs are distributed through the P2P network via contracts.
 
 ![Architectural Primitives Diagram](/components.svg)
@@ -21,8 +21,8 @@ The Freenet Core is the software that enables a user's computer to connect to th
 Its primary functions are:
 
 - Providing a user-friendly interface to access Freenet via a web browser
-- Host the user's [delegates](/manual/components/delegates) and the private data they store
-- Host [contracts](/manual/components/contracts) and their associated data on behalf of the network
+- Host the user's [delegates](/resources/manual/components/delegates) and the private data they store
+- Host [contracts](/resources/manual/components/contracts) and their associated data on behalf of the network
 - Manage communication between contracts, delegates, and UI components
 
 Built with Rust, the core is designed to be compact (ideally under 5 MB), efficient, and capable of

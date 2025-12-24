@@ -8,10 +8,10 @@ On the normal web, a user might visit `https://gmail.com/`, their browser will d
 user interface which then runs in their browser and connects back to the Gmail servers.
 
 On Freenet the user interface is downloaded from a Freenet contract, and it
-[interacts](/manual/components/overview) with contracts and delegates by sending messages through
+[interacts](/resources/manual/components/overview) with contracts and delegates by sending messages through
 the Freenet core.
 
-![Delegate, Contrat, and UI Diagram](/ui_delegate_contract.svg)
+![Delegate, Contract, and UI Diagram](/ui_delegate_contract.svg)
 
 These UIs are built using web technologies such as HTML, CSS, and JavaScript, and are distributed
 over Freenet and run in a web browser. UIs can create, retrieve, and update contracts through a
