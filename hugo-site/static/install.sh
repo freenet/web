@@ -353,7 +353,7 @@ main() {
     if [ "${FREENET_NO_SERVICE:-0}" != "1" ]; then
         echo ""
         printf "Would you like to install Freenet as a system service? [y/N] "
-        read -r response
+        read -r response </dev/tty
         case "$response" in
             [yY]|[yY][eE][sS])
                 info "Installing service..."
