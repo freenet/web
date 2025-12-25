@@ -92,7 +92,7 @@ get_target_triple() {
 
     case "$os" in
         linux)
-            echo "${arch}-unknown-linux-gnu"
+            echo "${arch}-unknown-linux-musl"
             ;;
         macos)
             echo "${arch}-apple-darwin"
