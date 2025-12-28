@@ -1,13 +1,17 @@
 use std::collections::HashMap;
+use std::net::{IpAddr, SocketAddr};
+use std::path::PathBuf;
 use std::str::FromStr;
+use std::sync::Arc;
 
 use axum::{
     routing::{get, post},
     Router,
-    http::StatusCode,
+    http::{HeaderMap, StatusCode},
     response::{IntoResponse, Json},
-    extract::Path,
+    extract::{ConnectInfo, Path, State},
 };
+use ed25519_dalek::{SigningKey, VerifyingKey};
 use log::{error, info};
 use serde::{Deserialize, Serialize};
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
@@ -15,6 +19,33 @@ use ghostkey_lib::armorable::Armorable;
 
 use crate::delegates::get_delegate;
 use crate::handle_sign_cert::{CertificateError, sign_certificate, SignCertificateRequest, SignCertificateResponse};
+use crate::invite;
+use crate::rate_limit::RateLimiter;
+
+/// Shared application state for invite generation
+#[derive(Clone)]
+pub struct InviteState {
+    pub rate_limiter: Arc<RateLimiter>,
+    pub room_owner_vk: VerifyingKey,
+    pub inviter_signing_key: SigningKey,
+    pub room_name: String,
+}
+
+impl InviteState {
+    pub fn new(
+        rate_limit_file: PathBuf,
+        room_owner_vk: VerifyingKey,
+        inviter_signing_key: SigningKey,
+        room_name: String,
+    ) -> Self {
+        Self {
+            rate_limiter: Arc::new(RateLimiter::new(rate_limit_file, 24)),
+            room_owner_vk,
+            inviter_signing_key,
+            room_name,
+        }
+    }
+}
 
 #[derive(Serialize)]
 pub struct ErrorResponse {
@@ -270,6 +301,110 @@ async fn check_payment_status_route(
     }
 }
 
+// ============================================================================
+// River Room Invite Endpoint
+// ============================================================================
+
+#[derive(Serialize)]
+pub struct CreateInviteResponse {
+    pub invite_code: String,
+    pub room_name: String,
+}
+
+#[derive(Serialize)]
+pub struct InviteErrorResponse {
+    pub error: String,
+    pub retry_after_seconds: Option<i64>,
+}
+
+/// Extract client IP from request, handling X-Forwarded-For header for proxies
+fn get_client_ip(headers: &HeaderMap, addr: SocketAddr) -> IpAddr {
+    // Check X-Forwarded-For header (set by reverse proxies)
+    if let Some(xff) = headers.get("x-forwarded-for") {
+        if let Ok(xff_str) = xff.to_str() {
+            // Take the first IP (original client)
+            if let Some(first_ip) = xff_str.split(',').next() {
+                if let Ok(ip) = first_ip.trim().parse::<IpAddr>() {
+                    return ip;
+                }
+            }
+        }
+    }
+
+    // Check X-Real-IP header (alternative proxy header)
+    if let Some(real_ip) = headers.get("x-real-ip") {
+        if let Ok(ip_str) = real_ip.to_str() {
+            if let Ok(ip) = ip_str.trim().parse::<IpAddr>() {
+                return ip;
+            }
+        }
+    }
+
+    // Fall back to connection address
+    addr.ip()
+}
+
+async fn create_room_invite(
+    State(state): State<InviteState>,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
+) -> Result<Json<CreateInviteResponse>, (StatusCode, Json<InviteErrorResponse>)> {
+    let client_ip = get_client_ip(&headers, addr);
+    info!("Received create-invite request from IP: {}", client_ip);
+
+    // Check rate limit
+    match state.rate_limiter.check_and_record(client_ip) {
+        Ok(true) => {
+            // Request allowed, generate invite
+        }
+        Ok(false) => {
+            // Rate limited
+            let retry_after = state.rate_limiter.get_retry_after(client_ip)
+                .ok()
+                .flatten();
+            info!("Rate limited IP: {}, retry_after: {:?}", client_ip, retry_after);
+            return Err((
+                StatusCode::TOO_MANY_REQUESTS,
+                Json(InviteErrorResponse {
+                    error: "Rate limited. You can only request one invite per 24 hours.".to_string(),
+                    retry_after_seconds: retry_after,
+                }),
+            ));
+        }
+        Err(e) => {
+            error!("Rate limiter error: {:?}", e);
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(InviteErrorResponse {
+                    error: "Internal server error. Please try again later.".to_string(),
+                    retry_after_seconds: None,
+                }),
+            ));
+        }
+    }
+
+    // Generate invite
+    match invite::create_invitation(&state.room_owner_vk, &state.inviter_signing_key) {
+        Ok(invite_code) => {
+            info!("Generated invite for IP: {}", client_ip);
+            Ok(Json(CreateInviteResponse {
+                invite_code,
+                room_name: state.room_name.clone(),
+            }))
+        }
+        Err(e) => {
+            error!("Failed to generate invite: {:?}", e);
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(InviteErrorResponse {
+                    error: "Failed to generate invite. Please try again later.".to_string(),
+                    retry_after_seconds: None,
+                }),
+            ))
+        }
+    }
+}
+
 pub fn get_routes() -> Router {
     Router::new()
         .route("/", get(index))
@@ -278,4 +413,11 @@ pub fn get_routes() -> Router {
         .route("/create-donation", post(create_donation))
         .route("/update-donation", post(update_donation))
         .route("/check-payment-status/:payment_intent_id", get(check_payment_status_route))
+}
+
+/// Get routes that require invite state (for River room invites)
+pub fn get_invite_routes(state: InviteState) -> Router {
+    Router::new()
+        .route("/create-invite", post(create_room_invite))
+        .with_state(state)
 }

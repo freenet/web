@@ -1,7 +1,0 @@
-(<span id="current-date"></span>)<script>
-  document.addEventListener('DOMContentLoaded', (event) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    const today = new Date();
-    today.setDate(today.getDate() - 1); // Set to yesterday
-    document.getElementById('current-date').innerText = today.toLocaleDateString('en-GB', options);
-  });</script>

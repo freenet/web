@@ -1,4 +1,0 @@
-<script>
-window.ghostkeyApiUrl = {{ if hugo.IsServer }}"http://localhost:8000"{{ else }}"https://gkapi.freenet.org"{{ end }};
-window.stripePublishableKey = {{ if hugo.IsServer }}{{ .Site.Params.stripePublishableKeyTest }}{{ else }}{{ .Site.Params.stripePublishableKeyLive }}{{ end }};
-</script>

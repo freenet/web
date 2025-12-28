@@ -3,6 +3,24 @@
 ## Project Overview
 This repository contains the Freenet.org website, combining a Hugo static site with Rust-based WebAssembly components for Ghost Key functionality.
 
+## Repository Structure (Git Worktrees)
+
+This repo uses git worktrees for parallel development:
+
+```
+~/code/freenet/web/           # Parent directory for worktrees
+├── main/                     # Main branch worktree (primary development)
+├── <feature-branch>/         # Feature branch worktrees as needed
+```
+
+**Creating a new worktree:**
+```bash
+cd ~/code/freenet/web
+git worktree add <branch-name>
+```
+
+**Important:** Always work in the appropriate worktree directory, not the bare repo root.
+
 ## Build Commands
 
 ### Development

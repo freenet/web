@@ -1,3 +1,0 @@
-{{ $file := .Get 0 }}
-{{ $content := (printf "%s%s" .Page.File.Dir $file) | readFile | replaceRE "^---[\\s\\S]+?---" "" }}
-{{ $content | markdownify }}

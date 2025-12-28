@@ -1,9 +1,10 @@
-use std::{env, path::PathBuf, sync::Arc};
+use std::{env, fs, path::PathBuf, sync::Arc};
 use std::net::{SocketAddr, IpAddr, Ipv4Addr};
 
 use clap::{Arg, Command, value_parser};
 use dotenv::dotenv;
-use log::{error, info, LevelFilter};
+use ed25519_dalek::{SigningKey, VerifyingKey};
+use log::{error, info, warn, LevelFilter};
 use tokio::sync::Mutex;
 use axum::{
     routing::get,
@@ -15,10 +16,14 @@ use tower_http::trace::TraceLayer;
 use tower_http::cors::CorsLayer;
 use axum_server::tls_rustls::RustlsConfig;
 
+use crate::routes::InviteState;
+
 mod routes;
 mod handle_sign_cert;
 mod delegates;
 mod errors;
+mod invite;
+mod rate_limit;
 
 pub static DELEGATE_DIR: &str = "DELEGATE_DIR";
 
@@ -53,6 +58,68 @@ async fn health() -> &'static str {
     "OK"
 }
 
+/// Load invite configuration from CLI arguments
+/// Returns None if not all required configuration is present
+fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
+    let signing_key_path = matches.get_one::<String>("room-signing-key")?;
+    let owner_vk_str = matches.get_one::<String>("room-owner-vk")?;
+    let room_name = matches.get_one::<String>("room-name")?.clone();
+    let rate_limit_file = PathBuf::from(
+        matches.get_one::<String>("rate-limit-file")
+            .map(|s| s.as_str())
+            .unwrap_or("/var/lib/gkapi/invite_rate_limits.json")
+    );
+
+    // Load signing key from file (32 bytes raw)
+    let signing_key_bytes = match fs::read(signing_key_path) {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            error!("Failed to read room signing key from {}: {}", signing_key_path, e);
+            return None;
+        }
+    };
+
+    if signing_key_bytes.len() != 32 {
+        error!("Room signing key must be exactly 32 bytes, got {}", signing_key_bytes.len());
+        return None;
+    }
+
+    let mut key_array = [0u8; 32];
+    key_array.copy_from_slice(&signing_key_bytes);
+    let inviter_signing_key = SigningKey::from_bytes(&key_array);
+
+    // Parse owner verifying key from base58
+    let owner_vk_bytes = match bs58::decode(owner_vk_str).into_vec() {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            error!("Failed to decode room owner verifying key from base58: {}", e);
+            return None;
+        }
+    };
+
+    if owner_vk_bytes.len() != 32 {
+        error!("Room owner verifying key must be exactly 32 bytes, got {}", owner_vk_bytes.len());
+        return None;
+    }
+
+    let mut vk_array = [0u8; 32];
+    vk_array.copy_from_slice(&owner_vk_bytes);
+    let room_owner_vk = match VerifyingKey::from_bytes(&vk_array) {
+        Ok(vk) => vk,
+        Err(e) => {
+            error!("Failed to parse room owner verifying key: {}", e);
+            return None;
+        }
+    };
+
+    Some(InviteState::new(
+        rate_limit_file,
+        room_owner_vk,
+        inviter_signing_key,
+        room_name,
+    ))
+}
+
 #[tokio::main]
 async fn main() {
     let matches = Command::new("Freenet Certified Donation API")
@@ -78,6 +145,29 @@ async fn main() {
             .long("challenge-dir")
             .value_name("DIR")
             .help("Directory for HTTP-01 challenge tokens"))
+        // River room invite configuration
+        .arg(Arg::new("room-signing-key")
+            .long("room-signing-key")
+            .value_name("FILE")
+            .env("ROOM_SIGNING_KEY_FILE")
+            .help("Path to room member's signing key (32 bytes raw)"))
+        .arg(Arg::new("room-owner-vk")
+            .long("room-owner-vk")
+            .value_name("KEY")
+            .env("ROOM_OWNER_VK")
+            .help("Room owner's verifying key (base58 encoded)"))
+        .arg(Arg::new("room-name")
+            .long("room-name")
+            .value_name("NAME")
+            .env("ROOM_NAME")
+            .default_value("Freenet Chat")
+            .help("Display name of the room"))
+        .arg(Arg::new("rate-limit-file")
+            .long("rate-limit-file")
+            .value_name("FILE")
+            .env("RATE_LIMIT_FILE")
+            .default_value("/var/lib/gkapi/invite_rate_limits.json")
+            .help("Path to rate limit JSON file"))
         .get_matches();
 
     let delegate_dir = matches.get_one::<String>("delegate-dir").unwrap();
@@ -99,12 +189,25 @@ async fn main() {
     }
 
     env::var("DELEGATE_DIR").expect("DELEGATE_DIR environment variable not set");
-    
+
     let challenge_dir = Arc::new(Mutex::new(challenge_dir));
 
-    let app = Router::new()
+    // Load invite configuration (optional)
+    let invite_state = load_invite_config(&matches);
+
+    let mut app = Router::new()
         .route("/health", get(health))
-        .merge(routes::get_routes())
+        .merge(routes::get_routes());
+
+    // Add invite routes if configured
+    if let Some(state) = invite_state {
+        info!("River room invite endpoint enabled for room: {}", state.room_name);
+        app = app.merge(routes::get_invite_routes(state));
+    } else {
+        warn!("River room invite endpoint not configured. Set ROOM_SIGNING_KEY_FILE and ROOM_OWNER_VK to enable.");
+    }
+
+    let app = app
         .layer(TraceLayer::new_for_http())
         .layer(CorsLayer::permissive())
         .fallback(not_found);
@@ -130,12 +233,13 @@ async fn main() {
             let tls_key = matches.get_one::<String>("tls-key").unwrap();
             let tls_config = RustlsConfig::from_pem_file(PathBuf::from(tls_cert), PathBuf::from(tls_key)).await.unwrap();
             axum_server::bind_rustls(addr, tls_config)
-                .serve(app.into_make_service())
+                .serve(app.into_make_service_with_connect_info::<SocketAddr>())
                 .await
                 .unwrap();
         } else {
             info!("No TLS certificate and key provided. Starting in HTTP mode.");
-            axum::serve(tokio::net::TcpListener::bind(addr).await.unwrap(), app).await.unwrap();
+            let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+            axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>()).await.unwrap();
         }
     };
 
