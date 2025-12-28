@@ -9,19 +9,20 @@
   
   {{- $page := .page }}
   {{- $menuID := .menuID }}
-  
+
   {{- with index site.Menus $menuID }}
     <nav class="navbar" role="navigation" aria-label="main navigation">
+      <input type="checkbox" id="navbar-toggle" class="navbar-toggle-checkbox" aria-hidden="true">
       <div class="navbar-brand">
         <a class="navbar-item logo-container" href="/">
           <img src="/freenet_logo.svg" alt="Freenet Logo" class="logo-img" id="freenet-logo">
           <span class="logo-text">Freenet</span>
         </a>
-        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="freenetNavbar">
+        <label for="navbar-toggle" class="navbar-burger" role="button" aria-label="menu" aria-expanded="false">
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
-        </a>
+        </label>
       </div>
       <div id="freenetNavbar" class="navbar-menu">
         <div class="navbar-start">
