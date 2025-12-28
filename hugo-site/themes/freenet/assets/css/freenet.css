@@ -80,13 +80,19 @@
     }
 }
 
+/* Custom font variables */
+:root {
+    --font-display: 'Outfit', system-ui, sans-serif;
+    --font-body: 'Source Sans 3', system-ui, sans-serif;
+}
+
 /* Global HTML and body styling */
 html {
     background-color: #F8FAFC;
 }
 
 body {
-    font-family: Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    font-family: var(--font-body);
     color: #000000;
     background-color: #F8FAFC;
 }
@@ -112,9 +118,19 @@ a:hover {
     }
 }
 
-/* Heading colors */
+/* Heading colors and typography */
 h1, h2, h3, h4, h5, h6 {
     color: #000000;
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+}
+
+h1 {
+    font-weight: 700;
+}
+
+h2, h3 {
+    font-weight: 600;
 }
 
 /* Responsive heading sizes */
