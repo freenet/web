@@ -84,8 +84,8 @@
 :root {
     --font-display: 'Outfit', system-ui, sans-serif;
     --font-body: 'Source Sans 3', system-ui, sans-serif;
-    --color-primary: #007FFF;
-    --color-primary-hover: #0066cc;
+    --color-primary: #0066CC;
+    --color-primary-hover: #004C99;
 }
 
 /* Hero section styling for homepage */
@@ -96,7 +96,7 @@
 .home .content h1:first-child {
     font-size: 2.75rem;
     margin-bottom: 1.5rem;
-    background: linear-gradient(135deg, #005cbf 0%, #007FFF 50%, #00a6ff 100%);
+    background: linear-gradient(135deg, #005cbf 0%, #0066CC 50%, #00a6ff 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -132,7 +132,7 @@
 .cta-button {
     display: inline-block;
     margin: 1.5rem 0 2rem 0;
-    background: linear-gradient(135deg, #007FFF 0%, #0066cc 100%);
+    background: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
     color: #ffffff !important;
     border: none;
     font-family: var(--font-display);
@@ -163,7 +163,7 @@ body {
 
 /* Hyperlink color */
 a {
-    color: #007FFF;
+    color: #0066CC;
 }
 
 a:hover {
@@ -220,15 +220,15 @@ p.page-end-spacer {
 /* Unified button styles - outline style for all link buttons */
 .buttons .button {
     background-color: transparent;
-    border: 2px solid var(--color-primary, #007FFF);
-    color: var(--color-primary, #007FFF);
+    border: 2px solid var(--color-primary, #0066CC);
+    color: var(--color-primary, #0066CC);
     font-family: var(--font-display);
     font-weight: 500;
     transition: all 0.2s ease;
 }
 
 .buttons .button:hover {
-    background-color: var(--color-primary, #007FFF);
+    background-color: var(--color-primary, #0066CC);
     color: #ffffff;
 }
 
@@ -246,8 +246,8 @@ p.page-end-spacer {
 .button.is-medium-purple,
 .button.is-medium-orange {
     background-color: transparent;
-    border: 2px solid var(--color-primary, #007FFF);
-    color: var(--color-primary, #007FFF);
+    border: 2px solid var(--color-primary, #0066CC);
+    color: var(--color-primary, #0066CC);
 }
 
 .button.is-dark-blue:hover,
@@ -258,7 +258,7 @@ p.page-end-spacer {
 .button.is-medium-teal:hover,
 .button.is-medium-purple:hover,
 .button.is-medium-orange:hover {
-    background-color: var(--color-primary, #007FFF);
+    background-color: var(--color-primary, #0066CC);
     color: #ffffff;
 }
 
@@ -320,18 +320,18 @@ p.page-end-spacer {
 
 /* Burger menu color and animation */
 .navbar-burger span {
-    background-color: #007FFF;
+    background-color: #0066CC;
     transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 /* Down arrow color in dropdown */
 .navbar-link:not(.is-arrowless)::after {
-    border-color: #007FFF;
+    border-color: #0066CC;
 }
 
 /* X color when burger is active */
 .navbar-burger.is-active span {
-    background-color: #007FFF;
+    background-color: #0066CC;
 }
 
 /* Dark mode styles */
@@ -351,7 +351,7 @@ p.page-end-spacer {
 
     /* Dark mode hero gradient text */
     .home .content h1:first-child {
-        background: linear-gradient(135deg, #4da6ff 0%, #007FFF 50%, #00a6ff 100%);
+        background: linear-gradient(135deg, #4da6ff 0%, #0066CC 50%, #00a6ff 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -368,12 +368,12 @@ p.page-end-spacer {
 
     /* Dark mode CTA button */
     .cta-button {
-        background: linear-gradient(135deg, #007FFF 0%, #0066cc 100%);
+        background: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
         box-shadow: 0 4px 14px rgba(0, 127, 255, 0.3);
     }
 
     .cta-button:hover {
-        background: linear-gradient(135deg, #4da6ff 0%, #007FFF 100%);
+        background: linear-gradient(135deg, #4da6ff 0%, #0066CC 100%);
         box-shadow: 0 6px 20px rgba(0, 127, 255, 0.4);
     }
 
