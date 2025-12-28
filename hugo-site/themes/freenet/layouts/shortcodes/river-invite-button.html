@@ -1,8 +1,8 @@
 <style>
 .invite-container {
-    max-width: 500px;
+    max-width: 600px;
     margin: 20px auto;
-    padding: 20px;
+    padding: 24px;
     border: 1px solid #ddd;
     border-radius: 10px;
     background-color: #f5f5f5;
@@ -12,60 +12,101 @@
 .invite-container p {
     margin-bottom: 15px;
     color: inherit;
+    line-height: 1.6;
+}
+
+.invite-container h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 1.1rem;
+    color: inherit;
 }
 
 .invite-container .invite-btn {
-    width: 100%;
-    padding: 12px;
+    display: inline-block;
+    padding: 12px 24px;
     font-size: 16px;
     font-weight: 500;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    text-decoration: none;
+    text-align: center;
 }
 
 .invite-container .invite-btn-primary {
     background-color: #3273dc;
     color: white;
+    width: 100%;
 }
 
 .invite-container .invite-btn-primary:hover {
     background-color: #2366d1;
 }
 
-.invite-container .invite-btn-secondary {
+.invite-container .invite-link-btn {
     background-color: #48c774;
     color: white;
-    margin-top: 10px;
-    width: auto;
-    padding: 10px 20px;
+    font-size: 18px;
+    padding: 16px 32px;
+    margin: 16px 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.invite-container .invite-btn-secondary:hover {
+.invite-container .invite-link-btn:hover {
     background-color: #3abb67;
+    color: white;
+    text-decoration: none;
 }
 
 .invite-container .success-text {
     color: #48c774;
-    font-weight: 500;
-    margin-bottom: 10px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 16px;
 }
 
 .invite-container .error-text {
     color: #f14668;
 }
 
-.invite-container .invite-code-textarea {
-    width: 100%;
-    height: 100px;
+.invite-container .section-divider {
+    border-top: 1px solid #ddd;
+    margin: 20px 0;
+    padding-top: 20px;
+}
+
+.invite-container .alt-method {
+    font-size: 0.95rem;
+}
+
+.invite-container .alt-method h4 {
+    font-size: 1rem;
+    margin-bottom: 12px;
+    color: inherit;
+}
+
+.invite-container code {
+    background-color: #e8e8e8;
+    padding: 2px 6px;
+    border-radius: 3px;
     font-family: monospace;
-    font-size: 12px;
-    padding: 10px;
-    border: 1px solid #ddd;
+    font-size: 0.9em;
+}
+
+.invite-container pre {
+    background-color: #e8e8e8;
+    padding: 12px;
     border-radius: 5px;
-    background-color: #fff;
-    color: #363636;
-    resize: none;
+    overflow-x: auto;
+    margin: 10px 0;
+}
+
+.invite-container pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.85rem;
 }
 
 .invite-container .loading-text {
@@ -74,8 +115,10 @@
     color: inherit;
 }
 
-.invite-container a {
-    color: #3273dc;
+.invite-container .note {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 12px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -85,14 +128,20 @@
         color: #f5f5f5;
     }
 
-    .invite-container .invite-code-textarea {
-        background-color: #1a1a1a;
-        color: #f5f5f5;
+    .invite-container .section-divider {
         border-color: #4a4a4a;
     }
 
-    .invite-container a {
-        color: #7eb8ff;
+    .invite-container code {
+        background-color: #1a1a1a;
+    }
+
+    .invite-container pre {
+        background-color: #1a1a1a;
+    }
+
+    .invite-container .note {
+        color: #aaa;
     }
 }
 </style>
@@ -106,14 +155,21 @@
     </div>
 
     <div id="invite-result" style="display: none;">
-        <p class="success-text">Success! Here's your invite code:</p>
-        <textarea id="invite-code" class="invite-code-textarea" readonly></textarea>
-        <button id="copy-btn" class="invite-btn invite-btn-secondary">
-            Copy to Clipboard
-        </button>
-        <p style="margin-top: 15px; font-size: 14px;">
-            Open <a href="http://127.0.0.1:7509/v1/contract/web/raAqMhMG7KUpXBU2SxgCQ3Vh4PYjttxdSWd9ftV7RLv/" target="_blank">River</a> and paste this code to join the room.
-        </p>
+        <p class="success-text">Your invite is ready!</p>
+
+        <p>Click the button below to open River and join the chat:</p>
+        <a id="invite-link" href="#" target="_blank" class="invite-btn invite-link-btn">
+            Open River &amp; Join Chat
+        </a>
+
+        <p class="note">This will open River in your browser. Make sure Freenet is running first.</p>
+
+        <div class="section-divider alt-method">
+            <h4>Alternative: Join via Command Line</h4>
+            <p>If you prefer the terminal, install riverctl and accept the invite:</p>
+            <pre><code>cargo install riverctl
+riverctl invite accept "<span id="invite-code-text"></span>"</code></pre>
+        </div>
     </div>
 
     <div id="invite-error" style="display: none;">
@@ -129,13 +185,15 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const apiUrl = window.ghostkeyApiUrl;
+    const riverBaseUrl = 'http://127.0.0.1:7509/v1/contract/web/raAqMhMG7KUpXBU2SxgCQ3Vh4PYjttxdSWd9ftV7RLv/';
+
     const getInviteBtn = document.getElementById('get-invite-btn');
     const inviteForm = document.getElementById('invite-form');
     const inviteResult = document.getElementById('invite-result');
     const inviteError = document.getElementById('invite-error');
     const inviteLoading = document.getElementById('invite-loading');
-    const inviteCode = document.getElementById('invite-code');
-    const copyBtn = document.getElementById('copy-btn');
+    const inviteLink = document.getElementById('invite-link');
+    const inviteCodeText = document.getElementById('invite-code-text');
     const errorMessage = document.getElementById('error-message');
     const retryMessage = document.getElementById('retry-message');
 
@@ -153,7 +211,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (response.status === 429) {
-                // Rate limited
                 const data = await response.json();
                 inviteLoading.style.display = 'none';
                 inviteError.style.display = 'block';
@@ -170,9 +227,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const data = await response.json();
+            const inviteCode = data.invite_code;
+
+            // Set the invite link URL
+            inviteLink.href = `${riverBaseUrl}?invitation=${encodeURIComponent(inviteCode)}`;
+
+            // Set the invite code for CLI display (truncated for readability)
+            inviteCodeText.textContent = inviteCode;
+
             inviteLoading.style.display = 'none';
             inviteResult.style.display = 'block';
-            inviteCode.value = data.invite_code;
 
         } catch (error) {
             inviteLoading.style.display = 'none';
@@ -180,25 +244,6 @@ document.addEventListener('DOMContentLoaded', function() {
             errorMessage.textContent = `Error: ${error.message}. Please try again later.`;
             retryMessage.textContent = '';
         }
-    });
-
-    copyBtn.addEventListener('click', function() {
-        inviteCode.select();
-        inviteCode.setSelectionRange(0, 99999); // For mobile
-
-        navigator.clipboard.writeText(inviteCode.value).then(function() {
-            copyBtn.textContent = 'Copied!';
-            setTimeout(() => {
-                copyBtn.textContent = 'Copy to Clipboard';
-            }, 2000);
-        }).catch(function() {
-            // Fallback for older browsers
-            document.execCommand('copy');
-            copyBtn.textContent = 'Copied!';
-            setTimeout(() => {
-                copyBtn.textContent = 'Copy to Clipboard';
-            }, 2000);
-        });
     });
 });
 </script>
