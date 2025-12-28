@@ -1,19 +1,101 @@
 {{ $tag := .Get "tag" | default "front-page" }}
+{{ $includeReleases := .Get "include-releases" | default "false" }}
 {{ $news := where .Site.RegularPages "Section" "news" }}
 {{ $news := where $news "Params.tags" "intersect" (slice $tag) }}
 {{ $sortedNews := sort $news "Date" "desc" }}
-<ul>
-  {{ range first 5 $sortedNews }}
-    <li>
-      <strong>{{ .Date.Format "January 2, 2006" }}</strong> - 
-      {{ if in .Params.tags "video-talk" }}
-      <i class="fas fa-video"></i>
-      {{ else if in .Params.tags "dev-meeting" }}
-      <i class="fas fa-tools"></i>
-      {{ else if in .Params.tags "university" }}
-      <i class="fas fa-graduation-cap"></i>
-      {{ end }}
-      <a href="{{ .Permalink }}">{{ .Title }}</a>
-    </li>
+
+{{ if eq $includeReleases "true" }}
+  {{/* Build JSON array of static news items for JavaScript */}}
+  {{ $newsItems := slice }}
+  {{ range first 10 $sortedNews }}
+    {{ $tags := .Params.tags | default slice }}
+    {{ $newsItems = $newsItems | append (dict "date" (.Date.Format "2006-01-02T15:04:05Z") "title" .Title "url" .Permalink "tags" $tags "type" "news") }}
   {{ end }}
-</ul>
+
+  <div id="latest-news-container" data-news-items='{{ $newsItems | jsonify }}'>
+    <p><em>Loading news...</em></p>
+  </div>
+
+  <script>
+  (function() {
+    const container = document.getElementById('latest-news-container');
+    const staticNews = JSON.parse(container.dataset.newsItems);
+
+    function getIcon(item) {
+      if (item.type === 'release') {
+        return '<i class="fas fa-rocket"></i>';
+      }
+      if (item.tags && item.tags.includes('video-talk')) {
+        return '<i class="fas fa-video"></i>';
+      }
+      if (item.tags && item.tags.includes('dev-meeting')) {
+        return '<i class="fas fa-tools"></i>';
+      }
+      if (item.tags && item.tags.includes('university')) {
+        return '<i class="fas fa-graduation-cap"></i>';
+      }
+      return '';
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function renderNews(items) {
+      // Sort by date descending
+      items.sort((a, b) => new Date(b.date) - new Date(a.date));
+      // Take first 5
+      const top5 = items.slice(0, 5);
+
+      let html = '<ul>';
+      for (const item of top5) {
+        const icon = getIcon(item);
+        html += `<li><strong>${formatDate(item.date)}</strong> - ${icon} <a href="${item.url}">${item.title}</a></li>`;
+      }
+      html += '</ul>';
+      container.innerHTML = html;
+    }
+
+    // Fetch latest GitHub release
+    fetch('https://api.github.com/repos/freenet/freenet-core/releases?per_page=1')
+      .then(response => response.json())
+      .then(releases => {
+        const releaseItems = releases
+          .filter(r => !r.draft && !r.prerelease)
+          .slice(0, 1)
+          .map(r => ({
+            date: r.published_at,
+            title: `Freenet ${r.tag_name} Released`,
+            url: r.html_url,
+            type: 'release'
+          }));
+
+        // Merge and render
+        const allItems = [...staticNews, ...releaseItems];
+        renderNews(allItems);
+      })
+      .catch(err => {
+        console.error('Failed to fetch releases:', err);
+        // Fall back to static news only
+        renderNews(staticNews);
+      });
+  })();
+  </script>
+{{ else }}
+  <ul>
+    {{ range first 5 $sortedNews }}
+      <li>
+        <strong>{{ .Date.Format "January 2, 2006" }}</strong> -
+        {{ if in .Params.tags "video-talk" }}
+        <i class="fas fa-video"></i>
+        {{ else if in .Params.tags "dev-meeting" }}
+        <i class="fas fa-tools"></i>
+        {{ else if in .Params.tags "university" }}
+        <i class="fas fa-graduation-cap"></i>
+        {{ end }}
+        <a href="{{ .Permalink }}">{{ .Title }}</a>
+      </li>
+    {{ end }}
+  </ul>
+{{ end }}

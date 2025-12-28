@@ -40,6 +40,6 @@ like the web.
 
 ### News
 
-{{< latest-news tag="front-page" >}}
+{{< latest-news tag="front-page" include-releases="true" >}}
 
 [More news...](news)
