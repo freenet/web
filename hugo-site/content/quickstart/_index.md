@@ -1,0 +1,32 @@
+---
+title: "Quick Start"
+date: 2025-01-01
+draft: false
+---
+
+Get started with Freenet in minutes. Install the Freenet software and join our community chat.
+
+## Step 1: Install Freenet
+
+Run this command in your terminal:
+
+```bash
+curl -fsSL https://freenet.org/install.sh | sh
+```
+
+This will download and install the Freenet software on your system.
+
+## Step 2: Join Freenet Chat
+
+Click the button below to get an invite to our community chat room. You can request one invite per day.
+
+{{< river-invite-button room="Freenet Chat" >}}
+
+Once you have your invite code, open River in your browser and use it to join the room.
+
+## What's Next?
+
+- [User Manual](/resources/manual/) - Learn how Freenet works
+- [Video Talks](/resources/video-talks/) - Watch presentations about Freenet
+- [FAQ](/faq/) - Common questions and answers
+- [Get Involved](/community/get-involved/) - Contribute to the project
