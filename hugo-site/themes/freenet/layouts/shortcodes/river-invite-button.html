@@ -71,44 +71,6 @@
     color: #f14668;
 }
 
-.invite-container .section-divider {
-    border-top: 1px solid #ddd;
-    margin: 20px 0;
-    padding-top: 20px;
-}
-
-.invite-container .alt-method {
-    font-size: 0.95rem;
-}
-
-.invite-container .alt-method h4 {
-    font-size: 1rem;
-    margin-bottom: 12px;
-    color: inherit;
-}
-
-.invite-container code {
-    background-color: #e8e8e8;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: monospace;
-    font-size: 0.9em;
-}
-
-.invite-container pre {
-    background-color: #e8e8e8;
-    padding: 12px;
-    border-radius: 5px;
-    overflow-x: auto;
-    margin: 10px 0;
-}
-
-.invite-container pre code {
-    background: none;
-    padding: 0;
-    font-size: 0.85rem;
-}
-
 .invite-container .loading-text {
     text-align: center;
     padding: 20px;
@@ -126,18 +88,6 @@
         background-color: #2b2b2b;
         border-color: #4a4a4a;
         color: #f5f5f5;
-    }
-
-    .invite-container .section-divider {
-        border-color: #4a4a4a;
-    }
-
-    .invite-container code {
-        background-color: #1a1a1a;
-    }
-
-    .invite-container pre {
-        background-color: #1a1a1a;
     }
 
     .invite-container .note {
@@ -163,13 +113,6 @@
         </a>
 
         <p class="note">This will open River in your browser. Make sure Freenet is running first.</p>
-
-        <div class="section-divider alt-method">
-            <h4>Alternative: Join via Command Line</h4>
-            <p>If you prefer the terminal, install riverctl and accept the invite:</p>
-            <pre><code>cargo install riverctl
-riverctl invite accept "<span id="invite-code-text"></span>"</code></pre>
-        </div>
     </div>
 
     <div id="invite-error" style="display: none;">
@@ -193,7 +136,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const inviteError = document.getElementById('invite-error');
     const inviteLoading = document.getElementById('invite-loading');
     const inviteLink = document.getElementById('invite-link');
-    const inviteCodeText = document.getElementById('invite-code-text');
     const errorMessage = document.getElementById('error-message');
     const retryMessage = document.getElementById('retry-message');
 
@@ -231,9 +173,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Set the invite link URL
             inviteLink.href = `${riverBaseUrl}?invitation=${encodeURIComponent(inviteCode)}`;
-
-            // Set the invite code for CLI display (truncated for readability)
-            inviteCodeText.textContent = inviteCode;
 
             inviteLoading.style.display = 'none';
             inviteResult.style.display = 'block';
