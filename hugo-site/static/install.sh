@@ -359,7 +359,18 @@ main() {
                 info "Installing service..."
                 "$install_dir/freenet" service install
                 echo ""
-                success "Service installed! Start it with: freenet service start"
+                printf "Would you like to start the service now? [Y/n] "
+                read -r start_response </dev/tty
+                case "$start_response" in
+                    [nN]|[nN][oO])
+                        success "Service installed! Start it with: freenet service start"
+                        ;;
+                    *)
+                        info "Starting service..."
+                        "$install_dir/freenet" service start
+                        success "Freenet is now running!"
+                        ;;
+                esac
                 ;;
             *)
                 info "Skipping service installation"
