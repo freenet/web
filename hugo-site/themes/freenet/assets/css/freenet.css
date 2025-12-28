@@ -464,17 +464,15 @@ p.page-end-spacer {
         border-color: #4da6ff;
     }
 
-    .button {
-        &.is-dark-blue,
-        &.is-dark-teal,
-        &.is-dark-purple,
-        &.is-dark-orange,
-        &.is-medium-blue,
-        &.is-medium-teal,
-        &.is-medium-purple,
-        &.is-medium-orange {
-            color: #e0e0e0;
-        }
+    .button.is-dark-blue,
+    .button.is-dark-teal,
+    .button.is-dark-purple,
+    .button.is-dark-orange,
+    .button.is-medium-blue,
+    .button.is-medium-teal,
+    .button.is-medium-purple,
+    .button.is-medium-orange {
+        color: #e0e0e0;
     }
 
     .navbar-brand-with-border {
