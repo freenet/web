@@ -84,9 +84,8 @@
 :root {
     --font-display: 'Outfit', system-ui, sans-serif;
     --font-body: 'Source Sans 3', system-ui, sans-serif;
-    --color-primary: #2563eb;
-    --color-primary-hover: #1d4ed8;
-    --hero-gradient: linear-gradient(135deg, #f0f7ff 0%, #e8f4f8 50%, #f8fafc 100%);
+    --color-primary: #007FFF;
+    --color-primary-hover: #0066cc;
 }
 
 /* Hero section styling for homepage */
@@ -97,7 +96,7 @@
 .home .content h1:first-child {
     font-size: 2.75rem;
     margin-bottom: 1.5rem;
-    background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #0891b2 100%);
+    background: linear-gradient(135deg, #005cbf 0%, #007FFF 50%, #00a6ff 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -119,7 +118,7 @@
 }
 
 #latest-news-container li:hover {
-    background-color: rgba(37, 99, 235, 0.05);
+    background-color: rgba(0, 127, 255, 0.05);
     border-left-color: var(--color-primary);
 }
 
@@ -133,7 +132,7 @@
 .cta-button {
     display: inline-block;
     margin: 1.5rem 0 2rem 0;
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    background: linear-gradient(135deg, #007FFF 0%, #0066cc 100%);
     color: #ffffff !important;
     border: none;
     font-family: var(--font-display);
@@ -141,12 +140,12 @@
     padding: 0.875rem 2rem;
     border-radius: 8px;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 4px 14px rgba(0, 127, 255, 0.25);
 }
 
 .cta-button:hover {
-    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+    background: linear-gradient(135deg, #0066cc 0%, #005cbf 100%);
+    box-shadow: 0 6px 20px rgba(0, 127, 255, 0.35);
     transform: translateY(-1px);
     color: #ffffff !important;
 }
@@ -221,15 +220,15 @@ p.page-end-spacer {
 /* Unified button styles - outline style for all link buttons */
 .buttons .button {
     background-color: transparent;
-    border: 2px solid var(--color-primary, #2563eb);
-    color: var(--color-primary, #2563eb);
+    border: 2px solid var(--color-primary, #007FFF);
+    color: var(--color-primary, #007FFF);
     font-family: var(--font-display);
     font-weight: 500;
     transition: all 0.2s ease;
 }
 
 .buttons .button:hover {
-    background-color: var(--color-primary, #2563eb);
+    background-color: var(--color-primary, #007FFF);
     color: #ffffff;
 }
 
@@ -247,8 +246,8 @@ p.page-end-spacer {
 .button.is-medium-purple,
 .button.is-medium-orange {
     background-color: transparent;
-    border: 2px solid var(--color-primary, #2563eb);
-    color: var(--color-primary, #2563eb);
+    border: 2px solid var(--color-primary, #007FFF);
+    color: var(--color-primary, #007FFF);
 }
 
 .button.is-dark-blue:hover,
@@ -259,7 +258,7 @@ p.page-end-spacer {
 .button.is-medium-teal:hover,
 .button.is-medium-purple:hover,
 .button.is-medium-orange:hover {
-    background-color: var(--color-primary, #2563eb);
+    background-color: var(--color-primary, #007FFF);
     color: #ffffff;
 }
 
@@ -322,7 +321,7 @@ p.page-end-spacer {
 
     /* Dark mode hero gradient text */
     .home .content h1:first-child {
-        background: linear-gradient(135deg, #60a5fa 0%, #38bdf8 50%, #22d3ee 100%);
+        background: linear-gradient(135deg, #4da6ff 0%, #007FFF 50%, #00a6ff 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -330,7 +329,7 @@ p.page-end-spacer {
 
     /* Dark mode news section */
     #latest-news-container li:hover {
-        background-color: rgba(96, 165, 250, 0.1);
+        background-color: rgba(0, 127, 255, 0.1);
     }
 
     #latest-news-container li strong {
@@ -339,13 +338,13 @@ p.page-end-spacer {
 
     /* Dark mode CTA button */
     .cta-button {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+        background: linear-gradient(135deg, #007FFF 0%, #0066cc 100%);
+        box-shadow: 0 4px 14px rgba(0, 127, 255, 0.3);
     }
 
     .cta-button:hover {
-        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        background: linear-gradient(135deg, #4da6ff 0%, #007FFF 100%);
+        box-shadow: 0 6px 20px rgba(0, 127, 255, 0.4);
     }
 
     a {
@@ -375,8 +374,8 @@ p.page-end-spacer {
     .button.is-medium-teal,
     .button.is-medium-purple,
     .button.is-medium-orange {
-        border-color: #60a5fa;
-        color: #60a5fa;
+        border-color: #4da6ff;
+        color: #4da6ff;
     }
 
     .buttons .button:hover,
@@ -388,7 +387,7 @@ p.page-end-spacer {
     .button.is-medium-teal:hover,
     .button.is-medium-purple:hover,
     .button.is-medium-orange:hover {
-        background-color: #60a5fa;
+        background-color: #4da6ff;
         color: #121212;
     }
 
