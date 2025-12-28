@@ -4,6 +4,10 @@ date: 2025-01-01
 draft: false
 ---
 
+{{< alert type="warning" >}}
+**Alpha Software:** Freenet is under active development and may be unstable. New versions are released frequently—sometimes multiple times per day—and older versions will stop working as the network evolves. To update, run `freenet update`.
+{{< /alert >}}
+
 Get started with Freenet in minutes. Install the Freenet software and join our community chat.
 
 ## Step 1: Install Freenet

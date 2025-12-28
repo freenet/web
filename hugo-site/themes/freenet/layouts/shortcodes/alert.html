@@ -1,0 +1,30 @@
+<style>
+.alert-box {
+    padding: 16px 20px;
+    border-radius: 6px;
+    margin: 20px 0;
+    line-height: 1.6;
+}
+
+.alert-box p {
+    margin: 0;
+}
+
+.alert-box.warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+}
+
+@media (prefers-color-scheme: dark) {
+    .alert-box.warning {
+        background-color: #3d3200;
+        border-color: #665200;
+        color: #ffd54f;
+    }
+}
+</style>
+
+<div class="alert-box {{ .Get "type" | default "info" }}">
+{{ .Inner | markdownify }}
+</div>
