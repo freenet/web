@@ -26,8 +26,6 @@ Freenet is the internet as it should be—fully decentralized, designed to put y
 Imagine a global shared computer where you can communicate and collaborate freely, without reliance
 on big tech. Freenet lets you regain your digital independence.
 
-<a href="/resources/manual/installation/" class="button is-primary is-medium cta-button">Get Started</a>
-
 Freenet is a peer-to-peer network that transforms users’ computers into a resilient, distributed
 platform on which anyone can build decentralized services. Every peer contributes to a
 fault-tolerant collective, ensuring services are always available and robust.
