@@ -1,0 +1,101 @@
+<div class="columns is-centered">
+  <div class="column is-three-quarters-tablet is-two-thirds-desktop">
+    <div id="certificate-info">
+      <p>Your donation certificate is being generated. Please wait...</p>
+    </div>
+
+    <div id="certificateSection" style="display: none;">
+      <h3 class="title is-4">Your Ghost Key</h3>
+      <div class="ghost-key-container">
+        <h4 class="subtitle is-5">Ghost Key (contains both certificate and private key)</h4>
+        <div class="textarea-container">
+          <textarea id="combinedKey" rows="10" readonly></textarea>
+          <div class="textarea-overlay">Your Ghost Key</div>
+        </div>
+        <div class="button-group">
+          <button id="copyCombinedKey" class="button is-small">
+            <span class="icon">
+              <i class="fas fa-copy"></i>
+            </span>
+            <span>Copy Ghost Key</span>
+          </button>
+          <button id="downloadCertificate" class="button is-primary freenet-blue">
+            <span class="icon">
+              <i class="fas fa-download"></i>
+            </span>
+            <span>Download Ghost Key</span>
+          </button>
+        </div>
+      </div>
+      <p class="warning"><strong>Warning:</strong> Keep this secret, it contains both your ghost certificate and signing key.</p>
+    </div>
+  </div>
+</div>
+
+<div id="errorMessage" style="display: none; color: red;"></div>
+
+<style>
+  .freenet-blue {
+    background-color: #0066cc !important;
+    color: white !important;
+  }
+  .ghost-key-container {
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .textarea-container {
+    position: relative;
+    margin-bottom: 10px;
+  }
+  #combinedKey {
+    width: 70ch;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    resize: vertical;
+    background-color: #fff;
+    color: #333;
+    white-space: pre-wrap;
+    word-break: break-all;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .textarea-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #999;
+    font-size: 24px;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  .button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  .button-group .button {
+    flex: 1;
+    margin: 0 5px;
+  }
+  .warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 20px;
+    color: #856404;
+  }
+</style>
+
+<script src="/js/nacl.min.js"></script>
+<script src="/js/nacl-util.min.js"></script>
+<script src="/js/msgpack.min.js"></script>
+<script src="/js/donation-success.js"></script>

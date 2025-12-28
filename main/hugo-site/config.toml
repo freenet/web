@@ -1,0 +1,24 @@
+[module]
+  [[module.mounts]]
+    source = "static"
+    target = "static"
+
+  [[module.mounts]]
+    source = "static/wasm"
+    target = "static/wasm"
+
+[server]
+  [[server.headers]]
+    for = "/wasm/**"
+      [server.headers.values]
+        Content-Type = "application/wasm"
+
+[mediaTypes]
+  [mediaTypes."application/wasm"]
+    suffixes = ["wasm"]
+
+[outputFormats]
+  [outputFormats.WASM]
+    mediaType = "application/wasm"
+    isPlainText = true
+    isHTML = false

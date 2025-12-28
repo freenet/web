@@ -1,0 +1,19 @@
+{{ $tag := .Get "tag" | default "front-page" }}
+{{ $news := where .Site.RegularPages "Section" "news" }}
+{{ $news := where $news "Params.tags" "intersect" (slice $tag) }}
+{{ $sortedNews := sort $news "Date" "desc" }}
+<ul>
+  {{ range first 5 $sortedNews }}
+    <li>
+      <strong>{{ .Date.Format "January 2, 2006" }}</strong> - 
+      {{ if in .Params.tags "video-talk" }}
+      <i class="fas fa-video"></i>
+      {{ else if in .Params.tags "dev-meeting" }}
+      <i class="fas fa-tools"></i>
+      {{ else if in .Params.tags "university" }}
+      <i class="fas fa-graduation-cap"></i>
+      {{ end }}
+      <a href="{{ .Permalink }}">{{ .Title }}</a>
+    </li>
+  {{ end }}
+</ul>

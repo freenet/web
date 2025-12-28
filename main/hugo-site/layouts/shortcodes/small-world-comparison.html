@@ -1,0 +1,29 @@
+<div class="visualization-container" style="margin-bottom: 2rem;">
+    <div class="buttons has-addons is-centered" style="margin: 1rem;">
+        <button id="comparisonPlayPauseBtn" class="button is-medium is-primary">
+            <span class="icon">
+                <i class="fas fa-play"></i>
+            </span>
+        </button>
+        <button id="resetComparisonBtn" class="button is-medium">
+            <span class="icon">
+                <i class="fas fa-undo"></i>
+            </span>
+        </button>
+    </div>
+    <div class="comparison-container" style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
+        <div style="width: min(245px, 40%);">
+            <h5 class="has-text-centered is-size-5 mb-2">Small World Network</h5>
+            <canvas id="smallWorldCanvas" width="245" height="245" style="max-width: 100%; height: auto; margin-bottom: 0.5rem;"></canvas>
+        </div>
+        <div style="width: min(245px, 40%);">
+            <h5 class="has-text-centered is-size-5 mb-2">Random Network</h5>
+            <canvas id="randomNetworkCanvas" width="245" height="245" style="max-width: 100%; height: auto; margin-bottom: 0.5rem;"></canvas>
+        </div>
+        <div style="width: min(210px, 90%);">
+            <div id="statsGraph"></div>
+        </div>
+    </div>
+</div>
+<script src="/js/animation-coordinator.js"></script>
+<script src="/js/small-world-comparison.js"></script>

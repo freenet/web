@@ -1,0 +1,14 @@
+.aider*
+hugo-site/public
+hugo-site/resources/*
+hugo-site/static/wasm/*
+hugo-site/themes/freenet/public/
+/resources
+target
+.env
+.idea
+*.tmp
+
+# Rust-specific ignores
+Cargo.lock
+**/*.rs.bk

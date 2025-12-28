@@ -1,0 +1,4 @@
+[workspace]
+members = ["api", "integration_test", "gkwasm"]
+resolver = "2"
+exclude = ["gklib", "cli"]

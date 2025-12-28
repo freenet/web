@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="{{ or site.Language.LanguageCode site.Language.Lang }}"
+      dir="{{ or site.Language.LanguageDirection `ltr` }}">
+<head>
+    {{ partial "head.html" . }}
+</head>
+<body>
+<div class="container">
+    <header>
+        {{ partial "header.html" . }}
+    </header>
+    <main>
+        <div class="section content">
+            {{ block "main" . }}{{ end }}
+        </div>
+    </main>
+    <footer>
+        {{ partial "footer.html" . }}
+        <div class="footer-content" style="text-align: center;">
+            <p>&copy; 2024 Freenet Project Inc. Website source at
+                <a href="https://github.com/freenet/web"><img
+                        src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub"
+                        style="width: 20px; height: 20px; vertical-align: middle;"> <span
+                        style="font-weight: 600;">freenet/web</span></a>.
+    </footer>
+</div>
+</body>
+</html>

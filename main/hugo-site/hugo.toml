@@ -1,0 +1,155 @@
+baseURL = "https://freenet.org/"
+languageCode = 'en-us'
+title = 'Freenet'
+theme = "freenet"
+
+# Enable RSS feed generation
+[outputs]
+  home = ["HTML", "RSS"]
+  section = ["HTML", "RSS"]
+
+# Configure RSS feed
+[outputFormats.RSS]
+  mediaType = "application/rss+xml"
+  baseName = "feed"
+
+[services.rss]
+  limit = 20 # Number of items in the feed
+
+[menu]
+
+  [[menu.main]]
+    name = "Home"
+    url = "/"
+    weight = 1
+
+  [[menu.main]]
+    name = "Developers"
+    url = "/dev/"
+    weight = 3
+
+  [[menu.main]]
+    name = "Platform"
+    url = "/dev/platform/"
+    weight = 4
+    parent = "Developers"
+
+  [[menu.main]]
+    name = "Apps"
+    url = "/dev/apps/"
+    weight = 5
+    parent = "Developers"
+
+  [[menu.main]]
+    name = "Resources"
+    url = "/resources/"
+    weight = 6
+
+  [[menu.main]]
+    name = "News"
+    url = "/news/"
+    weight = 7
+    parent = "Resources"
+
+  [[menu.main]]
+    name = "Video Talks"
+    url = "/resources/video-talks/"
+    weight = 8
+    parent = "Resources"
+
+  [[menu.main]]
+    name = "University"
+    url = "/resources/university/"
+    weight = 9
+    parent = "Resources"
+
+  [[menu.main]]
+    name = "FAQ"
+    url = "/faq/"
+    weight = 9
+    parent = "Resources"
+
+  [[menu.main]]
+    name = "Contribute"
+    weight = 10
+
+  [[menu.main]]
+    name = "Donate"
+    url = "/donate/"
+    weight = 11
+    parent = "Contribute"
+
+  [[menu.main]]
+    name = "Get Ghost Key"
+    weight = 12
+    url= "/ghostkey/"
+    parent = "Contribute"
+
+  [[menu.main]]
+    name = "User Manual"
+    url = "/manual/"
+    weight = 13
+
+  [[menu.main]]
+    name = "Introduction"
+    url = "/resources/manual/introduction/"
+    weight = 1
+    parent = "User Manual"
+
+  [[menu.main]]
+    name = "Components"
+    url = "/resources//manual/#components"
+    weight = 2
+    parent = "User Manual"
+
+  [[menu.main]]
+    name = "Architecture"
+    url = "/resources//manual/#architecture"
+    weight = 3
+    parent = "User Manual"
+
+  [[menu.main]]
+    name = "Developer Guide"
+    url = "/resources//manual/#developer-guide"
+    weight = 4
+    parent = "User Manual"
+
+  [[menu.main]]
+    name = "Examples"
+    url = "/resources//manual/#examples"
+    weight = 5
+    parent = "User Manual"
+
+  [[menu.main]]
+    name = "Community and Support"
+    url = "/resources//manual/#community-and-support"
+    weight = 6
+    parent = "User Manual"
+
+  [[menu.main]]
+    name = "Reference"
+    url = "resources//manual/#reference"
+    weight = 7
+    parent = "User Manual"
+
+[params]
+  stripePublishableKeyTest = "pk_test_51PUf6RCCPv9UL23G0yLdnS51VCStEcnqzd2AftFWiXAOjFOgonYRRBL6F5eKOCrr2yuEHCBDqqYa8H0w7ouRyW6d00awdNMKsf"
+  stripePublishableKeyLive = "pk_live_51PUf6RCCPv9UL23Gw8QzBFY3LxQMWmw2qp9k2MOyJQpaAPF5jpomsZ5K81JDvG8BW05PSqm2LjjGqfaepzHNWk8y007raWcjJX"
+
+[frontmatter]
+  date = ["date", "publishDate", "lastmod"]
+  lastmod = [":git", "lastmod", "date", "publishDate"]
+  publishDate = ["publishDate", "date"]
+  expiryDate = ["expiryDate"]
+
+[taxonomies]
+  category = "categories"
+  tag = "tags"
+
+[permalinks]
+  posts = "/:year/:month/:title/"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true

@@ -21,22 +21,6 @@
     const container = document.getElementById('latest-news-container');
     const staticNews = JSON.parse(container.dataset.newsItems);
 
-    function getIcon(item) {
-      if (item.type === 'release') {
-        return '<i class="fas fa-rocket"></i>';
-      }
-      if (item.tags && item.tags.includes('video-talk')) {
-        return '<i class="fas fa-video"></i>';
-      }
-      if (item.tags && item.tags.includes('dev-meeting')) {
-        return '<i class="fas fa-tools"></i>';
-      }
-      if (item.tags && item.tags.includes('university')) {
-        return '<i class="fas fa-graduation-cap"></i>';
-      }
-      return '';
-    }
-
     function formatDate(dateStr) {
       const date = new Date(dateStr);
       return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -50,8 +34,7 @@
 
       let html = '<ul>';
       for (const item of top5) {
-        const icon = getIcon(item);
-        html += `<li><strong>${formatDate(item.date)}</strong> - ${icon} <a href="${item.url}">${item.title}</a></li>`;
+        html += `<li><strong>${formatDate(item.date)}</strong> - <a href="${item.url}">${item.title}</a></li>`;
       }
       html += '</ul>';
       container.innerHTML = html;
@@ -87,13 +70,6 @@
     {{ range first 5 $sortedNews }}
       <li>
         <strong>{{ .Date.Format "January 2, 2006" }}</strong> -
-        {{ if in .Params.tags "video-talk" }}
-        <i class="fas fa-video"></i>
-        {{ else if in .Params.tags "dev-meeting" }}
-        <i class="fas fa-tools"></i>
-        {{ else if in .Params.tags "university" }}
-        <i class="fas fa-graduation-cap"></i>
-        {{ end }}
         <a href="{{ .Permalink }}">{{ .Title }}</a>
       </li>
     {{ end }}
