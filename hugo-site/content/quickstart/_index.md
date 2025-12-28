@@ -8,6 +8,8 @@ Get started with Freenet in minutes. Install the Freenet software and join our c
 
 ## Step 1: Install Freenet
 
+**Supported platforms:** Linux, macOS
+
 Run this command in your terminal:
 
 ```bash
@@ -15,6 +17,12 @@ curl -fsSL https://freenet.org/install.sh | sh
 ```
 
 This will download and install the Freenet software on your system.
+
+**Windows:** The install script doesn't currently support Windows, but Freenet runs on Windows and can be installed from source:
+
+```bash
+cargo install freenet
+```
 
 ## Step 2: Join Freenet Chat
 
