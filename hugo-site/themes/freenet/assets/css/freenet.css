@@ -80,10 +80,12 @@
     }
 }
 
-/* Custom font variables */
+/* Custom font and color variables */
 :root {
     --font-display: 'Outfit', system-ui, sans-serif;
     --font-body: 'Source Sans 3', system-ui, sans-serif;
+    --color-primary: #2563eb;
+    --color-primary-hover: #1d4ed8;
 }
 
 /* Global HTML and body styling */
@@ -153,47 +155,49 @@ p.page-end-spacer {
     padding-bottom: 200px;
 }
 
-/* Custom button styles */
-.button {
-    &.is-dark-blue {
-        background-color: #1a3d6d;
-        color: #ffffff;
-    }
+/* Unified button styles - outline style for all link buttons */
+.buttons .button {
+    background-color: transparent;
+    border: 2px solid var(--color-primary, #2563eb);
+    color: var(--color-primary, #2563eb);
+    font-family: var(--font-display);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
 
-    &.is-dark-teal {
-        background-color: #006d6d;
-        color: #ffffff;
-    }
+.buttons .button:hover {
+    background-color: var(--color-primary, #2563eb);
+    color: #ffffff;
+}
 
-    &.is-dark-purple {
-        background-color: #4b006e;
-        color: #ffffff;
-    }
+.buttons .button .icon {
+    color: inherit;
+}
 
-    &.is-dark-orange {
-        background-color: #b34d00;
-        color: #ffffff;
-    }
+/* Override individual color classes to use unified style */
+.button.is-dark-blue,
+.button.is-dark-teal,
+.button.is-dark-purple,
+.button.is-dark-orange,
+.button.is-medium-blue,
+.button.is-medium-teal,
+.button.is-medium-purple,
+.button.is-medium-orange {
+    background-color: transparent;
+    border: 2px solid var(--color-primary, #2563eb);
+    color: var(--color-primary, #2563eb);
+}
 
-    &.is-medium-blue {
-        background-color: #2a4d8d;
-        color: #ffffff;
-    }
-
-    &.is-medium-teal {
-        background-color: #008282;
-        color: #ffffff;
-    }
-
-    &.is-medium-purple {
-        background-color: #5c0088;
-        color: #ffffff;
-    }
-
-    &.is-medium-orange {
-        background-color: #cc5e00;
-        color: #ffffff;
-    }
+.button.is-dark-blue:hover,
+.button.is-dark-teal:hover,
+.button.is-dark-purple:hover,
+.button.is-dark-orange:hover,
+.button.is-medium-blue:hover,
+.button.is-medium-teal:hover,
+.button.is-medium-purple:hover,
+.button.is-medium-orange:hover {
+    background-color: var(--color-primary, #2563eb);
+    color: #ffffff;
 }
 
 /* Navbar styling */
@@ -268,6 +272,33 @@ p.page-end-spacer {
 
     .date {
         color: #b0b0b0;
+    }
+
+    /* Dark mode button styles */
+    .buttons .button,
+    .button.is-dark-blue,
+    .button.is-dark-teal,
+    .button.is-dark-purple,
+    .button.is-dark-orange,
+    .button.is-medium-blue,
+    .button.is-medium-teal,
+    .button.is-medium-purple,
+    .button.is-medium-orange {
+        border-color: #60a5fa;
+        color: #60a5fa;
+    }
+
+    .buttons .button:hover,
+    .button.is-dark-blue:hover,
+    .button.is-dark-teal:hover,
+    .button.is-dark-purple:hover,
+    .button.is-dark-orange:hover,
+    .button.is-medium-blue:hover,
+    .button.is-medium-teal:hover,
+    .button.is-medium-purple:hover,
+    .button.is-medium-orange:hover {
+        background-color: #60a5fa;
+        color: #121212;
     }
 
     .navbar {
