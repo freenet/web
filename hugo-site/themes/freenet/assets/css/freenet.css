@@ -129,6 +129,28 @@
     font-size: 0.9rem;
 }
 
+/* Primary CTA button */
+.cta-button {
+    display: inline-block;
+    margin: 1.5rem 0 2rem 0;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff !important;
+    border: none;
+    font-family: var(--font-display);
+    font-weight: 600;
+    padding: 0.875rem 2rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+}
+
+.cta-button:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+    color: #ffffff !important;
+}
+
 /* Global HTML and body styling */
 html {
     background-color: #F8FAFC;
@@ -313,6 +335,17 @@ p.page-end-spacer {
 
     #latest-news-container li strong {
         color: #94a3b8;
+    }
+
+    /* Dark mode CTA button */
+    .cta-button {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+    }
+
+    .cta-button:hover {
+        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
     }
 
     a {
