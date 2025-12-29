@@ -222,6 +222,17 @@ main() {
     info "Freenet Installer"
     echo ""
 
+    # Telemetry disclosure
+    echo "${YELLOW}Note:${NC} Freenet collects anonymous telemetry data by default during alpha"
+    echo "      to help diagnose network issues. This includes:"
+    echo "      - Operation timing (connect, put, get, subscribe, update)"
+    echo "      - Network topology information"
+    echo "      - NO contract content is ever transmitted"
+    echo ""
+    echo "      To disable telemetry, run: freenet --telemetry-enabled=false"
+    echo "      Or set FREENET_TELEMETRY_ENABLED=false in your environment"
+    echo ""
+
     # Detect platform
     os=$(detect_os)
     arch=$(detect_arch)
