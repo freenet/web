@@ -336,9 +336,21 @@ main() {
     mv -- "$tmp_dir/fdev" "$install_dir/fdev"
     chmod +x "$install_dir/freenet" "$install_dir/fdev"
 
+    # On macOS, remove quarantine attribute to allow unsigned binaries to run
+    if [ "$os" = "macos" ]; then
+        xattr -d com.apple.quarantine "$install_dir/freenet" 2>/dev/null || true
+        xattr -d com.apple.quarantine "$install_dir/fdev" 2>/dev/null || true
+    fi
+
     # Verify the installed binary works
     if ! "$install_dir/freenet" --version >/dev/null 2>&1; then
-        error "Installed binary verification failed. The binary may be corrupted or incompatible with your system."
+        if [ "$os" = "macos" ]; then
+            error "Binary verification failed. macOS may be blocking the unsigned binary.
+Try running: xattr -d com.apple.quarantine $install_dir/freenet $install_dir/fdev
+Then run: $install_dir/freenet --version"
+        else
+            error "Installed binary verification failed. The binary may be corrupted or incompatible with your system."
+        fi
     fi
 
     success "Freenet $version installed successfully!"
