@@ -12,6 +12,9 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 use thiserror::Error;
 
+/// Maximum number of invites allowed per IP within the time window
+const MAX_INVITES_PER_WINDOW: usize = 5;
+
 /// SHA256 hashes of IPs exempt from rate limiting (for testing)
 const EXEMPT_IP_HASHES: &[&str] = &[
     "0cf75236cce089f9c592bb2b50925c48cbbb4d0f83094b2cd091dda4b53e1a4c",
@@ -38,8 +41,8 @@ pub enum RateLimitError {
 /// Stored rate limit data
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct RateLimitData {
-    /// Map of IP address string to last invite timestamp (RFC 3339)
-    pub invites: HashMap<String, String>,
+    /// Map of IP address string to list of invite timestamps (RFC 3339)
+    pub invites: HashMap<String, Vec<String>>,
 }
 
 /// Rate limiter with file-based persistence
@@ -78,30 +81,30 @@ impl RateLimiter {
         let mut data = self.load()?;
         let ip_str = ip.to_string();
         let now = Utc::now();
+        let window = Duration::hours(self.window_hours);
 
-        // Check if IP has a recent invite
-        if let Some(last_invite) = data.invites.get(&ip_str) {
-            if let Ok(last_time) = DateTime::parse_from_rfc3339(last_invite) {
-                let last_time_utc: DateTime<Utc> = last_time.into();
-                if now - last_time_utc < Duration::hours(self.window_hours) {
-                    return Ok(false); // Rate limited
+        // Clean up old entries for all IPs
+        for timestamps in data.invites.values_mut() {
+            timestamps.retain(|ts| {
+                if let Ok(t) = DateTime::parse_from_rfc3339(ts) {
+                    let t_utc: DateTime<Utc> = t.into();
+                    now - t_utc < window
+                } else {
+                    false
                 }
-            }
+            });
+        }
+        // Remove IPs with no remaining timestamps
+        data.invites.retain(|_, v| !v.is_empty());
+
+        // Check if IP has reached the limit
+        let timestamps = data.invites.entry(ip_str).or_default();
+        if timestamps.len() >= MAX_INVITES_PER_WINDOW {
+            return Ok(false); // Rate limited
         }
 
-        // Clean up old entries (older than window)
-        let window = Duration::hours(self.window_hours);
-        data.invites.retain(|_, v| {
-            if let Ok(t) = DateTime::parse_from_rfc3339(v) {
-                let t_utc: DateTime<Utc> = t.into();
-                now - t_utc < window
-            } else {
-                false
-            }
-        });
-
         // Record new invite
-        data.invites.insert(ip_str, now.to_rfc3339());
+        timestamps.push(now.to_rfc3339());
         self.save(&data)?;
 
         Ok(true)
@@ -116,15 +119,22 @@ impl RateLimiter {
         let data = self.load()?;
         let ip_str = ip.to_string();
         let now = Utc::now();
+        let window = Duration::hours(self.window_hours);
 
-        if let Some(last_invite) = data.invites.get(&ip_str) {
-            if let Ok(last_time) = DateTime::parse_from_rfc3339(last_invite) {
-                let last_time_utc: DateTime<Utc> = last_time.into();
-                let elapsed = now - last_time_utc;
-                let window = Duration::hours(self.window_hours);
+        if let Some(timestamps) = data.invites.get(&ip_str) {
+            // Filter to only valid timestamps within window
+            let valid_timestamps: Vec<_> = timestamps
+                .iter()
+                .filter_map(|ts| DateTime::parse_from_rfc3339(ts).ok())
+                .map(|t| -> DateTime<Utc> { t.into() })
+                .filter(|t| now - *t < window)
+                .collect();
 
-                if elapsed < window {
-                    let remaining = window - elapsed;
+            // If at limit, return time until oldest expires
+            if valid_timestamps.len() >= MAX_INVITES_PER_WINDOW {
+                if let Some(oldest) = valid_timestamps.iter().min() {
+                    let expires_at = *oldest + window;
+                    let remaining = expires_at - now;
                     return Ok(Some(remaining.num_seconds()));
                 }
             }
@@ -170,14 +180,20 @@ mod tests {
     }
 
     #[test]
-    fn test_rate_limiter_blocks_second_request() {
+    fn test_rate_limiter_allows_up_to_max_requests() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("rate_limits.json");
         let limiter = RateLimiter::new(path, 24);
 
         let ip = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1));
-        assert!(limiter.check_and_record(ip).unwrap());
-        assert!(!limiter.check_and_record(ip).unwrap());
+
+        // Should allow MAX_INVITES_PER_WINDOW requests
+        for i in 0..MAX_INVITES_PER_WINDOW {
+            assert!(limiter.check_and_record(ip).unwrap(), "Request {} should be allowed", i + 1);
+        }
+
+        // Next request should be blocked
+        assert!(!limiter.check_and_record(ip).unwrap(), "Request {} should be blocked", MAX_INVITES_PER_WINDOW + 1);
     }
 
     #[test]
@@ -189,8 +205,13 @@ mod tests {
         let ip1 = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1));
         let ip2 = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 2));
 
-        assert!(limiter.check_and_record(ip1).unwrap());
-        assert!(limiter.check_and_record(ip2).unwrap());
+        // Both IPs should be able to use their full quota
+        for _ in 0..MAX_INVITES_PER_WINDOW {
+            assert!(limiter.check_and_record(ip1).unwrap());
+            assert!(limiter.check_and_record(ip2).unwrap());
+        }
+
+        // Both should now be blocked
         assert!(!limiter.check_and_record(ip1).unwrap());
         assert!(!limiter.check_and_record(ip2).unwrap());
     }
@@ -206,8 +227,16 @@ mod tests {
         // Before any request, no retry needed
         assert!(limiter.get_retry_after(ip).unwrap().is_none());
 
-        // After request, should have retry time
+        // After using quota, no retry yet (still have remaining)
         limiter.check_and_record(ip).unwrap();
+        assert!(limiter.get_retry_after(ip).unwrap().is_none());
+
+        // Use up remaining quota
+        for _ in 1..MAX_INVITES_PER_WINDOW {
+            limiter.check_and_record(ip).unwrap();
+        }
+
+        // Now should have retry time
         let retry = limiter.get_retry_after(ip).unwrap();
         assert!(retry.is_some());
         assert!(retry.unwrap() > 0);
