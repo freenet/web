@@ -5,7 +5,11 @@ draft: false
 ---
 
 {{< alert type="warning" >}}
-**Alpha Software:** Freenet is under active development and may be unstable. New versions are released frequently—sometimes multiple times per day—and older versions will stop working as the network evolves. To update, run `freenet update`.
+**Alpha Software:** Freenet is under active development and may be unstable. New versions are released frequently—sometimes multiple times per day—and older versions will stop working as the network evolves.
+
+During alpha testing:
+- **Telemetry:** Your peer will report diagnostic data to our servers for debugging purposes, including peer activity and general system info (e.g., your OS).
+- **Auto-updates:** Your peer may automatically update when new versions become available.
 {{< /alert >}}
 
 Get started with Freenet in minutes. Install the Freenet software and join our community chat.
