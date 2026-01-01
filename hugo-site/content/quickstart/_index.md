@@ -32,11 +32,11 @@ This will download and install the Freenet software on your system.
 cargo install freenet
 ```
 
-## Step 2: Join Freenet Chat
+## Step 2: Join Freenet Official
 
 Click the button below to get an invite to our community chat room. You can request one invite per day.
 
-{{< river-invite-button room="Freenet Chat" >}}
+{{< river-invite-button room="Freenet Official" >}}
 
 Once you have your invite code, open River in your browser and use it to join the room.
 
