@@ -34,7 +34,7 @@ cargo install freenet
 
 ## Step 2: Join Freenet Official
 
-Click the button below to get an invite to our community chat room. You can request one invite per day.
+Click the button below to get an invite to our community chat room. You can request up to 5 invites per day.
 
 {{< river-invite-button room="Freenet Official" >}}
 
@@ -42,6 +42,7 @@ Once you have your invite code, open River in your browser and use it to join th
 
 ## What's Next?
 
+- [Live Network Dashboard](http://nova.locut.us:3133/) - Watch real-time activity on the network
 - [User Manual](/resources/manual/) - Learn how Freenet works
 - [Video Talks](/resources/video-talks/) - Watch presentations about Freenet
 - [FAQ](/faq/) - Common questions and answers
