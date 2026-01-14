@@ -1078,7 +1078,7 @@ dependencies = [
  "ed25519-dalek",
  "env_logger",
  "fantoccini",
- "ghostkey_lib",
+ "ghostkey_lib 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex",
  "log",
  "rand 0.8.5",
@@ -1091,6 +1091,23 @@ dependencies = [
  "thiserror",
  "tokio",
  "tower-http",
+]
+
+[[package]]
+name = "ghostkey_lib"
+version = "0.1.3"
+dependencies = [
+ "base64 0.22.1",
+ "blind-rsa-signatures",
+ "ciborium",
+ "curve25519-dalek",
+ "ed25519-dalek",
+ "rand 0.8.5",
+ "rand_core 0.6.4",
+ "serde",
+ "serde-reflection",
+ "serde_bytes",
+ "sha2 0.11.0-pre.4",
 ]
 
 [[package]]
@@ -1128,7 +1145,7 @@ dependencies = [
  "curve25519-dalek",
  "ed25519-dalek",
  "getrandom 0.2.15",
- "ghostkey_lib",
+ "ghostkey_lib 0.1.3",
  "js-sys",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
@@ -1536,7 +1553,7 @@ dependencies = [
  "curve25519-dalek",
  "ed25519-dalek",
  "fantoccini",
- "ghostkey_lib",
+ "ghostkey_lib 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest",
  "rmp-serde",
  "serde",

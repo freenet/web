@@ -2,6 +2,7 @@ use ghostkey_lib::armorable::*;
 use ghostkey_lib::delegate_certificate::DelegateCertificateV1;
 use ghostkey_lib::errors::GhostkeyError;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
+use ghostkey_lib::signed_message::SignedMessage;
 use ghostkey_lib::util::create_keypair;
 use blind_rsa_signatures::SecretKey as RSASigningKey;
 use colored::Colorize;
@@ -11,7 +12,6 @@ use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use rand_core::OsRng;
-use crate::signed_message::SignedMessage;
 
 pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i32 {
     let (signing_key, verifying_key) = match create_keypair(&mut OsRng) {

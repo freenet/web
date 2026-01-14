@@ -1,2 +1,4 @@
 pub mod commands;
-pub mod signed_message;
+
+// Re-export SignedMessage from gklib for backwards compatibility
+pub use ghostkey_lib::signed_message;
