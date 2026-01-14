@@ -12,3 +12,8 @@ target
 # Rust-specific ignores
 Cargo.lock
 **/*.rs.bk
+
+# Browser extension build artifacts
+rust/browser-extension/node_modules
+rust/browser-extension/dist
+rust/browser-extension/wasm

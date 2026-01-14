@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 320px;
+      min-height: 200px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      background: #1a1a2e;
+      color: #eee;
+    }
+    .container {
+      padding: 16px;
+    }
+    h1 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: #4cc9f0;
+    }
+    .screen {
+      display: none;
+    }
+    .screen.active {
+      display: block;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      border: 1px solid #333;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #16213e;
+      color: #eee;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #4cc9f0;
+    }
+    button {
+      background: #4cc9f0;
+      color: #1a1a2e;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover {
+      background: #3db8df;
+    }
+    button.secondary {
+      background: transparent;
+      border: 1px solid #4cc9f0;
+      color: #4cc9f0;
+    }
+    button.secondary:hover {
+      background: rgba(76, 201, 240, 0.1);
+    }
+    .key-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #16213e;
+      border-radius: 6px;
+      border: 1px solid #333;
+    }
+    .key-item.active {
+      border-color: #4cc9f0;
+    }
+    .key-label {
+      font-weight: 500;
+    }
+    .key-date {
+      font-size: 12px;
+      color: #888;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+    .actions button {
+      width: auto;
+      padding: 6px 12px;
+      margin: 0;
+    }
+    .error {
+      color: #f07178;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #333;
+    }
+    .footer a {
+      color: #4cc9f0;
+      text-decoration: none;
+      font-size: 12px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 20px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Lock Screen -->
+    <div id="lock-screen" class="screen active">
+      <h1>Freenet Ghost Keys</h1>
+      <input type="password" id="password" placeholder="Enter password">
+      <div id="password-error" class="error" style="display: none;"></div>
+      <button id="unlock-btn">Unlock</button>
+      <button id="passkey-btn" class="secondary" style="display: none;">Use Passkey</button>
+    </div>
+
+    <!-- Main Screen -->
+    <div id="main-screen" class="screen">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h1 style="margin: 0;">Ghost Keys</h1>
+        <button id="lock-btn" class="secondary" style="width: auto; margin: 0; padding: 6px 12px;">Lock</button>
+      </div>
+
+      <div id="keys-list"></div>
+
+      <div id="empty-state" class="empty-state" style="display: none;">
+        <p>No ghost keys yet.</p>
+        <p style="margin-top: 8px;">Import one from your donation.</p>
+      </div>
+
+      <div class="footer">
+        <a href="#" id="open-options">Manage Keys</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="dist/popup.js"></script>
+</body>
+</html>

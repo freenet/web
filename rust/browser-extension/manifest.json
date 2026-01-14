@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "Freenet Ghost Keys",
+  "version": "0.1.0",
+  "description": "Manage Freenet ghost keys for anonymous, verifiable identity",
+
+  "permissions": [
+    "storage"
+  ],
+
+  "host_permissions": [
+    "<all_urls>"
+  ],
+
+  "background": {
+    "service_worker": "dist/background.js",
+    "type": "module"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "static/icons/icon-16.png",
+      "48": "static/icons/icon-48.png",
+      "128": "static/icons/icon-128.png"
+    }
+  },
+
+  "options_page": "options.html",
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["dist/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["wasm/*"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
+
+  "icons": {
+    "16": "static/icons/icon-16.png",
+    "48": "static/icons/icon-48.png",
+    "128": "static/icons/icon-128.png"
+  }
+}
