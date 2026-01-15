@@ -12,7 +12,7 @@ During alpha testing:
 - **Auto-updates:** Your peer may automatically update when new versions become available.
 {{< /alert >}}
 
-Get started with Freenet in minutes. Install the Freenet software and join our community chat.
+Get started with Freenet in minutes. Install the software and join River—the world's first truly decentralized group chat.
 
 ## Step 1: Install Freenet
 
@@ -24,21 +24,29 @@ Run this command in your terminal:
 curl -fsSL https://freenet.org/install.sh | sh
 ```
 
-This will download and install the Freenet software on your system.
+This downloads and installs Freenet, then starts it as a background service. Your browser will open to [River](http://127.0.0.1:7509/v1/contract/web/raAqMhMG7KUpXBU2SxgCQ3Vh4PYjttxdSWd9ftV7RLv/) once the peer is ready.
 
-**Windows:** The install script doesn't currently support Windows, but Freenet runs on Windows and can be installed from source:
+**Windows:** The install script doesn't currently support Windows, but Freenet runs on Windows and can be installed from source with [Cargo](https://rustup.rs/):
 
 ```bash
 cargo install freenet
 ```
 
+Then start Freenet with `freenet run`.
+
 ## Step 2: Join Freenet Official
 
-Click the button below to get an invite to our community chat room. You can request up to 5 invites per day.
+Get an invite to our community chat. You can request up to 5 invites per day.
 
 {{< river-invite-button room="Freenet Official" >}}
 
-Once you have your invite code, open River in your browser and use it to join the room.
+Clicking the link will open River in your browser and automatically join you to the room using the invite code.
+
+## Troubleshooting
+
+If you run into problems, join our [Matrix chat](https://matrix.to/#/#freenet-locutus:matrix.org) for help.
+
+**Network requirements:** Freenet uses UDP hole punching for peer-to-peer connections. Most home routers support this without configuration. Strict corporate firewalls may block connections.
 
 ## What's Next?
 
