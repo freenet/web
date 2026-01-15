@@ -1,5 +1,7 @@
 # Freenet Ghost Keys Browser Extension
 
+> **Work in Progress**: This extension is under development and not yet functional. The core structure is in place but it has not been tested or completed.
+
 Chrome extension for managing Freenet ghost keys - anonymous, verifiable identities backed by donations.
 
 ## Features
