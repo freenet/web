@@ -32,7 +32,7 @@ This downloads and installs Freenet, then starts it as a background service. You
 cargo install freenet
 ```
 
-Then start Freenet with `freenet run`.
+Then start Freenet with `freenet network`.
 
 ## Step 2: Join Freenet Official
 
