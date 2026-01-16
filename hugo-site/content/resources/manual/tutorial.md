@@ -91,7 +91,7 @@ contract**.
 mkdir -p my-app/web
 mkdir -p my-app/backend
 cd my-app/web
-fdev new web-app
+fdev new web-app .
 ```
 
 This makes a skeleton for:
