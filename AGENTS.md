@@ -56,7 +56,8 @@ prettier --write "hugo-site/**/*.{html,css,js,md}"
 - `rust/gklib/`: Ghost Key cryptographic primitives (library crate)
 - `rust/gkwasm/`: WebAssembly bindings exposed to the browser via wasm-bindgen
 - `rust/api/`: Axum-based REST API for Ghost Key operations (Stripe integration)
-- `rust/cli/`: CLI for Ghost Key management tasks
+- `rust/cli/`: CLI for Ghost Key management tasks (published to crates.io as `ghostkey`)
+- `rust/browser-extension/`: Chrome extension for ghost key management (WIP)
 - `hugo-site/`: Hugo source, theme, and static assets (including WASM output)
 
 ### WebAssembly workflow
