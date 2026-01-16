@@ -4,11 +4,20 @@ date: 2024-06-24
 draft: false
 ---
 
+## AI-Assisted Development
+
+Install the [freenet-dapp-builder](https://github.com/freenet/freenet-agent-skills/tree/main/skills/dapp-builder) skill for Claude Code:
+
+```bash
+/plugin marketplace add freenet/freenet-agent-skills
+/plugin install freenet-dapp-builder
+```
+
+This skill guides you through building contracts, delegates, and UI for Freenet apps.
+
 ## Useful Links
 
 - [Freenet User Manual](https://freenet.org/resources/manual/)
-- [freenet-dapp-builder](https://github.com/freenet/freenet-agent-skills/tree/main/skills/dapp-builder) -
-  AI agent skill for building decentralized apps on Freenet
 
 ## Example Apps
 
