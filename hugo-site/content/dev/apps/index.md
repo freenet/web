@@ -7,7 +7,7 @@ draft: false
 ## Useful Links
 
 - [Freenet User Manual](https://freenet.org/resources/manual/)
-- [freenet-dapp-builder](https://github.com/freenet/freenet-agent-skills/tree/main/dapp-builder) -
+- [freenet-dapp-builder](https://github.com/freenet/freenet-agent-skills/tree/main/skills/dapp-builder) -
   AI agent skill for building decentralized apps on Freenet
 
 ## Example Apps
