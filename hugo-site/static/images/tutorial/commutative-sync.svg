@@ -1,70 +1,98 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 380">
+<svg viewBox="0 0 600 420" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <style>
+    :root {
+      --box-bg: #f5f0e6;
+      --box-border: #c4b89a;
+      --box-final-bg: #c8dcc8;
+      --box-final-border: #a8c0a8;
+      --text-primary: #3a3a3a;
+      --text-secondary: #666666;
+      --text-label: #888888;
+      --line-color: #a0a0a0;
+      --sync-color: #7a9f7a;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --box-bg: #3d3830;
+        --box-border: #5a5040;
+        --box-final-bg: #3a4a3a;
+        --box-final-border: #506050;
+        --text-primary: #e8e8e8;
+        --text-secondary: #b0b0b0;
+        --text-label: #909090;
+        --line-color: rgba(255,255,255,0.5);
+        --sync-color: #6a8f6a;
+      }
+    }
+    .box { fill: var(--box-bg); stroke: var(--box-border); stroke-width: 2; }
+    .box-final { fill: var(--box-final-bg); stroke: var(--box-final-border); stroke-width: 2; }
+    .text-primary { fill: var(--text-primary); }
+    .text-secondary { fill: var(--text-secondary); }
+    .text-label { fill: var(--text-label); }
+    .line { stroke: var(--line-color); stroke-width: 2; fill: none; }
+    .line-sync { stroke: var(--sync-color); stroke-width: 2; fill: none; stroke-dasharray: 6 4; }
+    .arrow { fill: var(--line-color); }
+    .arrow-sync { fill: var(--sync-color); }
+  </style>
+
   <defs>
-    <style>
-      .box { fill: #f8fafc; stroke: #3b82f6; stroke-width: 2; rx: 6; }
-      .box-final { fill: #dcfce7; stroke: #22c55e; stroke-width: 2; rx: 6; }
-      .label { font-family: system-ui, -apple-system, sans-serif; font-size: 14px; fill: #1e293b; text-anchor: middle; }
-      .label-peer { font-family: system-ui, -apple-system, sans-serif; font-size: 15px; fill: #3b82f6; text-anchor: middle; font-weight: 600; }
-      .label-action { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; fill: #64748b; text-anchor: middle; font-style: italic; }
-      .label-sync { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; fill: #475569; text-anchor: middle; font-weight: 500; }
-      .arrow { stroke: #64748b; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
-      .arrow-sync { stroke: #22c55e; stroke-width: 2; fill: none; stroke-dasharray: 6,3; }
-      .line-sync { stroke: #22c55e; stroke-width: 2; }
-    </style>
-    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#64748b" />
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" class="arrow" />
+    </marker>
+    <marker id="arrowhead-sync" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" class="arrow-sync" />
     </marker>
   </defs>
 
   <!-- Peer labels -->
-  <text class="label-peer" x="130" y="30">Peer A</text>
-  <text class="label-peer" x="390" y="30">Peer B</text>
+  <text x="150" y="30" font-size="16" font-weight="500" text-anchor="middle" class="text-secondary">Peer A</text>
+  <text x="450" y="30" font-size="16" font-weight="500" text-anchor="middle" class="text-secondary">Peer B</text>
 
   <!-- Initial state boxes -->
-  <rect class="box" x="70" y="45" width="120" height="36" />
-  <text class="label" x="130" y="69">State: [ ]</text>
+  <rect x="70" y="45" width="160" height="44" rx="8" class="box"/>
+  <text x="150" y="74" font-size="14" text-anchor="middle" class="text-primary">State: [ ]</text>
 
-  <rect class="box" x="330" y="45" width="120" height="36" />
-  <text class="label" x="390" y="69">State: [ ]</text>
+  <rect x="370" y="45" width="160" height="44" rx="8" class="box"/>
+  <text x="450" y="74" font-size="14" text-anchor="middle" class="text-primary">State: [ ]</text>
 
   <!-- Arrows down -->
-  <line class="arrow" x1="130" y1="81" x2="130" y2="115" />
-  <line class="arrow" x1="390" y1="81" x2="390" y2="115" />
+  <line x1="150" y1="89" x2="150" y2="118" class="line" marker-end="url(#arrowhead)"/>
+  <line x1="450" y1="89" x2="450" y2="118" class="line" marker-end="url(#arrowhead)"/>
 
   <!-- Action labels -->
-  <text class="label-action" x="130" y="135">Add "Hello"</text>
-  <text class="label-action" x="390" y="135">Add "World"</text>
+  <text x="150" y="145" font-size="13" font-style="italic" text-anchor="middle" class="text-label">Add "Hello"</text>
+  <text x="450" y="145" font-size="13" font-style="italic" text-anchor="middle" class="text-label">Add "World"</text>
 
   <!-- Arrows down -->
-  <line class="arrow" x1="130" y1="145" x2="130" y2="175" />
-  <line class="arrow" x1="390" y1="145" x2="390" y2="175" />
+  <line x1="150" y1="155" x2="150" y2="184" class="line" marker-end="url(#arrowhead)"/>
+  <line x1="450" y1="155" x2="450" y2="184" class="line" marker-end="url(#arrowhead)"/>
 
   <!-- Intermediate state boxes -->
-  <rect class="box" x="55" y="180" width="150" height="36" />
-  <text class="label" x="130" y="204">State: [Hello]</text>
+  <rect x="55" y="190" width="190" height="44" rx="8" class="box"/>
+  <text x="150" y="219" font-size="14" text-anchor="middle" class="text-primary">State: [Hello]</text>
 
-  <rect class="box" x="315" y="180" width="150" height="36" />
-  <text class="label" x="390" y="204">State: [World]</text>
+  <rect x="355" y="190" width="190" height="44" rx="8" class="box"/>
+  <text x="450" y="219" font-size="14" text-anchor="middle" class="text-primary">State: [World]</text>
 
-  <!-- Sync arrows -->
-  <line class="arrow" x1="130" y1="216" x2="130" y2="250" />
-  <line class="arrow" x1="390" y1="216" x2="390" y2="250" />
+  <!-- Sync line -->
+  <line x1="200" y1="256" x2="400" y2="256" class="line-sync"/>
+  <text x="300" y="252" font-size="12" font-style="italic" text-anchor="middle" class="text-label">sync</text>
 
-  <!-- Sync visualization -->
-  <line class="arrow-sync" x1="175" y1="233" x2="345" y2="233" />
-  <text class="label-sync" x="260" y="228">sync</text>
+  <!-- Arrows down to sync -->
+  <line x1="150" y1="234" x2="150" y2="270" class="line" marker-end="url(#arrowhead)"/>
+  <line x1="450" y1="234" x2="450" y2="270" class="line" marker-end="url(#arrowhead)"/>
 
-  <!-- Merge indicator lines -->
-  <line class="line-sync" x1="130" y1="260" x2="200" y2="290" />
-  <line class="line-sync" x1="390" y1="260" x2="320" y2="290" />
+  <!-- Merge lines -->
+  <line x1="150" y1="285" x2="220" y2="320" class="line-sync"/>
+  <line x1="450" y1="285" x2="380" y2="320" class="line-sync"/>
 
   <!-- Final state boxes -->
-  <rect class="box-final" x="30" y="300" width="200" height="40" />
-  <text class="label" x="130" y="326">State: [Hello, World]</text>
+  <rect x="30" y="330" width="240" height="50" rx="10" class="box-final"/>
+  <text x="150" y="362" font-size="14" text-anchor="middle" class="text-primary">State: [Hello, World]</text>
 
-  <rect class="box-final" x="290" y="300" width="200" height="40" />
-  <text class="label" x="390" y="326">State: [Hello, World]</text>
+  <rect x="330" y="330" width="240" height="50" rx="10" class="box-final"/>
+  <text x="450" y="362" font-size="14" text-anchor="middle" class="text-primary">State: [Hello, World]</text>
 
-  <!-- Equal sign between final states -->
-  <text class="label-sync" x="260" y="326">=</text>
+  <!-- Equal sign -->
+  <text x="300" y="362" font-size="18" font-weight="500" text-anchor="middle" class="text-secondary">=</text>
 </svg>
