@@ -1,4 +1,4 @@
-<svg viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+<svg viewBox="0 0 480 240" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
   <style>
     :root {
       --box-bg: #f5f0e6;
@@ -24,72 +24,71 @@
         --sync-color: #6a8f6a;
       }
     }
-    .box { fill: var(--box-bg); stroke: var(--box-border); stroke-width: 1.5; }
-    .box-final { fill: var(--box-final-bg); stroke: var(--box-final-border); stroke-width: 1.5; }
+    .box { fill: var(--box-bg); stroke: var(--box-border); stroke-width: 1; }
+    .box-final { fill: var(--box-final-bg); stroke: var(--box-final-border); stroke-width: 1; }
     .text-primary { fill: var(--text-primary); }
     .text-secondary { fill: var(--text-secondary); }
     .text-label { fill: var(--text-label); }
-    .line { stroke: var(--line-color); stroke-width: 1.5; fill: none; }
-    .line-sync { stroke: var(--sync-color); stroke-width: 1.5; fill: none; stroke-dasharray: 4 3; }
+    .line { stroke: var(--line-color); stroke-width: 1; fill: none; }
+    .line-sync { stroke: var(--sync-color); stroke-width: 1; fill: none; stroke-dasharray: 3 2; }
     .arrow { fill: var(--line-color); }
-    .arrow-sync { fill: var(--sync-color); }
   </style>
 
   <defs>
-    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" class="arrow" />
+    <marker id="arrowhead" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+      <polygon points="0 0, 6 2.5, 0 5" class="arrow" />
     </marker>
   </defs>
 
   <!-- Peer labels -->
-  <text x="130" y="20" font-size="12" font-weight="500" text-anchor="middle" class="text-secondary">Peer A</text>
-  <text x="390" y="20" font-size="12" font-weight="500" text-anchor="middle" class="text-secondary">Peer B</text>
+  <text x="120" y="14" font-size="9" font-weight="500" text-anchor="middle" class="text-secondary">Peer A</text>
+  <text x="360" y="14" font-size="9" font-weight="500" text-anchor="middle" class="text-secondary">Peer B</text>
 
   <!-- Initial state boxes -->
-  <rect x="60" y="30" width="140" height="32" rx="6" class="box"/>
-  <text x="130" y="51" font-size="11" text-anchor="middle" class="text-primary">State: [ ]</text>
+  <rect x="60" y="22" width="120" height="24" rx="4" class="box"/>
+  <text x="120" y="38" font-size="8" text-anchor="middle" class="text-primary">State: [ ]</text>
 
-  <rect x="320" y="30" width="140" height="32" rx="6" class="box"/>
-  <text x="390" y="51" font-size="11" text-anchor="middle" class="text-primary">State: [ ]</text>
+  <rect x="300" y="22" width="120" height="24" rx="4" class="box"/>
+  <text x="360" y="38" font-size="8" text-anchor="middle" class="text-primary">State: [ ]</text>
 
   <!-- Arrows down -->
-  <line x1="130" y1="62" x2="130" y2="82" class="line" marker-end="url(#arrowhead)"/>
-  <line x1="390" y1="62" x2="390" y2="82" class="line" marker-end="url(#arrowhead)"/>
+  <line x1="120" y1="46" x2="120" y2="62" class="line" marker-end="url(#arrowhead)"/>
+  <line x1="360" y1="46" x2="360" y2="62" class="line" marker-end="url(#arrowhead)"/>
 
   <!-- Action labels -->
-  <text x="130" y="100" font-size="10" font-style="italic" text-anchor="middle" class="text-label">Add "Hello"</text>
-  <text x="390" y="100" font-size="10" font-style="italic" text-anchor="middle" class="text-label">Add "World"</text>
+  <text x="120" y="76" font-size="7" font-style="italic" text-anchor="middle" class="text-label">Add "Hello"</text>
+  <text x="360" y="76" font-size="7" font-style="italic" text-anchor="middle" class="text-label">Add "World"</text>
 
   <!-- Arrows down -->
-  <line x1="130" y1="108" x2="130" y2="128" class="line" marker-end="url(#arrowhead)"/>
-  <line x1="390" y1="108" x2="390" y2="128" class="line" marker-end="url(#arrowhead)"/>
+  <line x1="120" y1="82" x2="120" y2="98" class="line" marker-end="url(#arrowhead)"/>
+  <line x1="360" y1="82" x2="360" y2="98" class="line" marker-end="url(#arrowhead)"/>
 
   <!-- Intermediate state boxes -->
-  <rect x="50" y="135" width="160" height="32" rx="6" class="box"/>
-  <text x="130" y="156" font-size="11" text-anchor="middle" class="text-primary">State: [Hello]</text>
+  <rect x="50" y="104" width="140" height="24" rx="4" class="box"/>
+  <text x="120" y="120" font-size="8" text-anchor="middle" class="text-primary">State: [Hello]</text>
 
-  <rect x="310" y="135" width="160" height="32" rx="6" class="box"/>
-  <text x="390" y="156" font-size="11" text-anchor="middle" class="text-primary">State: [World]</text>
+  <rect x="290" y="104" width="140" height="24" rx="4" class="box"/>
+  <text x="360" y="120" font-size="8" text-anchor="middle" class="text-primary">State: [World]</text>
 
   <!-- Sync line -->
-  <line x1="180" y1="182" x2="340" y2="182" class="line-sync"/>
-  <text x="260" y="178" font-size="9" font-style="italic" text-anchor="middle" class="text-label">sync</text>
+  <line x1="165" y1="142" x2="315" y2="142" class="line-sync"/>
+  <text x="240" y="139" font-size="7" font-style="italic" text-anchor="middle" class="text-label">sync</text>
 
   <!-- Arrows down to sync -->
-  <line x1="130" y1="167" x2="130" y2="195" class="line" marker-end="url(#arrowhead)"/>
-  <line x1="390" y1="167" x2="390" y2="195" class="line" marker-end="url(#arrowhead)"/>
+  <line x1="120" y1="128" x2="120" y2="152" class="line" marker-end="url(#arrowhead)"/>
+  <line x1="360" y1="128" x2="360" y2="152" class="line" marker-end="url(#arrowhead)"/>
 
   <!-- Merge lines -->
-  <line x1="130" y1="208" x2="190" y2="235" class="line-sync"/>
-  <line x1="390" y1="208" x2="330" y2="235" class="line-sync"/>
+  <line x1="120" y1="162" x2="170" y2="186" class="line-sync"/>
+  <line x1="360" y1="162" x2="310" y2="186" class="line-sync"/>
 
   <!-- Final state boxes -->
-  <rect x="30" y="242" width="200" height="36" rx="6" class="box-final"/>
-  <text x="130" y="266" font-size="11" text-anchor="middle" class="text-primary">State: [Hello, World]</text>
+  <rect x="30" y="192" width="180" height="28" rx="4" class="box-final"/>
+  <text x="120" y="210" font-size="8" text-anchor="middle" class="text-primary">State: [Hello, World]</text>
 
-  <rect x="290" y="242" width="200" height="36" rx="6" class="box-final"/>
-  <text x="390" y="266" font-size="11" text-anchor="middle" class="text-primary">State: [Hello, World]</text>
+  <rect x="270" y="192" width="180" height="28" rx="4" class="box-final"/>
+  <text x="360" y="210" font-size="8" text-anchor="middle" class="text-primary">State: [Hello, World]</text>
 
   <!-- Equal sign -->
-  <text x="260" y="266" font-size="14" font-weight="500" text-anchor="middle" class="text-secondary">=</text>
+  <text x="240" y="210" font-size="11" font-weight="500" text-anchor="middle" class="text-secondary">=</text>
 </svg>
