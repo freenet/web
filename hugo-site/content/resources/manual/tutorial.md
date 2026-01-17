@@ -378,36 +378,11 @@ impl DelegateInterface for Delegate {
 
 ## 7. UI Development
 
-The UI connects to the local Freenet Kernel via WebSocket to interact with contracts.
+The UI connects to the local Freenet Kernel via WebSocket to interact with contracts. River uses
+[Dioxus](https://dioxuslabs.com)—a Rust framework that compiles to WebAssembly, giving you a
+type-safe UI that shares code with your contracts.
 
-### WebSocket Connection
-
-```typescript
-const API_URL = `ws://${location.host}/contract/command/`;
-
-const handler = {
-    onContractPut: (response) => { /* Contract created */ },
-    onContractGet: (response) => { /* State received */ },
-    onContractUpdate: (response) => { /* State updated */ },
-    onErr: (err) => console.error(err),
-    onOpen: () => console.log("Connected to Freenet"),
-};
-
-const api = new FreenetWsApi(API_URL, handler);
-
-// Subscribe to a contract
-await api.subscribe({ key: contractKey });
-
-// Send an update
-await api.update({
-    key: contractKey,
-    delta: encodedDelta,
-});
-```
-
-### Using Dioxus (Rust)
-
-River uses [Dioxus](https://dioxuslabs.com) for a fully Rust-based UI that compiles to WebAssembly:
+### Basic Dioxus Component
 
 ```rust
 use dioxus::prelude::*;
@@ -424,6 +399,12 @@ fn App() -> Element {
     }
 }
 ```
+
+### Connecting to Freenet
+
+River's UI communicates with the kernel through a WebSocket API. See
+[River's sync module](https://github.com/freenet/river/tree/main/ui/src/sync) for the complete
+implementation pattern.
 
 ---
 
