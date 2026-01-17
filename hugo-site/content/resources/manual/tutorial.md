@@ -32,9 +32,9 @@ data on your device), and **UI** (web interface). See the
 The contract is your application's backend. It runs as WebAssembly on untrusted peers across the
 network.
 
-> **Not blockchain contracts**: Unlike blockchain smart contracts that are broadcast to every node,
-> Freenet contracts are stored in a distributed hash table—each contract only exists on nodes that
-> need it. This makes the system scalable without practical limit.
+> **A different model**: Blockchain contracts are transaction processors replicated everywhere.
+> Freenet contracts are general-purpose state machines—they can model any shared data, from chat
+> to documents to games—and exist only on subscribing nodes. This scales without practical limit.
 
 **Key properties:**
 - Defines what valid state looks like and how it can be modified
