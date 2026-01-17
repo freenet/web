@@ -30,6 +30,8 @@ conversations that work even if we disappear tomorrow.
 Freenet apps run in your browser and look like normal websites—but they can't be taken down,
 don't track you, and work without any company behind them.
 
+[Try it now →](/quickstart/)
+
 </div>
 
 <div class="home-section">
