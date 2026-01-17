@@ -553,21 +553,109 @@ p.page-end-spacer {
 /* App screenshot styling - works in both light and dark mode */
 picture.app-screenshot {
   display: block;
-  margin: 1.5rem 0;
-  max-width: 800px;
+  margin: 2rem 0;
+  max-width: 700px;
 }
 
 picture.app-screenshot img {
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   max-width: 100%;
   height: auto;
 }
 
 @media (prefers-color-scheme: dark) {
   picture.app-screenshot img {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Home page sections grid */
+.home-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin: 2.5rem 0;
+}
+
+.home-section {
+  padding: 1.5rem;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.home-section h3 {
+  margin-top: 0;
+  font-size: 1.25rem;
+  color: var(--color-primary);
+}
+
+.home-section p {
+  margin-bottom: 0.75rem;
+  color: #4a5568;
+  line-height: 1.6;
+}
+
+.home-section a {
+  font-weight: 500;
+}
+
+@media (prefers-color-scheme: dark) {
+  .home-section {
+    background: #1a1a1a;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .home-section h3 {
+    color: #4da6ff;
+  }
+
+  .home-section p {
+    color: #b0b0b0;
+  }
+}
+
+/* Secondary links footer */
+.secondary-links {
+  text-align: center;
+  padding: 1rem 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.secondary-links a {
+  color: #64748b;
+  text-decoration: none;
+}
+
+.secondary-links a:hover {
+  color: var(--color-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  .secondary-links,
+  .secondary-links a {
+    color: #94a3b8;
+  }
+
+  .secondary-links a:hover {
+    color: #4da6ff;
+  }
+}
+
+/* Home page intro paragraph */
+.home > .content > p:first-of-type {
+  font-size: 1.15rem;
+  line-height: 1.7;
+  color: #374151;
+  max-width: 680px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .home > .content > p:first-of-type {
+    color: #d1d5db;
   }
 }
