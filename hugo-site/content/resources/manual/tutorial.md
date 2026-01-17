@@ -16,25 +16,8 @@ application that demonstrates all the patterns in this tutorial.
 
 ## 1. Architecture Overview
 
-Freenet applications have three components that work together:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Your Device                              │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────────┐   │
-│  │      UI      │◄──►│   Delegate   │◄──►│  Freenet Kernel  │   │
-│  │  (Browser)   │    │ (Trust Zone) │    │                  │   │
-│  └──────────────┘    └──────────────┘    └────────┬─────────┘   │
-└───────────────────────────────────────────────────┼─────────────┘
-                                                    │
-                                          ┌─────────▼─────────┐
-                                          │   P2P Network     │
-                                          │  ┌─────────────┐  │
-                                          │  │  Contract   │  │
-                                          │  │   (WASM)    │  │
-                                          │  └─────────────┘  │
-                                          └───────────────────┘
-```
+Freenet applications have three components that work together. See the
+[Components Overview](/resources/manual/components/overview/) for a detailed diagram.
 
 ### Contract (Network Layer)
 
@@ -84,25 +67,7 @@ must handle this correctly.
 Contract state must form a **commutative monoid**—updates can be applied in any order and still
 produce the same final state.
 
-```
-    Peer A                    Peer B
-      │                         │
-      ▼                         ▼
-  State: []                 State: []
-      │                         │
-  Add "Hello"               Add "World"
-      │                         │
-      ▼                         ▼
-  State: [Hello]            State: [World]
-      │                         │
-      └─────────┬───────────────┘
-                │
-        Sync updates
-                │
-      ┌─────────┴───────────────┐
-      ▼                         ▼
-  State: [Hello, World]     State: [Hello, World]
-```
+![Commutative synchronization between peers](/images/tutorial/commutative-sync.svg)
 
 Both peers end up with the same state regardless of which update they received first.
 
