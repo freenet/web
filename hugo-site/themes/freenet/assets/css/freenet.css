@@ -549,3 +549,25 @@ p.page-end-spacer {
   z-index: 1;
   color: white;
 }
+
+/* App screenshot styling - works in both light and dark mode */
+picture.app-screenshot {
+  display: block;
+  margin: 1.5rem 0;
+  max-width: 800px;
+}
+
+picture.app-screenshot img {
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  height: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+  picture.app-screenshot img {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}

@@ -12,12 +12,20 @@ component.
 **Reference Implementation**: [River](https://github.com/freenet/river) - a decentralized chat
 application that demonstrates all the patterns in this tutorial.
 
+<picture class="app-screenshot">
+  <source srcset="/images/river-screenshot-dark.png" media="(prefers-color-scheme: dark)">
+  <img src="/images/river-screenshot-light.png" alt="River - a decentralized chat app built on Freenet">
+</picture>
+
 ---
 
 ## 1. Architecture Overview
 
-Freenet applications have three components that work together. See the
-[Components Overview](/resources/manual/components/overview/) for a detailed diagram.
+Freenet apps have three components: **Contract** (shared state on the network), **Delegate** (private
+data on your device), and **UI** (web interface). See the
+[full architecture diagram](/resources/manual/components/overview/).
+
+![Contract, Delegate, and UI components](/images/tutorial-architecture.svg)
 
 ### Contract (Network Layer)
 

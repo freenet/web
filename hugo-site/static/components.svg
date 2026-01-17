@@ -67,6 +67,7 @@
     .text-secondary { fill: var(--text-secondary); }
     .text-label { fill: var(--text-label); }
     .connection-line { stroke: var(--line-color); fill: none; stroke-width: 2; }
+    .connection-line-dashed { stroke: var(--line-color); fill: none; stroke-width: 2; stroke-dasharray: 6 4; }
     .annotation-box { fill: var(--annotation-bg); stroke: var(--annotation-border); }
   </style>
 
@@ -243,4 +244,9 @@
 
   <!-- Browser to user -->
   <path d="M 820 630 L 820 670" class="connection-line"/>
+
+  <!-- UI downloaded from contract (dashed line from lower Contract to UI component) -->
+  <path d="M 760 250 Q 820 350 800 480" class="connection-line-dashed"/>
+  <text x="840" y="360" font-size="9" class="text-label">UI from</text>
+  <text x="840" y="372" font-size="9" class="text-label">contract</text>
 </svg>
