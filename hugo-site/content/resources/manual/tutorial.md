@@ -356,17 +356,19 @@ struct Delegate;
 #[delegate]
 impl DelegateInterface for Delegate {
     fn process(
-        _params: Parameters<'static>,
+        _parameters: Parameters<'static>,
         _attested: Option<&'static [u8]>,
-        messages: InboundDelegateMsg,
+        message: InboundDelegateMsg,
     ) -> Result<Vec<OutboundDelegateMsg>, DelegateError> {
-        match messages {
-            InboundDelegateMsg::UserResponse(response) => {
-                // Handle user input
+        match message {
+            InboundDelegateMsg::ApplicationMessage(app_msg) => {
+                // Handle messages from UI
+                // app_msg.app - the contract instance ID
+                // app_msg.payload - the message bytes
                 Ok(vec![])
             }
-            InboundDelegateMsg::ApplicationMessage(app_id, msg) => {
-                // Handle messages from UI
+            InboundDelegateMsg::GetSecretResponse(response) => {
+                // Handle secret retrieval response
                 Ok(vec![])
             }
             _ => Ok(vec![]),
