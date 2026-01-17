@@ -34,8 +34,9 @@ The contract is your application's backend. It runs as WebAssembly on untrusted 
 network.
 
 > **A different model**: Blockchain contracts are transaction processors replicated everywhere.
-> Freenet contracts are general-purpose state machines—they can model any shared data, from chat
-> to documents to games—and exist only on subscribing nodes. This scales without practical limit.
+> Freenet contracts are general-purpose replicated data structures—they can model any shared data,
+> from chat to documents to games—and exist only on subscribing nodes. This scales without
+> practical limit.
 
 **Key properties:**
 - Defines what valid state looks like and how it can be modified
