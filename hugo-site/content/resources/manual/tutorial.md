@@ -34,7 +34,7 @@ network.
 
 > **Not blockchain contracts**: Unlike blockchain smart contracts that are broadcast to every node,
 > Freenet contracts are stored in a distributed hash table—each contract only exists on nodes that
-> need it. This makes the system scalable to millions of contracts.
+> need it. This makes the system scalable without practical limit.
 
 **Key properties:**
 - Defines what valid state looks like and how it can be modified
