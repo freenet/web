@@ -5,9 +5,10 @@ draft: false
 weight: 1
 ---
 
-This tutorial teaches you how to build decentralized applications on Freenet. You'll learn the
-architecture that makes trustless, peer-to-peer applications possible and how to implement each
-component.
+Freenet is a decentralized platform for building censorship-resistant services. Applications compile
+to WebAssembly and run across a peer-to-peer network with no central servers. This tutorial walks
+through creating a web UI, container, and backend contract, building locally, and serving the app
+from a Freenet node.
 
 **Reference Implementation**: [River](https://github.com/freenet/river) - a decentralized chat
 application that demonstrates all the patterns in this tutorial.
