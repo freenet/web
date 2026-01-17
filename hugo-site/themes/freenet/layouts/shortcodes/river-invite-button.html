@@ -1,97 +1,116 @@
 <style>
 .invite-container {
-    max-width: 600px;
-    margin: 20px auto;
-    padding: 24px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    background-color: #f5f5f5;
+    max-width: 480px;
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    border: 1px solid rgba(0, 102, 204, 0.2);
+    border-radius: 12px;
+    background-color: #f8fafc;
     color: #363636;
 }
 
 .invite-container p {
-    margin-bottom: 15px;
+    margin-bottom: 1rem;
     color: inherit;
     line-height: 1.6;
 }
 
 .invite-container h3 {
     margin-top: 0;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
     font-size: 1.1rem;
     color: inherit;
 }
 
 .invite-container .invite-btn {
     display: inline-block;
-    padding: 12px 24px;
-    font-size: 16px;
-    font-weight: 500;
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
     text-decoration: none;
     text-align: center;
+    transition: all 0.2s ease;
 }
 
 .invite-container .invite-btn-primary {
-    background-color: #3273dc;
+    background: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
     color: white;
     width: 100%;
+    box-shadow: 0 4px 14px rgba(0, 102, 204, 0.25);
 }
 
 .invite-container .invite-btn-primary:hover {
-    background-color: #2366d1;
+    background: linear-gradient(135deg, #0066cc 0%, #005cbf 100%);
+    box-shadow: 0 6px 20px rgba(0, 102, 204, 0.35);
+    transform: translateY(-1px);
 }
 
 .invite-container .invite-link-btn {
-    background-color: #48c774;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
     color: white;
-    font-size: 18px;
-    padding: 16px 32px;
-    margin: 16px 0;
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+    margin: 1rem 0;
     width: 100%;
     box-sizing: border-box;
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.25);
 }
 
 .invite-container .invite-link-btn:hover {
-    background-color: #3abb67;
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
     color: white;
     text-decoration: none;
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
+    transform: translateY(-1px);
 }
 
 .invite-container .success-text {
-    color: #48c774;
+    color: #16a34a;
     font-weight: 600;
     font-size: 1.1rem;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
 }
 
 .invite-container .error-text {
-    color: #f14668;
+    color: #dc2626;
 }
 
 .invite-container .loading-text {
     text-align: center;
-    padding: 20px;
+    padding: 1.25rem;
     color: inherit;
 }
 
 .invite-container .note {
-    font-size: 0.9rem;
-    color: #666;
-    margin-top: 12px;
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-top: 0.75rem;
 }
 
 @media (prefers-color-scheme: dark) {
     .invite-container {
-        background-color: #2b2b2b;
-        border-color: #4a4a4a;
+        background-color: #1a1a1a;
+        border-color: rgba(77, 166, 255, 0.2);
         color: #f5f5f5;
     }
 
+    .invite-container .invite-btn-primary {
+        box-shadow: 0 4px 14px rgba(0, 102, 204, 0.3);
+    }
+
+    .invite-container .invite-link-btn {
+        box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+    }
+
     .invite-container .note {
-        color: #aaa;
+        color: #94a3b8;
+    }
+
+    .invite-container .success-text {
+        color: #4ade80;
     }
 }
 </style>

@@ -1,26 +1,48 @@
 <style>
 .alert-box {
-    padding: 16px 20px;
-    border-radius: 6px;
-    margin: 20px 0;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    margin: 1.5rem 0;
     line-height: 1.6;
+    font-size: 0.95rem;
 }
 
 .alert-box p {
-    margin: 0;
+    margin: 0 0 0.5rem 0;
+}
+
+.alert-box p:last-child {
+    margin-bottom: 0;
+}
+
+.alert-box ul {
+    margin: 0.5rem 0;
+    padding-left: 1.25rem;
+}
+
+.alert-box li {
+    margin: 0.25rem 0;
 }
 
 .alert-box.warning {
-    background-color: #fff3cd;
-    border: 1px solid #ffc107;
-    color: #856404;
+    background-color: #fef9e7;
+    border: 1px solid #f5d67a;
+    color: #7a6420;
+}
+
+.alert-box.warning strong {
+    color: #5c4a10;
 }
 
 @media (prefers-color-scheme: dark) {
     .alert-box.warning {
-        background-color: #3d3200;
-        border-color: #665200;
-        color: #ffd54f;
+        background-color: #2d2810;
+        border-color: #5a4a20;
+        color: #e6d080;
+    }
+
+    .alert-box.warning strong {
+        color: #f5e0a0;
     }
 }
 </style>
