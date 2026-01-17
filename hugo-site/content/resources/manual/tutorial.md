@@ -47,8 +47,8 @@ network.
 
 ### Delegate (Local Trust Zone)
 
-The delegate runs locally on the user's device inside the Freenet Kernel. This is your secure
-execution environment.
+The delegate runs locally on the user's device inside the Freenet Kernel as WebAssembly. This is
+your secure execution environment.
 
 **Key properties:**
 - Stores private keys and secrets
