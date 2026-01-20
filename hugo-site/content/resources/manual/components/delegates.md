@@ -73,7 +73,7 @@ A common use case is message signing:
 
 The private key never leaves the delegate.
 
-![Delegate signing flow](/delegate-signing.svg)
+<img src="/delegate-signing.svg" alt="Delegate signing flow" style="max-width: 480px;">
 
 ## Implementation notes for developers
 
