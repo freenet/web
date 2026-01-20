@@ -52,6 +52,8 @@ A **key manager delegate** stores private keys and signs data on request, possib
 
 Delegates can also synchronize with identical delegate instances running on other devices the user controls. With an appropriate shared secret, they communicate securely via Freenet and act as backups and replicas of each other.
 
+For a real-world example, River's [chat delegate](https://github.com/freenet/river/tree/main/delegates/chat-delegate) stores per-room signing keys and signs messages, invitations, and room configurations on behalf of the UI—without ever exposing the keys.
+
 ## Comparison to service workers
 
 Delegates share a pattern with browser service workers: self-contained modules running independently of the UI, performing tasks on the user's behalf. The key differences are scope and purpose. Delegates are not limited to the browser; they can communicate with other delegates locally and over Freenet; and they are designed specifically for private state, policy enforcement, and sensitive operations.
