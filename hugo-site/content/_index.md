@@ -9,7 +9,7 @@ Freenet is a peer-to-peer platform for decentralized applications—communicatio
 commerce without reliance on big tech. Your computer becomes part of a global network where apps
 are unstoppable, interoperable, and built on open protocols.
 
-<a href="/quickstart/" class="cta-button">Get Started</a>
+<a href="/quickstart/" class="cta-button">Try Freenet</a>
 
 ## See it in Action
 
