@@ -73,6 +73,8 @@ A common use case is message signing:
 
 The private key never leaves the delegate.
 
+![Delegate signing flow](/delegate-signing.svg)
+
 ## Implementation notes for developers
 
 Delegates are implemented in WebAssembly and conform to the `DelegateInterface` trait.
@@ -96,4 +98,23 @@ Delegates can also:
 
 Delegates can be used for many roles, including:
 
-- Key manager delegate: stores private keys and signs
+- Key manager delegate: stores private keys and signs data on request, possibly prompting the user for permission.
+- Inbox delegate: monitors an inbox contract, downloads new messages, decrypts them, and stores them privately for UIs to display.
+- Contacts delegate: stores and retrieves contact information and supports sending messages to contacts.
+- Alerts delegate: watches for events (for example, mentions in a discussion) and notifies the user.
+
+Delegates can also synchronize with identical delegate instances running on other user-controlled devices. With an appropriate shared secret, they can communicate securely via Freenet and act as backups/replicas of each other.
+
+## Similarity to service workers (and how delegates differ)
+
+Delegates share a pattern with browser service workers: they are self-contained modules that run independently of the UI and perform tasks on the user's behalf.
+
+The key differences are:
+
+- delegates are not limited to a browser scope,
+- delegates can communicate with other delegates (locally and over Freenet),
+- delegates are designed specifically for private state, policy enforcement, and sensitive operations.
+
+## Summary
+
+Delegates are private, policy-enforcing agents inside the Freenet Core. They enable applications where sensitive data stays protected by default, because components ask for actions rather than receiving secrets.
