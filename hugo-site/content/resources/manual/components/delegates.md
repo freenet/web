@@ -4,117 +4,54 @@ date: 2025-04-13
 draft: false
 ---
 
-# Delegates
+Delegates are software components that run inside the Freenet Core on a user's device. They act on the user's behalf while keeping private data private. The simplest way to remember what a delegate does: it lets applications use secrets without ever receiving the secrets.
 
-Delegates are software components that run inside the Freenet Core on a user's device. They act on the user's behalf while keeping private data private.
+This is the same security principle that classic encapsulation aimed for—data accessed only through controlled methods—but enforced by the platform across real trust boundaries. Other components can only interact with a delegate by sending messages; they cannot read its internal state directly.
 
-The simplest way to remember what a delegate is:
-
-A delegate lets applications use secrets without ever receiving the secrets.
-
-This is the same security principle that classic encapsulation aimed for (data is only accessed through controlled methods), but enforced by the platform across real trust boundaries. Other components can only interact with a delegate by sending messages; they cannot read its internal state directly.
-
-## What problem delegates solve
+## The problem delegates solve
 
 In most systems, private keys, tokens, and personal state end up spread across many layers: UI code, application code, plugins, libraries, and storage. Even when data is "local," it is often accessible to any code running in the same environment.
 
-Delegates reduce the attack surface by centralizing sensitive state and operations behind a strict interface:
+Delegates reduce the attack surface by centralizing sensitive state and operations behind a strict interface. Secrets are stored and used inside the delegate. Callers ask the delegate to perform actions—sign, decrypt, authorize—and the delegate returns results, not the secrets themselves. If a UI or application is buggy or compromised, the delegate can still refuse unsafe requests and avoid exposing long-lived secrets.
 
-- Secrets are stored and used inside the delegate.
-- Callers ask the delegate to perform actions (for example: sign, decrypt, authorize).
-- The delegate returns results (for example: a signature), not the secret itself.
+## How delegates fit into the architecture
 
-If a UI or application is buggy or compromised, the delegate can still refuse unsafe requests and can avoid exposing long-lived secrets.
+Freenet applications typically involve three kinds of components. [Contracts](/resources/manual/components/contracts/) hold public, replicated state stored across the network. [User interfaces](/resources/manual/components/ui/) are web frontends that users interact with in their browser. Delegates are private agents that hold secrets and enforce rules for sensitive operations.
 
-## How delegates fit into the Freenet architecture
+This separation keeps public state (contracts) and private state (delegates) distinct, while still enabling rich applications that span both.
 
-Freenet applications typically involve three kinds of components:
+## Message passing with known senders
 
-- Contracts: public, replicated application state stored and updated via the network.
-- User interfaces (UIs): web frontends that users interact with.
-- Delegates: private agents that hold secrets and enforce rules for sensitive operations.
+Delegates communicate with contracts, UIs, and other delegates by passing messages, similar to the actor model. The Freenet Core ensures that when a delegate receives a message, it knows who sent it.
 
-This separation makes it natural to keep public state (contracts) and private state (delegates) distinct, while still enabling rich applications.
+This allows delegates to implement policies: only respond to requests from an approved UI, only accept messages from specific delegates, only perform actions when a request is properly attributed. A delegate can make trust decisions based on the sender's identity and the content of the request.
 
-## Communication model: message passing with known senders
+## Encapsulation with teeth
 
-Delegates communicate with contracts, UIs, and other delegates by passing messages (similar to the actor model). The Freenet Core ensures that when a delegate receives a message, it can determine who sent it.
+A useful mental model is to think of a delegate as an object whose private fields truly cannot be bypassed.
 
-This allows delegates to implement policies such as:
-
-- only respond to requests from an approved UI,
-- only accept messages from specific delegates,
-- only perform actions when a request is properly attributed.
-
-In other words, a delegate can make trust decisions based on the sender identity and the request.
-
-## Delegates as enforced encapsulation
-
-A useful mental model is to think of a delegate as an "object" whose private fields cannot be bypassed.
-
-Traditional encapsulation is mostly a convention: if code runs in the same process or environment, it often can read memory, call undocumented APIs, or exfiltrate local storage.
-
-Delegates provide encapsulation with teeth:
-
-- the delegate's private state is not directly accessible,
-- the only way to interact is through the delegate's message interface,
-- the delegate can apply policy at the moment of use.
-
-This is especially important for cryptographic keys and authorization logic.
+Traditional encapsulation is mostly a convention. If code runs in the same process or environment, it can often read memory, call undocumented APIs, or exfiltrate local storage. Delegates provide encapsulation that the platform actually enforces: the delegate's private state is not directly accessible, the only way to interact is through its message interface, and the delegate can apply policy at the moment of use. This matters most for cryptographic keys and authorization logic.
 
 ## Example: signing without exporting a private key
 
-A common use case is message signing:
-
-1. A UI wants to send an authenticated message.
-2. Instead of retrieving the user's private key, the UI asks the delegate: "Please sign this payload."
-3. The delegate checks who is asking and whether the request is allowed.
-4. If allowed, the delegate produces a signature and returns it to the UI.
-
-The private key never leaves the delegate.
+A common use case is message signing. A UI wants to send an authenticated message, but instead of retrieving the user's private key, it asks the delegate: "Please sign this payload." The delegate checks who is asking and whether the request is allowed. If allowed, it produces a signature and returns it to the UI. The private key never leaves the delegate.
 
 <img src="/delegate-signing.svg" alt="Delegate signing flow" style="max-width: 480px;">
 
-## Implementation notes for developers
+## Implementation notes
 
-Delegates are implemented in WebAssembly and conform to the `DelegateInterface` trait.
-
-At a high level, a delegate:
-
-- receives inbound messages,
-- optionally consults secret state,
-- produces zero or more outbound messages as a response.
+Delegates are implemented in WebAssembly and conform to the `DelegateInterface` trait. At a high level, a delegate receives inbound messages, optionally consults secret state, and produces zero or more outbound messages as a response.
 
 All durable delegate state must be stored using the secrets mechanism rather than in-process global state. This keeps private data under the delegate boundary and allows the core to manage it securely.
 
-Delegates can also:
+Beyond handling messages, delegates can create, read, and modify contracts; create other delegates; and ask the user questions for permission prompts or configuration.
 
-- create, read, and modify contracts,
-- create other delegates,
-- send and receive messages with other components,
-- ask the user questions and receive answers (for permission prompts or configuration).
+## Use cases
 
-## Delegate use cases
+A **key manager delegate** stores private keys and signs data on request, possibly prompting the user for permission. An **inbox delegate** monitors an inbox contract, downloads new messages, decrypts them, and stores them privately for UIs to display. A **contacts delegate** stores and retrieves contact information. An **alerts delegate** watches for events—like mentions in a discussion—and notifies the user.
 
-Delegates can be used for many roles, including:
+Delegates can also synchronize with identical delegate instances running on other devices the user controls. With an appropriate shared secret, they communicate securely via Freenet and act as backups and replicas of each other.
 
-- Key manager delegate: stores private keys and signs data on request, possibly prompting the user for permission.
-- Inbox delegate: monitors an inbox contract, downloads new messages, decrypts them, and stores them privately for UIs to display.
-- Contacts delegate: stores and retrieves contact information and supports sending messages to contacts.
-- Alerts delegate: watches for events (for example, mentions in a discussion) and notifies the user.
+## Comparison to service workers
 
-Delegates can also synchronize with identical delegate instances running on other user-controlled devices. With an appropriate shared secret, they can communicate securely via Freenet and act as backups/replicas of each other.
-
-## Similarity to service workers (and how delegates differ)
-
-Delegates share a pattern with browser service workers: they are self-contained modules that run independently of the UI and perform tasks on the user's behalf.
-
-The key differences are:
-
-- delegates are not limited to a browser scope,
-- delegates can communicate with other delegates (locally and over Freenet),
-- delegates are designed specifically for private state, policy enforcement, and sensitive operations.
-
-## Summary
-
-Delegates are private, policy-enforcing agents inside the Freenet Core. They enable applications where sensitive data stays protected by default, because components ask for actions rather than receiving secrets.
+Delegates share a pattern with browser service workers: self-contained modules running independently of the UI, performing tasks on the user's behalf. The key differences are scope and purpose. Delegates are not limited to the browser; they can communicate with other delegates locally and over Freenet; and they are designed specifically for private state, policy enforcement, and sensitive operations.
