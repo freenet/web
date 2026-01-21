@@ -4,15 +4,17 @@ date: 2025-04-13
 draft: false
 ---
 
-Delegates are software components that run inside the Freenet Core on a user's device. They act on the user's behalf while keeping private data private. The simplest way to remember what a delegate does: it lets applications use secrets without ever receiving the secrets.
+When you use an application that handles private keys—a wallet, a messaging app, anything with cryptographic identity—you're trusting that application with your secrets. Every library it imports, every dependency, every line of code has access to the same memory where your keys live. A single vulnerability anywhere in that stack can expose everything.
 
-This is the same security principle that classic encapsulation aimed for—data accessed only through controlled methods—but enforced by the platform across real trust boundaries. Other components can only interact with a delegate by sending messages; they cannot read its internal state directly.
+Delegates change this equation. A delegate holds your secrets and performs sensitive operations on your behalf, but the application itself never sees the secrets. The app asks the delegate to sign a message; the delegate returns a signature. The private key never crosses the boundary.
 
-## The problem delegates solve
+This is the core idea: **applications can use secrets without receiving them**.
 
-In most systems, private keys, tokens, and personal state end up spread across many layers: UI code, application code, plugins, libraries, and storage. Even when data is "local," it is often accessible to any code running in the same environment.
+## How delegates work
 
-Delegates reduce the attack surface by centralizing sensitive state and operations behind a strict interface. Secrets are stored and used inside the delegate. Callers ask the delegate to perform actions—sign, decrypt, authorize—and the delegate returns results, not the secrets themselves. If a UI or application is buggy or compromised, the delegate can still refuse unsafe requests and avoid exposing long-lived secrets.
+Delegates are software components that run inside the Freenet Core on a user's device. Other components—UIs, contracts, other delegates—can only interact with a delegate by sending messages. They cannot read its internal state directly.
+
+This is the same security principle that classic encapsulation aimed for—data accessed only through controlled methods—but enforced by the platform across real trust boundaries. If a UI is buggy or compromised, the delegate can still refuse unsafe requests and keep secrets protected.
 
 ## How delegates fit into the architecture
 
