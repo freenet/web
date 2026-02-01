@@ -24,7 +24,7 @@ Run this command in your terminal:
 curl -fsSL https://freenet.org/install.sh | sh
 ```
 
-This downloads and installs Freenet, then starts it as a background service. Your browser will open to [River](http://127.0.0.1:7509/v1/contract/web/raAqMhMG7KUpXBU2SxgCQ3Vh4PYjttxdSWd9ftV7RLv/) once the peer is ready.
+This downloads and installs Freenet, then starts it as a background service.
 
 ### Windows
 
