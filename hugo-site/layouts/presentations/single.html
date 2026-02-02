@@ -119,7 +119,8 @@
       border-bottom: 3px solid;
       border-image: linear-gradient(90deg, var(--freenet-blue), var(--freenet-cyan)) 1;
       padding-bottom: 0.1em;
-      margin-bottom: 0.8em;
+      margin-bottom: 0.4em;
+      margin-top: 0;
     }
 
     .reveal h2::after {
@@ -133,6 +134,21 @@
 
     .reveal section {
       text-align: left;
+      height: 100%;
+      padding-top: 0 !important;
+    }
+
+    .reveal .slides {
+      text-align: left;
+    }
+
+    /* Full-height diagram containers */
+    .reveal .diagram-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+      min-height: 0;
     }
 
     .reveal section.center {
@@ -501,7 +517,7 @@
       center: false,
       width: 1280,
       height: 720,
-      margin: 0.1,
+      margin: 0.04,
       plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom ],
 
       // Keyboard shortcuts
