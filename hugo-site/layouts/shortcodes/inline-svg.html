@@ -1,0 +1,11 @@
+{{- $path := .Get "src" -}}
+{{- $class := .Get "class" | default "" -}}
+{{- $style := .Get "style" | default "" -}}
+{{- $svgPath := printf "static%s" $path -}}
+{{- $svg := os.ReadFile $svgPath -}}
+{{- if $svg -}}
+  {{- $svg = replaceRE `<svg` (printf `<svg class="%s" style="%s"` $class $style) $svg -}}
+  {{- $svg | safeHTML -}}
+{{- else -}}
+  <p>SVG not found: {{ $path }}</p>
+{{- end -}}

@@ -1,0 +1,19 @@
+<section>
+  <h2>How Delta Sync Works</h2>
+
+  <ol>
+    <li class="fragment"><strong>Summarize</strong> - Generate compact hash of current state</li>
+    <li class="fragment"><strong>Exchange</strong> - Peers swap summaries</li>
+    <li class="fragment"><strong>Diff</strong> - Calculate what the other peer is missing</li>
+    <li class="fragment"><strong>Send delta</strong> - Transmit only the differences</li>
+    <li class="fragment"><strong>Merge</strong> - Apply delta to local state</li>
+  </ol>
+
+  <div class="fragment" style="margin-top: 1.5em; padding: 1em; background: rgba(46, 204, 113, 0.2); border-radius: 8px;">
+    <p><strong>Result:</strong> Bandwidth proportional to <span class="highlight-green">changes</span>, not total state size</p>
+  </div>
+
+  <aside class="notes">
+    The key insight is that summaries are small fixed-size representations that let peers identify what they're missing without downloading everything.
+  </aside>
+</section>

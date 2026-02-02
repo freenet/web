@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ .Title }} - Overview</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      color: #eee;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #888;
+      margin-bottom: 30px;
+    }
+    .subtitle a {
+      color: #3498db;
+      text-decoration: none;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 320px);
+      gap: 20px;
+      max-width: 1360px;
+      margin: 0 auto;
+      justify-content: center;
+    }
+    @media (max-width: 1400px) {
+      .grid { grid-template-columns: repeat(3, 320px); max-width: 1020px; }
+    }
+    @media (max-width: 1060px) {
+      .grid { grid-template-columns: repeat(2, 320px); max-width: 680px; }
+    }
+    @media (max-width: 700px) {
+      .grid { grid-template-columns: 320px; max-width: 360px; }
+    }
+    .slide-card {
+      background: #252540;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .slide-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .slide-card a {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .preview-container {
+      position: relative;
+      width: 100%;
+      height: 180px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1a1a2e 0%, #2a2a4e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .slide-number-display {
+      font-size: 48px;
+      font-weight: 700;
+      color: rgba(52, 152, 219, 0.3);
+    }
+    .slide-title-preview {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      font-size: 14px;
+      color: #ccc;
+      text-align: center;
+    }
+    .slide-info {
+      padding: 12px 15px;
+      border-top: 1px solid #333;
+    }
+    .slide-num {
+      color: #3498db;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .slide-name {
+      color: #aaa;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>{{ .Title }}</h1>
+  <p class="subtitle">
+    {{ len .Params.slides }} slides &middot;
+    <a href="{{ .Permalink }}">Launch Presentation</a> &middot;
+    Press <kbd>O</kbd> during presentation for overview
+  </p>
+
+  <div class="grid">
+    {{ $presentation := . }}
+    {{ range $index, $slide := .Params.slides }}
+    {{ $parts := split $slide "/" }}
+    {{ $category := index $parts 0 }}
+    {{ $name := index $parts 1 }}
+    <div class="slide-card">
+      <a href="{{ $presentation.Permalink }}#/{{ $index }}">
+        <div class="preview-container">
+          <div class="slide-number-display">{{ add $index 1 }}</div>
+          <div class="slide-title-preview">{{ replace $name "-" " " | title }}</div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-num">{{ $category }}</div>
+          <div class="slide-name">{{ $name }}</div>
+        </div>
+      </a>
+    </div>
+    {{ end }}
+  </div>
+</body>
+</html>

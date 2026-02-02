@@ -1,0 +1,183 @@
+<svg viewBox="0 0 1100 600" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe"/>
+      <stop offset="100%" style="stop-color:#00f2fe"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#43e97b"/>
+      <stop offset="100%" style="stop-color:#38f9d7"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a855f7"/>
+      <stop offset="100%" style="stop-color:#c084fc"/>
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fa709a"/>
+      <stop offset="100%" style="stop-color:#fee140"/>
+    </linearGradient>
+
+    <!-- Arrow markers -->
+    <marker id="arrowGray" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="rgba(255,255,255,0.4)"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#4facfe"/>
+    </marker>
+
+    <!-- Glow filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Column headers -->
+  <text x="250" y="45" font-size="22" font-weight="600" fill="#888" text-anchor="middle">Traditional Web</text>
+  <text x="850" y="45" font-size="22" font-weight="600" fill="url(#blueGrad)" text-anchor="middle">Freenet</text>
+
+  <!-- VS divider -->
+  <line x1="550" y1="70" x2="550" y2="580" stroke="rgba(255,255,255,0.1)" stroke-width="2" stroke-dasharray="8,8"/>
+  <text x="550" y="300" font-size="16" font-weight="500" fill="rgba(255,255,255,0.3)" text-anchor="middle">vs</text>
+
+  <!-- ==================== TRADITIONAL WEB (LEFT) ==================== -->
+
+  <!-- User's Browser -->
+  <g transform="translate(150, 70)">
+    <rect x="0" y="0" width="200" height="50" rx="8" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+    <text x="100" y="30" font-size="14" font-weight="500" fill="#ccc" text-anchor="middle">User's Browser</text>
+  </g>
+
+  <!-- Arrow with HTTP label -->
+  <line x1="250" y1="120" x2="250" y2="165" stroke="rgba(255,255,255,0.4)" stroke-width="2" marker-end="url(#arrowGray)"/>
+  <text x="280" y="148" font-size="12" font-weight="500" fill="#a0aec0">HTTP</text>
+
+  <!-- TCP -->
+  <g transform="translate(150, 170)">
+    <rect x="0" y="0" width="200" height="45" rx="8" fill="rgba(74,85,104,0.4)" stroke="#4a5568" stroke-width="2"/>
+    <text x="100" y="28" font-size="14" font-weight="600" fill="#a0aec0" text-anchor="middle">TCP</text>
+  </g>
+
+  <!-- Arrow down -->
+  <line x1="250" y1="215" x2="250" y2="250" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+
+  <!-- IP (shared) -->
+  <g transform="translate(150, 255)">
+    <rect x="0" y="0" width="200" height="45" rx="8" fill="rgba(79,172,254,0.2)" stroke="url(#blueGrad)" stroke-width="2"/>
+    <text x="100" y="28" font-size="14" font-weight="600" fill="#4facfe" text-anchor="middle">IP</text>
+  </g>
+
+  <!-- Arrow to servers -->
+  <line x1="250" y1="300" x2="250" y2="340" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+
+  <!-- Web Servers cluster -->
+  <g transform="translate(100, 345)">
+    <rect x="0" y="0" width="300" height="100" rx="12" fill="rgba(250,112,154,0.1)" stroke="rgba(250,112,154,0.4)" stroke-width="2"/>
+    <text x="150" y="25" font-size="12" font-weight="500" fill="#fa709a" text-anchor="middle">Centralized Servers</text>
+
+    <!-- Server icons -->
+    <g transform="translate(40, 40)">
+      <rect x="0" y="0" width="50" height="45" rx="4" fill="rgba(250,112,154,0.3)" stroke="#fa709a" stroke-width="1"/>
+      <text x="25" y="27" font-size="10" fill="#fff" text-anchor="middle">Server</text>
+    </g>
+    <g transform="translate(100, 40)">
+      <rect x="0" y="0" width="50" height="45" rx="4" fill="rgba(250,112,154,0.3)" stroke="#fa709a" stroke-width="1"/>
+      <text x="25" y="27" font-size="10" fill="#fff" text-anchor="middle">Server</text>
+    </g>
+    <g transform="translate(160, 40)">
+      <rect x="0" y="0" width="50" height="45" rx="4" fill="rgba(250,112,154,0.3)" stroke="#fa709a" stroke-width="1"/>
+      <text x="25" y="27" font-size="10" fill="#fff" text-anchor="middle">Server</text>
+    </g>
+    <g transform="translate(220, 40)">
+      <rect x="0" y="0" width="50" height="45" rx="4" fill="rgba(250,112,154,0.3)" stroke="#fa709a" stroke-width="1"/>
+      <text x="25" y="27" font-size="10" fill="#fff" text-anchor="middle">DB</text>
+    </g>
+  </g>
+
+  <!-- Private data warning -->
+  <g transform="translate(100, 465)">
+    <rect x="0" y="0" width="300" height="55" rx="8" fill="rgba(250,112,154,0.1)" stroke="rgba(250,112,154,0.3)" stroke-width="1"/>
+    <text x="150" y="22" font-size="11" fill="#fa709a" text-anchor="middle">⚠️ Your private data</text>
+    <text x="150" y="40" font-size="11" fill="rgba(255,255,255,0.5)" text-anchor="middle">stored on their hardware</text>
+  </g>
+
+  <!-- ==================== FREENET (RIGHT) ==================== -->
+
+  <!-- User's Browser -->
+  <g transform="translate(750, 70)">
+    <rect x="0" y="0" width="200" height="50" rx="8" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+    <text x="100" y="30" font-size="14" font-weight="500" fill="#ccc" text-anchor="middle">User's Browser</text>
+  </g>
+
+  <!-- Arrow with HTTP label -->
+  <line x1="850" y1="120" x2="850" y2="165" stroke="#4facfe" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <text x="880" y="148" font-size="12" font-weight="500" fill="#4facfe">HTTP</text>
+
+  <!-- FREENET CORE enclosing box -->
+  <g transform="translate(700, 170)">
+    <rect x="0" y="0" width="300" height="200" rx="12" fill="rgba(67,233,123,0.08)" stroke="url(#greenGrad)" stroke-width="2" filter="url(#glow)"/>
+    <text x="150" y="25" font-size="14" font-weight="600" fill="#43e97b" text-anchor="middle">Freenet Core</text>
+
+    <!-- UDP inside Freenet Core -->
+    <g transform="translate(50, 40)">
+      <rect x="0" y="0" width="200" height="40" rx="6" fill="rgba(67,233,123,0.15)" stroke="rgba(67,233,123,0.5)" stroke-width="1.5"/>
+      <text x="100" y="26" font-size="13" font-weight="500" fill="#43e97b" text-anchor="middle">UDP</text>
+    </g>
+
+    <!-- P2P Network inside Freenet Core -->
+    <g transform="translate(50, 95)">
+      <rect x="0" y="0" width="200" height="90" rx="6" fill="rgba(67,233,123,0.1)" stroke="rgba(67,233,123,0.4)" stroke-width="1.5"/>
+      <text x="100" y="20" font-size="11" font-weight="500" fill="#43e97b" text-anchor="middle">P2P Network</text>
+
+      <!-- Peer nodes -->
+      <circle cx="40" cy="50" r="12" fill="rgba(67,233,123,0.3)" stroke="#43e97b" stroke-width="1"/>
+      <circle cx="80" cy="65" r="12" fill="rgba(67,233,123,0.3)" stroke="#43e97b" stroke-width="1"/>
+      <circle cx="120" cy="50" r="12" fill="rgba(67,233,123,0.3)" stroke="#43e97b" stroke-width="1"/>
+      <circle cx="160" cy="65" r="12" fill="rgba(67,233,123,0.3)" stroke="#43e97b" stroke-width="1"/>
+
+      <!-- Connection lines -->
+      <line x1="40" y1="50" x2="80" y2="65" stroke="rgba(67,233,123,0.5)" stroke-width="1"/>
+      <line x1="80" y1="65" x2="120" y2="50" stroke="rgba(67,233,123,0.5)" stroke-width="1"/>
+      <line x1="120" y1="50" x2="160" y2="65" stroke="rgba(67,233,123,0.5)" stroke-width="1"/>
+      <line x1="40" y1="50" x2="120" y2="50" stroke="rgba(67,233,123,0.4)" stroke-width="1"/>
+      <line x1="80" y1="65" x2="160" y2="65" stroke="rgba(67,233,123,0.4)" stroke-width="1"/>
+
+      <!-- Peer labels -->
+      <text x="40" y="54" font-size="8" fill="#fff" text-anchor="middle">P</text>
+      <text x="80" y="69" font-size="8" fill="#fff" text-anchor="middle">P</text>
+      <text x="120" y="54" font-size="8" fill="#fff" text-anchor="middle">P</text>
+      <text x="160" y="69" font-size="8" fill="#fff" text-anchor="middle">P</text>
+    </g>
+  </g>
+
+  <!-- Arrow down to IP -->
+  <line x1="850" y1="370" x2="850" y2="400" stroke="rgba(79,172,254,0.5)" stroke-width="2"/>
+
+  <!-- IP (shared) -->
+  <g transform="translate(750, 405)">
+    <rect x="0" y="0" width="200" height="45" rx="8" fill="rgba(79,172,254,0.2)" stroke="url(#blueGrad)" stroke-width="2"/>
+    <text x="100" y="28" font-size="14" font-weight="600" fill="#4facfe" text-anchor="middle">IP</text>
+  </g>
+
+  <!-- "Shared" label connecting the two IP boxes -->
+  <g>
+    <path d="M350 277 L420 277 L420 427 L480 427" stroke="rgba(79,172,254,0.4)" stroke-width="1.5" stroke-dasharray="4,4"/>
+    <path d="M620 427 L680 427 L680 427 L750 427" stroke="rgba(79,172,254,0.4)" stroke-width="1.5" stroke-dasharray="4,4"/>
+    <text x="550" y="432" font-size="11" fill="rgba(79,172,254,0.6)" text-anchor="middle">shared foundation</text>
+  </g>
+
+  <!-- Delegates (private data) -->
+  <g transform="translate(700, 470)">
+    <rect x="0" y="0" width="300" height="55" rx="8" fill="rgba(168,85,247,0.15)" stroke="rgba(168,85,247,0.5)" stroke-width="2"/>
+    <text x="150" y="22" font-size="11" fill="#a855f7" text-anchor="middle">🔒 Your private data in Delegates</text>
+    <text x="150" y="40" font-size="11" fill="rgba(255,255,255,0.6)" text-anchor="middle">stored on your hardware</text>
+  </g>
+
+  <!-- Arrow connecting Freenet Core to Delegates -->
+  <path d="M700 320 L670 320 L670 497 L700 497" stroke="rgba(168,85,247,0.4)" stroke-width="1.5" fill="none" stroke-dasharray="4,4"/>
+
+</svg>
