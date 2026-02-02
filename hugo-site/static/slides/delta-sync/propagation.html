@@ -1,0 +1,186 @@
+<section>
+  <h2>Update Propagation</h2>
+  <p style="margin-bottom: 0.5em;">Click any node to trigger an update</p>
+
+  <div id="propagation-viz" style="width: 100%; height: 420px; margin: 0 auto;"></div>
+
+  <button id="resetPropBtn" style="padding: 8px 16px; font-size: 14px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 4px; margin-top: 10px;">
+    <i class="fas fa-undo"></i> Reset
+  </button>
+
+  <aside class="notes">
+    Updates propagate through the subscription tree. Each node only needs to sync with its neighbors. Click to see how a single update reaches every subscriber.
+  </aside>
+</section>
+
+<script>
+(function() {
+  const container = document.getElementById('propagation-viz');
+  if (!container) return;
+
+  const COLOR_PALETTE = ["#4ECDC4", "#FF6B6B", "#45B7D1", "#96CEB4", "#9B59B6", "#E67E22", "#2ECC71", "#F1C40F"];
+  let colorIndex = 0;
+  let globalSeq = 0;
+
+  const width = 700, height = 400;
+  const svg = d3.select(container)
+    .append('svg')
+    .attr('viewBox', `0 0 ${width} ${height}`)
+    .attr('preserveAspectRatio', 'xMidYMid meet')
+    .style('width', '100%')
+    .style('height', '100%');
+
+  let nodes, links, nodeGroups;
+
+  function generateTree(numNodes) {
+    const n = [];
+    for (let i = 0; i < numNodes; i++) {
+      n.push({ id: i, colors: [{ color: COLOR_PALETTE[0], seq: 0 }] });
+    }
+    const l = [];
+    for (let i = 1; i < numNodes; i++) {
+      const possibleParents = n.slice(0, i).filter(p => l.filter(link => link.source === p.id).length < 3);
+      const parent = possibleParents[Math.floor(Math.random() * possibleParents.length)];
+      l.push({ source: parent.id, target: i });
+    }
+    return { nodes: n, links: l };
+  }
+
+  function initViz() {
+    svg.selectAll('*').remove();
+    colorIndex = 0;
+    globalSeq = 0;
+
+    const data = generateTree(20);
+    nodes = data.nodes;
+    links = data.links;
+
+    // Build hierarchy
+    const root = d3.stratify()
+      .id(d => d.id)
+      .parentId(d => {
+        const link = links.find(l => l.target === d.id);
+        return link ? link.source : null;
+      })(nodes);
+
+    const treeLayout = d3.tree().size([width - 60, height - 80]);
+    treeLayout(root);
+
+    // Draw links
+    svg.selectAll('path.link')
+      .data(root.links())
+      .enter()
+      .append('path')
+      .attr('class', 'link')
+      .attr('d', d3.linkVertical().x(d => d.x + 30).y(d => d.y + 40))
+      .attr('fill', 'none')
+      .attr('stroke', '#555')
+      .attr('stroke-width', 2);
+
+    // Draw nodes
+    nodeGroups = svg.selectAll('g.node')
+      .data(root.descendants())
+      .enter()
+      .append('g')
+      .attr('class', 'node')
+      .attr('transform', d => `translate(${d.x + 30}, ${d.y + 40})`)
+      .style('cursor', 'pointer')
+      .on('click', (event, d) => propagate(d));
+
+    // Store position on data for animation
+    root.descendants().forEach(d => {
+      nodes[d.data.id].x = d.x + 30;
+      nodes[d.data.id].y = d.y + 40;
+      nodes[d.data.id].treeNode = d;
+    });
+
+    drawAllPies();
+  }
+
+  function drawAllPies() {
+    nodeGroups.each(function(d) {
+      const g = d3.select(this);
+      g.selectAll('path').remove();
+      const colors = nodes[d.data.id].colors.slice(-4);
+      const pie = d3.pie().value(1).sort(null)(colors);
+      const arc = d3.arc().innerRadius(0).outerRadius(15);
+      pie.forEach((p, i) => {
+        g.append('path')
+          .attr('d', arc(p))
+          .attr('fill', colors[i].color)
+          .attr('stroke', '#333')
+          .attr('stroke-width', 1);
+      });
+    });
+  }
+
+  async function propagate(startNode) {
+    colorIndex = (colorIndex + 1) % COLOR_PALETTE.length;
+    globalSeq++;
+    const newColor = { color: COLOR_PALETTE[colorIndex], seq: globalSeq };
+    nodes[startNode.data.id].colors.push(newColor);
+    drawAllPies();
+
+    // BFS propagation
+    const visited = new Set([startNode.data.id]);
+    let frontier = [startNode.data.id];
+
+    while (frontier.length > 0) {
+      const promises = [];
+      const nextFrontier = [];
+
+      for (const nodeId of frontier) {
+        const neighbors = getNeighbors(nodeId);
+        for (const neighbor of neighbors) {
+          if (!visited.has(neighbor)) {
+            visited.add(neighbor);
+            nextFrontier.push(neighbor);
+            promises.push(animateAndUpdate(nodeId, neighbor, newColor));
+          }
+        }
+      }
+
+      if (promises.length > 0) {
+        await Promise.all(promises);
+      }
+      frontier = nextFrontier;
+    }
+  }
+
+  function getNeighbors(nodeId) {
+    const neighbors = [];
+    links.forEach(l => {
+      if (l.source === nodeId) neighbors.push(l.target);
+      if (l.target === nodeId) neighbors.push(l.source);
+    });
+    return neighbors;
+  }
+
+  async function animateAndUpdate(fromId, toId, colorEntry) {
+    const from = nodes[fromId];
+    const to = nodes[toId];
+
+    const msg = svg.append('circle')
+      .attr('cx', from.x)
+      .attr('cy', from.y)
+      .attr('r', 6)
+      .attr('fill', colorEntry.color)
+      .attr('stroke', '#333')
+      .attr('stroke-width', 1);
+
+    await msg.transition()
+      .duration(300)
+      .attr('cx', to.x)
+      .attr('cy', to.y)
+      .end();
+
+    msg.remove();
+    nodes[toId].colors.push(colorEntry);
+    drawAllPies();
+  }
+
+  initViz();
+
+  document.getElementById('resetPropBtn')?.addEventListener('click', initViz);
+})();
+</script>

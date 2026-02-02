@@ -1,0 +1,21 @@
+<section>
+  <h2>Small-World Network Topology</h2>
+
+  <div class="columns">
+    <div class="column">
+      <ul>
+        <li class="fragment">Each peer has a <span class="highlight">location</span> (0.0 - 1.0)</li>
+        <li class="fragment">Connect to <span class="highlight-green">nearby</span> peers + some <span class="highlight-orange">distant</span> peers</li>
+        <li class="fragment">O(log N) routing to any location</li>
+        <li class="fragment">Same topology for <span class="highlight">millions</span> of peers</li>
+      </ul>
+    </div>
+    <div class="column fragment">
+      <img src="/p2p-network-dark.svg" alt="Small-World Network" style="max-height: 400px;">
+    </div>
+  </div>
+
+  <aside class="notes">
+    The small-world topology is key to Freenet's scalability. It's the same principle behind "six degrees of separation" - any two people on Earth are connected by about 6 friend-of-friend links.
+  </aside>
+</section>

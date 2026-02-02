@@ -1,0 +1,24 @@
+<section>
+  <h2>The Problem: Synchronization</h2>
+
+  <div class="columns">
+    <div class="column">
+      <p>How do peers stay in sync without:</p>
+      <ul>
+        <li class="fragment">A central server?</li>
+        <li class="fragment">Sending entire state each time?</li>
+        <li class="fragment">Complex conflict resolution?</li>
+      </ul>
+    </div>
+    <div class="column fragment">
+      <p style="font-size: 1.5em; text-align: center; margin-top: 1em;">
+        <span class="highlight-green">Delta Synchronization</span>
+      </p>
+      <p style="text-align: center;">Only send what's changed</p>
+    </div>
+  </div>
+
+  <aside class="notes">
+    Traditional systems either require a central authority or send full state copies. Delta sync solves this elegantly.
+  </aside>
+</section>

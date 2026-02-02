@@ -1,0 +1,224 @@
+<svg viewBox="0 0 1100 820" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <style>
+    :root {
+      --network-bg: #3d3830;
+      --network-border: #5a5040;
+      --computer-bg: #303848;
+      --computer-border: #404860;
+      --contract-bg: #484440;
+      --contract-border: #605850;
+      --delegate-bg: #403848;
+      --delegate-border: #584860;
+      --browser-bg: #483838;
+      --browser-border: #604848;
+      --component-green: #3a4a3a;
+      --component-green-border: #506050;
+      --component-yellow: #4a4838;
+      --component-yellow-border: #605840;
+      --component-blue: #384050;
+      --component-blue-border: #485060;
+      --component-pink: #483840;
+      --component-pink-border: #604850;
+      --text-primary: #e8e8e8;
+      --text-secondary: #b0b0b0;
+      --text-label: #909090;
+      --line-color: rgba(255,255,255,0.7);
+      --annotation-bg: #2a2a2a;
+      --annotation-border: #404040;
+    }
+    .network-bg { fill: var(--network-bg); }
+    .computer-bg { fill: var(--computer-bg); }
+    .contract-box { fill: var(--contract-bg); stroke: var(--contract-border); }
+    .delegate-box { fill: var(--delegate-bg); stroke: var(--delegate-border); }
+    .browser-box { fill: var(--browser-bg); stroke: var(--browser-border); }
+    .component-green { fill: var(--component-green); stroke: var(--component-green-border); }
+    .component-yellow { fill: var(--component-yellow); stroke: var(--component-yellow-border); }
+    .component-blue { fill: var(--component-blue); stroke: var(--component-blue-border); }
+    .component-pink { fill: var(--component-pink); stroke: var(--component-pink-border); }
+    .text-primary { fill: var(--text-primary); }
+    .text-secondary { fill: var(--text-secondary); }
+    .text-label { fill: var(--text-label); }
+    .connection-line { stroke: var(--line-color); fill: none; stroke-width: 2; }
+    .connection-line-dashed { stroke: var(--line-color); fill: none; stroke-width: 2; stroke-dasharray: 6 4; }
+    .annotation-box { fill: var(--annotation-bg); stroke: var(--annotation-border); }
+  </style>
+
+  <!-- Background regions -->
+  <rect x="115" y="0" width="870" height="405" rx="8" class="network-bg"/>
+  <rect x="115" y="405" width="870" height="415" rx="8" class="computer-bg"/>
+
+  <!-- Region labels -->
+  <text x="140" y="390" font-size="13" font-style="italic" class="text-label">Untrusted</text>
+  <text x="140" y="425" font-size="13" font-style="italic" class="text-label">Trusted</text>
+  <text x="970" y="25" font-size="14" font-weight="500" text-anchor="end" class="text-secondary">Network</text>
+  <text x="970" y="790" font-size="14" font-weight="500" text-anchor="end" class="text-secondary">User's Computer</text>
+
+  <!-- Main Contract box (top left) -->
+  <g transform="translate(170, 30)">
+    <rect x="0" y="0" width="310" height="200" rx="16" class="contract-box" stroke-width="2"/>
+    <text x="155" y="35" font-size="20" font-weight="600" text-anchor="middle" class="text-primary">Contract</text>
+
+    <!-- Key section -->
+    <g transform="translate(20, 50)">
+      <text x="60" y="15" font-size="11" text-anchor="middle" class="text-secondary">Key</text>
+      <rect x="0" y="22" width="120" height="120" rx="6" class="component-green" stroke-width="1.5"/>
+      <rect x="10" y="42" width="100" height="40" rx="4" class="component-green" stroke-width="1"/>
+      <text x="60" y="67" font-size="11" text-anchor="middle" class="text-primary">WebAssembly</text>
+      <rect x="10" y="92" width="100" height="40" rx="4" class="component-yellow" stroke-width="1"/>
+      <text x="60" y="117" font-size="11" text-anchor="middle" class="text-primary">Parameters</text>
+    </g>
+
+    <!-- Value section -->
+    <g transform="translate(165, 50)">
+      <text x="60" y="15" font-size="11" text-anchor="middle" class="text-secondary">Value</text>
+      <rect x="0" y="22" width="120" height="120" rx="6" class="component-green" stroke-width="1.5"/>
+      <text x="60" y="85" font-size="14" text-anchor="middle" class="text-primary">State</text>
+    </g>
+  </g>
+
+  <!-- Small Contract boxes (top right) -->
+  <g transform="translate(620, 50)">
+    <rect x="0" y="0" width="140" height="85" rx="12" class="contract-box" stroke-width="2"/>
+    <text x="70" y="25" font-size="14" font-weight="500" text-anchor="middle" class="text-primary">Contract</text>
+    <g transform="translate(15, 35)">
+      <rect x="0" y="0" width="50" height="40" rx="4" class="component-green" stroke-width="1"/>
+      <rect x="60" y="0" width="50" height="40" rx="4" class="component-green" stroke-width="1"/>
+    </g>
+  </g>
+
+  <g transform="translate(620, 170)">
+    <rect x="0" y="0" width="140" height="85" rx="12" class="contract-box" stroke-width="2"/>
+    <text x="70" y="25" font-size="14" font-weight="500" text-anchor="middle" class="text-primary">Contract</text>
+    <g transform="translate(15, 35)">
+      <rect x="0" y="0" width="50" height="40" rx="4" class="component-green" stroke-width="1"/>
+      <rect x="60" y="0" width="50" height="40" rx="4" class="component-green" stroke-width="1"/>
+    </g>
+  </g>
+
+  <!-- Annotation: Contracts can read state -->
+  <g transform="translate(780, 110)">
+    <rect x="0" y="0" width="170" height="80" rx="6" class="annotation-box" stroke-width="1"/>
+    <text x="85" y="25" font-size="11" text-anchor="middle" class="text-secondary">Contracts can read the</text>
+    <text x="85" y="40" font-size="11" text-anchor="middle" class="text-secondary">state of other contracts</text>
+    <text x="85" y="55" font-size="11" text-anchor="middle" class="text-secondary">and subscribe to state</text>
+    <text x="85" y="70" font-size="11" text-anchor="middle" class="text-secondary">changes</text>
+  </g>
+
+  <!-- Small Delegate boxes (bottom left) -->
+  <g transform="translate(140, 490)">
+    <rect x="0" y="0" width="95" height="75" rx="10" class="delegate-box" stroke-width="2"/>
+    <text x="47" y="22" font-size="12" font-weight="500" text-anchor="middle" class="text-primary">Delegate</text>
+    <g transform="translate(12, 32)">
+      <rect x="0" y="0" width="32" height="32" rx="3" class="component-green" stroke-width="1"/>
+      <rect x="40" y="0" width="32" height="32" rx="3" class="component-yellow" stroke-width="1"/>
+    </g>
+  </g>
+
+  <g transform="translate(140, 600)">
+    <rect x="0" y="0" width="95" height="75" rx="10" class="delegate-box" stroke-width="2"/>
+    <text x="47" y="22" font-size="12" font-weight="500" text-anchor="middle" class="text-primary">Delegate</text>
+    <g transform="translate(12, 32)">
+      <rect x="0" y="0" width="32" height="32" rx="3" class="component-green" stroke-width="1"/>
+      <rect x="40" y="0" width="32" height="32" rx="3" class="component-yellow" stroke-width="1"/>
+    </g>
+  </g>
+
+  <!-- Main Delegate box (center bottom) -->
+  <g transform="translate(330, 510)">
+    <rect x="0" y="0" width="220" height="150" rx="14" class="delegate-box" stroke-width="2"/>
+    <text x="110" y="30" font-size="18" font-weight="600" text-anchor="middle" class="text-primary">Delegate</text>
+    <g transform="translate(20, 50)">
+      <rect x="0" y="0" width="90" height="80" rx="6" class="component-green" stroke-width="1.5"/>
+      <text x="45" y="45" font-size="11" text-anchor="middle" class="text-primary">WebAssembly</text>
+    </g>
+    <g transform="translate(120, 50)">
+      <rect x="0" y="0" width="80" height="80" rx="6" class="component-blue" stroke-width="1.5"/>
+      <text x="40" y="40" font-size="11" text-anchor="middle" class="text-primary">Secret</text>
+      <text x="40" y="55" font-size="11" text-anchor="middle" class="text-primary">Data</text>
+    </g>
+  </g>
+
+  <!-- Browser box -->
+  <g transform="translate(680, 480)">
+    <rect x="0" y="0" width="200" height="150" rx="14" class="browser-box" stroke-width="2"/>
+    <text x="100" y="30" font-size="18" font-weight="600" text-anchor="middle" class="text-primary">Browser</text>
+    <g transform="translate(35, 50)">
+      <rect x="0" y="0" width="130" height="80" rx="8" class="component-pink" stroke-width="1.5"/>
+      <text x="65" y="45" font-size="13" text-anchor="middle" class="text-primary">UI component</text>
+    </g>
+  </g>
+
+  <!-- User icon (smiley) -->
+  <g transform="translate(780, 670)">
+    <circle cx="40" cy="40" r="35" fill="none" stroke="var(--text-secondary)" stroke-width="2"/>
+    <circle cx="25" cy="35" r="4" fill="var(--text-secondary)"/>
+    <circle cx="55" cy="35" r="4" fill="var(--text-secondary)"/>
+    <path d="M 22 52 Q 40 68 58 52" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Annotation: Delegates can create/modify contracts -->
+  <g transform="translate(250, 335)">
+    <rect x="0" y="0" width="180" height="90" rx="6" class="annotation-box" stroke-width="1"/>
+    <text x="90" y="18" font-size="10" text-anchor="middle" class="text-secondary">Delegates can create,</text>
+    <text x="90" y="32" font-size="10" text-anchor="middle" class="text-secondary">read, modify, and</text>
+    <text x="90" y="46" font-size="10" text-anchor="middle" class="text-secondary">subscribe to contracts</text>
+    <text x="90" y="60" font-size="10" text-anchor="middle" class="text-secondary">and respond to contract</text>
+    <text x="90" y="74" font-size="10" text-anchor="middle" class="text-secondary">updates</text>
+  </g>
+
+  <!-- Annotation: UI interacts with contracts -->
+  <g transform="translate(530, 320)">
+    <rect x="0" y="0" width="190" height="75" rx="6" class="annotation-box" stroke-width="1"/>
+    <text x="95" y="18" font-size="10" text-anchor="middle" class="text-secondary">The UI in the browser</text>
+    <text x="95" y="32" font-size="10" text-anchor="middle" class="text-secondary">interacts with contracts via</text>
+    <text x="95" y="46" font-size="10" text-anchor="middle" class="text-secondary">a websocket connection to</text>
+    <text x="95" y="60" font-size="10" text-anchor="middle" class="text-secondary">the Freenet core</text>
+  </g>
+
+  <!-- Annotation: Delegates can send messages -->
+  <g transform="translate(310, 685)">
+    <rect x="0" y="0" width="175" height="65" rx="6" class="annotation-box" stroke-width="1"/>
+    <text x="87" y="16" font-size="10" text-anchor="middle" class="text-secondary">Delegates can send and</text>
+    <text x="87" y="30" font-size="10" text-anchor="middle" class="text-secondary">receive messages from</text>
+    <text x="87" y="44" font-size="10" text-anchor="middle" class="text-secondary">other delegates and UI</text>
+    <text x="87" y="58" font-size="10" text-anchor="middle" class="text-secondary">components</text>
+  </g>
+
+  <!-- Connection lines -->
+  <!-- Main Contract to small contracts -->
+  <path d="M 480 130 Q 540 90 620 90" class="connection-line"/>
+  <path d="M 480 180 Q 540 210 620 210" class="connection-line"/>
+
+  <!-- Small contracts to annotation -->
+  <path d="M 760 150 L 780 150" class="connection-line"/>
+
+  <!-- "Delegates can create" annotation to Main Contract (up) -->
+  <path d="M 340 335 Q 340 280 325 230" class="connection-line"/>
+
+  <!-- "Delegates can create" annotation to Main Delegate (down) -->
+  <path d="M 340 425 Q 340 470 440 510" class="connection-line"/>
+
+  <!-- "The UI in browser" annotation to Main Contract (up, to center-bottom) -->
+  <path d="M 530 340 Q 430 300 325 230" class="connection-line"/>
+
+  <!-- "The UI in browser" annotation to Browser (down-right) -->
+  <path d="M 700 395 Q 740 430 780 480" class="connection-line"/>
+
+  <!-- Main Delegate to small delegates -->
+  <path d="M 330 560 Q 280 540 235 540" class="connection-line"/>
+  <path d="M 330 610 Q 280 630 235 630" class="connection-line"/>
+
+  <!-- Browser to Main Delegate -->
+  <path d="M 680 555 L 550 555" class="connection-line"/>
+
+  <!-- "Delegates can send" annotation to Main Delegate -->
+  <path d="M 400 685 L 440 660" class="connection-line"/>
+
+  <!-- Browser to user -->
+  <path d="M 820 630 L 820 670" class="connection-line"/>
+
+  <!-- UI downloaded from contract (dashed line from lower Contract to UI component) -->
+  <path d="M 760 250 Q 820 350 800 480" class="connection-line-dashed"/>
+  <text x="840" y="360" font-size="9" class="text-label">UI from</text>
+  <text x="840" y="372" font-size="9" class="text-label">contract</text>
+</svg>

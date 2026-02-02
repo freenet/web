@@ -1,0 +1,29 @@
+<section>
+  <h2>Contracts: User-Defined Logic</h2>
+
+  <div class="columns">
+    <div class="column">
+      <p>Contracts are <span class="highlight">WebAssembly modules</span> that define:</p>
+      <ul>
+        <li class="fragment"><strong>State validation</strong> - What's allowed?</li>
+        <li class="fragment"><strong>State merging</strong> - How to combine updates?</li>
+        <li class="fragment"><strong>Summarization</strong> - Efficient sync</li>
+      </ul>
+    </div>
+    <div class="column fragment">
+      <pre><code class="language-rust">impl ContractInterface for ChatRoom {
+    fn validate_state(state: &State) -> bool {
+        // Check signatures, format, etc.
+    }
+
+    fn merge(a: State, b: State) -> State {
+        // Combine states (CRDT-style)
+    }
+}</code></pre>
+    </div>
+  </div>
+
+  <aside class="notes">
+    Contracts run in WebAssembly for safety and portability. They define how data can be modified and how updates from different sources get merged.
+  </aside>
+</section>

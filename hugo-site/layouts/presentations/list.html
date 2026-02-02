@@ -1,0 +1,26 @@
+{{ define "main" }}
+<section class="section">
+  <div class="container">
+    <h1 class="title">{{ .Title }}</h1>
+
+    {{ .Content }}
+
+    <div class="presentations-list" style="margin-top: 2rem;">
+      {{ range .Pages }}
+      <div class="box" style="margin-bottom: 1rem;">
+        <h2 class="title is-4">
+          <a href="{{ .Permalink }}">{{ .Title }}</a>
+        </h2>
+        <p class="subtitle is-6">
+          {{ if .Params.author }}By {{ .Params.author }} &middot; {{ end }}
+          {{ .Date.Format "January 2, 2006" }}
+        </p>
+        {{ if .Params.description }}
+        <p>{{ .Params.description }}</p>
+        {{ end }}
+      </div>
+      {{ end }}
+    </div>
+  </div>
+</section>
+{{ end }}

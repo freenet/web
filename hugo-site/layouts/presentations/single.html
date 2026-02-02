@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ .Title }} | Freenet</title>
+
+  <!-- Reveal.js CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css" id="theme">
+
+  <!-- Syntax highlighting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <!-- Google Fonts - Inter for modern typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- D3.js for visualizations -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    :root {
+      /* Modern color palette */
+      --freenet-blue: #4facfe;
+      --freenet-blue-dark: #00f2fe;
+      --freenet-green: #43e97b;
+      --freenet-green-dark: #38f9d7;
+      --freenet-orange: #fa709a;
+      --freenet-orange-dark: #fee140;
+      --freenet-purple: #a855f7;
+      --freenet-cyan: #22d3ee;
+
+      /* Background colors */
+      --bg-dark: #0a0a0f;
+      --bg-mid: #12121a;
+      --bg-light: #1a1a2e;
+
+      /* Glow effects */
+      --glow-blue: rgba(79, 172, 254, 0.4);
+      --glow-green: rgba(67, 233, 123, 0.4);
+      --glow-purple: rgba(168, 85, 247, 0.4);
+
+      /* SVG theme variables - matching presentation theme */
+      /* p2p-network.svg variables */
+      --bg-primary: transparent;
+      --bg-secondary: #1a1a2e;
+      --ring-stroke: rgba(255,255,255,0.3);
+      --peer-fill: rgba(46, 204, 113, 0.3);
+      --peer-stroke: #2ecc71;
+      --peer-highlight-fill: rgba(52, 152, 219, 0.3);
+      --peer-highlight-stroke: #3498db;
+      --connection-near: #2ecc71;
+      --connection-far: #3498db;
+      --text-primary: #ffffff;
+      --text-secondary: #cccccc;
+      --text-label: #999999;
+      --annotation-bg: rgba(26, 26, 46, 0.9);
+      --annotation-border: rgba(255,255,255,0.2);
+      --location-text: #888888;
+
+      /* components.svg variables */
+      --network-bg: transparent;
+      --network-border: rgba(255,255,255,0.2);
+      --computer-bg: rgba(52, 152, 219, 0.15);
+      --computer-border: rgba(52, 152, 219, 0.4);
+      --contract-bg: rgba(46, 204, 113, 0.15);
+      --contract-border: rgba(46, 204, 113, 0.4);
+      --delegate-bg: rgba(155, 89, 182, 0.15);
+      --delegate-border: rgba(155, 89, 182, 0.4);
+      --browser-bg: rgba(230, 126, 34, 0.15);
+      --browser-border: rgba(230, 126, 34, 0.4);
+      --component-green: rgba(46, 204, 113, 0.2);
+      --component-green-border: #2ecc71;
+      --component-yellow: rgba(241, 196, 15, 0.2);
+      --component-yellow-border: #f1c40f;
+      --component-blue: rgba(52, 152, 219, 0.2);
+      --component-blue-border: #3498db;
+      --component-pink: rgba(155, 89, 182, 0.2);
+      --component-pink-border: #9b59b6;
+      --line-color: rgba(255,255,255,0.5);
+    }
+
+    /* Base typography */
+    .reveal {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
+
+    .reveal h1, .reveal h2, .reveal h3 {
+      text-transform: none;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .reveal h1 {
+      font-size: 2.8em;
+      font-weight: 700;
+    }
+
+    .reveal h2 {
+      font-size: 2em;
+      background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      padding-bottom: 0.2em;
+    }
+
+    .reveal h2 {
+      display: inline-block;
+      border-bottom: 3px solid;
+      border-image: linear-gradient(90deg, var(--freenet-blue), var(--freenet-cyan)) 1;
+      padding-bottom: 0.1em;
+      margin-bottom: 0.8em;
+    }
+
+    .reveal h2::after {
+      display: none;
+    }
+
+    /* Gradient background */
+    .reveal .slide-background {
+      background: radial-gradient(ellipse at top, var(--bg-light) 0%, var(--bg-mid) 50%, var(--bg-dark) 100%);
+    }
+
+    .reveal section {
+      text-align: left;
+    }
+
+    .reveal section.center {
+      text-align: center;
+    }
+
+    .reveal section.center h2::after {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Title slide styling */
+    .reveal .title-slide {
+      text-align: center;
+    }
+
+    .reveal .title-slide h1 {
+      font-size: 2.6em;
+      margin-bottom: 0.3em;
+      background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+    }
+
+    .reveal .title-slide .subtitle {
+      font-size: 1.3em;
+      font-weight: 500;
+      background: linear-gradient(90deg, var(--freenet-blue), var(--freenet-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5em;
+    }
+
+    .reveal .title-slide .author {
+      font-size: 1.1em;
+      font-weight: 400;
+      color: rgba(255,255,255,0.8);
+      letter-spacing: 0.05em;
+    }
+
+    .reveal .title-slide .date {
+      font-size: 0.9em;
+      font-weight: 300;
+      color: rgba(255,255,255,0.5);
+      margin-top: 0.5em;
+    }
+
+    .reveal ul {
+      margin-left: 0.5em;
+      list-style: none;
+    }
+
+    .reveal li {
+      margin-bottom: 0.7em;
+      padding-left: 1.5em;
+      position: relative;
+      font-size: 0.95em;
+      line-height: 1.5;
+    }
+
+    .reveal li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.6em;
+      width: 6px;
+      height: 6px;
+      background: linear-gradient(135deg, var(--freenet-blue), var(--freenet-cyan));
+      border-radius: 50%;
+    }
+
+    .reveal code {
+      background: rgba(79, 172, 254, 0.15);
+      padding: 0.2em 0.5em;
+      border-radius: 6px;
+      font-size: 0.85em;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      border: 1px solid rgba(79, 172, 254, 0.2);
+    }
+
+    .reveal pre code {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 1.2em;
+      max-height: 500px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Gradient text highlights */
+    .reveal .highlight {
+      background: linear-gradient(90deg, var(--freenet-blue), var(--freenet-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 600;
+    }
+
+    .reveal .highlight-green {
+      background: linear-gradient(90deg, var(--freenet-green), var(--freenet-green-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 600;
+    }
+
+    .reveal .highlight-orange {
+      background: linear-gradient(90deg, var(--freenet-orange), var(--freenet-orange-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 600;
+    }
+
+    .reveal .highlight-purple {
+      background: linear-gradient(90deg, var(--freenet-purple), #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 600;
+    }
+
+    /* Visualization containers */
+    .reveal .viz-container {
+      width: 100%;
+      height: 400px;
+      margin: 1em 0;
+    }
+
+    .reveal .viz-container svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Two-column layout */
+    .reveal .columns {
+      display: flex;
+      gap: 2em;
+    }
+
+    .reveal .column {
+      flex: 1;
+    }
+
+    /* Fragment animations */
+    .reveal .fragment.fade-up {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+
+    .reveal .fragment.fade-up.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Speaker notes styling */
+    .reveal .speaker-notes {
+      font-size: 1em;
+      line-height: 1.4;
+    }
+
+    /* Progress bar */
+    .reveal .progress {
+      color: var(--freenet-blue);
+    }
+
+    /* Slide number */
+    .reveal .slide-number {
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* Image styling */
+    .reveal img {
+      max-width: 100%;
+      max-height: 500px;
+    }
+
+    .reveal .image-credit {
+      font-size: 0.5em;
+      color: #666;
+      text-align: right;
+    }
+
+    /* Quote styling */
+    .reveal blockquote {
+      background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.05) 100%);
+      border-left: 4px solid;
+      border-image: linear-gradient(180deg, var(--freenet-blue), var(--freenet-cyan)) 1;
+      padding: 1.2em 1.5em;
+      font-style: italic;
+      font-weight: 300;
+      width: 90%;
+      border-radius: 0 12px 12px 0;
+      position: relative;
+    }
+
+    .reveal blockquote::before {
+      content: '"';
+      position: absolute;
+      top: -10px;
+      left: 15px;
+      font-size: 4em;
+      color: rgba(79, 172, 254, 0.3);
+      font-family: Georgia, serif;
+      line-height: 1;
+    }
+
+    /* Progress bar */
+    .reveal .progress {
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .reveal .progress span {
+      background: linear-gradient(90deg, var(--freenet-blue), var(--freenet-cyan));
+    }
+
+    /* Slide number */
+    .reveal .slide-number {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.4);
+      background: transparent;
+    }
+
+    /* Logo in corner - outside reveal.js animation context */
+    .presentation-logo {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 50px;
+      opacity: 0.5;
+      z-index: 100;
+      pointer-events: none;
+      filter: drop-shadow(0 0 8px rgba(79, 172, 254, 0.3));
+      transition: opacity 0.3s ease;
+    }
+
+    .presentation-logo:hover {
+      opacity: 0.8;
+    }
+
+    /* Title slide logo glow + heartbeat animation */
+    .reveal .title-slide img {
+      filter: drop-shadow(0 0 30px rgba(79, 172, 254, 0.5));
+      animation: heartbeat 1.5s ease-in-out infinite;
+    }
+
+    @keyframes heartbeat {
+      0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 30px rgba(79, 172, 254, 0.5));
+      }
+      14% {
+        transform: scale(1.08);
+        filter: drop-shadow(0 0 40px rgba(79, 172, 254, 0.7));
+      }
+      28% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 30px rgba(79, 172, 254, 0.5));
+      }
+      42% {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 35px rgba(79, 172, 254, 0.6));
+      }
+      56% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 30px rgba(79, 172, 254, 0.5));
+      }
+      100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 30px rgba(79, 172, 254, 0.5));
+      }
+    }
+
+    /* Button styling */
+    .reveal button {
+      background: linear-gradient(135deg, var(--freenet-blue), var(--freenet-cyan));
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    }
+
+    .reveal button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+    }
+
+    /* Smooth fragment transitions */
+    .reveal .fragment {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .reveal .fragment.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal .fragment:not(.visible) {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    /* Navigation arrows styling */
+    .reveal .controls {
+      color: var(--freenet-blue);
+    }
+
+    .reveal .controls button {
+      background: transparent;
+      box-shadow: none;
+    }
+  </style>
+
+  {{ with .Params.customCss }}
+  <style>{{ . | safeCSS }}</style>
+  {{ end }}
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      {{ $slideDir := "static/slides/" }}
+      {{ range .Params.slides }}
+        {{ $slidePath := printf "%s%s.html" $slideDir . }}
+        {{ $slideContent := os.ReadFile $slidePath }}
+        {{ if $slideContent }}
+          {{ $slideContent | safeHTML }}
+        {{ else }}
+          <section>
+            <h2>Slide not found</h2>
+            <p>{{ . }}</p>
+          </section>
+        {{ end }}
+      {{ end }}
+    </div>
+
+  </div>
+
+  <!-- Logo outside reveal.js to avoid transition effects -->
+  <img src="/freenet_logo.svg" class="presentation-logo" alt="Freenet">
+
+  <!-- Reveal.js -->
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/zoom/zoom.js"></script>
+
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: 'c/t',
+      showSlideNumber: 'all',
+      transition: 'slide',
+      transitionSpeed: 'default',
+      backgroundTransition: 'fade',
+      center: false,
+      width: 1280,
+      height: 720,
+      margin: 0.1,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom ],
+
+      // Keyboard shortcuts
+      keyboard: {
+        // Custom bindings if needed
+      }
+    });
+
+    // Pause animations when leaving slide, resume when entering
+    Reveal.on('slidechanged', event => {
+      // Dispatch custom event for animations to respond to
+      const prevSlide = event.previousSlide;
+      const currentSlide = event.currentSlide;
+
+      if (prevSlide) {
+        prevSlide.dispatchEvent(new CustomEvent('slide-hidden'));
+      }
+      if (currentSlide) {
+        currentSlide.dispatchEvent(new CustomEvent('slide-visible'));
+      }
+    });
+  </script>
+
+  {{ with .Params.customJs }}
+  <script>{{ . | safeJS }}</script>
+  {{ end }}
+</body>
+</html>
