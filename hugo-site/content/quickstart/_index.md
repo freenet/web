@@ -36,16 +36,6 @@ cargo install freenet
 
 Then start Freenet with `freenet network`.
 
-### Docker
-
-Freenet provides official Docker images. Pull and run with:
-
-```bash
-docker run -p 50509:50509 -p 56208:56208/udp freenetorg/freenet:latest
-```
-
-**Windows (WSL2) users:** Docker Desktop on Windows requires additional configuration for UDP networking. See the [Windows WSL2 Setup](#windows-wsl2-docker-setup) section in Troubleshooting below.
-
 ## Step 2: Join Freenet Official
 
 Get an invite to our community chat. You can request up to 5 invites per day.
@@ -59,39 +49,6 @@ Clicking the link will open River in your browser and automatically join you to 
 If you run into problems, join our [Matrix chat](https://matrix.to/#/#freenet-locutus:matrix.org) for help.
 
 **Network requirements:** Freenet uses UDP hole punching for peer-to-peer connections. Most home routers support this without configuration. Strict corporate firewalls may block connections.
-
-### Windows WSL2 Docker Setup
-
-Docker Desktop on Windows uses WSL2, which has networking layers that can block Freenet's UDP peer-to-peer connections. If River won't load or gets stuck at "Subscribing to room", follow these steps:
-
-**1. Configure WSL2 networking**
-
-Create or edit `%USERPROFILE%\.wslconfig` with:
-
-```ini
-[wsl2]
-networkingMode=Mirrored
-firewall=false
-
-[experimental]
-hostAddressLoopback=true
-```
-
-**2. Allow UDP through the Hyper-V firewall**
-
-Open PowerShell as Administrator and run:
-
-```powershell
-Set-NetFirewallHyperVVMSetting -Name '{40E0AC32-46A5-438A-A0B2-2B479E8F2E90}' -DefaultInboundAction Allow
-```
-
-**3. Restart WSL**
-
-```powershell
-wsl --shutdown
-```
-
-Then restart Docker Desktop.
 
 ## What's Next?
 
