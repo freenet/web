@@ -1,0 +1,111 @@
+<svg viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#43e97b"/>
+      <stop offset="100%" style="stop-color:#38f9d7"/>
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe"/>
+      <stop offset="100%" style="stop-color:#00f2fe"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Location ring -->
+  <ellipse cx="450" cy="260" rx="220" ry="180" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="3" stroke-dasharray="8 4"/>
+
+  <!-- Location labels -->
+  <text x="450" y="55" font-size="11" fill="rgba(255,255,255,0.4)" text-anchor="middle">0.0 / 1.0</text>
+  <text x="695" y="265" font-size="11" fill="rgba(255,255,255,0.4)" text-anchor="start">0.25</text>
+  <text x="450" y="465" font-size="11" fill="rgba(255,255,255,0.4)" text-anchor="middle">0.5</text>
+  <text x="205" y="265" font-size="11" fill="rgba(255,255,255,0.4)" text-anchor="end">0.75</text>
+
+  <!-- Long-range connections (dashed, blue) -->
+  <path d="M 450 95 Q 450 250 450 425" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="6 3" fill="none" opacity="0.7"/>
+  <path d="M 438 92 Q 300 200 255 345" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="6 3" fill="none" opacity="0.7"/>
+  <path d="M 462 92 Q 580 220 630 320" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="6 3" fill="none" opacity="0.7"/>
+
+  <!-- Near connections (solid, green) -->
+  <path d="M 465 85 Q 495 82 515 90" stroke="#43e97b" stroke-width="2" fill="none" opacity="0.8"/>
+  <path d="M 435 85 Q 405 82 385 90" stroke="#43e97b" stroke-width="2" fill="none" opacity="0.8"/>
+  <path d="M 468 88 Q 530 105 575 140" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M 615 215 Q 630 265 635 320" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M 330 400 Q 285 375 265 350" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M 560 400 Q 590 365 630 335" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M 295 135 Q 275 170 255 215" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
+
+  <!-- Peers -->
+  <g filter="url(#glow)">
+    <!-- Highlighted peer at top -->
+    <circle cx="450" cy="80" r="18" fill="rgba(79,172,254,0.3)" stroke="#4facfe" stroke-width="2.5"/>
+    <text x="450" y="85" font-size="11" fill="#fff" text-anchor="middle">P</text>
+  </g>
+
+  <!-- Regular peers around the ring -->
+  <g>
+    <circle cx="520" cy="93" r="14" fill="rgba(67,233,123,0.25)" stroke="#43e97b" stroke-width="2"/>
+    <text x="520" y="98" font-size="10" fill="#fff" text-anchor="middle">P</text>
+  </g>
+  <g>
+    <circle cx="590" cy="145" r="14" fill="rgba(67,233,123,0.25)" stroke="#43e97b" stroke-width="2"/>
+    <text x="590" y="150" font-size="10" fill="#fff" text-anchor="middle">P</text>
+  </g>
+  <g>
+    <circle cx="640" cy="215" r="14" fill="rgba(67,233,123,0.25)" stroke="#43e97b" stroke-width="2"/>
+    <text x="640" y="220" font-size="10" fill="#fff" text-anchor="middle">P</text>
+  </g>
+  <g>
+    <circle cx="650" cy="330" r="14" fill="rgba(67,233,123,0.25)" stroke="#43e97b" stroke-width="2"/>
+    <text x="650" y="335" font-size="10" fill="#fff" text-anchor="middle">P</text>
+  </g>
+  <g>
+    <circle cx="570" cy="410" r="14" fill="rgba(67,233,123,0.25)" stroke="#43e97b" stroke-width="2"/>
+    <text x="570" y="415" font-size="10" fill="#fff" text-anchor="middle">P</text>
+  </g>
+  <g>
+    <circle cx="450" cy="440" r="14" fill="rgba(67,233,123,0.25)" stroke="#43e97b" stroke-width="2"/>
+    <text x="450" y="445" font-size="10" fill="#fff" text-anchor="middle">P</text>
+  </g>
+  <g>
+    <circle cx="330" cy="410" r="14" fill="rgba(67,233,123,0.25)" stroke="#43e97b" stroke-width="2"/>
+    <text x="330" y="415" font-size="10" fill="#fff" text-anchor="middle">P</text>
+  </g>
+  <g>
+    <circle cx="255" cy="340" r="14" fill="rgba(67,233,123,0.25)" stroke="#43e97b" stroke-width="2"/>
+    <text x="255" y="345" font-size="10" fill="#fff" text-anchor="middle">P</text>
+  </g>
+  <g>
+    <circle cx="250" cy="220" r="14" fill="rgba(67,233,123,0.25)" stroke="#43e97b" stroke-width="2"/>
+    <text x="250" y="225" font-size="10" fill="#fff" text-anchor="middle">P</text>
+  </g>
+  <g>
+    <circle cx="300" cy="130" r="14" fill="rgba(67,233,123,0.25)" stroke="#43e97b" stroke-width="2"/>
+    <text x="300" y="135" font-size="10" fill="#fff" text-anchor="middle">P</text>
+  </g>
+  <g>
+    <circle cx="380" cy="93" r="14" fill="rgba(67,233,123,0.25)" stroke="#43e97b" stroke-width="2"/>
+    <text x="380" y="98" font-size="10" fill="#fff" text-anchor="middle">P</text>
+  </g>
+
+  <!-- Legend boxes -->
+  <g transform="translate(700, 80)">
+    <rect x="0" y="0" width="170" height="55" rx="6" fill="rgba(67,233,123,0.1)" stroke="rgba(67,233,123,0.4)" stroke-width="1"/>
+    <line x1="15" y1="20" x2="45" y2="20" stroke="#43e97b" stroke-width="2"/>
+    <text x="55" y="24" font-size="11" fill="#43e97b">Near neighbors</text>
+    <text x="15" y="42" font-size="9" fill="rgba(255,255,255,0.5)">Similar locations</text>
+  </g>
+
+  <g transform="translate(700, 150)">
+    <rect x="0" y="0" width="170" height="55" rx="6" fill="rgba(79,172,254,0.1)" stroke="rgba(79,172,254,0.4)" stroke-width="1"/>
+    <line x1="15" y1="20" x2="45" y2="20" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="6 3"/>
+    <text x="55" y="24" font-size="11" fill="#4facfe">Long-range shortcuts</text>
+    <text x="15" y="42" font-size="9" fill="rgba(255,255,255,0.5)">O(log n) hops to anywhere</text>
+  </g>
+
+</svg>

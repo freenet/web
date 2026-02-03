@@ -1,0 +1,87 @@
+<svg viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#43e97b"/>
+      <stop offset="100%" style="stop-color:#38f9d7"/>
+    </linearGradient>
+    <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fa709a"/>
+      <stop offset="100%" style="stop-color:#fee140"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Headers -->
+  <text x="225" y="35" font-size="18" font-weight="600" fill="#fa709a" text-anchor="middle">Traditional Web</text>
+  <text x="675" y="35" font-size="18" font-weight="600" fill="#43e97b" text-anchor="middle">Freenet</text>
+
+  <!-- Divider -->
+  <line x1="450" y1="50" x2="450" y2="400" stroke="rgba(255,255,255,0.1)" stroke-width="2" stroke-dasharray="8,8"/>
+
+  <!-- Traditional Web - Things you need -->
+  <g transform="translate(50, 60)">
+    <!-- AWS/Cloud -->
+    <rect x="0" y="0" width="350" height="50" rx="6" fill="rgba(250,112,154,0.15)" stroke="rgba(250,112,154,0.5)" stroke-width="1.5"/>
+    <text x="30" y="30" font-size="20" fill="#fa709a">☁️</text>
+    <text x="60" y="32" font-size="14" fill="#fff">Cloud Infrastructure (AWS, GCP, Azure)</text>
+
+    <!-- DNS -->
+    <rect x="0" y="60" width="350" height="50" rx="6" fill="rgba(250,112,154,0.15)" stroke="rgba(250,112,154,0.5)" stroke-width="1.5"/>
+    <text x="30" y="90" font-size="20" fill="#fa709a">🌐</text>
+    <text x="60" y="92" font-size="14" fill="#fff">Domain Names + DNS Configuration</text>
+
+    <!-- SSL -->
+    <rect x="0" y="120" width="350" height="50" rx="6" fill="rgba(250,112,154,0.15)" stroke="rgba(250,112,154,0.5)" stroke-width="1.5"/>
+    <text x="30" y="150" font-size="20" fill="#fa709a">🔐</text>
+    <text x="60" y="152" font-size="14" fill="#fff">SSL Certificates + Renewal</text>
+
+    <!-- Database -->
+    <rect x="0" y="180" width="350" height="50" rx="6" fill="rgba(250,112,154,0.15)" stroke="rgba(250,112,154,0.5)" stroke-width="1.5"/>
+    <text x="30" y="210" font-size="20" fill="#fa709a">🗄️</text>
+    <text x="60" y="212" font-size="14" fill="#fff">Database Setup + Management</text>
+
+    <!-- API Keys -->
+    <rect x="0" y="240" width="350" height="50" rx="6" fill="rgba(250,112,154,0.15)" stroke="rgba(250,112,154,0.5)" stroke-width="1.5"/>
+    <text x="30" y="270" font-size="20" fill="#fa709a">🔑</text>
+    <text x="60" y="272" font-size="14" fill="#fff">API Keys + Authentication</text>
+
+    <!-- Monthly bill -->
+    <rect x="0" y="300" width="350" height="50" rx="6" fill="rgba(250,112,154,0.15)" stroke="rgba(250,112,154,0.5)" stroke-width="1.5"/>
+    <text x="30" y="330" font-size="20" fill="#fa709a">💸</text>
+    <text x="60" y="332" font-size="14" fill="#fff">Monthly Bills + Scaling Costs</text>
+  </g>
+
+  <!-- Freenet - What you need -->
+  <g transform="translate(500, 60)">
+    <!-- Just deploy contract -->
+    <rect x="0" y="0" width="350" height="80" rx="8" fill="rgba(67,233,123,0.2)" stroke="url(#greenGrad)" stroke-width="2"/>
+    <text x="175" y="35" font-size="15" font-weight="500" fill="#43e97b" text-anchor="middle">Deploy a Contract</text>
+    <text x="175" y="58" font-size="12" fill="rgba(255,255,255,0.7)" text-anchor="middle">Hash of code = Address</text>
+
+    <!-- Arrow -->
+    <text x="175" y="110" font-size="24" fill="#43e97b" text-anchor="middle">↓</text>
+
+    <!-- That's it -->
+    <rect x="0" y="130" width="350" height="80" rx="8" fill="rgba(67,233,123,0.2)" stroke="url(#greenGrad)" stroke-width="2"/>
+    <text x="175" y="165" font-size="15" font-weight="500" fill="#43e97b" text-anchor="middle">That's It</text>
+    <text x="175" y="188" font-size="12" fill="rgba(255,255,255,0.7)" text-anchor="middle">Network handles the rest</text>
+
+    <!-- Benefits list -->
+    <g transform="translate(20, 240)">
+      <text x="0" y="0" font-size="13" fill="#43e97b">✓</text>
+      <text x="25" y="0" font-size="13" fill="rgba(255,255,255,0.8)">No servers to provision</text>
+
+      <text x="0" y="30" font-size="13" fill="#43e97b">✓</text>
+      <text x="25" y="30" font-size="13" fill="rgba(255,255,255,0.8)">No DNS to configure</text>
+
+      <text x="0" y="60" font-size="13" fill="#43e97b">✓</text>
+      <text x="25" y="60" font-size="13" fill="rgba(255,255,255,0.8)">No certificates to manage</text>
+
+      <text x="0" y="90" font-size="13" fill="#43e97b">✓</text>
+      <text x="25" y="90" font-size="13" fill="rgba(255,255,255,0.8)">No monthly bills</text>
+
+      <text x="0" y="120" font-size="13" fill="#43e97b">✓</text>
+      <text x="25" y="120" font-size="13" fill="rgba(255,255,255,0.8)">Auto-scales with network</text>
+    </g>
+  </g>
+
+</svg>

@@ -1,0 +1,26 @@
+<section style="display: flex; flex-direction: column; height: 100vh;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Small-World Routing</h2>
+
+  <div style="flex: 1; display: flex; align-items: center; min-height: 0;">
+    <div style="flex: 1; display: flex; justify-content: center;">
+      <img src="/slides/hard-problems/small-world.svg" alt="Small-World Network" style="max-height: calc(100vh - 120px); max-width: 65%; object-fit: contain;">
+    </div>
+    <div style="width: 30%; padding-right: 1em;">
+      <ul style="font-size: 0.85em;">
+        <li><strong>Problem:</strong> Find data without central servers</li>
+        <li><strong>Solution:</strong> Each peer has a "location" (0.0-1.0)</li>
+        <li>Connect to <span style="color: #43e97b;">near neighbors</span> + <span style="color: #4facfe;">random shortcuts</span></li>
+        <li><strong>Result:</strong> O(log n) hops to any data</li>
+        <li>Scales to millions of peers</li>
+      </ul>
+    </div>
+  </div>
+
+  <aside class="notes">
+    How do you find data without a central index? Every peer gets a location between 0 and 1.
+    Data also gets a location based on its key hash.
+    Peers connect to nearby neighbors AND random long-range shortcuts.
+    This creates a "small world" - you can reach anyone in logarithmic hops.
+    Same principle that makes "six degrees of separation" work in social networks.
+  </aside>
+</section>

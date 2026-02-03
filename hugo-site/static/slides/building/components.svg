@@ -1,0 +1,78 @@
+<svg viewBox="0 0 900 450" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#43e97b"/>
+      <stop offset="100%" style="stop-color:#38f9d7"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a855f7"/>
+      <stop offset="100%" style="stop-color:#c084fc"/>
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe"/>
+      <stop offset="100%" style="stop-color:#00f2fe"/>
+    </linearGradient>
+    <marker id="arrowWhite" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="rgba(255,255,255,0.6)"/>
+    </marker>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background zones -->
+  <rect x="50" y="30" width="380" height="180" rx="12" fill="rgba(67,233,123,0.08)" stroke="rgba(67,233,123,0.3)" stroke-width="1" stroke-dasharray="6 3"/>
+  <text x="70" y="55" font-size="11" fill="rgba(67,233,123,0.7)">P2P Network (Untrusted)</text>
+
+  <rect x="50" y="230" width="380" height="190" rx="12" fill="rgba(168,85,247,0.08)" stroke="rgba(168,85,247,0.3)" stroke-width="1" stroke-dasharray="6 3"/>
+  <text x="70" y="255" font-size="11" fill="rgba(168,85,247,0.7)">User's Device (Trusted)</text>
+
+  <!-- CONTRACT box -->
+  <g transform="translate(120, 70)" filter="url(#glow)">
+    <rect x="0" y="0" width="240" height="120" rx="10" fill="rgba(67,233,123,0.15)" stroke="url(#greenGrad)" stroke-width="2"/>
+    <text x="120" y="30" font-size="16" font-weight="600" fill="#43e97b" text-anchor="middle">Contract</text>
+    <text x="120" y="55" font-size="11" fill="rgba(255,255,255,0.7)" text-anchor="middle">Shared state on the network</text>
+    <line x1="20" y1="70" x2="220" y2="70" stroke="rgba(67,233,123,0.3)" stroke-width="1"/>
+    <text x="120" y="90" font-size="10" fill="rgba(255,255,255,0.5)" text-anchor="middle">• Defines valid state</text>
+    <text x="120" y="105" font-size="10" fill="rgba(255,255,255,0.5)" text-anchor="middle">• Runs on untrusted peers</text>
+  </g>
+
+  <!-- DELEGATE box -->
+  <g transform="translate(120, 280)" filter="url(#glow)">
+    <rect x="0" y="0" width="240" height="120" rx="10" fill="rgba(168,85,247,0.15)" stroke="url(#purpleGrad)" stroke-width="2"/>
+    <text x="120" y="30" font-size="16" font-weight="600" fill="#a855f7" text-anchor="middle">Delegate</text>
+    <text x="120" y="55" font-size="11" fill="rgba(255,255,255,0.7)" text-anchor="middle">Private state on your device</text>
+    <line x1="20" y1="70" x2="220" y2="70" stroke="rgba(168,85,247,0.3)" stroke-width="1"/>
+    <text x="120" y="90" font-size="10" fill="rgba(255,255,255,0.5)" text-anchor="middle">• Stores secrets &amp; keys</text>
+    <text x="120" y="105" font-size="10" fill="rgba(255,255,255,0.5)" text-anchor="middle">• Signs &amp; encrypts data</text>
+  </g>
+
+  <!-- UI box -->
+  <g transform="translate(550, 180)">
+    <rect x="0" y="0" width="280" height="140" rx="10" fill="rgba(79,172,254,0.15)" stroke="url(#blueGrad)" stroke-width="2"/>
+    <text x="140" y="35" font-size="16" font-weight="600" fill="#4facfe" text-anchor="middle">User Interface</text>
+    <text x="140" y="60" font-size="11" fill="rgba(255,255,255,0.7)" text-anchor="middle">Web app in browser</text>
+    <line x1="20" y1="75" x2="260" y2="75" stroke="rgba(79,172,254,0.3)" stroke-width="1"/>
+    <text x="140" y="95" font-size="10" fill="rgba(255,255,255,0.5)" text-anchor="middle">• Standard web tech (React, etc.)</text>
+    <text x="140" y="110" font-size="10" fill="rgba(255,255,255,0.5)" text-anchor="middle">• Connects via HTTP/WebSocket</text>
+    <text x="140" y="125" font-size="10" fill="rgba(255,255,255,0.5)" text-anchor="middle">• Talks to delegate &amp; contracts</text>
+  </g>
+
+  <!-- Connection arrows -->
+  <!-- Contract to UI -->
+  <path d="M 360 130 L 460 200 L 550 230" stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none" marker-end="url(#arrowWhite)"/>
+  <text x="440" y="175" font-size="9" fill="rgba(255,255,255,0.5)" transform="rotate(-20, 440, 175)">subscribe/update</text>
+
+  <!-- Delegate to UI -->
+  <path d="M 360 340 L 460 300 L 550 280" stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none" marker-end="url(#arrowWhite)"/>
+  <text x="440" y="335" font-size="9" fill="rgba(255,255,255,0.5)" transform="rotate(20, 440, 335)">sign/encrypt</text>
+
+  <!-- Contract to Delegate (sync indicator) -->
+  <path d="M 240 190 L 240 280" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="255" y="240" font-size="9" fill="rgba(255,255,255,0.4)">local sync</text>
+
+</svg>

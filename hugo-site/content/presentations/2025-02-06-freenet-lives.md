@@ -5,19 +5,24 @@ author: "Ian Clarke"
 layout: single
 type: presentations
 slides:
+  # 1. Title
   - intro/title
-  - intro/agenda
+  # 2. Context for newcomers
   - intro/stack-comparison
-  - intro/what-is-freenet
-  - architecture/small-world
-  - architecture/contracts
-  - architecture/components-overview
-  - delta-sync/overview
-  - delta-sync/how-it-works
-  - delta-sync/propagation
+  # 3. The Hard Problems We Solved
+  - hard-problems/small-world
+  - hard-problems/real-time-sync
+  - hard-problems/no-infrastructure
+  # 4. Live Demo
   - demo/dashboard
   - demo/river
-  - common/why-it-matters
-  - common/get-involved
+  # 5. Building on Freenet
+  - building/components
+  # 6. AI + Freenet
+  - ai/accelerated-development
+  - ai/freenet-for-agents
+  # 7. Call to Action
+  - common/call-to-action
+  # 8. Questions
   - common/questions
 ---

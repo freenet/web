@@ -1,0 +1,27 @@
+<section style="display: flex; flex-direction: column; height: 100vh;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Real-Time Sync</h2>
+
+  <div style="flex: 1; display: flex; align-items: center; min-height: 0;">
+    <div style="flex: 1; display: flex; justify-content: center;">
+      <img src="/slides/hard-problems/real-time-sync.svg" alt="Commutative Sync" style="max-height: calc(100vh - 120px); max-width: 60%; object-fit: contain;">
+    </div>
+    <div style="width: 35%; padding-right: 1em;">
+      <ul style="font-size: 0.85em;">
+        <li><strong>Problem:</strong> How do peers stay consistent without coordination?</li>
+        <li><strong>Solution:</strong> Commutative operations</li>
+        <li>A + B = B + A (order doesn't matter)</li>
+        <li>Peers exchange <span style="color: #43e97b;">deltas</span>, not full state</li>
+        <li><strong>Result:</strong> Eventual consistency, real-time updates</li>
+      </ul>
+    </div>
+  </div>
+
+  <aside class="notes">
+    How do you keep data consistent when there's no central authority?
+    The key insight: use operations that commute - where order doesn't matter.
+    If Peer A adds "Hello" then "World", and Peer B adds "World" then "Hello",
+    they end up in the same state.
+    And we only send the changes (deltas), not the whole state - so it's efficient.
+    This gives us real-time sync without the coordination overhead.
+  </aside>
+</section>
