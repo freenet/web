@@ -1,28 +1,41 @@
-<section class="center">
-  <h2>Live Demo: River</h2>
+<section style="display: flex; flex-direction: column; height: 100vh;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.3em;">Live Demo: River Chat</h2>
 
-  <p style="font-size: 1.2em; margin: 1em 0;">Decentralized group chat built on Freenet</p>
+  <div style="flex: 1; display: flex; align-items: center; min-height: 0;">
+    <!-- Screenshot -->
+    <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+      <div style="position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 30px rgba(79,172,254,0.3);">
+        <img src="/images/river-screenshot-dark.png" alt="River Chat" style="max-height: calc(100vh - 160px); max-width: 55vw; display: block;">
+        <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px 12px; border-radius: 4px; font-size: 0.7em; color: #4facfe;">
+          📷 Backup screenshot
+        </div>
+      </div>
+    </div>
 
-  <div style="display: flex; justify-content: center; gap: 2em; margin: 2em 0;">
-    <div class="fragment">
-      <i class="fas fa-comments" style="font-size: 3em; color: var(--freenet-blue);"></i>
-      <p>Real-time messaging</p>
-    </div>
-    <div class="fragment">
-      <i class="fas fa-lock" style="font-size: 3em; color: var(--freenet-green);"></i>
-      <p>End-to-end encrypted</p>
-    </div>
-    <div class="fragment">
-      <i class="fas fa-server" style="font-size: 3em; color: var(--freenet-orange); text-decoration: line-through;"></i>
-      <p>No central server</p>
+    <!-- Key points -->
+    <div style="width: 35%; padding-right: 1em;">
+      <p style="font-size: 1.1em; margin-bottom: 1em; color: #4facfe;">Decentralized group chat</p>
+      <ul style="font-size: 0.85em;">
+        <li><strong>Real-time messaging</strong> via contract subscriptions</li>
+        <li><strong>End-to-end encrypted</strong> with keys in delegates</li>
+        <li><strong>No central server</strong> - peers sync directly</li>
+        <li><strong>Open source</strong> - template for your apps</li>
+      </ul>
+      <p style="margin-top: 1.2em; font-size: 0.9em;">
+        Live: <a href="https://river.freenet.org" target="_blank" style="color: #4facfe;">river.freenet.org</a>
+      </p>
     </div>
   </div>
 
-  <p class="fragment" style="margin-top: 1.5em;">
-    <a href="https://river.freenet.org" target="_blank" style="color: var(--freenet-blue);">river.freenet.org</a>
-  </p>
-
   <aside class="notes">
-    Now let's see this in action. River is a chat application that demonstrates Freenet's capabilities. It's functional today.
+    [CLICK TO LIVE DEMO IF WORKING]
+
+    River demonstrates everything we just talked about:
+    - Contract stores the chat room state (messages, members)
+    - Delegate on each user's device holds their private keys
+    - When you send a message, it updates the contract
+    - All subscribers get the update in real-time via delta sync
+
+    This is the pattern for building Freenet apps. River is open source - you can use it as a template.
   </aside>
 </section>

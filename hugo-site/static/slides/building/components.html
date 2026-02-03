@@ -1,0 +1,19 @@
+<section style="display: flex; flex-direction: column; height: 100vh;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Building on Freenet</h2>
+
+  <div style="flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0;">
+    <img src="/slides/building/components.svg" alt="Freenet App Components" style="max-height: calc(100vh - 100px); max-width: 95%; object-fit: contain;">
+  </div>
+
+  <aside class="notes">
+    Every Freenet app has three components:
+
+    1. CONTRACT - Runs on the network, stores shared state. Think of it as your "database" but replicated across peers. Anyone can read it, but updates must follow the contract's rules.
+
+    2. DELEGATE - Runs locally on the user's device. This is the "trust zone" - it holds private keys, does signing and encryption. Your secrets never leave your hardware.
+
+    3. UI - Standard web app. React, Vue, whatever you want. Connects to the local Freenet node via HTTP/WebSocket. Talks to contracts for shared data, delegates for private operations.
+
+    River implements exactly this pattern - contract for chat rooms, delegate for user identity, standard web UI.
+  </aside>
+</section>
