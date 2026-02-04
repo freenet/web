@@ -12,6 +12,8 @@ slides:
   # 3. The Hard Problems We Solved
   - hard-problems/small-world
   - hard-problems/real-time-sync
+  - hard-problems/sync-demo
+  - hard-problems/propagation-demo
   - hard-problems/no-infrastructure
   # 4. Live Demo
   - demo/dashboard
@@ -26,3 +28,5 @@ slides:
   # 8. Questions
   - common/questions
 ---
+
+

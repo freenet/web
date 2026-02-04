@@ -1,0 +1,564 @@
+<section style="display: flex; flex-direction: column; height: 100vh;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Peer Synchronization</h2>
+
+  <style>
+    .sync-demo-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      position: relative;
+    }
+    .sync-peer-container {
+      position: relative;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: flex-start;
+      gap: 8rem;
+      flex: 1;
+      padding: 1rem;
+      min-height: 200px;
+    }
+    .sync-peer {
+      flex: 0 0 auto;
+      width: 140px;
+      padding: 0.75rem;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+    }
+    .sync-peer-title {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 0.75rem;
+      color: #fff;
+      font-size: 1.1em;
+      white-space: nowrap;
+    }
+    .sync-peer-icons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      min-height: 60px;
+    }
+    .sync-peer-icon {
+      font-size: 1.8rem;
+      color: rgba(255,255,255,0.9);
+    }
+    .sync-summary-display, .sync-delta-display {
+      position: absolute;
+      padding: 0.6rem;
+      width: 90px;
+      font-family: monospace;
+      opacity: 0;
+      display: none;
+      transition: all 0.5s ease-in-out;
+      pointer-events: none;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      border-radius: 8px;
+      transform: translateY(-50%);
+    }
+    .sync-summary-display {
+      border: 2px solid #4facfe;
+      background: rgba(79, 172, 254, 0.15);
+    }
+    .sync-delta-display {
+      border: 2px solid #43e97b;
+      background: rgba(67, 233, 123, 0.15);
+    }
+    .sync-summary-display.visible, .sync-delta-display.visible {
+      opacity: 1 !important;
+      display: block !important;
+    }
+    .sync-summary-title {
+      font-weight: bold;
+      margin-bottom: 0.4rem;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    .sync-summary-display .sync-summary-title {
+      color: #4facfe;
+    }
+    .sync-delta-display .sync-summary-title {
+      color: #43e97b;
+    }
+    .sync-summary-list {
+      margin: 0;
+      padding: 0;
+    }
+    .sync-summary-list > div {
+      margin: 2px 0;
+      padding: 2px 4px;
+      text-align: center;
+      color: rgba(255,255,255,0.9);
+      font-size: 0.8rem;
+    }
+    .sync-step-caption {
+      text-align: center;
+      font-size: 1.1em;
+      color: rgba(255,255,255,0.8);
+      margin-top: 1rem;
+      min-height: 2em;
+    }
+    .sync-highlighted {
+      box-shadow: 0 0 0 4px #43e97b !important;
+      color: white !important;
+      border-radius: 4px;
+      background: #43e97b !important;
+      display: inline-flex;
+      width: 1.8rem;
+      height: 1.8rem;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease-in-out;
+    }
+    .sync-steps-list {
+      display: flex !important;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+      flex-wrap: nowrap;
+    }
+    .sync-step-item {
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      background: rgba(79, 172, 254, 0.3);
+      font-size: 0.7em;
+      color: #fff;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    .sync-note {
+      text-align: center;
+      font-size: 0.75em;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: auto;
+      padding-top: 0.5rem;
+    }
+    .sync-note em {
+      color: #43e97b;
+      font-style: normal;
+    }
+    @media (max-width: 1400px) {
+      .sync-steps-list {
+        gap: 0.75rem;
+      }
+      .sync-step-item {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.8em;
+      }
+      .sync-peer-container {
+        gap: 4rem;
+      }
+      .sync-peer {
+        width: 120px;
+        padding: 0.5rem;
+      }
+      .sync-peer-icon {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+
+  <div class="sync-demo-wrapper" id="syncDemoWrapper">
+    <div class="sync-steps-list">
+      <div class="fragment sync-step-item" data-sync-step="1">Summaries</div>
+      <div class="fragment sync-step-item" data-sync-step="2">Exchange</div>
+      <div class="fragment sync-step-item" data-sync-step="3">Compare</div>
+      <div class="fragment sync-step-item" data-sync-step="4">Deltas</div>
+      <div class="fragment sync-step-item" data-sync-step="5">Send</div>
+    </div>
+
+    <div class="sync-peer-container">
+      <div class="sync-peer" id="syncPeer1">
+        <div class="sync-peer-title">Peer 1</div>
+        <div class="sync-peer-icons"></div>
+      </div>
+      <div class="sync-peer" id="syncPeer2">
+        <div class="sync-peer-title">Peer 2</div>
+        <div class="sync-peer-icons"></div>
+      </div>
+    </div>
+
+    <div id="syncSummary1" class="sync-summary-display">
+      <div class="sync-summary-title">Summary</div>
+      <div class="sync-summary-list"></div>
+    </div>
+    <div id="syncSummary2" class="sync-summary-display">
+      <div class="sync-summary-title">Summary</div>
+      <div class="sync-summary-list"></div>
+    </div>
+    <div id="syncDelta1" class="sync-delta-display">
+      <div class="sync-summary-title">Delta</div>
+      <div class="sync-summary-list"></div>
+    </div>
+    <div id="syncDelta2" class="sync-delta-display">
+      <div class="sync-summary-title">Delta</div>
+      <div class="sync-summary-list"></div>
+    </div>
+
+    <div class="sync-note">
+      Summaries & deltas are opaque bytes — <em>contracts</em> define their meaning
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    const availableIcons = [
+      { name: 'dog', class: 'fas fa-dog' },
+      { name: 'cat', class: 'fas fa-cat' },
+      { name: 'fish', class: 'fas fa-fish' },
+      { name: 'dove', class: 'fas fa-dove' },
+      { name: 'dragon', class: 'fas fa-dragon' },
+      { name: 'spider', class: 'fas fa-spider' },
+      { name: 'horse', class: 'fas fa-horse' },
+      { name: 'hippo', class: 'fas fa-hippo' }
+    ];
+
+    const peerState = {
+      peer1: { icons: [], delta: [] },
+      peer2: { icons: [], delta: [] }
+    };
+
+    let isAnimating = false;
+
+    function initializePeers() {
+      peerState.peer1.icons = [];
+      peerState.peer2.icons = [];
+      peerState.peer1.delta = [];
+      peerState.peer2.delta = [];
+
+      const shuffled = [...availableIcons].sort(() => Math.random() - 0.5);
+      const commonIcon = shuffled[0];
+      const peer1Count = Math.floor(Math.random() * 2) + 2;
+      const peer2Count = Math.floor(Math.random() * 2) + 2;
+
+      peerState.peer1.icons = [commonIcon, ...shuffled.slice(1, peer1Count + 1)];
+      peerState.peer2.icons = [commonIcon, ...shuffled.slice(peer1Count + 1, peer1Count + peer2Count + 1)];
+
+      updatePeerUI('peer1');
+      updatePeerUI('peer2');
+    }
+
+    function updatePeerUI(peerId) {
+      const iconContainer = document.querySelector(`#sync${peerId.charAt(0).toUpperCase() + peerId.slice(1)} .sync-peer-icons`);
+      if (!iconContainer) return;
+      iconContainer.innerHTML = '';
+
+      peerState[peerId].icons.forEach(icon => {
+        const iconElement = document.createElement('i');
+        iconElement.className = `sync-peer-icon ${icon.class}`;
+        iconContainer.appendChild(iconElement);
+      });
+    }
+
+    async function runStep(step) {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      switch(step) {
+        case 1: await generateAndShowSummaries(); break;
+        case 2: await exchangeSummaries(); break;
+        case 3: await compareAndHighlight(); break;
+        case 4: await createDeltaBoxes(); break;
+        case 5: await sendDeltas(); break;
+      }
+      isAnimating = false;
+    }
+
+    async function generateAndShowSummaries() {
+      const summary1 = document.getElementById('syncSummary1');
+      const summary2 = document.getElementById('syncSummary2');
+      if (!summary1 || !summary2) return;
+
+      summary1.querySelector('.sync-summary-list').innerHTML = '';
+      summary2.querySelector('.sync-summary-list').innerHTML = '';
+
+      ['peer1', 'peer2'].forEach((peerId, idx) => {
+        const summaryList = document.querySelector(`#syncSummary${idx + 1} .sync-summary-list`);
+        peerState[peerId].icons.forEach(icon => {
+          const item = document.createElement('div');
+          item.textContent = icon.name;
+          summaryList.appendChild(item);
+        });
+      });
+
+      // Disable transition for initial positioning
+      summary1.style.transition = 'none';
+      summary2.style.transition = 'none';
+
+      summary1.style.display = 'block';
+      summary2.style.display = 'block';
+      summary1.style.opacity = '0';
+      summary2.style.opacity = '0';
+
+      const peer1 = document.getElementById('syncPeer1');
+      const peer2 = document.getElementById('syncPeer2');
+      const container = document.getElementById('syncDemoWrapper');
+      if (!peer1 || !peer2 || !container) return;
+
+      const peer1Rect = peer1.getBoundingClientRect();
+      const peer2Rect = peer2.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+
+      summary1.style.left = `${(peer1Rect.right - containerRect.left) + 15}px`;
+      summary1.style.top = `${(peer1Rect.top - containerRect.top) + (peer1Rect.height / 2) - 30}px`;
+      summary2.style.left = `${(peer2Rect.left - containerRect.left) - summary2.offsetWidth - 15}px`;
+      summary2.style.top = `${(peer2Rect.top - containerRect.top) + (peer2Rect.height / 2) + 30}px`;
+
+      // Force reflow, then enable opacity transition for fade-in
+      summary1.offsetHeight;
+      summary1.style.transition = 'opacity 0.3s ease-in-out';
+      summary2.style.transition = 'opacity 0.3s ease-in-out';
+
+      await new Promise(r => setTimeout(r, 50));
+      summary1.classList.add('visible');
+      summary2.classList.add('visible');
+      await new Promise(r => setTimeout(r, 400));
+    }
+
+    async function exchangeSummaries() {
+      const summary1 = document.getElementById('syncSummary1');
+      const summary2 = document.getElementById('syncSummary2');
+      const peer1 = document.getElementById('syncPeer1');
+      const peer2 = document.getElementById('syncPeer2');
+      const container = document.getElementById('syncDemoWrapper');
+      if (!summary1 || !summary2 || !peer1 || !peer2 || !container) return;
+
+      const peer1Rect = peer1.getBoundingClientRect();
+      const peer2Rect = peer2.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+
+      const summary1NewLeft = (peer2Rect.left - containerRect.left) - summary1.offsetWidth - 15;
+      const summary2NewLeft = (peer1Rect.right - containerRect.left) + 15;
+
+      summary1.style.transition = summary2.style.transition = 'all 0.6s ease-in-out';
+      summary1.style.left = `${summary1NewLeft}px`;
+      summary2.style.left = `${summary2NewLeft}px`;
+
+      await new Promise(r => setTimeout(r, 700));
+    }
+
+    async function compareAndHighlight() {
+      peerState.peer1.delta = peerState.peer1.icons.filter(icon1 =>
+        !peerState.peer2.icons.some(icon2 => icon2.name === icon1.name)
+      );
+      peerState.peer2.delta = peerState.peer2.icons.filter(icon2 =>
+        !peerState.peer1.icons.some(icon1 => icon1.name === icon2.name)
+      );
+
+      document.querySelectorAll('#syncPeer1 .sync-peer-icons i').forEach(icon => {
+        const iconClass = icon.className;
+        const matchingIcon = availableIcons.find(i => iconClass.includes(i.class));
+        if (matchingIcon && !peerState.peer2.icons.some(i => i.name === matchingIcon.name)) {
+          icon.classList.add('sync-highlighted');
+        }
+      });
+
+      document.querySelectorAll('#syncPeer2 .sync-peer-icons i').forEach(icon => {
+        const iconClass = icon.className;
+        const matchingIcon = availableIcons.find(i => iconClass.includes(i.class));
+        if (matchingIcon && !peerState.peer1.icons.some(i => i.name === matchingIcon.name)) {
+          icon.classList.add('sync-highlighted');
+        }
+      });
+
+      await new Promise(r => setTimeout(r, 800));
+    }
+
+    async function createDeltaBoxes() {
+      document.getElementById('syncSummary1')?.classList.remove('visible');
+      document.getElementById('syncSummary2')?.classList.remove('visible');
+
+      const delta1 = document.getElementById('syncDelta1');
+      const delta2 = document.getElementById('syncDelta2');
+      const peer1 = document.getElementById('syncPeer1');
+      const peer2 = document.getElementById('syncPeer2');
+      const container = document.getElementById('syncDemoWrapper');
+      if (!delta1 || !delta2 || !peer1 || !peer2 || !container) return;
+
+      const peer1Rect = peer1.getBoundingClientRect();
+      const peer2Rect = peer2.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+
+      ['peer1', 'peer2'].forEach((peerId, idx) => {
+        const deltaBox = document.getElementById(`syncDelta${idx + 1}`);
+        const deltaList = deltaBox.querySelector('.sync-summary-list');
+        deltaList.innerHTML = '';
+
+        if (peerState[peerId].delta.length > 0) {
+          peerState[peerId].delta.forEach(icon => {
+            const item = document.createElement('div');
+            const iconElement = document.createElement('i');
+            iconElement.className = icon.class;
+            iconElement.classList.add('sync-highlighted');
+            iconElement.style.fontSize = '1.2rem';
+            item.appendChild(iconElement);
+            deltaList.appendChild(item);
+          });
+        }
+      });
+
+      // Position delta boxes next to their peers (no transition for initial position)
+      delta1.style.transition = 'none';
+      delta2.style.transition = 'none';
+
+      if (peerState.peer1.delta.length > 0) {
+        delta1.style.display = 'block';
+        delta1.style.opacity = '0';
+        delta1.style.left = `${(peer1Rect.right - containerRect.left) + 15}px`;
+        delta1.style.top = `${(peer1Rect.top - containerRect.top) + (peer1Rect.height / 2)}px`;
+        delta1.style.transform = 'translateY(-50%) scale(1)';
+      }
+
+      if (peerState.peer2.delta.length > 0) {
+        delta2.style.display = 'block';
+        delta2.style.opacity = '0';
+        delta2.style.left = `${(peer2Rect.left - containerRect.left) - delta2.offsetWidth - 15}px`;
+        delta2.style.top = `${(peer2Rect.top - containerRect.top) + (peer2Rect.height / 2)}px`;
+        delta2.style.transform = 'translateY(-50%) scale(1)';
+      }
+
+      // Remove highlights from peer icons
+      document.querySelectorAll('.sync-peer-icons i').forEach(icon => {
+        icon.classList.remove('sync-highlighted');
+      });
+
+      // Force reflow then enable opacity transition
+      delta1.offsetHeight;
+      delta1.style.transition = 'opacity 0.3s ease-in-out';
+      delta2.style.transition = 'opacity 0.3s ease-in-out';
+
+      // Show delta boxes
+      await new Promise(r => setTimeout(r, 50));
+      if (peerState.peer1.delta.length > 0) {
+        delta1.classList.add('visible');
+        delta1.style.opacity = '1';
+      }
+      if (peerState.peer2.delta.length > 0) {
+        delta2.classList.add('visible');
+        delta2.style.opacity = '1';
+      }
+      await new Promise(r => setTimeout(r, 300));
+    }
+
+    async function sendDeltas() {
+      const delta1 = document.getElementById('syncDelta1');
+      const delta2 = document.getElementById('syncDelta2');
+      const peer1 = document.getElementById('syncPeer1');
+      const peer2 = document.getElementById('syncPeer2');
+      const container = document.getElementById('syncDemoWrapper');
+      if (!delta1 || !delta2 || !peer1 || !peer2 || !container) return;
+
+      const peer1Rect = peer1.getBoundingClientRect();
+      const peer2Rect = peer2.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+
+      // Enable movement transition
+      delta1.style.transition = 'all 0.6s ease-in-out';
+      delta2.style.transition = 'all 0.6s ease-in-out';
+
+      // Animate both deltas simultaneously
+      if (peerState.peer1.delta.length > 0) {
+        delta1.style.left = `${(peer2Rect.left - containerRect.left)}px`;
+        delta1.style.opacity = '0';
+        delta1.style.transform = 'translateY(-50%) scale(0.5)';
+      }
+      if (peerState.peer2.delta.length > 0) {
+        delta2.style.left = `${(peer1Rect.left - containerRect.left)}px`;
+        delta2.style.opacity = '0';
+        delta2.style.transform = 'translateY(-50%) scale(0.5)';
+      }
+
+      await new Promise(r => setTimeout(r, 700));
+
+      // Update peer state with received deltas
+      peerState.peer1.icons = [...new Set([...peerState.peer1.icons, ...peerState.peer2.delta])];
+      peerState.peer2.icons = [...new Set([...peerState.peer2.icons, ...peerState.peer1.delta])];
+      peerState.peer1.icons.sort((a, b) => a.name.localeCompare(b.name));
+      peerState.peer2.icons.sort((a, b) => a.name.localeCompare(b.name));
+
+      updatePeerUI('peer1');
+      updatePeerUI('peer2');
+
+      delta1.classList.remove('visible');
+      delta2.classList.remove('visible');
+    }
+
+    function resetDemo() {
+      isAnimating = false;
+
+      ['syncSummary1', 'syncSummary2', 'syncDelta1', 'syncDelta2'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.remove('visible');
+          el.style.display = 'none';
+          el.style.opacity = '';
+          el.style.transform = '';
+          el.style.transition = 'none';
+        }
+      });
+
+      document.querySelectorAll('.sync-peer-icons i').forEach(icon => {
+        icon.classList.remove('sync-highlighted');
+      });
+
+      initializePeers();
+
+      setTimeout(() => {
+        ['syncSummary1', 'syncSummary2', 'syncDelta1', 'syncDelta2'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.transition = 'all 0.5s ease-in-out';
+        });
+      }, 100);
+    }
+
+    // Listen for fragment events from reveal.js
+    function setupRevealListeners() {
+      if (typeof Reveal !== 'undefined' && Reveal.isReady && Reveal.isReady()) {
+        Reveal.on('fragmentshown', event => {
+          const fragment = event.fragment;
+          if (fragment.dataset.syncStep) {
+            const step = parseInt(fragment.dataset.syncStep);
+            runStep(step);
+          }
+        });
+
+        Reveal.on('fragmenthidden', event => {
+          const fragment = event.fragment;
+          if (fragment.dataset.syncStep) {
+            resetDemo();
+          }
+        });
+      } else {
+        // Reveal not ready yet, try again
+        setTimeout(setupRevealListeners, 100);
+      }
+    }
+
+    // Reset when slide becomes visible
+    const section = document.currentScript.closest('section');
+    if (section) {
+      section.addEventListener('slide-visible', () => {
+        resetDemo();
+      });
+    }
+
+    // Initialize
+    initializePeers();
+    setupRevealListeners();
+  })();
+  </script>
+
+  <aside class="notes">
+    This animation shows how two peers synchronize without a central server.
+    Press arrow key to advance each step:
+    1. Each peer creates a compact summary of what it has
+    2. They exchange summaries (much smaller than full data)
+    3. Each peer identifies what the other is missing
+    4. They send only the missing pieces (deltas)
+    Result: Both peers end up with the same data, efficiently.
+  </aside>
+</section>

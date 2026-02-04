@@ -1,26 +1,79 @@
 <section style="display: flex; flex-direction: column; height: 100vh;">
-  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Small-World Routing</h2>
+  <h2 style="flex-shrink: 0; margin-bottom: 0.3em;">Small-World Routing</h2>
 
-  <div style="flex: 1; display: flex; align-items: center; min-height: 0;">
-    <div style="flex: 1; display: flex; justify-content: center;">
-      <img src="/slides/hard-problems/small-world.svg" alt="Small-World Network" style="max-height: calc(100vh - 120px); max-width: 65%; object-fit: contain;">
+  <style>
+    .small-world-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 1.5em;
+      min-height: 0;
+    }
+    .small-world-diagram {
+      flex: 1 1 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+    }
+    .small-world-diagram img {
+      max-height: calc(100vh - 180px);
+      max-width: 100%;
+      object-fit: contain;
+    }
+    .small-world-text {
+      flex: 1 1 45%;
+      min-width: 280px;
+    }
+    .small-world-text ul {
+      font-size: 1.05em;
+      line-height: 1.7;
+    }
+    @media (max-width: 1400px) {
+      .small-world-content {
+        flex-direction: column;
+      }
+      .small-world-diagram {
+        flex: 0 0 auto;
+        width: 100%;
+        max-height: 45vh;
+      }
+      .small-world-diagram img {
+        max-height: 40vh;
+      }
+      .small-world-text {
+        flex: 1;
+        width: 100%;
+      }
+      .small-world-text ul {
+        font-size: 0.95em;
+      }
+    }
+  </style>
+
+  <div class="small-world-content">
+    <div class="small-world-diagram">
+      <img src="/slides/hard-problems/small-world.svg" alt="Small-World Network">
     </div>
-    <div style="width: 30%; padding-right: 1em;">
-      <ul style="font-size: 0.85em;">
+    <div class="small-world-text">
+      <ul>
         <li><strong>Problem:</strong> Find data without central servers</li>
         <li><strong>Solution:</strong> Each peer has a "location" (0.0-1.0)</li>
-        <li>Connect to <span style="color: #43e97b;">near neighbors</span> + <span style="color: #4facfe;">random shortcuts</span></li>
+        <li>Data keys map to locations via hash</li>
+        <li>Connections optimize for <span style="color: #43e97b;">request patterns</span></li>
         <li><strong>Result:</strong> O(log n) hops to any data</li>
-        <li>Scales to millions of peers</li>
       </ul>
     </div>
   </div>
 
   <aside class="notes">
     How do you find data without a central index? Every peer gets a location between 0 and 1.
-    Data also gets a location based on its key hash.
-    Peers connect to nearby neighbors AND random long-range shortcuts.
-    This creates a "small world" - you can reach anyone in logarithmic hops.
-    Same principle that makes "six degrees of separation" work in social networks.
+    Data keys hash to locations on this ring.
+
+    The topology is self-organizing: peers track where their requests go and optimize connections
+    toward high-traffic areas. Early connections cluster locally, then expand based on request patterns.
+
+    This creates efficient routing - you can reach any data in O(log n) hops.
+    Similar principle to how social networks exhibit "six degrees of separation".
   </aside>
 </section>
