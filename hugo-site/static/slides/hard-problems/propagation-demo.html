@@ -1,0 +1,400 @@
+<section style="display: flex; flex-direction: column; height: 100vh;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Subscription Tree Propagation</h2>
+
+  <style>
+    .propagation-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      position: relative;
+    }
+    .propagation-wrapper svg {
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+    }
+    .propagation-wrapper .link {
+      fill: none;
+      stroke: rgba(79, 172, 254, 0.5);
+      stroke-width: 2px;
+    }
+    .propagation-wrapper .node {
+      stroke: rgba(255,255,255,0.3);
+      stroke-width: 1.5px;
+      cursor: pointer;
+    }
+    .propagation-caption {
+      text-align: center;
+      font-size: 0.95em;
+      color: rgba(255,255,255,0.7);
+      margin: 0.5rem 0;
+      flex-shrink: 0;
+    }
+  </style>
+
+  <p class="propagation-caption">Watch updates propagate through the subscription tree</p>
+
+  <div class="propagation-wrapper" id="propagationWrapper"></div>
+
+  <script>
+  (function() {
+    const COLOR_PALETTE = [
+      "#4facfe", // Blue (matches theme)
+      "#43e97b", // Green (matches theme)
+      "#fa709a", // Pink
+      "#a855f7", // Purple
+      "#22d3ee", // Cyan
+      "#f59e0b", // Amber
+      "#ef4444", // Red
+      "#10b981", // Emerald
+    ];
+
+    let lastColorIndex = 0;
+    let globalSequence = 0;
+    const MAX_COLORS = 4;
+    const animationQueue = new Map();
+
+    let randomTreeData;
+    let svg;
+    let svgGroup;
+    let root;
+    let params;
+
+    function generateRandomTree(numNodes) {
+      const nodes = Array.from({ length: numNodes }, (_, i) => ({
+        id: i,
+        color: COLOR_PALETTE[0],
+        receivedColors: [{color: COLOR_PALETTE[0], seq: 0}],
+      }));
+      const links = [];
+
+      for (let i = 1; i < numNodes; i++) {
+        const possibleParents = nodes.slice(0, i).filter((parent) => {
+          const childrenCount = links.filter((link) => link.source.id === parent.id).length;
+          return childrenCount < 4;
+        });
+        const parentIndex = Math.floor(Math.random() * possibleParents.length);
+        links.push({ source: possibleParents[parentIndex], target: nodes[i] });
+      }
+
+      return { nodes, links };
+    }
+
+    function initializeVisualization() {
+      const wrapper = document.getElementById('propagationWrapper');
+      if (!wrapper) return;
+
+      // Remove existing SVG
+      d3.select('#propagationWrapper svg').remove();
+
+      const rect = wrapper.getBoundingClientRect();
+      const width = rect.width || 800;
+      const height = rect.height || 500;
+
+      // Calculate optimal parameters to fill the space
+      // More nodes, tighter spacing
+      const nodeCount = Math.min(Math.max(40, Math.floor((width * height) / 3000)), 80);
+      const nodeSize = Math.min(Math.max(12, Math.floor(width / 60)), 20);
+      const horizontalSpacing = Math.max(35, Math.floor(width / nodeCount * 1.5));
+      const verticalSpacing = Math.max(50, Math.floor(height / 8));
+
+      params = {
+        nodeCount: nodeCount,
+        nodeSize: nodeSize,
+        messageSize: nodeSize * 0.6,
+        horizontalSpacing: horizontalSpacing,
+        verticalSpacing: verticalSpacing
+      };
+
+      randomTreeData = generateRandomTree(params.nodeCount);
+
+      const arcGenerator = d3.arc()
+        .innerRadius(0)
+        .outerRadius(params.nodeSize);
+      const messageArcGenerator = d3.arc()
+        .innerRadius(0)
+        .outerRadius(params.messageSize);
+      const pieGenerator = d3.pie().value(1).sort(null);
+
+      const treeLayout = d3.tree().nodeSize([params.horizontalSpacing, params.verticalSpacing]);
+
+      root = d3.stratify()
+        .id((d) => d.id)
+        .parentId((d) => {
+          const link = randomTreeData.links.find((link) => link.target.id === d.id);
+          return link ? link.source.id : null;
+        })(randomTreeData.nodes);
+
+      treeLayout(root);
+
+      // Calculate bounds
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      root.each(d => {
+        minX = Math.min(minX, d.x);
+        maxX = Math.max(maxX, d.x);
+        minY = Math.min(minY, d.y);
+        maxY = Math.max(maxY, d.y);
+      });
+
+      const padding = params.nodeSize + 10;
+      const viewBoxWidth = maxX - minX + (padding * 2);
+      const viewBoxHeight = maxY - minY + (padding * 2);
+
+      svg = d3.select('#propagationWrapper')
+        .append('svg')
+        .attr('width', '100%')
+        .attr('height', '100%')
+        .attr('preserveAspectRatio', 'xMidYMid meet')
+        .attr('viewBox', `${minX - padding} ${minY - padding} ${viewBoxWidth} ${viewBoxHeight}`);
+
+      svgGroup = svg.append('g');
+
+      // Draw links
+      svgGroup.selectAll('.link')
+        .data(root.links())
+        .enter()
+        .append('path')
+        .attr('class', 'link')
+        .attr('d', d3.linkVertical().x((d) => d.x).y((d) => d.y));
+
+      // Draw nodes
+      const node = svgGroup.selectAll('.node')
+        .data(root.descendants())
+        .enter()
+        .append('g')
+        .attr('class', 'node')
+        .attr('transform', (d) => `translate(${d.x},${d.y})`)
+        .attr('id', (d) => `propNode-${d.data.id}`);
+
+      // Touch target
+      node.append('circle')
+        .attr('r', params.nodeSize * 1.5)
+        .attr('fill', 'transparent')
+        .attr('stroke', 'none')
+        .style('cursor', 'pointer');
+
+      // Initialize pies
+      node.each(function(d) {
+        drawPie(d3.select(this), d.data.receivedColors, arcGenerator, pieGenerator);
+      });
+
+      node.on('click', function(event, d) {
+        initiatePropagation(d, arcGenerator, messageArcGenerator, pieGenerator);
+      });
+
+      // Store generators for later use
+      wrapper._generators = { arcGenerator, messageArcGenerator, pieGenerator };
+      wrapper._root = root;
+    }
+
+    function drawPie(nodeGroup, colorData, arcGenerator, pieGenerator) {
+      const sortedColors = [...colorData].sort((a, b) => b.seq - a.seq);
+      const displayColors = sortedColors.slice(0, MAX_COLORS);
+
+      const arcs = pieGenerator(displayColors);
+      nodeGroup.selectAll('path').remove();
+      arcs.forEach((arc, i) => {
+        nodeGroup
+          .append('path')
+          .attr('d', arcGenerator(arc))
+          .attr('fill', displayColors[i].color)
+          .attr('stroke', 'rgba(255,255,255,0.3)')
+          .attr('stroke-width', 1);
+      });
+    }
+
+    async function animateMessage(source, target, colors, arcGenerator, messageArcGenerator, pieGenerator) {
+      const animationKey = `${source.data.id}-${target.data.id}`;
+      if (animationQueue.get(animationKey)) return;
+
+      const validEntries = colors.filter(entry => entry !== undefined);
+      if (validEntries.length === 0) return;
+
+      animationQueue.set(animationKey, true);
+
+      try {
+        const arcs = pieGenerator(validEntries);
+        const messageGroup = svgGroup.append('g')
+          .attr('class', 'message')
+          .attr('transform', `translate(${source.x},${source.y})`);
+
+        arcs.forEach((arc, i) => {
+          messageGroup
+            .append('path')
+            .attr('d', messageArcGenerator(arc))
+            .attr('fill', validEntries[i].color)
+            .attr('stroke', 'rgba(255,255,255,0.5)')
+            .attr('stroke-width', 0.5);
+        });
+
+        await messageGroup
+          .transition()
+          .duration(300)
+          .attr('transform', `translate(${target.x},${target.y})`)
+          .remove()
+          .end();
+
+        colors.forEach(colorEntry => {
+          if (!target.data.receivedColors.some(existing => existing.seq === colorEntry.seq)) {
+            target.data.receivedColors.push(colorEntry);
+          }
+        });
+
+        const nodeGroup = d3.select(`#propNode-${target.data.id}`);
+        drawPie(nodeGroup, target.data.receivedColors, arcGenerator, pieGenerator);
+      } finally {
+        animationQueue.delete(animationKey);
+      }
+    }
+
+    async function initiatePropagation(startNode, arcGenerator, messageArcGenerator, pieGenerator) {
+      startNode.data.receivedColors = startNode.data.receivedColors.filter(entry => entry !== undefined);
+
+      lastColorIndex = (lastColorIndex + 1) % COLOR_PALETTE.length;
+      const newColor = COLOR_PALETTE[lastColorIndex];
+      globalSequence++;
+
+      startNode.data.receivedColors.push({ color: newColor, seq: globalSequence });
+
+      const nodeGroup = d3.select(`#propNode-${startNode.data.id}`);
+      drawPie(nodeGroup, startNode.data.receivedColors, arcGenerator, pieGenerator);
+
+      await checkAndPropagate(startNode, arcGenerator, messageArcGenerator, pieGenerator);
+    }
+
+    function getAllConnectedPairs() {
+      const pairs = [];
+      root.descendants().forEach(node => {
+        if (node.parent) pairs.push([node, node.parent]);
+        if (node.children) {
+          node.children.forEach(child => pairs.push([node, child]));
+        }
+      });
+      return pairs;
+    }
+
+    async function checkAndPropagate(startNode, arcGenerator, messageArcGenerator, pieGenerator) {
+      let iteration = 0;
+      const MAX_ITERATIONS = 100;
+
+      while (iteration < MAX_ITERATIONS) {
+        let hasUpdates = false;
+        const nodePairs = getAllConnectedPairs();
+
+        const pairsBySource = new Map();
+        nodePairs.forEach(([nodeA, nodeB]) => {
+          if (!pairsBySource.has(nodeA)) pairsBySource.set(nodeA, []);
+          if (!pairsBySource.has(nodeB)) pairsBySource.set(nodeB, []);
+          pairsBySource.get(nodeA).push(nodeB);
+          pairsBySource.get(nodeB).push(nodeA);
+        });
+
+        const propagationPromises = [];
+
+        for (const [sourceNode, targetNodes] of pairsBySource) {
+          sourceNode.data.receivedColors = sourceNode.data.receivedColors.filter(color => color !== undefined);
+
+          for (const targetNode of targetNodes) {
+            targetNode.data.receivedColors = targetNode.data.receivedColors.filter(color => color !== undefined);
+
+            const colorsToPropagate = sourceNode.data.receivedColors.filter(
+              entry => !targetNode.data.receivedColors.some(
+                targetEntry => targetEntry.seq === entry.seq
+              )
+            );
+
+            if (colorsToPropagate.length > 0) {
+              hasUpdates = true;
+              propagationPromises.push(
+                animateMessage(sourceNode, targetNode, colorsToPropagate, arcGenerator, messageArcGenerator, pieGenerator)
+              );
+            }
+          }
+        }
+
+        if (propagationPromises.length > 0) {
+          await Promise.all(propagationPromises);
+        }
+
+        if (!hasUpdates) break;
+        await new Promise(resolve => setTimeout(resolve, 15));
+        iteration++;
+      }
+    }
+
+    function resetVisualization() {
+      lastColorIndex = 0;
+      globalSequence = 0;
+      animationQueue.clear();
+      initializeVisualization();
+    }
+
+    let autoTriggerTimeout = null;
+
+    function triggerRandomNode() {
+      const wrapper = document.getElementById('propagationWrapper');
+      if (!wrapper || !wrapper._root || !wrapper._generators) return;
+
+      const { arcGenerator, messageArcGenerator, pieGenerator } = wrapper._generators;
+      const allNodes = wrapper._root.descendants();
+      const randomNode = allNodes[Math.floor(Math.random() * allNodes.length)];
+      initiatePropagation(randomNode, arcGenerator, messageArcGenerator, pieGenerator);
+    }
+
+    function scheduleNextTrigger() {
+      // Random interval between 500ms and 7500ms
+      const delay = 500 + Math.random() * 7000;
+      autoTriggerTimeout = setTimeout(() => {
+        triggerRandomNode();
+        scheduleNextTrigger();
+      }, delay);
+    }
+
+    function startAutoTrigger() {
+      if (autoTriggerTimeout) return; // Already running
+      // Start with a short initial delay
+      autoTriggerTimeout = setTimeout(() => {
+        triggerRandomNode();
+        scheduleNextTrigger();
+      }, 800);
+    }
+
+    function stopAutoTrigger() {
+      if (autoTriggerTimeout) {
+        clearTimeout(autoTriggerTimeout);
+        autoTriggerTimeout = null;
+      }
+    }
+
+    // Reset when slide becomes visible, start auto-triggering
+    const section = document.currentScript.closest('section');
+    if (section) {
+      section.addEventListener('slide-visible', () => {
+        resetVisualization();
+        startAutoTrigger();
+      });
+      section.addEventListener('slide-hidden', () => {
+        stopAutoTrigger();
+      });
+    }
+
+    // Handle resize
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(resetVisualization, 250);
+    });
+
+    // Initialize after a brief delay to ensure container has dimensions
+    setTimeout(initializeVisualization, 100);
+  })();
+  </script>
+
+  <aside class="notes">
+    This shows how updates propagate through a subscription tree.
+    When one peer gets an update, it automatically spreads to all subscribers.
+    The tree structure means efficient fan-out - each peer only needs to send to its direct subscribers.
+    Updates trigger automatically from random nodes every 0.5-3 seconds.
+  </aside>
+</section>
