@@ -1,15 +1,30 @@
 <section style="display: flex; flex-direction: column; height: 100vh;">
-  <h2 style="flex-shrink: 0; margin-bottom: 0.3em;">Freenet for AI Agents</h2>
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Freenet for AI Agents</h2>
 
-  <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-    <p style="font-size: 1em; margin-bottom: 0.8em; color: rgba(255,255,255,0.9); text-align: center;">
-      AI agents can deploy services <span style="color: #43e97b;">autonomously</span>
-    </p>
+  <style>
+    .agents-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 0; }
+    .agents-content .tagline { font-size: 0.9em; margin-bottom: 0.6em; color: rgba(255,255,255,0.9); text-align: center; }
+    .agents-boxes { display: flex; gap: 1em; align-items: flex-start; max-width: 90%; }
+    .agents-list ul { font-size: 0.7em; line-height: 1.5; margin: 0; padding-left: 1em; }
+    .agents-vision { border-radius: 10px; padding: 0.7em; }
+    .agents-vision .title { font-size: 0.75em; font-weight: 600; margin-bottom: 0.3em; }
+    .agents-vision p { font-size: 0.65em; line-height: 1.4; margin: 0; }
+    .agents-vision .spec { margin-top: 0.4em; font-weight: 500; }
+    @media (max-height: 800px) {
+      .agents-content .tagline { font-size: 0.8em; margin-bottom: 0.4em; }
+      .agents-list ul { font-size: 0.6em; line-height: 1.4; }
+      .agents-vision { padding: 0.5em; }
+      .agents-vision .title { font-size: 0.65em; }
+      .agents-vision p { font-size: 0.55em; }
+    }
+  </style>
 
-    <div style="display: flex; gap: 1.5em; align-items: flex-start; max-width: 90%;">
-      <!-- Benefits list -->
-      <div style="flex: 1;">
-        <ul style="font-size: 0.75em; line-height: 1.6; margin: 0; padding-left: 1em;">
+  <div class="agents-content">
+    <p class="tagline">AI agents can deploy services <span style="color: #43e97b;">autonomously</span></p>
+
+    <div class="agents-boxes">
+      <div class="agents-list" style="flex: 1;">
+        <ul>
           <li><strong style="color: #43e97b;">No infrastructure</strong> - no AWS, no keys</li>
           <li><strong style="color: #43e97b;">Self-describing</strong> - code IS interface</li>
           <li><strong style="color: #43e97b;">Real-time</strong> - subscribe, get updates</li>
@@ -17,18 +32,11 @@
         </ul>
       </div>
 
-      <!-- Vision box -->
-      <div style="flex: 1; background: linear-gradient(135deg, rgba(67,233,123,0.15), rgba(79,172,254,0.15)); border: 2px solid rgba(67,233,123,0.4); border-radius: 12px; padding: 0.8em;">
-        <p style="font-size: 0.8em; font-weight: 600; color: #43e97b; margin-bottom: 0.4em;">The Vision</p>
-        <p style="font-size: 0.7em; color: rgba(255,255,255,0.85); line-height: 1.5; margin: 0;">
-          Deploy a contract, advertise its hash, other agents interact <em>immediately</em>.
-        </p>
-        <p style="font-size: 0.7em; color: rgba(255,255,255,0.85); line-height: 1.5; margin-top: 0.4em;">
-          No servers. No docs. No approval.
-        </p>
-        <p style="font-size: 0.7em; color: #4facfe; margin-top: 0.5em; font-weight: 500;">
-          Contract code IS the spec.
-        </p>
+      <div class="agents-vision" style="flex: 1; background: linear-gradient(135deg, rgba(67,233,123,0.15), rgba(79,172,254,0.15)); border: 2px solid rgba(67,233,123,0.4);">
+        <p class="title" style="color: #43e97b;">The Vision</p>
+        <p style="color: rgba(255,255,255,0.85);">Deploy a contract, advertise its hash, other agents interact <em>immediately</em>.</p>
+        <p style="color: rgba(255,255,255,0.85); margin-top: 0.3em;">No servers. No docs. No approval.</p>
+        <p class="spec" style="color: #4facfe;">Contract code IS the spec.</p>
       </div>
     </div>
   </div>
