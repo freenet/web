@@ -553,13 +553,14 @@
   </script>
 
   <aside class="notes">
-    Sync protocol:
-    1. Each peer creates compact summary of its state
-    2. Exchange summaries (smaller than full data)
-    3. Compare to identify what the other is missing
-    4. Send only missing pieces (deltas)
-
-    Summaries and deltas are opaque bytes to Freenet protocol.
-    Contract's WebAssembly code defines their meaning and processing.
+    <p><strong>Sync protocol:</strong></p>
+    <ol>
+      <li>Each peer creates compact summary of its state</li>
+      <li>Exchange summaries (smaller than full data)</li>
+      <li>Compare to identify what the other is missing</li>
+      <li>Send only missing pieces (deltas)</li>
+    </ol>
+    <p>Summaries and deltas are opaque bytes to Freenet protocol.<br>
+    Contract's WebAssembly code defines their meaning and processing.</p>
   </aside>
 </section>

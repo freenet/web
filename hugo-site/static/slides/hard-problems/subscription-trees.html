@@ -15,14 +15,16 @@
   </div>
 
   <aside class="notes">
-    KEY POINTS:
-    • Contracts get a location (0.0–1.0) derived from hash of their WebAssembly code
-    • Peers close to that location will host the contract
-    • Popular contracts are hosted more widely — this is adaptive scaling
-    • To subscribe: request routes toward the contract's location
-    • Once it hits a peer hosting the contract, all peers in that chain start hosting
-    • This forms a "subscription tree"
-    • Connected peers hosting the same contract sync automatically via summary/delta
-    • Result: subscribers get instant updates when the contract changes
+    <p><strong>KEY POINTS:</strong></p>
+    <ul>
+      <li>Contracts get a location (0.0–1.0) derived from hash of their WebAssembly code</li>
+      <li>Peers close to that location will host the contract</li>
+      <li>Popular contracts are hosted more widely — this is adaptive scaling</li>
+      <li>To subscribe: request routes toward the contract's location</li>
+      <li>Once it hits a peer hosting the contract, all peers in that chain start hosting</li>
+      <li>This forms a "subscription tree"</li>
+      <li>Connected peers hosting the same contract sync automatically via summary/delta</li>
+      <li>Result: subscribers get instant updates when the contract changes</li>
+    </ul>
   </aside>
 </section>
