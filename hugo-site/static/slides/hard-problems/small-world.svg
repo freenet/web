@@ -26,19 +26,29 @@
   <text x="450" y="465" font-size="11" fill="rgba(255,255,255,0.4)" text-anchor="middle">0.5</text>
   <text x="205" y="265" font-size="11" fill="rgba(255,255,255,0.4)" text-anchor="end">0.75</text>
 
-  <!-- Long-range connections (dashed, blue) -->
-  <path d="M 450 95 Q 450 250 450 425" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="6 3" fill="none" opacity="0.7"/>
-  <path d="M 438 92 Q 300 200 255 345" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="6 3" fill="none" opacity="0.7"/>
-  <path d="M 462 92 Q 580 220 630 320" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="6 3" fill="none" opacity="0.7"/>
+  <!-- Long-range connections (dashed, blue) — endpoints on circle edges -->
+  <!-- P0(450,80,r18) → P6(450,440,r14) -->
+  <path d="M 450 98 Q 450 260 450 426" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="6 3" fill="none" opacity="0.7"/>
+  <!-- P0(450,80,r18) → P8(255,340,r14) -->
+  <path d="M 438 96 Q 300 200 260 332" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="6 3" fill="none" opacity="0.7"/>
+  <!-- P0(450,80,r18) → P4(650,330,r14) -->
+  <path d="M 462 96 Q 580 220 641 322" stroke="url(#blueGrad)" stroke-width="2" stroke-dasharray="6 3" fill="none" opacity="0.7"/>
 
-  <!-- Near connections (solid, green) -->
-  <path d="M 465 85 Q 495 82 515 90" stroke="#43e97b" stroke-width="2" fill="none" opacity="0.8"/>
-  <path d="M 435 85 Q 405 82 385 90" stroke="#43e97b" stroke-width="2" fill="none" opacity="0.8"/>
-  <path d="M 468 88 Q 530 105 575 140" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
-  <path d="M 615 215 Q 630 265 635 320" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
-  <path d="M 330 400 Q 285 375 265 350" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
-  <path d="M 560 400 Q 590 365 630 335" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
-  <path d="M 295 135 Q 275 170 255 215" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <!-- Near connections (solid, green) — endpoints calculated from circle edges -->
+  <!-- P0(450,80,r18) → P1(520,93,r14) -->
+  <path d="M 468 83 Q 488 82 506 90" stroke="#43e97b" stroke-width="2" fill="none" opacity="0.8"/>
+  <!-- P0(450,80,r18) → P11(380,93,r14) -->
+  <path d="M 432 83 Q 412 82 394 90" stroke="#43e97b" stroke-width="2" fill="none" opacity="0.8"/>
+  <!-- P0(450,80,r18) → P2(590,145,r14) -->
+  <path d="M 466 88 Q 530 105 577 139" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <!-- P3(640,215,r14) → P4(650,330,r14) -->
+  <path d="M 641 229 Q 648 272 649 316" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <!-- P7(330,410,r14) → P8(255,340,r14) -->
+  <path d="M 320 400 Q 285 375 265 350" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <!-- P5(570,410,r14) → P4(650,330,r14) -->
+  <path d="M 580 400 Q 618 365 640 340" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <!-- P10(300,130,r14) → P9(250,220,r14) -->
+  <path d="M 293 142 Q 275 170 257 208" stroke="#43e97b" stroke-width="1.5" fill="none" opacity="0.6"/>
 
   <!-- Peers -->
   <g filter="url(#glow)">
