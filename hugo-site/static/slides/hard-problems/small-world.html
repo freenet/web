@@ -67,13 +67,11 @@
   </div>
 
   <aside class="notes">
-    How do you find data without a central index? Every peer gets a location between 0 and 1.
-    Data keys hash to locations on this ring.
-
-    The topology is self-organizing: peers track where their requests go and optimize connections
-    toward high-traffic areas. Early connections cluster locally, then expand based on request patterns.
-
-    This creates efficient routing - you can reach any data in O(log n) hops.
-    Similar principle to how social networks exhibit "six degrees of separation".
+    • Every peer has location (0.0–1.0)
+    • Data keys hash to locations on ring
+    • Self-organizing: peers optimize connections toward high-traffic areas
+    • Mostly local connections + some long-range links
+    • Routing: O(log n) hops to any data
+    • Similar to "six degrees of separation"
   </aside>
 </section>

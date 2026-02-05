@@ -69,11 +69,10 @@
   </div>
 
   <aside class="notes">
-    How do you keep data consistent when there's no central authority?
-    The key insight: use operations that commute - where order doesn't matter.
-    If Peer A adds "Hello" then "World", and Peer B adds "World" then "Hello",
-    they end up in the same state.
-    And we only send the changes (deltas), not the whole state - so it's efficient.
-    This gives us real-time sync without the coordination overhead.
+    • Problem: consistency without central authority
+    • Solution: commutative operations (order doesn't matter)
+    • A + B = B + A → same final state
+    • Send deltas, not full state → efficient
+    • Result: real-time sync, no coordination overhead
   </aside>
 </section>
