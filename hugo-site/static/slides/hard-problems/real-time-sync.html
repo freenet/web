@@ -1,78 +1,21 @@
-<section style="display: flex; flex-direction: column; height: 100vh;">
-  <h2 style="flex-shrink: 0; margin-bottom: 0.3em;">Real-Time Sync</h2>
+<section style="display: flex; flex-direction: column; justify-content: center; height: 100vh;">
+  <h2 style="margin-bottom: 0.3em;">Real-Time Sync</h2>
 
-  <style>
-    .realtime-content {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1.5em;
-      min-height: 0;
-    }
-    .realtime-diagram {
-      flex: 1 1 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 200px;
-    }
-    .realtime-diagram img {
-      max-height: calc(100vh - 180px);
-      max-width: 100%;
-      object-fit: contain;
-    }
-    .realtime-text {
-      flex: 1 1 45%;
-      min-width: 280px;
-    }
-    .realtime-text ul {
-      font-size: 1.05em;
-      line-height: 1.7;
-    }
-    @media (max-width: 1400px) {
-      .realtime-content {
-        flex-direction: column;
-        justify-content: center;
-      }
-      .realtime-diagram {
-        flex: 0 0 auto;
-        width: 100%;
-        max-height: 45vh;
-      }
-      .realtime-diagram img {
-        max-height: 40vh;
-      }
-      .realtime-text {
-        flex: 1;
-        width: 100%;
-      }
-      .realtime-text ul {
-        font-size: 0.95em;
-      }
-    }
-  </style>
+  <div style="display: flex; justify-content: center; align-items: center; flex: 1; min-height: 0;">
+    <img src="/slides/hard-problems/real-time-sync.svg" alt="Commutative Sync" style="max-height: 100%; max-width: 90%; object-fit: contain;">
+  </div>
 
-  <div class="realtime-content">
-    <div class="realtime-diagram">
-      <img src="/slides/hard-problems/real-time-sync.svg" alt="Commutative Sync">
-    </div>
-    <div class="realtime-text">
-      <ul>
-        <li><strong>Problem:</strong> How do peers stay consistent without coordination?</li>
-        <li><strong>Solution:</strong> Commutative operations</li>
-        <li>A + B = B + A (order doesn't matter)</li>
-        <li>Peers exchange <span style="color: #43e97b;">deltas</span>, not full state</li>
-        <li><strong>Result:</strong> Eventual consistency, real-time updates</li>
-      </ul>
-    </div>
+  <div style="text-align: center; font-size: 1.1em;">
+    <span style="color: #4facfe;">A + B = B + A</span> ·
+    <span style="color: #43e97b;">Deltas</span>, not full state ·
+    Eventual consistency
   </div>
 
   <aside class="notes">
     • Problem: consistency without central authority
     • Solution: commutative operations (order doesn't matter)
-    • A + B = B + A → same final state
-    • Send deltas, not full state → efficient
-    • Result: real-time sync, no coordination overhead
+    • A + B = B + A → same final state regardless of order
+    • Peers exchange deltas, not full state → efficient
+    • Result: real-time sync with eventual consistency
   </aside>
 </section>
