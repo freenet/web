@@ -21,54 +21,74 @@
 
   <!-- ==================== TRADITIONAL WEB (LEFT) ==================== -->
 
-  <!-- Servers at top -->
-  <g transform="translate(150, 55)">
-    <!-- Server rack 1 -->
-    <g transform="translate(0, 0)">
-      <rect x="0" y="0" width="70" height="85" rx="4" fill="rgba(250,112,154,0.15)" stroke="rgba(250,112,154,0.5)" stroke-width="1.5"/>
-      <rect x="8" y="10" width="54" height="10" rx="2" fill="rgba(250,112,154,0.3)"/>
-      <rect x="8" y="26" width="54" height="10" rx="2" fill="rgba(250,112,154,0.3)"/>
-      <rect x="8" y="42" width="54" height="10" rx="2" fill="rgba(250,112,154,0.3)"/>
-      <rect x="8" y="58" width="54" height="10" rx="2" fill="rgba(250,112,154,0.3)"/>
-      <circle cx="56" cy="15" r="2.5" fill="#fa709a"/>
-      <circle cx="56" cy="31" r="2.5" fill="#fa709a"/>
-      <circle cx="56" cy="47" r="2.5" fill="#fa709a"/>
-      <circle cx="56" cy="63" r="2.5" fill="#fa709a"/>
+  <!-- Datacenter enclosing box -->
+  <g transform="translate(120, 45)">
+    <rect x="0" y="0" width="300" height="160" rx="8" fill="rgba(250,112,154,0.06)" stroke="rgba(250,112,154,0.35)" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <text x="150" y="20" font-size="11" fill="rgba(250,112,154,0.7)" text-anchor="middle">Centralized Datacenter</text>
+
+    <!-- Databases at top -->
+    <g transform="translate(55, 35)">
+      <!-- Database 1 -->
+      <g transform="translate(0, 0)">
+        <ellipse cx="25" cy="5" rx="25" ry="8" fill="rgba(241,196,15,0.2)" stroke="rgba(241,196,15,0.6)" stroke-width="1.5"/>
+        <path d="M0,5 L0,30 Q0,38 25,38 Q50,38 50,30 L50,5" fill="rgba(241,196,15,0.15)" stroke="rgba(241,196,15,0.6)" stroke-width="1.5"/>
+        <ellipse cx="25" cy="30" rx="25" ry="8" fill="none" stroke="rgba(241,196,15,0.4)" stroke-width="1"/>
+      </g>
+      <!-- Database 2 -->
+      <g transform="translate(70, 0)">
+        <ellipse cx="25" cy="5" rx="25" ry="8" fill="rgba(241,196,15,0.2)" stroke="rgba(241,196,15,0.6)" stroke-width="1.5"/>
+        <path d="M0,5 L0,30 Q0,38 25,38 Q50,38 50,30 L50,5" fill="rgba(241,196,15,0.15)" stroke="rgba(241,196,15,0.6)" stroke-width="1.5"/>
+        <ellipse cx="25" cy="30" rx="25" ry="8" fill="none" stroke="rgba(241,196,15,0.4)" stroke-width="1"/>
+      </g>
+      <!-- Database 3 -->
+      <g transform="translate(140, 0)">
+        <ellipse cx="25" cy="5" rx="25" ry="8" fill="rgba(241,196,15,0.2)" stroke="rgba(241,196,15,0.6)" stroke-width="1.5"/>
+        <path d="M0,5 L0,30 Q0,38 25,38 Q50,38 50,30 L50,5" fill="rgba(241,196,15,0.15)" stroke="rgba(241,196,15,0.6)" stroke-width="1.5"/>
+        <ellipse cx="25" cy="30" rx="25" ry="8" fill="none" stroke="rgba(241,196,15,0.4)" stroke-width="1"/>
+      </g>
+      <text x="95" y="55" font-size="9" fill="rgba(241,196,15,0.8)" text-anchor="middle">Databases</text>
     </g>
-    <!-- Server rack 2 -->
-    <g transform="translate(100, 0)">
-      <rect x="0" y="0" width="70" height="85" rx="4" fill="rgba(250,112,154,0.15)" stroke="rgba(250,112,154,0.5)" stroke-width="1.5"/>
-      <rect x="8" y="10" width="54" height="10" rx="2" fill="rgba(250,112,154,0.3)"/>
-      <rect x="8" y="26" width="54" height="10" rx="2" fill="rgba(250,112,154,0.3)"/>
-      <rect x="8" y="42" width="54" height="10" rx="2" fill="rgba(250,112,154,0.3)"/>
-      <rect x="8" y="58" width="54" height="10" rx="2" fill="rgba(250,112,154,0.3)"/>
-      <circle cx="56" cy="15" r="2.5" fill="#fa709a"/>
-      <circle cx="56" cy="31" r="2.5" fill="#fa709a"/>
-      <circle cx="56" cy="47" r="2.5" fill="#fa709a"/>
-      <circle cx="56" cy="63" r="2.5" fill="#fa709a"/>
+
+    <!-- Connection lines from servers to databases -->
+    <line x1="62" y1="105" x2="80" y2="92" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+    <line x1="142" y1="105" x2="150" y2="92" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+    <line x1="222" y1="105" x2="220" y2="92" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+
+    <!-- Web Servers below databases -->
+    <g transform="translate(35, 105)">
+      <!-- Server 1 -->
+      <g transform="translate(0, 0)">
+        <rect x="0" y="0" width="55" height="40" rx="3" fill="rgba(250,112,154,0.15)" stroke="rgba(250,112,154,0.5)" stroke-width="1.5"/>
+        <rect x="6" y="8" width="43" height="7" rx="2" fill="rgba(250,112,154,0.3)"/>
+        <rect x="6" y="20" width="43" height="7" rx="2" fill="rgba(250,112,154,0.3)"/>
+        <circle cx="44" cy="11.5" r="2" fill="#fa709a"/>
+        <circle cx="44" cy="23.5" r="2" fill="#fa709a"/>
+      </g>
+      <!-- Server 2 -->
+      <g transform="translate(80, 0)">
+        <rect x="0" y="0" width="55" height="40" rx="3" fill="rgba(250,112,154,0.15)" stroke="rgba(250,112,154,0.5)" stroke-width="1.5"/>
+        <rect x="6" y="8" width="43" height="7" rx="2" fill="rgba(250,112,154,0.3)"/>
+        <rect x="6" y="20" width="43" height="7" rx="2" fill="rgba(250,112,154,0.3)"/>
+        <circle cx="44" cy="11.5" r="2" fill="#fa709a"/>
+        <circle cx="44" cy="23.5" r="2" fill="#fa709a"/>
+      </g>
+      <!-- Server 3 -->
+      <g transform="translate(160, 0)">
+        <rect x="0" y="0" width="55" height="40" rx="3" fill="rgba(250,112,154,0.15)" stroke="rgba(250,112,154,0.5)" stroke-width="1.5"/>
+        <rect x="6" y="8" width="43" height="7" rx="2" fill="rgba(250,112,154,0.3)"/>
+        <rect x="6" y="20" width="43" height="7" rx="2" fill="rgba(250,112,154,0.3)"/>
+        <circle cx="44" cy="11.5" r="2" fill="#fa709a"/>
+        <circle cx="44" cy="23.5" r="2" fill="#fa709a"/>
+      </g>
+      <text x="107" y="52" font-size="9" fill="rgba(250,112,154,0.8)" text-anchor="middle">Web Servers</text>
     </g>
-    <!-- Server rack 3 -->
-    <g transform="translate(200, 0)">
-      <rect x="0" y="0" width="70" height="85" rx="4" fill="rgba(250,112,154,0.15)" stroke="rgba(250,112,154,0.5)" stroke-width="1.5"/>
-      <rect x="8" y="10" width="54" height="10" rx="2" fill="rgba(250,112,154,0.3)"/>
-      <rect x="8" y="26" width="54" height="10" rx="2" fill="rgba(250,112,154,0.3)"/>
-      <rect x="8" y="42" width="54" height="10" rx="2" fill="rgba(250,112,154,0.3)"/>
-      <rect x="8" y="58" width="54" height="10" rx="2" fill="rgba(250,112,154,0.3)"/>
-      <circle cx="56" cy="15" r="2.5" fill="#fa709a"/>
-      <circle cx="56" cy="31" r="2.5" fill="#fa709a"/>
-      <circle cx="56" cy="47" r="2.5" fill="#fa709a"/>
-      <circle cx="56" cy="63" r="2.5" fill="#fa709a"/>
-    </g>
-    <text x="135" y="102" font-size="11" fill="#fa709a" text-anchor="middle">Centralized Servers</text>
   </g>
 
-  <!-- Connection lines from servers to protocol box (solid to avoid rendering issues) -->
-  <line x1="185" y1="165" x2="250" y2="195" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
-  <line x1="285" y1="165" x2="285" y2="195" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
-  <line x1="385" y1="165" x2="320" y2="195" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+  <!-- Connection lines from datacenter to protocol box -->
+  <line x1="270" y1="210" x2="270" y2="225" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
 
   <!-- Protocol box -->
-  <g transform="translate(195, 200)">
+  <g transform="translate(178, 220)">
     <rect x="0" y="0" width="80" height="30" rx="4" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
     <text x="40" y="20" font-size="12" font-weight="500" fill="#aaa" text-anchor="middle">HTTPS</text>
     <rect x="90" y="0" width="95" height="30" rx="4" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
@@ -76,10 +96,10 @@
   </g>
 
   <!-- Connection to browser -->
-  <line x1="285" y1="235" x2="285" y2="265" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+  <line x1="270" y1="255" x2="270" y2="285" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
 
   <!-- Browser -->
-  <g transform="translate(200, 270)">
+  <g transform="translate(185, 290)">
     <rect x="0" y="0" width="170" height="80" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
     <!-- Browser chrome -->
     <rect x="0" y="0" width="170" height="22" rx="6" fill="rgba(255,255,255,0.08)"/>
@@ -93,11 +113,11 @@
   </g>
 
   <!-- Arrow to user -->
-  <line x1="285" y1="360" x2="285" y2="385" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
-  <polygon points="285,392 280,384 290,384" fill="rgba(255,255,255,0.25)"/>
+  <line x1="270" y1="380" x2="270" y2="405" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+  <polygon points="270,412 265,404 275,404" fill="rgba(255,255,255,0.25)"/>
 
   <!-- User icon -->
-  <g transform="translate(255, 398)">
+  <g transform="translate(240, 418)">
     <circle cx="30" cy="12" r="12" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
     <path d="M10,45 Q10,28 30,28 Q50,28 50,45" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
     <text x="30" y="62" font-size="11" fill="#666" text-anchor="middle">User</text>
