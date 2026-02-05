@@ -1,78 +1,18 @@
 <section style="display: flex; flex-direction: column; height: 100vh;">
   <h2 style="flex-shrink: 0; margin-bottom: 0.3em;">Small-World Routing</h2>
 
-  <style>
-    .small-world-content {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 1.5em;
-      min-height: 0;
-    }
-    .small-world-diagram {
-      flex: 1 1 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 200px;
-    }
-    .small-world-diagram img {
-      max-height: calc(100vh - 180px);
-      max-width: 100%;
-      object-fit: contain;
-    }
-    .small-world-text {
-      flex: 1 1 45%;
-      min-width: 280px;
-    }
-    .small-world-text ul {
-      font-size: 1.05em;
-      line-height: 1.7;
-    }
-    @media (max-width: 1400px) {
-      .small-world-content {
-        flex-direction: column;
-      }
-      .small-world-diagram {
-        flex: 0 0 auto;
-        width: 100%;
-        max-height: 45vh;
-      }
-      .small-world-diagram img {
-        max-height: 40vh;
-      }
-      .small-world-text {
-        flex: 1;
-        width: 100%;
-      }
-      .small-world-text ul {
-        font-size: 0.95em;
-      }
-    }
-  </style>
-
-  <div class="small-world-content">
-    <div class="small-world-diagram">
-      <img src="/slides/hard-problems/small-world.svg" alt="Small-World Network">
-    </div>
-    <div class="small-world-text">
-      <ul>
-        <li><strong>Problem:</strong> Find data without central servers</li>
-        <li><strong>Solution:</strong> Each peer has a "location" (0.0-1.0)</li>
-        <li>Data keys map to locations via hash</li>
-        <li>Connections optimize for <span style="color: #43e97b;">request patterns</span></li>
-        <li><strong>Result:</strong> O(log n) hops to any data</li>
-      </ul>
-    </div>
+  <div style="flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0;">
+    <img src="/slides/hard-problems/small-world.svg" alt="Small-World Network" style="max-height: calc(100vh - 100px); max-width: 95%; object-fit: contain;">
   </div>
 
   <aside class="notes">
     <ul>
-      <li>Every peer has location (0.0–1.0)</li>
-      <li>Data keys hash to locations on ring</li>
-      <li>Self-organizing: peers optimize connections toward high-traffic areas</li>
+      <li>Problem: find data without central servers</li>
+      <li>Every peer has a location (0.0–1.0)</li>
+      <li>Data keys hash to locations on the ring</li>
+      <li>Connections self-organize to optimize for request patterns</li>
       <li>Mostly local connections + some long-range links</li>
-      <li>Routing: O(log n) hops to any data</li>
+      <li>Result: O(log n) hops to any data</li>
       <li>Similar to "six degrees of separation"</li>
     </ul>
   </aside>
