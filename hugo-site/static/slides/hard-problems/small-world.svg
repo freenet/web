@@ -108,4 +108,11 @@
     <text x="15" y="42" font-size="9" fill="rgba(255,255,255,0.5)">O(log n) hops to anywhere</text>
   </g>
 
+  <!-- Key result callout -->
+  <g transform="translate(700, 420)">
+    <rect x="0" y="0" width="170" height="50" rx="8" fill="rgba(79,172,254,0.15)" stroke="rgba(79,172,254,0.6)" stroke-width="1.5"/>
+    <text x="85" y="24" font-size="18" font-weight="600" fill="#4facfe" text-anchor="middle">O(log n)</text>
+    <text x="85" y="42" font-size="11" fill="rgba(255,255,255,0.6)" text-anchor="middle">routing hops</text>
+  </g>
+
 </svg>
