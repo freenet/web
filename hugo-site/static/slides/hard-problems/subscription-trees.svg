@@ -1,0 +1,88 @@
+<svg viewBox="0 0 420 350" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif" style="background: transparent;">
+  <defs>
+    <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#43e97b"/>
+    </marker>
+    <marker id="arrowYellow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f9a825"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="210" y="20" font-size="12" font-weight="600" fill="#666" text-anchor="middle">Location Ring (0.0 – 1.0)</text>
+
+  <!-- The ring -->
+  <circle cx="210" cy="160" r="110" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+
+  <!-- Location markers on ring -->
+  <text x="210" y="40" font-size="9" fill="#555" text-anchor="middle">0.0</text>
+  <text x="332" y="165" font-size="9" fill="#555" text-anchor="start">0.25</text>
+  <text x="210" y="285" font-size="9" fill="#555" text-anchor="middle">0.5</text>
+  <text x="85" y="165" font-size="9" fill="#555" text-anchor="end">0.75</text>
+
+  <!-- Contract location marker (at ~0.08 position) -->
+  <g transform="translate(250, 58)">
+    <rect x="-22" y="-10" width="44" height="20" rx="4" fill="rgba(79,172,254,0.2)" stroke="#4facfe" stroke-width="1.5"/>
+    <text x="0" y="4" font-size="9" font-weight="500" fill="#4facfe" text-anchor="middle">Contract</text>
+  </g>
+  <line x1="250" y1="68" x2="250" y2="82" stroke="#4facfe" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <!-- Hosting peers (close to contract location) -->
+  <!-- Peer A - closest to contract, the "root" -->
+  <circle cx="255" cy="92" r="12" fill="rgba(67,233,123,0.4)" stroke="#43e97b" stroke-width="2"/>
+  <text x="255" y="96" font-size="8" font-weight="600" fill="#fff" text-anchor="middle">A</text>
+  <text x="272" y="88" font-size="7" fill="#43e97b">root</text>
+
+  <!-- Peer B - also close -->
+  <circle cx="290" cy="118" r="10" fill="rgba(67,233,123,0.35)" stroke="#43e97b" stroke-width="1.5"/>
+  <text x="290" y="122" font-size="8" font-weight="500" fill="#fff" text-anchor="middle">B</text>
+
+  <!-- Peer C -->
+  <circle cx="225" cy="108" r="10" fill="rgba(67,233,123,0.35)" stroke="#43e97b" stroke-width="1.5"/>
+  <text x="225" y="112" font-size="8" font-weight="500" fill="#fff" text-anchor="middle">C</text>
+
+  <!-- Non-hosting peers around the ring -->
+  <circle cx="320" cy="160" r="9" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <text x="320" y="164" font-size="7" fill="#777" text-anchor="middle">D</text>
+
+  <circle cx="295" cy="230" r="9" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <text x="295" y="234" font-size="7" fill="#777" text-anchor="middle">E</text>
+
+  <circle cx="210" cy="270" r="9" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <text x="210" y="274" font-size="7" fill="#777" text-anchor="middle">F</text>
+
+  <circle cx="100" cy="160" r="9" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <text x="100" y="164" font-size="7" fill="#777" text-anchor="middle">H</text>
+
+  <circle cx="130" cy="100" r="9" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <text x="130" y="104" font-size="7" fill="#777" text-anchor="middle">I</text>
+
+  <!-- Subscribing peer G (far from contract) -->
+  <circle cx="125" cy="230" r="10" fill="rgba(249,168,37,0.3)" stroke="#f9a825" stroke-width="2"/>
+  <text x="125" y="234" font-size="8" font-weight="500" fill="#fff" text-anchor="middle">G</text>
+  <text x="125" y="248" font-size="7" fill="#f9a825" text-anchor="middle">subscriber</text>
+
+  <!-- Subscribe request path: G -> H -> I -> C -> A (dashed yellow) -->
+  <path d="M120,220 L105,168" stroke="#f9a825" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowYellow)"/>
+  <path d="M107,153 L125,108" stroke="#f9a825" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowYellow)"/>
+  <path d="M139,98 L215,108" stroke="#f9a825" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowYellow)"/>
+  <path d="M233,103 L248,97" stroke="#f9a825" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowYellow)"/>
+
+  <!-- Update propagation (solid green, reverse direction) -->
+  <path d="M248,100 L233,106" stroke="#43e97b" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <path d="M217,113 L139,103" stroke="#43e97b" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <path d="M125,108 L108,152" stroke="#43e97b" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <path d="M103,168 L118,220" stroke="#43e97b" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- Legend -->
+  <g transform="translate(20, 320)">
+    <line x1="0" y1="0" x2="20" y2="0" stroke="#f9a825" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="25" y="4" font-size="9" fill="#f9a825">subscribe</text>
+
+    <line x1="100" y1="0" x2="120" y2="0" stroke="#43e97b" stroke-width="2"/>
+    <text x="125" y="4" font-size="9" fill="#43e97b">updates flow</text>
+
+    <circle cx="230" cy="0" r="5" fill="rgba(67,233,123,0.35)" stroke="#43e97b" stroke-width="1.5"/>
+    <text x="240" y="4" font-size="9" fill="#43e97b">host</text>
+  </g>
+</svg>

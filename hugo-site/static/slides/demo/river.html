@@ -21,14 +21,11 @@
   </div>
 
   <aside class="notes">
-    [CLICK TO LIVE DEMO IF WORKING]
-
-    River demonstrates everything we just talked about:
-    - Contract stores the chat room state (messages, members)
-    - Delegate on each user's device holds their private keys
-    - When you send a message, it updates the contract
-    - All subscribers get the update in real-time via delta sync
-
-    This is the pattern for building Freenet apps. River is open source - you can use it as a template.
+    River architecture:
+    - Contract stores chat room state (messages, members)
+    - Delegate on user's device holds private keys
+    - Message sends update the contract
+    - Subscribers get updates in real-time via delta sync
+    - Open source template for Freenet apps
   </aside>
 </section>

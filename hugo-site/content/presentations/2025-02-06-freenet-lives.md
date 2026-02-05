@@ -13,6 +13,7 @@ slides:
   - hard-problems/small-world
   - hard-problems/real-time-sync
   - hard-problems/sync-demo
+  - hard-problems/subscription-trees
   - hard-problems/propagation-demo
   - hard-problems/no-infrastructure
   # 4. Live Demo

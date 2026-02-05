@@ -1,0 +1,28 @@
+<section style="display: flex; flex-direction: column; height: 100vh;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.3em;">Subscription Trees</h2>
+
+  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1em; min-height: 0;">
+    <div style="flex: 0 1 auto;">
+      <img src="/slides/hard-problems/subscription-trees.svg?v=4" alt="Subscription Trees" style="height: 42vh; width: auto;">
+    </div>
+    <div style="flex: 0 1 auto; font-size: 0.8em; text-align: center;">
+      <span style="color: #4facfe;">Contract location</span> ·
+      <span style="color: #43e97b;">Nearby peers host</span> ·
+      <span style="color: #f9a825;">Subscribe</span> →
+      <span style="color: #43e97b;">Tree forms</span> →
+      <span>Instant updates</span>
+    </div>
+  </div>
+
+  <aside class="notes">
+    KEY POINTS:
+    • Contracts get a location (0.0–1.0) derived from hash of their WebAssembly code
+    • Peers close to that location will host the contract
+    • Popular contracts are hosted more widely — this is adaptive scaling
+    • To subscribe: request routes toward the contract's location
+    • Once it hits a peer hosting the contract, all peers in that chain start hosting
+    • This forms a "subscription tree"
+    • Connected peers hosting the same contract sync automatically via summary/delta
+    • Result: subscribers get instant updates when the contract changes
+  </aside>
+</section>

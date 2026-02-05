@@ -6,17 +6,17 @@
       flex: 1;
       display: flex;
       flex-direction: column;
+      justify-content: center;
       min-height: 0;
       position: relative;
     }
     .sync-peer-container {
       position: relative;
       display: flex;
-      justify-content: space-evenly;
-      align-items: flex-start;
+      justify-content: center;
+      align-items: center;
       gap: 8rem;
-      flex: 1;
-      padding: 1rem;
+      padding: 2rem 1rem;
       min-height: 200px;
     }
     .sync-peer {
@@ -553,12 +553,13 @@
   </script>
 
   <aside class="notes">
-    This animation shows how two peers synchronize without a central server.
-    Press arrow key to advance each step:
-    1. Each peer creates a compact summary of what it has
-    2. They exchange summaries (much smaller than full data)
-    3. Each peer identifies what the other is missing
-    4. They send only the missing pieces (deltas)
-    Result: Both peers end up with the same data, efficiently.
+    Sync protocol:
+    1. Each peer creates compact summary of its state
+    2. Exchange summaries (smaller than full data)
+    3. Compare to identify what the other is missing
+    4. Send only missing pieces (deltas)
+
+    Summaries and deltas are opaque bytes to Freenet protocol.
+    Contract's WebAssembly code defines their meaning and processing.
   </aside>
 </section>
