@@ -1,0 +1,73 @@
+<svg viewBox="0 0 700 360" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="rgba(255,255,255,0.4)"/>
+    </marker>
+    <marker id="arrG" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="#43e97b"/>
+    </marker>
+  </defs>
+
+  <!-- Path labels -->
+  <text x="165" y="16" font-size="12" fill="rgba(255,255,255,0.5)" text-anchor="middle" font-style="italic">merge A+B, then C</text>
+  <text x="535" y="16" font-size="12" fill="rgba(255,255,255,0.5)" text-anchor="middle" font-style="italic">merge C+B, then A</text>
+
+  <!-- ===== LEFT PATH ===== -->
+
+  <!-- Row 1: Source circles A and B -->
+  <circle cx="100" cy="55" r="24" fill="#4facfe" opacity="0.9"/>
+  <text x="100" y="61" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">A</text>
+
+  <circle cx="230" cy="55" r="24" fill="#ff6b9d" opacity="0.9"/>
+  <text x="230" y="61" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">B</text>
+
+  <!-- Arrows A,B → intermediate -->
+  <line x1="114" y1="74" x2="145" y2="112" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="216" y1="74" x2="185" y2="112" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Row 2: A+B result (orchid) and C input -->
+  <circle cx="165" cy="140" r="26" fill="#d08be4" opacity="0.9"/>
+
+  <circle cx="275" cy="140" r="18" fill="#a78bfa" opacity="0.9"/>
+  <text x="275" y="146" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">C</text>
+
+  <!-- Arrows intermediate+C → final -->
+  <line x1="178" y1="162" x2="195" y2="226" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="264" y1="155" x2="220" y2="226" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Row 3: Final result (left) -->
+  <circle cx="205" cy="258" r="30" fill="#c8a8f0" opacity="0.9"/>
+
+  <!-- ===== RIGHT PATH ===== -->
+
+  <!-- Row 1: Source circles C and B -->
+  <circle cx="470" cy="55" r="24" fill="#a78bfa" opacity="0.9"/>
+  <text x="470" y="61" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">C</text>
+
+  <circle cx="600" cy="55" r="24" fill="#ff6b9d" opacity="0.9"/>
+  <text x="600" y="61" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">B</text>
+
+  <!-- Arrows C,B → intermediate -->
+  <line x1="484" y1="74" x2="515" y2="112" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="586" y1="74" x2="555" y2="112" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Row 2: C+B result (rose) and A input -->
+  <circle cx="535" cy="140" r="26" fill="#d57baa" opacity="0.9"/>
+
+  <circle cx="425" cy="140" r="18" fill="#4facfe" opacity="0.9"/>
+  <text x="425" y="146" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">A</text>
+
+  <!-- Arrows intermediate+A → final -->
+  <line x1="522" y1="162" x2="505" y2="226" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="436" y1="155" x2="480" y2="226" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Row 3: Final result (right) — same color -->
+  <circle cx="495" cy="258" r="30" fill="#c8a8f0" opacity="0.9"/>
+
+  <!-- ===== CENTER: equals sign ===== -->
+  <text x="350" y="266" font-size="30" font-weight="700" fill="#43e97b" text-anchor="middle">=</text>
+
+  <!-- Bottom tagline -->
+  <text x="350" y="335" font-size="13" fill="#43e97b" text-anchor="middle">Different path, same result</text>
+
+</svg>

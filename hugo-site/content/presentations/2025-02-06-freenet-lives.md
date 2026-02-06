@@ -9,9 +9,10 @@ slides:
   - intro/title
   # 2. Context for newcomers
   - intro/stack-comparison
+  - intro/core-idea
   # 3. The Hard Problems We Solved
   - hard-problems/small-world
-  - hard-problems/real-time-sync
+  - hard-problems/decentralized-consistency
   - hard-problems/sync-demo
   - hard-problems/subscription-trees
   - hard-problems/propagation-demo

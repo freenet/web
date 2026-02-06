@@ -1,0 +1,23 @@
+<section style="display: flex; flex-direction: column; justify-content: center; height: 100vh;">
+  <h2 style="margin-bottom: 0.3em;">Decentralized Consistency</h2>
+
+  <div style="display: flex; justify-content: center; align-items: center; flex: 1; min-height: 0;">
+    <img src="/slides/hard-problems/decentralized-consistency.svg" alt="Commutative merge" style="max-height: 100%; max-width: 90%; object-fit: contain;">
+  </div>
+
+  <div style="text-align: center; font-family: monospace;">
+    <div style="font-size: 1em; margin-bottom: 0.2em;"><span style="color: #43e97b;">merge</span>(A, B) = <span style="color: #43e97b;">merge</span>(B, A)</div>
+    <div style="font-size: 1.1em;"><span style="color: #43e97b;">merge</span>(<span style="color: #43e97b;">merge</span>(A, B), C) = <span style="color: #43e97b;">merge</span>(<span style="color: #43e97b;">merge</span>(B, C), A)</div>
+  </div>
+
+  <aside class="notes">
+    <ul>
+      <li>Consistency without central authority — hardest problem in distributed systems</li>
+      <li>Bitcoin context: ~$7–8B/year electricity, ~175 TWh (Cambridge Centre for Alternative Finance) — just to agree on who owns what</li>
+      <li>Our approach: state = arbitrary bytes, contract provides merge function</li>
+      <li>Key property: merge(A,B) = merge(B,A), associative, has identity — aka "commutative monoid"</li>
+      <li>Result: peers receive updates in any order, guaranteed convergence. No leader election, no voting, no proof-of-work</li>
+      <li>Contracts are WASM — full flexibility in defining state and merge logic</li>
+    </ul>
+  </aside>
+</section>

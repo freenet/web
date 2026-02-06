@@ -1,53 +1,18 @@
-<section style="display: flex; flex-direction: column; height: 100vh;">
-  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Freenet for AI Agents</h2>
+<section style="display: flex; flex-direction: column; justify-content: center; height: 100vh;">
+  <h2 style="margin-bottom: 0.3em;">Agent Infrastructure</h2>
 
-  <style>
-    .agents-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 0; }
-    .agents-content .tagline { font-size: 0.9em; margin-bottom: 0.6em; color: rgba(255,255,255,0.9); text-align: center; }
-    .agents-boxes { display: flex; gap: 1em; align-items: flex-start; max-width: 90%; }
-    .agents-list ul { font-size: 0.7em; line-height: 1.5; margin: 0; padding-left: 1em; }
-    .agents-vision { border-radius: 10px; padding: 0.7em; }
-    .agents-vision .title { font-size: 0.75em; font-weight: 600; margin-bottom: 0.3em; }
-    .agents-vision p { font-size: 0.65em; line-height: 1.4; margin: 0; }
-    .agents-vision .spec { margin-top: 0.4em; font-weight: 500; }
-    @media (max-height: 800px) {
-      .agents-content .tagline { font-size: 0.8em; margin-bottom: 0.4em; }
-      .agents-list ul { font-size: 0.6em; line-height: 1.4; }
-      .agents-vision { padding: 0.5em; }
-      .agents-vision .title { font-size: 0.65em; }
-      .agents-vision p { font-size: 0.55em; }
-    }
-  </style>
-
-  <div class="agents-content">
-    <p class="tagline">AI agents can deploy services <span style="color: #43e97b;">autonomously</span></p>
-
-    <div class="agents-boxes">
-      <div class="agents-list" style="flex: 1;">
-        <ul>
-          <li><strong style="color: #43e97b;">No infrastructure</strong> - no AWS, no keys</li>
-          <li><strong style="color: #43e97b;">Self-describing</strong> - code IS interface</li>
-          <li><strong style="color: #43e97b;">Real-time</strong> - subscribe, get updates</li>
-          <li><strong style="color: #43e97b;">Permissionless</strong> - no ToS, no limits</li>
-        </ul>
-      </div>
-
-      <div class="agents-vision" style="flex: 1; background: linear-gradient(135deg, rgba(67,233,123,0.15), rgba(79,172,254,0.15)); border: 2px solid rgba(67,233,123,0.4);">
-        <p class="title" style="color: #43e97b;">The Vision</p>
-        <p style="color: rgba(255,255,255,0.85);">Deploy a contract, advertise its hash, other agents interact <em>immediately</em>.</p>
-        <p style="color: rgba(255,255,255,0.85); margin-top: 0.3em;">No servers. No docs. No approval.</p>
-        <p class="spec" style="color: #4facfe;">Contract code IS the spec.</p>
-      </div>
-    </div>
+  <div style="display: flex; justify-content: center; align-items: center; flex: 1; min-height: 0;">
+    <img src="/slides/ai/freenet-for-agents.svg" alt="Agent trust through contracts" style="max-height: 100%; max-width: 90%; object-fit: contain;">
   </div>
 
   <aside class="notes">
-    <p><strong>AI agents on Freenet:</strong></p>
     <ul>
-      <li>Traditional web: AWS account, credit card, API keys, DNS, SSL certs</li>
-      <li>Freenet: Deploy contract. Contract hash = address.</li>
-      <li>Agents can read code, understand interface, interact permissionlessly</li>
-      <li>No rate limits, no account suspension</li>
+      <li>Agents increasingly need to coordinate with other agents to perform complex tasks</li>
+      <li>Problem: agents don't necessarily trust each other</li>
+      <li>Freenet contracts are transparent WebAssembly — any agent can inspect the code and verify behavior</li>
+      <li>Trust the system, not the participants</li>
+      <li>No infrastructure overhead: no AWS, no API keys, no rate limits, no ToS</li>
+      <li>Freenet is the natural general-purpose coordination layer for multi-agent systems</li>
     </ul>
   </aside>
 </section>

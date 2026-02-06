@@ -1,0 +1,19 @@
+<section style="display: flex; flex-direction: column; justify-content: center; height: 100vh;">
+  <h2 style="margin-bottom: 0.3em;">The Core Idea</h2>
+
+  <div style="display: flex; justify-content: center; align-items: center; flex: 1; min-height: 0;">
+    <img src="/slides/intro/core-idea.svg" alt="Freenet key-value model" style="max-height: 100%; max-width: 90%; object-fit: contain;">
+  </div>
+
+  <aside class="notes">
+    <ul>
+      <li>Freenet is a global, decentralized, scalable key-value store</li>
+      <li>The twist: keys are WebAssembly code, not just addresses</li>
+      <li>Contract code specifies what values are valid, how to merge states, how to sync</li>
+      <li>key = hash(hash(contract_code) + contract_parameters)</li>
+      <li>State can be anything: chat, documents, social graphs — just bytes</li>
+      <li>Three building blocks: Contract (public shared state), Delegate (private user state), UI (web app in browser)</li>
+      <li>Delegate = user's agent, handles keys/signing/encryption locally</li>
+    </ul>
+  </aside>
+</section>
