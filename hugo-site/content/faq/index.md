@@ -18,6 +18,7 @@ draft: false
 - [What is the status of Freenet?](#what-is-the-status-of-freenet)
 - [Can I follow Freenet on social media?](#can-i-follow-freenet-on-social-media)
 - [How can I financially support Freenet development?](#how-can-i-financially-support-freenet-development)
+- [Why does the Freenet project use and mention AI tools?](#why-does-the-freenet-project-use-and-mention-ai-tools)
 
 Freenet is a fully decentralized, peer-to-peer network and a drop-in replacement for the world wide
 web. It operates as a global shared computer, providing a platform for sophisticated decentralized
@@ -212,3 +213,18 @@ You can [donate via credit card or cryptocurrency](/donate), or donate through o
 If you are in a position to make a larger contribution or grant please
 {{< email-protect "gro.teneerf@nai" "email Ian" >}} or reach out to him on
 [𝕏](https://x.com/sanity).
+
+# Why does the Freenet project use and mention AI tools? {#why-does-the-freenet-project-use-and-mention-ai-tools}
+
+Freenet does not require AI, depend on AI, or embed AI into the platform. Users and contributors can
+use, build on, or participate in Freenet without interacting with AI in any form.
+
+In practice, some of the Freenet codebase is written with extensive assistance from AI tools and then
+reviewed, tested, and refined by humans. We use these tools because they dramatically increase
+developer productivity, allowing a small team to build and iterate far more quickly than would
+otherwise be possible.
+
+For a project whose purpose is free communication, transparency and user agency matter more than
+optimizing for any particular set of cultural or moral preferences. Freenet is about giving people
+control over how they communicate and what tools they choose to use, not about enforcing or signaling
+an ideology.
