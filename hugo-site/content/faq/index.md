@@ -224,8 +224,3 @@ reviewed, tested, and refined by humans. We rely on extensive testing to validat
 including unit tests, integration tests, and simulations of small networks of Freenet peers. We use
 these tools because they dramatically increase developer productivity, allowing a small team to build
 and iterate far more quickly than would otherwise be possible.
-
-For a project whose purpose is free communication, transparency and user agency matter more than
-optimizing for any particular set of cultural or moral preferences. Freenet is about giving people
-control over how they communicate and what tools they choose to use, not about enforcing or signaling
-an ideology.
