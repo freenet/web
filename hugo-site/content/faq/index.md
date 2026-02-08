@@ -220,9 +220,10 @@ Freenet does not require AI, depend on AI, or embed AI into the platform. Users 
 use, build on, or participate in Freenet without interacting with AI in any form.
 
 In practice, some of the Freenet codebase is written with extensive assistance from AI tools and then
-reviewed, tested, and refined by humans. We use these tools because they dramatically increase
-developer productivity, allowing a small team to build and iterate far more quickly than would
-otherwise be possible.
+reviewed, tested, and refined by humans. We rely on extensive testing to validate all code,
+including unit tests, integration tests, and simulations of small networks of Freenet peers. We use
+these tools because they dramatically increase developer productivity, allowing a small team to build
+and iterate far more quickly than would otherwise be possible.
 
 For a project whose purpose is free communication, transparency and user agency matter more than
 optimizing for any particular set of cultural or moral preferences. Freenet is about giving people
