@@ -1,6 +1,8 @@
 ---
 title: "Freenet Lives! Real-Time Decentralized Applications at Scale"
-date: 2025-02-06
+date: 2026-02-06
+aliases:
+  - /presentations/2025-02-06-freenet-lives/
 author: "Ian Clarke"
 layout: single
 type: presentations

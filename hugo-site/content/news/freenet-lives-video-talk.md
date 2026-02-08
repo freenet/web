@@ -1,6 +1,6 @@
 +++
 title = "Freenet Lives! Real-Time Decentralized Applications at Scale"
-date = 2025-02-06
+date = 2026-02-06
 tags = ["video-talk", "front-page"]
 +++
 
