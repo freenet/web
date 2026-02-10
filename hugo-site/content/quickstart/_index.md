@@ -48,6 +48,9 @@ Clicking the link will open River in your browser and automatically join you to 
 
 If you run into problems, join our [Matrix chat](https://matrix.to/#/#freenet-locutus:matrix.org) for help.
 
+**Containers & headless servers:** If service installation fails (common in LXC/Docker), use the system-wide
+service instead: `sudo freenet service install --system`
+
 **Network requirements:** Freenet uses UDP hole punching for peer-to-peer connections. Most home routers support this without configuration. Strict corporate firewalls may block connections.
 
 ## What's Next?
