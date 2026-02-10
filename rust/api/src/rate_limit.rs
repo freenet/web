@@ -13,7 +13,7 @@ use std::sync::Mutex;
 use thiserror::Error;
 
 /// Maximum number of invites allowed per IP within the time window
-const MAX_INVITES_PER_WINDOW: usize = 5;
+const MAX_INVITES_PER_WINDOW: usize = 20;
 
 /// SHA256 hashes of IPs exempt from rate limiting (for testing)
 const EXEMPT_IP_HASHES: &[&str] = &[
