@@ -48,6 +48,8 @@ Clicking the link will open River in your browser and automatically join you to 
 
 If you run into problems, join our [Matrix chat](https://matrix.to/#/#freenet-locutus:matrix.org) for help.
 
+**Invite didn't work?** If River opened but you're not in the room, try restarting Freenet (`freenet service restart`), then come back to this page and click the invite button again for a fresh invite code. If you see the room but can't send messages, click the **"i"** icon next to the room name, click **"Leave Room"**, then get a new invite.
+
 **Containers & headless servers:** If service installation fails (common in LXC/Docker), use the system-wide
 service instead: `sudo freenet service install --system`
 
