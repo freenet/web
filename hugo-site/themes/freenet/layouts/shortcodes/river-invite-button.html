@@ -131,6 +131,15 @@
             Open River &amp; Join Chat
         </a>
 
+        <details style="margin-top: 1rem;">
+            <summary style="cursor: pointer; font-size: 0.9rem; color: #64748b;">Using <code>riverctl</code>? Copy invite code</summary>
+            <div style="margin-top: 0.5rem; position: relative;">
+                <code id="invite-code-text" style="display: block; padding: 0.75rem; background: #1a1a1a; color: #e2e8f0; border-radius: 6px; font-size: 0.8rem; word-break: break-all; user-select: all;"></code>
+                <button id="copy-invite-btn" style="position: absolute; top: 0.5rem; right: 0.5rem; background: #334155; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.75rem;">Copy</button>
+            </div>
+            <p class="note" style="margin-top: 0.5rem;">Run: <code>riverctl invite accept &lt;code&gt;</code></p>
+        </details>
+
         <p class="note">Make sure Freenet is running. Please be patient—River may take a while to load when your peer first starts.</p>
     </div>
 
@@ -157,6 +166,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const inviteLink = document.getElementById('invite-link');
     const errorMessage = document.getElementById('error-message');
     const retryMessage = document.getElementById('retry-message');
+
+    document.getElementById('copy-invite-btn').addEventListener('click', function() {
+        const code = document.getElementById('invite-code-text').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            this.textContent = 'Copied!';
+            setTimeout(() => { this.textContent = 'Copy'; }, 2000);
+        });
+    });
 
     getInviteBtn.addEventListener('click', async function() {
         inviteForm.style.display = 'none';
@@ -192,6 +209,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Set the invite link URL
             inviteLink.href = `${riverBaseUrl}?invitation=${encodeURIComponent(inviteCode)}`;
+
+            // Show raw invite code for CLI users
+            document.getElementById('invite-code-text').textContent = inviteCode;
 
             inviteLoading.style.display = 'none';
             inviteResult.style.display = 'block';

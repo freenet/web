@@ -42,7 +42,34 @@ Get an invite to our community chat. You can request up to 5 invites per day.
 
 {{< river-invite-button room="Freenet Official" >}}
 
-Clicking the link will open River in your browser and automatically join you to the room using the invite code.
+Clicking the link will open River in your browser and automatically join you to the room using the invite
+code.
+
+### CLI Alternative: riverctl
+
+River also has a full-featured command-line interface. If you have Rust tooling installed, you can install it
+with:
+
+```bash
+cargo install riverctl
+```
+
+To accept an invite via the CLI, click "Get Invite Code" above, expand "Using riverctl? Copy invite code" to
+copy the code, then run:
+
+```bash
+riverctl invite accept <invite-code>
+```
+
+Once joined, you can send and receive messages entirely from the terminal:
+
+```bash
+riverctl message send <room-owner-key> "Hello from the CLI!"
+riverctl message stream <room-owner-key>   # live message stream
+riverctl room list                          # list your rooms
+```
+
+Run `riverctl --help` for the full list of commands.
 
 ## Troubleshooting
 
