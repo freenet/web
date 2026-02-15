@@ -1,0 +1,80 @@
+<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <style>
+    :root {
+      --box-active: #c8dcc8;
+      --box-active-border: #a8c0a8;
+      --box-pruned: #f0e8d0;
+      --box-pruned-border: #d8cca8;
+      --box-invite: #d0e0f0;
+      --box-invite-border: #a8c0d8;
+      --text-primary: #3a3a3a;
+      --text-secondary: #666666;
+      --text-label: #888888;
+      --arrow-color: #707070;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --box-active: #3a4a3a;
+        --box-active-border: #506050;
+        --box-pruned: #4a4838;
+        --box-pruned-border: #605840;
+        --box-invite: #384050;
+        --box-invite-border: #485060;
+        --text-primary: #e8e8e8;
+        --text-secondary: #b0b0b0;
+        --text-label: #909090;
+        --arrow-color: rgba(255,255,255,0.5);
+      }
+    }
+    .active-box { fill: var(--box-active); stroke: var(--box-active-border); stroke-width: 1.5; }
+    .pruned-box { fill: var(--box-pruned); stroke: var(--box-pruned-border); stroke-width: 1.5; stroke-dasharray: 4 3; }
+    .invite-box { fill: var(--box-invite); stroke: var(--box-invite-border); stroke-width: 1.5; }
+    .text-primary { fill: var(--text-primary); }
+    .text-secondary { fill: var(--text-secondary); }
+    .text-label { fill: var(--text-label); }
+    .arrow-line { stroke: var(--arrow-color); fill: none; stroke-width: 2; }
+    .arrow-head { fill: var(--arrow-color); }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" class="arrow-head"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="350" y="28" text-anchor="middle" font-size="16" font-weight="600" class="text-primary">Member Lifecycle</text>
+
+  <!-- State 1: Invited -->
+  <rect x="30" y="70" width="160" height="60" rx="8" class="invite-box"/>
+  <text x="110" y="97" text-anchor="middle" font-size="13" font-weight="600" class="text-primary">Invited</text>
+  <text x="110" y="115" text-anchor="middle" font-size="10" class="text-secondary">Receives invitation</text>
+
+  <!-- State 2: Active Member -->
+  <rect x="270" y="70" width="160" height="60" rx="8" class="active-box"/>
+  <text x="350" y="97" text-anchor="middle" font-size="13" font-weight="600" class="text-primary">Active Member</text>
+  <text x="350" y="115" text-anchor="middle" font-size="10" class="text-secondary">In member list</text>
+
+  <!-- State 3: Pruned -->
+  <rect x="510" y="70" width="160" height="60" rx="8" class="pruned-box"/>
+  <text x="590" y="97" text-anchor="middle" font-size="13" font-weight="600" class="text-primary">Pruned</text>
+  <text x="590" y="115" text-anchor="middle" font-size="10" class="text-secondary">Not in member list</text>
+
+  <!-- Arrow: Invited → Active -->
+  <line x1="190" y1="100" x2="268" y2="100" class="arrow-line" marker-end="url(#arrowhead)"/>
+  <text x="229" y="90" text-anchor="middle" font-size="10" class="text-label">Sends a</text>
+  <text x="229" y="102" text-anchor="middle" font-size="10" class="text-label">message</text>
+
+  <!-- Arrow: Active → Pruned -->
+  <line x1="430" y1="100" x2="508" y2="100" class="arrow-line" marker-end="url(#arrowhead)"/>
+  <text x="469" y="90" text-anchor="middle" font-size="10" class="text-label">Messages</text>
+  <text x="469" y="102" text-anchor="middle" font-size="10" class="text-label">expire</text>
+
+  <!-- Arrow: Pruned → Active (curves back underneath) -->
+  <path d="M 590 130 L 590 200 Q 590 220 570 220 L 380 220 Q 350 220 350 200 L 350 132"
+        class="arrow-line" marker-end="url(#arrowhead)"/>
+  <text x="470" y="215" text-anchor="middle" font-size="10" class="text-label">Sends message (original invitation bundled automatically)</text>
+
+  <!-- Annotation -->
+  <text x="350" y="270" text-anchor="middle" font-size="10" font-style="italic" class="text-label">Pruning is enforced by the contract after every state change — no server or admin needed</text>
+</svg>

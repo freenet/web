@@ -1,0 +1,130 @@
+<svg viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <style>
+    :root {
+      --bg: #fafaf8;
+      --box-owner: #e8d0d8;
+      --box-owner-border: #d0b0b8;
+      --box-active: #c8dcc8;
+      --box-active-border: #a8c0a8;
+      --box-kept: #d0e0f0;
+      --box-kept-border: #a8c0d8;
+      --box-pruned: #f0e8d0;
+      --box-pruned-border: #d8cca8;
+      --text-primary: #3a3a3a;
+      --text-secondary: #666666;
+      --text-label: #888888;
+      --arrow-color: #707070;
+      --arrow-active: #5a8a5a;
+      --scene-bg: #f5f3ee;
+      --scene-border: #ddd8d0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1e1e1e;
+        --box-owner: #483840;
+        --box-owner-border: #604850;
+        --box-active: #3a4a3a;
+        --box-active-border: #506050;
+        --box-kept: #384050;
+        --box-kept-border: #485060;
+        --box-pruned: #4a4838;
+        --box-pruned-border: #605840;
+        --text-primary: #e8e8e8;
+        --text-secondary: #b0b0b0;
+        --text-label: #909090;
+        --arrow-color: rgba(255,255,255,0.5);
+        --arrow-active: #6aaa6a;
+        --scene-bg: #252320;
+        --scene-border: #3a3830;
+      }
+    }
+    .owner-box { fill: var(--box-owner); stroke: var(--box-owner-border); stroke-width: 1.5; }
+    .active-box { fill: var(--box-active); stroke: var(--box-active-border); stroke-width: 1.5; }
+    .kept-box { fill: var(--box-kept); stroke: var(--box-kept-border); stroke-width: 1.5; }
+    .pruned-box { fill: var(--box-pruned); stroke: var(--box-pruned-border); stroke-width: 1.5; stroke-dasharray: 4 3; }
+    .text-primary { fill: var(--text-primary); }
+    .text-secondary { fill: var(--text-secondary); }
+    .text-label { fill: var(--text-label); }
+    .arrow-line { stroke: var(--arrow-color); fill: none; stroke-width: 2; }
+    .arrow-active { stroke: var(--arrow-active); fill: none; stroke-width: 2; }
+    .arrow-head { fill: var(--arrow-color); }
+    .arrow-head-active { fill: var(--arrow-active); }
+    .scene-bg { fill: var(--scene-bg); stroke: var(--scene-border); }
+  </style>
+
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" class="arrow-head"/>
+    </marker>
+    <marker id="arr-active" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" class="arrow-head-active"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="400" y="28" text-anchor="middle" font-size="16" font-weight="600" class="text-primary">Invite Chain Preservation</text>
+
+  <!-- Scene: Before pruning -->
+  <rect x="20" y="45" width="360" height="250" rx="8" class="scene-bg"/>
+  <text x="200" y="68" text-anchor="middle" font-size="13" font-weight="600" class="text-primary">Before</text>
+  <text x="200" y="84" text-anchor="middle" font-size="10" class="text-label">Only Carol has recent messages</text>
+
+  <!-- Owner -->
+  <rect x="140" y="100" width="120" height="36" rx="6" class="owner-box"/>
+  <text x="200" y="123" text-anchor="middle" font-size="12" font-weight="600" class="text-primary">Owner</text>
+
+  <!-- Bob (invited by Owner) -->
+  <rect x="60" y="180" width="120" height="36" rx="6" class="kept-box"/>
+  <text x="120" y="198" text-anchor="middle" font-size="12" class="text-primary">Bob</text>
+  <text x="120" y="211" text-anchor="middle" font-size="9" class="text-secondary">no messages</text>
+
+  <!-- Dave (invited by Owner) -->
+  <rect x="220" y="180" width="120" height="36" rx="6" class="pruned-box"/>
+  <text x="280" y="198" text-anchor="middle" font-size="12" class="text-primary">Dave</text>
+  <text x="280" y="211" text-anchor="middle" font-size="9" class="text-secondary">no messages</text>
+
+  <!-- Carol (invited by Bob) -->
+  <rect x="60" y="250" width="120" height="36" rx="6" class="active-box"/>
+  <text x="120" y="268" text-anchor="middle" font-size="12" font-weight="600" class="text-primary">Carol</text>
+  <text x="120" y="281" text-anchor="middle" font-size="9" class="text-secondary">has messages</text>
+
+  <!-- Invite arrows (before) -->
+  <line x1="170" y1="136" x2="130" y2="178" class="arrow-active" marker-end="url(#arr-active)"/>
+  <line x1="230" y1="136" x2="270" y2="178" class="arrow-line" marker-end="url(#arr)"/>
+  <line x1="120" y1="216" x2="120" y2="248" class="arrow-active" marker-end="url(#arr-active)"/>
+
+  <!-- Scene: After pruning -->
+  <rect x="420" y="45" width="360" height="250" rx="8" class="scene-bg"/>
+  <text x="600" y="68" text-anchor="middle" font-size="13" font-weight="600" class="text-primary">After Pruning</text>
+  <text x="600" y="84" text-anchor="middle" font-size="10" class="text-label">Bob kept (in Carol's invite chain)</text>
+
+  <!-- Owner -->
+  <rect x="540" y="100" width="120" height="36" rx="6" class="owner-box"/>
+  <text x="600" y="123" text-anchor="middle" font-size="12" font-weight="600" class="text-primary">Owner</text>
+
+  <!-- Bob (kept - in chain) -->
+  <rect x="540" y="180" width="120" height="36" rx="6" class="kept-box"/>
+  <text x="600" y="198" text-anchor="middle" font-size="12" class="text-primary">Bob</text>
+  <text x="600" y="211" text-anchor="middle" font-size="9" class="text-secondary">kept (chain)</text>
+
+  <!-- Carol -->
+  <rect x="540" y="250" width="120" height="36" rx="6" class="active-box"/>
+  <text x="600" y="268" text-anchor="middle" font-size="12" font-weight="600" class="text-primary">Carol</text>
+  <text x="600" y="281" text-anchor="middle" font-size="9" class="text-secondary">has messages</text>
+
+  <!-- Dave pruned annotation -->
+  <text x="480" y="200" text-anchor="middle" font-size="10" font-style="italic" class="text-label">Dave</text>
+  <text x="480" y="213" text-anchor="middle" font-size="10" font-style="italic" class="text-label">pruned</text>
+
+  <!-- Invite arrows (after) -->
+  <line x1="600" y1="136" x2="600" y2="178" class="arrow-active" marker-end="url(#arr-active)"/>
+  <line x1="600" y1="216" x2="600" y2="248" class="arrow-active" marker-end="url(#arr-active)"/>
+
+  <!-- Legend -->
+  <rect x="220" y="310" width="14" height="14" rx="3" class="active-box"/>
+  <text x="240" y="322" font-size="10" class="text-secondary">Active (has messages)</text>
+  <rect x="370" y="310" width="14" height="14" rx="3" class="kept-box"/>
+  <text x="390" y="322" font-size="10" class="text-secondary">Kept (in invite chain)</text>
+  <rect x="530" y="310" width="14" height="14" rx="3" class="pruned-box"/>
+  <text x="550" y="322" font-size="10" class="text-secondary">Pruned (no messages, not in chain)</text>
+</svg>
