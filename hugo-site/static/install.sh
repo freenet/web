@@ -182,39 +182,53 @@ check_path() {
     esac
 }
 
-# Provide shell-specific PATH instructions
-print_path_instructions() {
+# Add install directory to PATH in the user's shell config
+ensure_in_path() {
     dir=$1
-    shell=$(basename "$SHELL")
-
-    warn "$dir is not in your PATH"
-    echo ""
-    echo "Add it to your PATH by adding this line to your shell configuration:"
-    echo ""
+    shell=$(basename "${SHELL:-/bin/sh}")
+    path_line="export PATH=\"\$HOME/.local/bin:\$PATH\""
 
     case "$shell" in
         bash)
-            echo "  echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.bashrc"
-            echo ""
-            echo "Then reload your shell:"
-            echo "  source ~/.bashrc"
+            # Prefer .bash_profile on macOS (login shell), .bashrc on Linux
+            if [ "$(detect_os)" = "macos" ]; then
+                rc="$HOME/.bash_profile"
+            else
+                rc="$HOME/.bashrc"
+            fi
+            if [ -f "$rc" ] && grep -qF '.local/bin' "$rc"; then
+                return 0
+            fi
+            echo "" >> "$rc"
+            echo "$path_line" >> "$rc"
+            info "Added $dir to PATH in $rc"
+            warn "Restart your shell or run: source $rc"
             ;;
         zsh)
-            echo "  echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.zshrc"
-            echo ""
-            echo "Then reload your shell:"
-            echo "  source ~/.zshrc"
+            rc="$HOME/.zshrc"
+            if [ -f "$rc" ] && grep -qF '.local/bin' "$rc"; then
+                return 0
+            fi
+            echo "" >> "$rc"
+            echo "$path_line" >> "$rc"
+            info "Added $dir to PATH in $rc"
+            warn "Restart your shell or run: source $rc"
             ;;
         fish)
-            echo "  fish_add_path ~/.local/bin"
+            if fish -c 'contains -- ~/.local/bin $fish_user_paths' 2>/dev/null; then
+                return 0
+            fi
+            fish -c 'fish_add_path ~/.local/bin' 2>/dev/null || true
+            info "Added $dir to PATH via fish_add_path"
             ;;
         *)
-            echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+            warn "$dir is not in your PATH"
             echo ""
-            echo "Add this line to your shell's configuration file."
+            echo "Add this line to your shell configuration file:"
+            echo "  $path_line"
+            echo ""
             ;;
     esac
-    echo ""
 }
 
 # Main installation logic
@@ -367,9 +381,9 @@ Then run: $install_dir/freenet --version"
     success "Freenet $version installed successfully!"
     echo ""
 
-    # Check PATH
+    # Ensure install directory is in PATH
     if ! check_path "$install_dir"; then
-        print_path_instructions "$install_dir"
+        ensure_in_path "$install_dir"
     fi
 
     # Ask about service installation (unless FREENET_NO_SERVICE is set)
