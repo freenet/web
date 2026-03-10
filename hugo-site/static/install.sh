@@ -237,7 +237,7 @@ main() {
     echo ""
 
     # Telemetry disclosure
-    echo "${YELLOW}Note:${NC} Freenet collects anonymous telemetry data by default during alpha"
+    printf "${YELLOW}Note:${NC} Freenet collects anonymous telemetry data by default during alpha\n"
     echo "      to help diagnose network issues. This includes:"
     echo "      - Operation timing (connect, put, get, subscribe, update)"
     echo "      - Network topology information"
