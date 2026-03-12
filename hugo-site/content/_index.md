@@ -55,6 +55,18 @@ maintain, no cloud bills, no terms of service.
 
 ---
 
+<div class="home-funding">
+
+### Funding Freenet
+
+Freenet is developed by a small team and funded primarily through grants and donations from people
+who believe decentralized internet infrastructure matters. Support helps fund long-term development
+of the network and platform.
+
+<a href="/donate/" class="funding-learn-more">Learn about funding Freenet →</a>
+
+</div>
+
 <div class="secondary-links">
 
 [Video Talks](/resources/video-talks/) ·

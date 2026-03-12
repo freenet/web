@@ -1,10 +1,11 @@
 {{ $email := .Get 0 }}
 {{ $text := .Get 1 | default $email }}
-<span class="email-protect"></span>
+{{ $id := printf "ep-%s" (substr (md5 (printf "%s%s" $email .Ordinal)) 0 8) }}
+<span id="{{ $id }}"></span>
 <script type="text/javascript">
 (function(){
     const email = "{{ $email }}".split('').reverse().join('');
-    document.querySelector('.email-protect').outerHTML = 
+    document.getElementById("{{ $id }}").outerHTML =
         `<a href="mailto:${email}">${"{{ $text }}"}</a>`;
 })();
 </script>
