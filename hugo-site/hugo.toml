@@ -72,7 +72,7 @@ theme = "freenet"
   [[menu.main]]
     name = "Funding"
     url = "/donate/"
-    weight = 10
+    weight = 20
 
   [[menu.main]]
     name = "Ghost Keys"
