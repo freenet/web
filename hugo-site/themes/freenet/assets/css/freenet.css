@@ -659,3 +659,260 @@ picture.app-screenshot img {
     color: #d1d5db;
   }
 }
+
+/* ===== Funding Page ===== */
+
+.funding-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
+}
+
+.funding-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+  color: #1a1a2e;
+}
+
+.funding-hero {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.funding-lead {
+  font-size: 1.2rem;
+  line-height: 1.75;
+  color: #4a5568;
+  max-width: 640px;
+}
+
+.funding-section {
+  margin-bottom: 2.5rem;
+}
+
+.funding-section h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 1rem;
+  color: #1a1a2e;
+}
+
+.funding-section p {
+  line-height: 1.75;
+  color: #374151;
+}
+
+.funding-enables ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.funding-enables li {
+  padding: 0.5rem 0 0.5rem 1.5rem;
+  position: relative;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.funding-enables li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0.6;
+}
+
+/* Major supporters — the key section for large donors */
+.funding-major-supporters {
+  background: #f0f4f8;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-left: -2rem;
+  margin-right: -2rem;
+}
+
+.funding-contact {
+  font-size: 1.1rem;
+  margin-top: 1rem;
+}
+
+.funding-contact a {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Donate button */
+.funding-donate-button {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  background: var(--color-primary);
+  color: #ffffff !important;
+  text-decoration: none !important;
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.funding-donate-button:hover {
+  background: var(--color-primary-hover);
+  color: #ffffff !important;
+}
+
+/* Ghost keys — understated */
+.funding-ghost-keys {
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.funding-ghost-keys h2 {
+  font-size: 1.15rem;
+  color: #64748b;
+}
+
+.funding-ghost-keys p {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+/* Dark mode — funding page */
+@media (prefers-color-scheme: dark) {
+  .funding-title {
+    color: #f0f0f0;
+  }
+
+  .funding-lead {
+    color: #b0b8c4;
+  }
+
+  .funding-hero {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .funding-section h2 {
+    color: #e8e8e8;
+  }
+
+  .funding-section p {
+    color: #b0b8c4;
+  }
+
+  .funding-enables li {
+    color: #b0b8c4;
+  }
+
+  .funding-enables li::before {
+    background: #4da6ff;
+  }
+
+  .funding-major-supporters {
+    background: #1a2030;
+  }
+
+  .funding-contact a {
+    color: #4da6ff;
+  }
+
+  .funding-donate-button {
+    background: #0066CC;
+  }
+
+  .funding-donate-button:hover {
+    background: #4da6ff;
+  }
+
+  .funding-ghost-keys {
+    border-top-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .funding-ghost-keys h2 {
+    color: #8896a8;
+  }
+
+  .funding-ghost-keys p {
+    color: #8896a8;
+  }
+}
+
+/* Responsive — funding page */
+@media screen and (max-width: 768px) {
+  .funding-major-supporters {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding: 1.5rem;
+  }
+
+  .funding-title {
+    font-size: 2rem;
+  }
+}
+
+/* ===== Homepage Funding Block ===== */
+
+.home-funding {
+  margin: 3rem 0 2rem;
+  padding: 2rem;
+  background: #f0f4f8;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.home-funding h3 {
+  font-size: 1.25rem;
+  color: #1a1a2e;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.home-funding p {
+  color: #4a5568;
+  line-height: 1.7;
+  max-width: 600px;
+  margin-bottom: 1rem;
+}
+
+.funding-learn-more {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.funding-learn-more:hover {
+  color: var(--color-primary-hover);
+}
+
+@media (prefers-color-scheme: dark) {
+  .home-funding {
+    background: #1a2030;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .home-funding h3 {
+    color: #e8e8e8;
+  }
+
+  .home-funding p {
+    color: #b0b8c4;
+  }
+
+  .funding-learn-more {
+    color: #4da6ff;
+  }
+
+  .funding-learn-more:hover {
+    color: #80bfff;
+  }
+}
