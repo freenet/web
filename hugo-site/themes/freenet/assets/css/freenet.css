@@ -587,24 +587,6 @@ p.page-end-spacer {
   margin: 1rem auto;
 }
 
-.screenshot-container::after {
-  content: "Click to enlarge";
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-}
-
-.screenshot-container:hover::after {
-  opacity: 1;
-}
 
 picture.app-screenshot {
   display: block;
