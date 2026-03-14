@@ -606,10 +606,6 @@ p.page-end-spacer {
   opacity: 1;
 }
 
-.screenshot-container.expanded::after {
-  display: none;
-}
-
 picture.app-screenshot {
   display: block;
   max-width: 100%;
@@ -621,11 +617,10 @@ picture.app-screenshot img {
   border: 1px solid rgba(0, 0, 0, 0.08);
   max-width: 100%;
   height: auto;
-  transition: all 0.3s ease;
 }
 
-/* Expanded state - fullscreen lightbox */
-.screenshot-container.expanded {
+/* Fullscreen lightbox (appended to body via JS) */
+.screenshot-lightbox {
   position: fixed;
   top: 0;
   left: 0;
@@ -639,15 +634,7 @@ picture.app-screenshot img {
   cursor: zoom-out;
 }
 
-.screenshot-container.expanded picture.app-screenshot {
-  position: relative;
-  z-index: 1;
-  max-width: 90vw;
-  max-height: 90vh;
-  margin: 0;
-}
-
-.screenshot-container.expanded picture.app-screenshot img {
+.screenshot-lightbox img {
   max-width: 90vw;
   max-height: 90vh;
   object-fit: contain;
