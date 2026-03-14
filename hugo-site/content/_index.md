@@ -11,15 +11,35 @@ are unstoppable, interoperable, and built on open protocols.
 
 <a href="/quickstart/" class="cta-button">Try Freenet</a>
 
+<div class="action-and-news">
+
+<div class="action-column">
+
 ## See it in Action
 
 River is a decentralized group chat built on Freenet. No servers, no signups—just encrypted
 conversations that work even if we disappear tomorrow.
 
+<div class="screenshot-container" onclick="this.classList.toggle('expanded')">
 <picture class="app-screenshot">
   <source srcset="/images/river-screenshot-dark.png" media="(prefers-color-scheme: dark)">
   <img src="/images/river-screenshot-light.png" alt="River - decentralized chat on Freenet">
 </picture>
+</div>
+
+</div>
+
+<div class="news-column">
+
+## News
+
+{{< latest-news tag="front-page" include-releases="true" >}}
+
+[More news...](/news/)
+
+</div>
+
+</div>
 
 <div class="home-sections">
 
@@ -45,25 +65,16 @@ maintain, no cloud bills, no terms of service.
 
 </div>
 
+<div class="home-section">
+
+### For Supporters
+
+Freenet is built by a small team, funded through grants and donations. Your support helps build
+decentralized internet infrastructure that matters.
+
+<a href="/donate/" class="funding-learn-more">Support Freenet →</a>
+
 </div>
-
-## News
-
-{{< latest-news tag="front-page" include-releases="true" >}}
-
-[More news...](/news/)
-
----
-
-<div class="home-funding">
-
-### Funding Freenet
-
-Freenet is developed by a small team and funded primarily through grants and donations from people
-who believe decentralized internet infrastructure matters. Support helps fund long-term development
-of the network and platform.
-
-<a href="/donate/" class="funding-learn-more">Learn about funding Freenet →</a>
 
 </div>
 

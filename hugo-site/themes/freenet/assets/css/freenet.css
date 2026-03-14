@@ -550,11 +550,69 @@ p.page-end-spacer {
   color: white;
 }
 
-/* App screenshot styling - works in both light and dark mode */
+/* Action + News two-column layout */
+.action-and-news {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin: 1rem 0 2rem;
+  align-items: start;
+}
+
+.action-and-news h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.action-column p {
+  margin-bottom: 1rem;
+}
+
+.news-column {
+  padding-top: 0;
+}
+
+@media screen and (max-width: 900px) {
+  .action-and-news {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+/* App screenshot styling with click-to-expand */
+.screenshot-container {
+  position: relative;
+  cursor: zoom-in;
+  max-width: 420px;
+  margin: 1rem auto;
+}
+
+.screenshot-container::after {
+  content: "Click to enlarge";
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.screenshot-container:hover::after {
+  opacity: 1;
+}
+
+.screenshot-container.expanded::after {
+  display: none;
+}
+
 picture.app-screenshot {
   display: block;
-  margin: 2rem 0;
-  max-width: 700px;
+  max-width: 100%;
 }
 
 picture.app-screenshot img {
@@ -563,6 +621,38 @@ picture.app-screenshot img {
   border: 1px solid rgba(0, 0, 0, 0.08);
   max-width: 100%;
   height: auto;
+  transition: all 0.3s ease;
+}
+
+/* Expanded state - fullscreen lightbox */
+.screenshot-container.expanded {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8);
+  cursor: zoom-out;
+}
+
+.screenshot-container.expanded picture.app-screenshot {
+  position: relative;
+  z-index: 1;
+  max-width: 90vw;
+  max-height: 90vh;
+  margin: 0;
+}
+
+.screenshot-container.expanded picture.app-screenshot img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -575,9 +665,15 @@ picture.app-screenshot img {
 /* Home page sections grid */
 .home-sections {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
   margin: 2.5rem 0;
+}
+
+@media screen and (max-width: 900px) {
+  .home-sections {
+    grid-template-columns: 1fr;
+  }
 }
 
 .home-section {
@@ -651,7 +747,6 @@ picture.app-screenshot img {
   font-size: 1.15rem;
   line-height: 1.7;
   color: #374151;
-  max-width: 680px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -859,30 +954,7 @@ picture.app-screenshot img {
   }
 }
 
-/* ===== Homepage Funding Block ===== */
-
-.home-funding {
-  margin: 3rem 0 2rem;
-  padding: 2rem;
-  background: #f0f4f8;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-}
-
-.home-funding h3 {
-  font-size: 1.25rem;
-  color: #1a1a2e;
-  margin-top: 0;
-  margin-bottom: 0.75rem;
-}
-
-.home-funding p {
-  color: #4a5568;
-  line-height: 1.7;
-  max-width: 600px;
-  margin-bottom: 1rem;
-}
-
+/* Funding learn more link (used in For Supporters card) */
 .funding-learn-more {
   font-weight: 500;
   font-size: 0.95rem;
@@ -895,19 +967,6 @@ picture.app-screenshot img {
 }
 
 @media (prefers-color-scheme: dark) {
-  .home-funding {
-    background: #1a2030;
-    border-color: rgba(255, 255, 255, 0.06);
-  }
-
-  .home-funding h3 {
-    color: #e8e8e8;
-  }
-
-  .home-funding p {
-    color: #b0b8c4;
-  }
-
   .funding-learn-more {
     color: #4da6ff;
   }
