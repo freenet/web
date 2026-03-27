@@ -1,0 +1,144 @@
+<style>
+.os-install-tabs {
+    margin: 1.5rem 0;
+}
+
+.os-install-tabs .tab-buttons {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 1.25rem;
+}
+
+.os-install-tabs .tab-btn {
+    padding: 0.625rem 1.25rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #6b7280;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.os-install-tabs .tab-btn:hover {
+    color: #0066CC;
+}
+
+.os-install-tabs .tab-btn.active {
+    color: #0066CC;
+    border-bottom-color: #0066CC;
+}
+
+.os-install-tabs .tab-btn .os-icon {
+    width: 1.1em;
+    height: 1.1em;
+    display: inline-block;
+}
+
+.os-install-tabs .tab-pane {
+    display: none;
+}
+
+.os-install-tabs .tab-pane.active {
+    display: block;
+}
+
+.os-install-tabs .tab-pane p {
+    margin-bottom: 0.75rem;
+}
+
+.os-install-tabs .tab-pane pre {
+    margin-bottom: 0.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    .os-install-tabs .tab-buttons {
+        border-bottom-color: #374151;
+    }
+
+    .os-install-tabs .tab-btn {
+        color: #9ca3af;
+    }
+
+    .os-install-tabs .tab-btn:hover,
+    .os-install-tabs .tab-btn.active {
+        color: #4da6ff;
+    }
+
+    .os-install-tabs .tab-btn.active {
+        border-bottom-color: #4da6ff;
+    }
+}
+</style>
+
+<div class="os-install-tabs">
+    <div class="tab-buttons">
+        <button class="tab-btn" data-os="windows" type="button">
+            <svg class="os-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+            Windows
+        </button>
+        <button class="tab-btn" data-os="mac" type="button">
+            <svg class="os-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            macOS
+        </button>
+        <button class="tab-btn" data-os="linux" type="button">
+            <svg class="os-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.581 19.049c-.55-.446-.336-1.431-.907-1.917.553-3.365-.997-6.331-2.845-8.232-1.551-1.595-1.639-3.743-1.591-4.899.115-2.795-1.322-4-2.235-4-1.235 0-2.476 1.41-2.259 4.186.045.571-.053 3.171-1.591 4.713-1.918 1.924-3.443 5.111-2.845 8.232-.571.486-.357 1.471-.907 1.917-1.036.838-1.275 2.243-.186 2.58.909.282 2.128.13 2.53-1.136.154-.484-.07-1.079.026-1.721.157-1.043.481-.878.763-.878.566 0 .628.439.64 1.121.014.794.139 1.478.396 1.758 1.089 1.186 3.267 1.186 4.357 0 .256-.28.381-.964.396-1.758.011-.682.073-1.121.64-1.121.281 0 .606-.165.763.878.095.642-.128 1.237.026 1.721.402 1.266 1.621 1.418 2.53 1.136 1.089-.337.85-1.742-.186-2.58z"/></svg>
+            Linux
+        </button>
+    </div>
+
+    <div class="tab-pane" data-os="windows">
+        <p><a href="https://github.com/freenet/freenet-core/releases/latest/download/freenet.exe">Download freenet.exe</a>
+        and run it. The setup wizard will guide you through installation, then start Freenet as a background
+        service with a system tray icon.</p>
+    </div>
+
+    <div class="tab-pane" data-os="mac">
+        <p>Run this command in your terminal:</p>
+        <pre><code class="language-bash">curl -fsSL https://freenet.org/install.sh | sh</code></pre>
+        <p>This downloads and installs Freenet, then starts it as a background service.</p>
+    </div>
+
+    <div class="tab-pane" data-os="linux">
+        <p>Run this command in your terminal:</p>
+        <pre><code class="language-bash">curl -fsSL https://freenet.org/install.sh | sh</code></pre>
+        <p>This downloads and installs Freenet, then starts it as a background service.</p>
+    </div>
+</div>
+
+<script>
+(function() {
+    function detectOS() {
+        var ua = navigator.userAgent || '';
+        var platform = navigator.platform || '';
+        if (/Win/.test(platform)) return 'windows';
+        if (/Mac/.test(platform) || /iPhone|iPad/.test(ua)) return 'mac';
+        return 'linux';
+    }
+
+    function activateTab(os) {
+        var container = document.querySelector('.os-install-tabs');
+        if (!container) return;
+        container.querySelectorAll('.tab-btn').forEach(function(btn) {
+            btn.classList.toggle('active', btn.getAttribute('data-os') === os);
+        });
+        container.querySelectorAll('.tab-pane').forEach(function(pane) {
+            pane.classList.toggle('active', pane.getAttribute('data-os') === os);
+        });
+    }
+
+    document.querySelectorAll('.os-install-tabs .tab-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            activateTab(this.getAttribute('data-os'));
+        });
+    });
+
+    activateTab(detectOS());
+})();
+</script>
