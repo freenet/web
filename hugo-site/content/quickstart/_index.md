@@ -28,13 +28,9 @@ This downloads and installs Freenet, then starts it as a background service.
 
 ### Windows
 
-Install from source with [Cargo](https://rustup.rs/):
-
-```bash
-cargo install freenet
-```
-
-Then start Freenet with `freenet network`.
+[Download Freenet](https://github.com/freenet/freenet-core/releases/latest/download/freenet-x86_64-pc-windows-msvc.zip),
+extract the zip, and run `freenet.exe`. The setup wizard will guide you through installation, then start
+Freenet as a background service with a system tray icon.
 
 ## Step 2: Join Freenet Official
 
