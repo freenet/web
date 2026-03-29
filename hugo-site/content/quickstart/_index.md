@@ -9,7 +9,7 @@ draft: false
 
 During alpha testing:
 - **Telemetry:** Your peer will report diagnostic data to our servers for debugging purposes, including peer activity and general system info (e.g., your OS).
-- **Auto-updates:** Your peer may automatically update when new versions become available.
+- **Auto-updates:** Your peer will automatically update when new versions become available.
 {{< /alert >}}
 
 Get started with Freenet in minutes. Install the software and join River—the world's first truly decentralized group chat.
