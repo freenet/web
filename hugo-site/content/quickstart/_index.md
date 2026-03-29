@@ -16,25 +16,7 @@ Get started with Freenet in minutes. Install the software and join River—the w
 
 ## Step 1: Install Freenet
 
-### Linux & macOS
-
-Run this command in your terminal:
-
-```bash
-curl -fsSL https://freenet.org/install.sh | sh
-```
-
-This downloads and installs Freenet, then starts it as a background service.
-
-### Windows
-
-Install from source with [Cargo](https://rustup.rs/):
-
-```bash
-cargo install freenet
-```
-
-Then start Freenet with `freenet network`.
+{{< os-install >}}
 
 ## Step 2: Join Freenet Official
 
