@@ -81,6 +81,12 @@ theme = "freenet"
     parent = "Resources"
 
   [[menu.main]]
+    name = "People"
+    url = "/people/"
+    weight = 11
+    parent = "Resources"
+
+  [[menu.main]]
     name = "User Manual"
     url = "/manual/"
     weight = 13
