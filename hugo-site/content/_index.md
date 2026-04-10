@@ -17,8 +17,8 @@ are unstoppable, interoperable, and built on open protocols.
 
 ## See it in Action
 
-River is a decentralized group chat built on Freenet. No servers, no signups—just encrypted
-conversations that work even if we disappear tomorrow.
+River is decentralized group chat built on Freenet. No servers to run or rely on, no admins who
+control your data - just encrypted conversations that belong entirely to their participants.
 
 <div class="screenshot-container">
 <picture class="app-screenshot">
