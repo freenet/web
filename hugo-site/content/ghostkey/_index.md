@@ -60,13 +60,21 @@ it like a "founding member" club.
 
 # How do I store my Ghost Key? {#how-do-i-store-my-ghost-key}
 
-When you first receive your Ghost Key it's very important that you store it securely, perhaps as a
-secure note in a password manager you trust.
+If you have a Freenet peer running on your computer, click "Import to Freenet" on the success page
+after purchasing. This imports your Ghost Key into a
+[delegate](https://freenet.org/resources/manual/components/delegates/) on your node -- a secure
+local agent that stores your signing key and handles identity operations on your behalf. Your
+signing key never leaves your node.
+
+We also recommend downloading your Ghost Key as a backup in case you need to set up a new node.
 
 # How do I use my Ghost Key? {#how-do-i-use-my-ghost-key}
 
-You can use our [command line tool](https://crates.io/crates/ghostkey) to verify your Ghost Key and
-use it to sign and verify messages. Here is how to install and use it:
+Once imported, applications can request to use your Ghost Key for identity verification through the
+delegate. You'll be prompted for permission each time.
+
+You can also use our [command line tool](https://crates.io/crates/ghostkey) to verify your Ghost
+Key and use it to sign and verify messages. Here is how to install and use it:
 
 ```
 # If necessary install Rust
