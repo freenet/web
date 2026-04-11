@@ -6,6 +6,11 @@ function bufferToBase64(buffer) {
     return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
 }
 
+// URL-safe base64 encode a string (for import URLs)
+function urlSafeBase64(str) {
+    return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
 // Load WebAssembly module
 async function loadWasmModule() {
     try {
@@ -254,6 +259,19 @@ function displayCertificate(armoredCertificate, armoredSigningKey) {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+      });
+    }
+
+    // Set up Import to Freenet button
+    const importButton = document.getElementById('importToFreenet');
+    if (importButton) {
+      importButton.addEventListener('click', function() {
+        // URL-safe base64 encode the PEM strings
+        const certB64 = urlSafeBase64(armoredCertificate);
+        const skB64 = urlSafeBase64(armoredSigningKey);
+        const contractId = 'DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N';
+        const importUrl = `http://127.0.0.1:7509/v1/contract/web/${contractId}/#import=${certB64}.${skB64}`;
+        window.open(importUrl, '_blank');
       });
     }
 
