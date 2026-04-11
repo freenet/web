@@ -59,6 +59,7 @@
   }
   #combinedKey {
     width: 70ch;
+    max-width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -85,12 +86,13 @@
   }
   .button-group {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
     margin-top: 10px;
   }
   .button-group .button {
     flex: 1;
-    margin: 0 5px;
+    min-width: 140px;
   }
   .warning {
     background-color: #fff3cd;
@@ -99,6 +101,29 @@
     padding: 10px;
     margin-top: 20px;
     color: #856404;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .ghost-key-container {
+      background-color: #1a1a1a;
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    #combinedKey {
+      background-color: #121212;
+      color: #e0e0e0;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    .textarea-overlay {
+      color: #666;
+    }
+    .warning {
+      background-color: rgba(255, 243, 205, 0.1);
+      border-color: rgba(255, 238, 186, 0.2);
+      color: #ffd666;
+    }
+    .help {
+      color: #94a3b8;
+    }
   }
 </style>
 
