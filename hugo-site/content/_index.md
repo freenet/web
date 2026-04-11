@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
 ### For Users
 
 Freenet apps run in your browser and look like normal websites—but they can't be taken down,
-don't track you, and work without any company behind them.
+don't track you, and run peer-to-peer, not on the cloud.
 
 [Try it now →](/quickstart/)
 
