@@ -36,18 +36,23 @@ running Freenet node.
 
 ## 1. Generate a Signing Keypair
 
+Choose a name for your website and run:
+
 ```bash
-fdev website init
+fdev website init my-blog
 ```
 
-This creates an Ed25519 keypair at `~/.config/freenet/website-keys.toml` and prints your website's
-contract key and URL:
+This creates an Ed25519 keypair at `~/.config/freenet/website-keys/my-blog.toml` and prints your
+website's contract key and URL:
 
 ```
-Keypair generated and saved to: /home/you/.config/freenet/website-keys.toml
+Keypair 'my-blog' generated and saved to: /home/you/.config/freenet/website-keys/my-blog.toml
 
 Your website contract key: 3ZZ98ojKWUJsixNyJsgRwkBZhLxN4CV2Z5AT8dVWJh48
 Website URL: http://127.0.0.1:7509/v1/contract/web/3ZZ98ojKWUJsixNyJsgRwkBZhLxN4CV2Z5AT8dVWJh48/
+
+To publish:  fdev website publish ./my-site/ --key my-blog
+To update:   fdev website update ./my-site/ --key my-blog
 
 IMPORTANT: Back up your key file! Losing it means you can never update your website.
 ```
@@ -57,6 +62,8 @@ permanent address -- it will not change when you update the site content.
 
 > **Back up your key file.** The signing key is the only thing that authorizes updates to your
 > website. If you lose it, the site becomes permanently read-only. There is no recovery mechanism.
+> Copy the `.toml` file to a password manager (1Password, Bitwarden, etc.), an encrypted USB drive,
+> or any other secure backup you trust.
 
 ---
 
@@ -66,7 +73,7 @@ Point `fdev` at a directory containing your website files. The directory must co
 `index.html` at its root.
 
 ```bash
-fdev website publish ./my-site/
+fdev website publish ./my-site/ --key my-blog
 ```
 
 This compresses the directory, signs it, and publishes it to your local Freenet node. The node then
@@ -88,7 +95,7 @@ Visit the URL in your browser to see the site served from Freenet.
 Edit your files, then run:
 
 ```bash
-fdev website update ./my-site/
+fdev website update ./my-site/ --key my-blog
 ```
 
 The version number increments automatically. The contract rejects any update that doesn't have a
@@ -104,18 +111,18 @@ Any static site generator works -- Hugo, Jekyll, Eleventy, Astro, mkdocs, or pla
 ```bash
 # Hugo
 hugo --minify
-fdev website publish ./public/
+fdev website publish ./public/ --key my-blog
 
 # Eleventy
 npx @11ty/eleventy
-fdev website publish ./_site/
+fdev website publish ./_site/ --key my-blog
 
 # Astro
 npm run build
-fdev website publish ./dist/
+fdev website publish ./dist/ --key my-blog
 
 # Plain HTML
-fdev website publish ./my-site/
+fdev website publish ./my-site/ --key my-blog
 ```
 
 ### Considerations for Freenet-hosted sites
@@ -136,7 +143,7 @@ If you have an existing website contract (e.g., River's web container) and want 
 key, use the `--contract-wasm` flag:
 
 ```bash
-fdev website publish ./my-site/ --contract-wasm ./my-contract.wasm
+fdev website publish ./my-site/ --key my-blog --contract-wasm ./my-contract.wasm
 ```
 
 This uses your custom WASM for the contract while still handling compression, signing, and
@@ -146,28 +153,41 @@ publishing automatically.
 
 ## Key Management
 
-### Key file location
+### How keys are stored
 
-By default, keys are stored at `~/.config/freenet/website-keys.toml`. Use `--key-file` to specify
-an alternative:
+Each website gets its own key file at `~/.config/freenet/website-keys/<name>.toml`. The name you
+choose during `fdev website init` identifies the key for all subsequent publish/update commands.
+
+To see all your website keys and their contract addresses:
 
 ```bash
-fdev website init --output ./project-keys.toml
-fdev website publish ./my-site/ --key-file ./project-keys.toml
+fdev website list
 ```
 
 ### Multiple websites
 
-Each keypair produces a different contract key. To publish multiple independent websites, generate
-separate key files:
+Each name produces a different keypair and contract key:
 
 ```bash
-fdev website init --output ./blog-keys.toml
-fdev website init --output ./docs-keys.toml
+fdev website init blog
+fdev website init docs
 
-fdev website publish ./blog/public/ --key-file ./blog-keys.toml
-fdev website publish ./docs/site/   --key-file ./docs-keys.toml
+fdev website publish ./blog/public/ --key blog
+fdev website publish ./docs/site/   --key docs
 ```
+
+### Backing up your keys
+
+Your signing key is the only thing that authorizes updates to your website. If you lose it, the
+site becomes permanently read-only with no recovery mechanism.
+
+The key file is a small `.toml` text file. Back it up wherever you keep important credentials:
+
+- **Password manager** (1Password, Bitwarden, KeePassXC) -- store the file contents as a secure note
+- **Encrypted backup** -- copy the `~/.config/freenet/website-keys/` directory to an encrypted drive
+- **Version control** (private repo) -- if you trust your private repo's access controls
+
+Do not commit key files to public repositories.
 
 ---
 
