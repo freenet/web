@@ -53,9 +53,10 @@ Understand Freenet's architecture and how it works:
 
 ## 👩‍💻 Developer Guide {#developer-guide}
 
-Resources for developers working with Freenet:
+Resources for building on Freenet:
 
-- [Tutorial: Create an App](tutorial): Step-by-step guide to creating an app on Freenet.
+- [Publish a Website](publish-a-website): Host a static website on Freenet -- no coding required.
+- [Tutorial: Create an App](tutorial): Step-by-step guide to creating a decentralized app.
 - [Contract Interfaces](contract-interface): Reference for contract interfaces.
 - [Manifest Format](manifest): Details about the `freenet.toml` configuration format.
 

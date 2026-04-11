@@ -477,9 +477,9 @@ The command returns a contract key (hash of the WASM) that users need to access 
 
 ### Web Container
 
-To serve your UI over Freenet, wrap it in a web container contract. See
-[River's web-container-contract](https://github.com/freenet/river/tree/main/contracts/web-container-contract)
-for an example.
+To serve your UI over Freenet, use `fdev website publish` to wrap it in a signed web container
+contract. See [Publish a Website](/resources/manual/publish-a-website/) for the full workflow, or
+use `--contract-wasm` if you need a custom container contract.
 
 ---
 
