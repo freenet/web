@@ -14,8 +14,12 @@ without revealing your identity. Please wait a moment while we process your info
 
 ## What's Next?
 
-Copy or download your Ghost certificate and key and put it somewhere safe, such as a secure note in
-a password manager you trust. You can use your Ghost Key to prove your donation to Freenet without
-revealing your identity.
+**Import to Freenet:** If you have a Freenet peer running on this computer, click "Import to
+Freenet" to add your Ghost Key to your local identity vault. Your Freenet peer must be running
+before you click this button.
+
+**Backup:** We strongly recommend downloading your Ghost Key and storing it somewhere safe, such as
+a secure note in a password manager. If you lose access to your Freenet peer, you can re-import
+from the backup.
 
 {{< bulma-button href="/ghostkey/" color="#339966" >}}Ghost Key FAQ{{< /bulma-button >}}
