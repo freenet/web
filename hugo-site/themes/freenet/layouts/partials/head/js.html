@@ -1,6 +1,6 @@
 {{- with resources.Get "js/main.js" }}
-  <script src="{{ .Permalink }}"></script>
+  <script src="{{ .RelPermalink }}"></script>
 {{- end }}
-<script src="/js/nacl.min.js"></script>
-<script src="/js/nacl-util.min.js"></script>
-<script src="/js/cbor.min.js"></script>
+<script src="{{ "js/nacl.min.js" | relURL }}"></script>
+<script src="{{ "js/nacl-util.min.js" | relURL }}"></script>
+<script src="{{ "js/cbor.min.js" | relURL }}"></script>

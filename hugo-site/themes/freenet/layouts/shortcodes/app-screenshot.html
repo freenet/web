@@ -1,0 +1,11 @@
+{{- $light := .Get "light" -}}
+{{- $dark := .Get "dark" -}}
+{{- $alt := .Get "alt" | default "Screenshot" -}}
+<div class="screenshot-container">
+<picture class="app-screenshot">
+  {{- with $dark }}
+  <source srcset="{{ . | relURL }}" media="(prefers-color-scheme: dark)">
+  {{- end }}
+  <img src="{{ $light | relURL }}" alt="{{ $alt }}">
+</picture>
+</div>

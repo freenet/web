@@ -117,6 +117,47 @@ cd hugo-site
 hugo --minify
 """
 
+# --- Freenet publishing tasks ---
+# Build and publish freenet.org as a static website on Freenet.
+# Contract key is determined by the signing keypair (fdev website init).
+
+[tasks.build-freenet]
+description = "Build Hugo site for Freenet publishing"
+script = """
+CONTRACT_KEY="${FREENET_CONTRACT_KEY:?Set FREENET_CONTRACT_KEY to the website contract key}"
+OUT="target/freenet-site"
+rm -rf "$OUT"
+cd hugo-site && hugo --minify --baseURL "/v1/contract/web/${CONTRACT_KEY}/" -d "../${OUT}"
+cd ..
+
+# Strip content that requires server-side functionality
+rm -rf "$OUT/slides" "$OUT/wasm" "$OUT/ghostkey" "$OUT/fontawesome"
+rm -f "$OUT/freenet_in_context.svg"
+rm -f "$OUT/images/Freenet Network.pdf"
+rm -f "$OUT/img/ghost-key-illustration.webp"
+rm -f "$OUT/js/cbor.min.js" "$OUT/js/elliptic.min.js" "$OUT/js/donation-success.js"
+rm -f "$OUT/js/msgpack.min.js" "$OUT/js/nacl.min.js" "$OUT/js/nacl-util.min.js"
+
+# Rewrite hardcoded absolute image paths in HTML content to use the contract baseURL.
+# Templates use Hugo's relURL (handled automatically), but raw HTML in markdown
+# (e.g., <img src="/img/foo.webp">) needs rewriting.
+BASE="/v1/contract/web/${CONTRACT_KEY}"
+python3 scripts/rewrite-paths.py "$OUT" "$BASE"
+
+echo ""
+du -sh "$OUT"
+echo "Ready to publish: fdev website publish $OUT --key <name>"
+"""
+
+[tasks.publish-freenet]
+description = "Build and publish site to Freenet"
+dependencies = ["build-freenet"]
+script = """
+CONTRACT_KEY="${FREENET_CONTRACT_KEY:?Set FREENET_CONTRACT_KEY}"
+FREENET_KEY_NAME="${FREENET_KEY_NAME:?Set FREENET_KEY_NAME to the fdev website key name}"
+fdev website publish target/freenet-site --key "$FREENET_KEY_NAME"
+"""
+
 [tasks.integration-test]
 description = "Run all tests"
 dependencies = ["dev"]

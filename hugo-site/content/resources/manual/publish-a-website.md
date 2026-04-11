@@ -127,12 +127,24 @@ fdev website publish ./my-site/ --key my-blog
 
 ### Considerations for Freenet-hosted sites
 
-Sites served through a Freenet gateway run inside an iframe at a path like
+Sites served through a Freenet gateway run inside a sandboxed iframe at a path like
 `/v1/contract/web/<contract-key>/`. Keep these in mind:
 
-- **Use relative URLs** for links and assets (e.g., `./style.css`, not `/style.css`)
+- **Set `baseURL` to your contract path** for static site generators. For Hugo:
+  `hugo --baseURL "/v1/contract/web/<contract-key>/"`. This ensures CSS, JS, and image paths
+  resolve correctly inside the gateway iframe.
+- **Use your generator's URL functions** (Hugo's `relURL`, Jekyll's `relative_url`) instead of
+  hardcoding absolute paths like `/style.css`. Hardcoded paths need post-processing to include
+  the contract base path.
+- **Multi-page navigation requires JavaScript** -- the gateway's iframe sandbox blocks regular
+  link clicks from navigating between pages. Add a click interceptor that uses
+  `window.location.href` for internal links if your site has multiple pages. Single-page apps
+  (SPAs) work without this since they handle routing in JavaScript.
 - **No server-side logic** -- no PHP, no server-side rendering, no API routes
-- **No external API calls that require CORS** -- the gateway iframe uses a restrictive sandbox
+- **No external API calls that require CORS** -- the gateway iframe sandbox blocks cross-origin
+  requests
+- **External resources** (CDN fonts, external images) may not load due to sandbox restrictions.
+  Bundle fonts and images locally.
 - **Large sites work fine** -- the archive is compressed with xz; the contract supports up to 100MB
 
 ---

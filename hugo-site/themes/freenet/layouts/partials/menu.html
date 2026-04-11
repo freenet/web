@@ -14,8 +14,8 @@
     <nav class="navbar" role="navigation" aria-label="main navigation">
       <input type="checkbox" id="navbar-toggle" class="navbar-toggle-checkbox" aria-hidden="true">
       <div class="navbar-brand">
-        <a class="navbar-item logo-container" href="/">
-          <img src="/freenet_logo.svg" alt="Freenet Logo" class="logo-img" id="freenet-logo">
+        <a class="navbar-item logo-container" href="{{ "/" | relURL }}">
+          <img src="{{ "freenet_logo.svg" | relURL }}" alt="Freenet Logo" class="logo-img" id="freenet-logo">
           <span class="logo-text">Freenet</span>
         </a>
         <label for="navbar-toggle" class="navbar-burger" role="button" aria-label="menu" aria-expanded="false">

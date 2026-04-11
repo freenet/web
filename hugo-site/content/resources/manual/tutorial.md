@@ -13,10 +13,7 @@ from a Freenet node.
 **Reference Implementation**: [River](https://github.com/freenet/river) - a decentralized chat
 application that demonstrates all the patterns in this tutorial.
 
-<picture class="app-screenshot">
-  <source srcset="/images/river-screenshot-dark.png" media="(prefers-color-scheme: dark)">
-  <img src="/images/river-screenshot-light.png" alt="River - a decentralized chat app built on Freenet">
-</picture>
+{{< app-screenshot light="images/river-screenshot-light.png" dark="images/river-screenshot-dark.png" alt="River - a decentralized chat app built on Freenet" >}}
 
 ---
 

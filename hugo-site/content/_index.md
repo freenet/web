@@ -20,12 +20,7 @@ are unstoppable, interoperable, and built on open protocols.
 River is decentralized group chat built on Freenet. No servers to run or rely on, no admins who
 control your data - just conversations that belong entirely to their participants.
 
-<div class="screenshot-container">
-<picture class="app-screenshot">
-  <source srcset="/images/river-screenshot-dark.png" media="(prefers-color-scheme: dark)">
-  <img src="/images/river-screenshot-light.png" alt="River - decentralized chat on Freenet">
-</picture>
-</div>
+{{< app-screenshot light="images/river-screenshot-light.png" dark="images/river-screenshot-dark.png" alt="River - decentralized chat on Freenet" >}}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
