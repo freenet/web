@@ -29,13 +29,8 @@ address. Anyone running a Freenet node can access it through their local gateway
 
 ## Prerequisites
 
-Install the Freenet development tool:
-
-```bash
-cargo install fdev
-```
-
-You also need a running Freenet node. See the [quickstart guide](/quickstart/) for setup.
+Install Freenet using the [quickstart guide](/quickstart/), which includes the `fdev` tool and a
+running Freenet node.
 
 ---
 
