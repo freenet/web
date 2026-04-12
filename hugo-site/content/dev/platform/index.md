@@ -19,6 +19,8 @@ to the core software or who would like to learn more about it.
 
 *   **[freenet-scaffold](https://github.com/freenet/freenet-scaffold)**: A Rust utility crate that simplifies the development of Freenet contracts by providing tools to implement efficient, mergeable state synchronization.
 
+*   **[ghostkeys](https://github.com/freenet/ghostkeys)**: A Freenet delegate for managing [ghost key](/ghostkey/) identities, enabling trust verification without revealing identity through blind-signed cryptographic certificates.
+
 ## Weekly Developer Meetings
 
 {{< latest-news tag="dev-meeting" >}}
