@@ -8,7 +8,8 @@ in the [Freenet](https://freenet.org/) ecosystem.
 Ghost keys are a cryptographic mechanism used in Freenet to provide anonymous, unlinkable donations.
 They allow donors to prove they have made a donation without revealing their identity or linking
 multiple donations together. Ghost keys are created through a multi-step process involving master
-keys, delegate certificates, and finally the ghost key itself.
+keys, notary certificates, and finally the ghost key itself. (The notary certificate was called
+"delegate certificate" before 0.1.5; see freenet/web#24.)
 
 ## Purpose of Ghost Keys
 
@@ -22,7 +23,7 @@ generating master keys to creating and verifying ghost key certificates.
 ## Features
 
 - Generate master keys
-- Create and verify delegate certificates
+- Create and verify notary certificates
 - Generate and verify ghost key certificates
 - Sign messages with ghost keys
 - Verify signed messages
@@ -49,11 +50,16 @@ Usage: ghostkey [COMMAND]
 
 Commands:
   generate-master-key  Generate a new master keypair
-  generate-delegate    Generates a new delegate signing key and certificate
-  verify-delegate      Verifies a delegate key certificate using the master verifying key
-  generate-ghost-key   Generates a ghost key from a delegate signing key
+  generate-notary      Generates a new notary signing key and certificate
+  verify-notary        Verifies a notary certificate using the master verifying key
+  generate-ghost-key   Generates a ghost key from a notary signing key
   verify-ghost-key     Verifies a ghost key certificate using the master verifying key
   help                 Print this message or the help of the given subcommand(s)
+
+The pre-0.1.5 spellings `generate-delegate`, `verify-delegate`,
+`--delegate-certificate`, and `--delegate-dir` are still accepted as
+deprecated aliases and print a warning on use. They will be removed in 0.2.0.
+See freenet/web#24.
 
 Options:
   -h, --help     Print help
