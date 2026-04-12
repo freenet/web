@@ -16,8 +16,8 @@ Key{{< /bulma-button >}}
 - [How do I store my Ghost Key?](#how-do-i-store-my-ghost-key)
 - [How do I use my Ghost Key?](#how-do-i-use-my-ghost-key)
 
-You can also read an [introductory article about Ghost Keys](/news/introducing-ghost-keys/), or
-[watch a discussion](/news/ghost-keys-ian-interview/) about it.
+You can also read an [introductory article about Ghost Keys](/about/news/introducing-ghost-keys/), or
+[watch a discussion](/about/news/ghost-keys-ian-interview/) about it.
 
 # What is a Ghost Key? {#what-is-a-ghost-key}
 
@@ -62,7 +62,7 @@ it like a "founding member" club.
 
 If you have a Freenet peer running on your computer, click "Import to Freenet" on the success page
 after purchasing. This imports your Ghost Key into a
-[delegate](https://freenet.org/resources/manual/components/delegates/) on your node -- a secure
+[delegate](https://freenet.org/build/manual/components/delegates/) on your node -- a secure
 local agent that stores your signing key and handles identity operations on your behalf. Your
 signing key never leaves your node.
 
@@ -73,38 +73,9 @@ We also recommend downloading your Ghost Key as a backup in case you need to set
 Once imported, applications can request to use your Ghost Key for identity verification through the
 delegate. You'll be prompted for permission each time.
 
-You can also use our [command line tool](https://crates.io/crates/ghostkey) to verify your Ghost
-Key and use it to sign and verify messages. Here is how to install and use it:
+If you're a developer building on Freenet and want to integrate ghost key verification into your
+app, see the [ghostkeys delegate](https://github.com/freenet/ghostkeys) repository for the full
+API, integration guide, and source code.
 
-```
-# If necessary install Rust
-$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Install the Ghost Key command line tool
-$ cargo install ghostkey
-
-# Verify it's working
-$ ghostkey -h
-Utility for generating and verifying Freenet ghost keys. Use 'ghostkey <subcommand> -h'
-for help on specific subcommands.
-
-Usage: ghostkey [COMMAND]
-
-Commands:
-  verify-ghost-key       Verifies a ghost certificate
-  generate-master-key    Generate a new master keypair
-  generate-delegate      Generates a new delegate signing key and certificate
-  verify-delegate        Verifies a delegate key certificate using the master verifying key
-  generate-ghost-key     Generates a ghost key from a delegate signing key
-  sign-message           Signs a message using a ghost key
-  verify-signed-message  Verifies a signed message
-  help                   Print this message or the help of the given subcommand(s)
-
-Options:
-  -h, --help     Print help
-  -V, --version  Print version
-
-$ ghostkey verify-ghost-key --ghost-certificate ~/Downloads/ghost-key-cert.pem
-Ghost certificate verified
-Info: {"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07-30 15:39:26"}
-```
+A [command line tool](https://crates.io/crates/ghostkey) is also available for verifying ghost keys
+and signing messages outside of Freenet.

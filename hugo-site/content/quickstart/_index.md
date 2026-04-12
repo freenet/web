@@ -67,7 +67,7 @@ service instead: `sudo freenet service install --system`
 ## What's Next?
 
 - [Live Network Dashboard](http://nova.locut.us:3133/) - Watch real-time activity on the network
-- [User Manual](/resources/manual/) - Learn how Freenet works
-- [Video Talks](/resources/video-talks/) - Watch presentations about Freenet
-- [FAQ](/faq/) - Common questions and answers
+- [User Manual](/build/manual/) - Learn how Freenet works
+- [Video Talks](/about/video-talks/) - Watch presentations about Freenet
+- [FAQ](/about/faq/) - Common questions and answers
 - [Get Involved](/community/get-involved/) - Contribute to the project

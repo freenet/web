@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {{< latest-news tag="front-page" include-releases="true" >}}
 
-[More news...](/news/)
+[More news...](/about/news/)
 
 </div>
 
@@ -74,7 +74,7 @@ don't track you, and run peer-to-peer, not on the cloud.
 Build apps with familiar tools (Rust, TypeScript) that deploy to a global network. No servers to
 maintain, no cloud bills, no terms of service.
 
-[Read the Tutorial →](/resources/manual/tutorial/)
+[Read the Tutorial →](/build/manual/tutorial/)
 
 </div>
 
@@ -93,9 +93,9 @@ decentralized internet infrastructure that matters.
 
 <div class="secondary-links">
 
-[Video Talks](/resources/video-talks/) ·
+[Video Talks](/about/video-talks/) ·
 [Matrix Chat](https://matrix.to/#/#freenet-locutus:matrix.org) ·
 [GitHub](https://github.com/freenet/freenet-core) ·
-[FAQ](/faq/)
+[FAQ](/about/faq/)
 
 </div>

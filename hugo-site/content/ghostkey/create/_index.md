@@ -11,7 +11,7 @@ signs the blinded key without ever seeing the unblinded version, ensuring that y
 anonymous. Your browser then unblinds the signature, creating a signed certificate.
 
 It's important to store this certificate securely, such as in a secure note within your password
-manager. You can read an article about Ghost Keys [here](/news/introducing-ghost-keys/).
+manager. You can read an article about Ghost Keys [here](/about/news/introducing-ghost-keys/).
 
 We offer a $1 donation option to ensure that Ghost Keys are accessible to everyone, especially those
 with limited means. Your generosity directly supports the ongoing development of Freenet, helping us

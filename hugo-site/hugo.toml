@@ -24,114 +24,79 @@ theme = "freenet"
     weight = 1
 
   [[menu.main]]
-    name = "Developers"
-    url = "/dev/"
-    weight = 3
-
-  [[menu.main]]
-    name = "Platform"
-    url = "/dev/platform/"
-    weight = 4
-    parent = "Developers"
-
-  [[menu.main]]
-    name = "Apps"
-    url = "/dev/apps/"
-    weight = 5
-    parent = "Developers"
-
-  [[menu.main]]
-    name = "Resources"
-    url = "/resources/"
-    weight = 6
-
-  [[menu.main]]
-    name = "News"
-    url = "/news/"
-    weight = 7
-    parent = "Resources"
-
-  [[menu.main]]
-    name = "Video Talks"
-    url = "/resources/video-talks/"
-    weight = 8
-    parent = "Resources"
-
-  [[menu.main]]
-    name = "University"
-    url = "/resources/university/"
-    weight = 9
-    parent = "Resources"
+    name = "About"
+    url = "/about/"
+    weight = 2
 
   [[menu.main]]
     name = "FAQ"
-    url = "/faq/"
-    weight = 9
-    parent = "Resources"
+    url = "/about/faq/"
+    weight = 1
+    parent = "About"
 
   [[menu.main]]
-    name = "Funding"
-    url = "/donate/"
-    weight = 20
+    name = "News"
+    url = "/about/news/"
+    weight = 2
+    parent = "About"
 
   [[menu.main]]
-    name = "Ghost Keys"
-    weight = 10
-    url= "/ghostkey/"
-    parent = "Resources"
+    name = "Video Talks"
+    url = "/about/video-talks/"
+    weight = 3
+    parent = "About"
+
+  [[menu.main]]
+    name = "University"
+    url = "/about/university/"
+    weight = 4
+    parent = "About"
 
   [[menu.main]]
     name = "People"
-    url = "/people/"
-    weight = 11
-    parent = "Resources"
-
-  [[menu.main]]
-    name = "User Manual"
-    url = "/manual/"
-    weight = 13
-
-  [[menu.main]]
-    name = "Introduction"
-    url = "/resources/manual/introduction/"
-    weight = 1
-    parent = "User Manual"
-
-  [[menu.main]]
-    name = "Components"
-    url = "/resources//manual/#components"
-    weight = 2
-    parent = "User Manual"
-
-  [[menu.main]]
-    name = "Architecture"
-    url = "/resources//manual/#architecture"
-    weight = 3
-    parent = "User Manual"
-
-  [[menu.main]]
-    name = "Developer Guide"
-    url = "/resources//manual/#developer-guide"
-    weight = 4
-    parent = "User Manual"
-
-  [[menu.main]]
-    name = "Examples"
-    url = "/resources//manual/#examples"
+    url = "/about/people/"
     weight = 5
-    parent = "User Manual"
+    parent = "About"
 
   [[menu.main]]
-    name = "Community and Support"
-    url = "/resources//manual/#community-and-support"
-    weight = 6
-    parent = "User Manual"
+    name = "Build"
+    url = "/build/"
+    weight = 3
 
   [[menu.main]]
-    name = "Reference"
-    url = "resources//manual/#reference"
-    weight = 7
-    parent = "User Manual"
+    name = "Tutorial"
+    url = "/build/manual/tutorial/"
+    weight = 1
+    parent = "Build"
+
+  [[menu.main]]
+    name = "Manual"
+    url = "/build/manual/"
+    weight = 2
+    parent = "Build"
+
+  [[menu.main]]
+    name = "Example Apps"
+    url = "/build/#example-apps"
+    weight = 3
+    parent = "Build"
+
+  [[menu.main]]
+    name = "Support"
+    url = "/donate/"
+    weight = 4
+
+  [[menu.main]]
+    name = "Ghost Keys"
+    url = "/ghostkey/"
+    weight = 1
+    parent = "Support"
+
+  [[menu.main]]
+    name = "Donate"
+    url = "/donate/"
+    weight = 2
+    parent = "Support"
 
 [params]
   stripePublishableKeyTest = "pk_test_51PUf6RCCPv9UL23G0yLdnS51VCStEcnqzd2AftFWiXAOjFOgonYRRBL6F5eKOCrr2yuEHCBDqqYa8H0w7ouRyW6d00awdNMKsf"
