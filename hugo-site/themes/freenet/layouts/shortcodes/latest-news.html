@@ -1,6 +1,7 @@
 {{ $tag := .Get "tag" | default "front-page" }}
 {{ $includeReleases := .Get "include-releases" | default "false" }}
-{{ $news := where .Site.RegularPages "Section" "news" }}
+{{ $newsSection := .Site.GetPage "/about/news" }}
+{{ $news := $newsSection.RegularPages }}
 {{ $news := where $news "Params.tags" "intersect" (slice $tag) }}
 {{ $sortedNews := sort $news "Date" "desc" }}
 
