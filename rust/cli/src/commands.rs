@@ -1,17 +1,17 @@
+use blind_rsa_signatures::SecretKey as RSASigningKey;
+use colored::Colorize;
+use ed25519_dalek::*;
 use ghostkey_lib::armorable::*;
 use ghostkey_lib::errors::GhostkeyError;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use ghostkey_lib::notary_certificate::NotaryCertificateV1;
 use ghostkey_lib::signed_message::SignedMessage;
 use ghostkey_lib::util::create_keypair;
-use blind_rsa_signatures::SecretKey as RSASigningKey;
-use colored::Colorize;
-use ed25519_dalek::*;
 use log::info;
+use rand_core::OsRng;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
-use rand_core::OsRng;
 
 /// Canonical on-disk filenames for the notary certificate and signing key.
 pub const NOTARY_CERT_FILENAME: &str = "notary_certificate.pem";
@@ -147,10 +147,8 @@ pub fn generate_notary_cmd(
         eprintln!("{} to write notary signing key: {}", "Failed".red(), e);
         return 1;
     }
-    if let Err(e) = fs::set_permissions(
-        &notary_signing_key_file,
-        fs::Permissions::from_mode(0o600),
-    ) {
+    if let Err(e) = fs::set_permissions(&notary_signing_key_file, fs::Permissions::from_mode(0o600))
+    {
         eprintln!(
             "{} to set permissions on notary signing key file: {}",
             "Failed".red(),
@@ -210,7 +208,10 @@ pub fn sign_message_cmd(
     output_file: &Path,
 ) -> i32 {
     if ghost_signing_key.verifying_key() != ghost_certificate.verifying_key {
-        eprintln!("{}: Ghost signing key does not match ghost verifying key", "Error".red());
+        eprintln!(
+            "{}: Ghost signing key does not match ghost verifying key",
+            "Error".red()
+        );
         return 1;
     }
 
@@ -223,11 +224,7 @@ pub fn sign_message_cmd(
 
     match signed_message.to_file(output_file) {
         Ok(_) => {
-            println!(
-                "{} written {}",
-                "Signed message",
-                "successfully".green()
-            );
+            println!("{} written {}", "Signed message", "successfully".green());
             0
         }
         Err(e) => {
@@ -268,7 +265,10 @@ pub fn verify_signed_message_cmd(
                             println!("Message written to {}", file.display());
                         }
                         None => {
-                            println!("Message: {}", String::from_utf8_lossy(&signed_message.message));
+                            println!(
+                                "Message: {}",
+                                String::from_utf8_lossy(&signed_message.message)
+                            );
                         }
                     }
                     0
@@ -292,7 +292,10 @@ pub fn generate_ghost_key_cmd(
     output_dir: &Path,
 ) -> i32 {
     if notary_signing_key.public_key().unwrap() != notary_certificate.payload.notary_verifying_key {
-        eprintln!("{}: Notary signing key does not match notary verifying key", "Error".red());
+        eprintln!(
+            "{}: Notary signing key does not match notary verifying key",
+            "Error".red()
+        );
         return 1;
     }
 

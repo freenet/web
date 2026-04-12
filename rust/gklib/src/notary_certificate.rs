@@ -14,14 +14,14 @@
 
 use super::errors::GhostkeyError;
 use super::util::{sign_with_hash, verify_with_hash};
+use crate::armorable::Armorable;
+use crate::FREENET_MASTER_VERIFYING_KEY_BASE64;
 use blind_rsa_signatures::{
     KeyPair as RSAKeyPair, PublicKey as RSAVerifyingKey, SecretKey as RSASigningKey,
 };
 use ed25519_dalek::*;
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
-use crate::armorable::Armorable;
-use crate::FREENET_MASTER_VERIFYING_KEY_BASE64;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct NotaryCertificateV1 {
@@ -67,7 +67,8 @@ impl NotaryCertificateV1 {
         &self,
         &master_verifying_key: &Option<VerifyingKey>,
     ) -> Result<String, Box<GhostkeyError>> {
-        let master_verifying_key = master_verifying_key.unwrap_or(VerifyingKey::from_base64(FREENET_MASTER_VERIFYING_KEY_BASE64).unwrap());
+        let master_verifying_key = master_verifying_key
+            .unwrap_or(VerifyingKey::from_base64(FREENET_MASTER_VERIFYING_KEY_BASE64).unwrap());
 
         let verification = verify_with_hash(&master_verifying_key, &self.payload, &self.signature)?;
         if verification {
@@ -82,8 +83,8 @@ impl NotaryCertificateV1 {
 
 #[cfg(test)]
 mod tests {
-    use crate::util::create_keypair;
     use super::*;
+    use crate::util::create_keypair;
 
     #[test]
     fn test_notary_certificate_creation_and_verification() {

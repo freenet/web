@@ -9,7 +9,7 @@
 
 use std::path::{Path, PathBuf};
 
-use blind_rsa_signatures::{BlindedMessage, BlindSignature, Options, SecretKey as RSASigningKey};
+use blind_rsa_signatures::{BlindSignature, BlindedMessage, Options, SecretKey as RSASigningKey};
 use rand_core::OsRng;
 
 use ghostkey_lib::armorable::*;
@@ -61,7 +61,9 @@ fn resolve_amount_file(dir: &Path, kind: &str, amount: u64) -> PathBuf {
     new_path
 }
 
-pub(crate) fn get_notary(amount: u64) -> Result<(NotaryCertificateV1, RSASigningKey), CertificateError> {
+pub(crate) fn get_notary(
+    amount: u64,
+) -> Result<(NotaryCertificateV1, RSASigningKey), CertificateError> {
     let dir = notary_dir()?;
     let cert_path = resolve_amount_file(&dir, "certificate", amount);
     let cert = NotaryCertificateV1::from_file(&cert_path).map_err(|e| {

@@ -89,9 +89,7 @@ fn reserializing_legacy_notary_cert_is_byte_identical() {
     let cert = NotaryCertificateV1::from_file(&fixture_path("delegate_certificate.pem"))
         .expect("legacy notary cert must parse");
 
-    let round_tripped_bytes = cert
-        .to_bytes()
-        .expect("notary cert must serialize");
+    let round_tripped_bytes = cert.to_bytes().expect("notary cert must serialize");
 
     // Independently parse the legacy PEM → base64 → bytes path to compare.
     let legacy_pem = std::fs::read_to_string(fixture_path("delegate_certificate.pem"))
@@ -117,9 +115,7 @@ fn reserializing_legacy_ghost_key_cert_is_byte_identical() {
     let cert = GhostkeyCertificateV1::from_file(&fixture_path("ghost_key_certificate.pem"))
         .expect("legacy ghost key cert must parse");
 
-    let round_tripped_bytes = cert
-        .to_bytes()
-        .expect("ghost key cert must serialize");
+    let round_tripped_bytes = cert.to_bytes().expect("ghost key cert must serialize");
 
     let legacy_pem = std::fs::read_to_string(fixture_path("ghost_key_certificate.pem"))
         .expect("fixture readable");
@@ -146,9 +142,7 @@ fn new_code_writes_canonical_armor_header() {
     let cert = NotaryCertificateV1::from_file(&fixture_path("delegate_certificate.pem"))
         .expect("legacy cert must parse");
 
-    let armored = cert
-        .to_armored_string()
-        .expect("notary cert must armor");
+    let armored = cert.to_armored_string().expect("notary cert must armor");
 
     assert!(
         armored.contains("-----BEGIN NOTARY_CERTIFICATE_V1-----"),
@@ -161,7 +155,7 @@ fn new_code_writes_canonical_armor_header() {
     );
 
     // Round-trip the new-style armor back through the same parser.
-    let round_tripped = NotaryCertificateV1::from_armored_string(&armored)
-        .expect("new-style armor must parse");
+    let round_tripped =
+        NotaryCertificateV1::from_armored_string(&armored).expect("new-style armor must parse");
     assert_eq!(round_tripped.payload.info, cert.payload.info);
 }

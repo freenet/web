@@ -2,19 +2,19 @@ use blind_rsa_signatures::SecretKey as RSASigningKey;
 use clap::{Arg, ArgAction, Command};
 use colored::Colorize;
 use ed25519_dalek::*;
-use ghostkey_lib::armorable::Armorable;
 use ghostkey::commands::{
     generate_ghost_key_cmd, generate_master_key_cmd, generate_notary_cmd, resolve_notary_file,
     sign_message_cmd, verify_ghost_key_cmd, verify_notary_cmd, verify_signed_message_cmd,
     LEGACY_DELEGATE_CERT_FILENAME, LEGACY_DELEGATE_SIGNING_KEY_FILENAME, NOTARY_CERT_FILENAME,
     NOTARY_SIGNING_KEY_FILENAME,
 };
+use ghostkey_lib::armorable::Armorable;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use ghostkey_lib::notary_certificate::NotaryCertificateV1;
 use log::info;
+use std::fs;
 use std::path::Path;
 use std::process;
-use std::fs;
 
 const CMD_GENERATE_MASTER_KEY: &str = "generate-master-key";
 const CMD_GENERATE_NOTARY: &str = "generate-notary";
@@ -47,14 +47,8 @@ const LEGACY_ARG_DELEGATE_DIR: &str = "delegate-dir";
 /// and `Arg::alias` report the canonical name in matches, so this pre-scan is
 /// the only way to notice which spelling the user typed.
 fn warn_on_legacy_argv() {
-    let legacy_tokens = [
-        LEGACY_CMD_GENERATE_DELEGATE,
-        LEGACY_CMD_VERIFY_DELEGATE,
-    ];
-    let legacy_flags = [
-        "--delegate-certificate",
-        "--delegate-dir",
-    ];
+    let legacy_tokens = [LEGACY_CMD_GENERATE_DELEGATE, LEGACY_CMD_VERIFY_DELEGATE];
+    let legacy_flags = ["--delegate-certificate", "--delegate-dir"];
 
     let args: Vec<String> = std::env::args().collect();
     let mut warned = false;
@@ -69,7 +63,10 @@ fn warn_on_legacy_argv() {
             );
             warned = true;
         }
-        if legacy_flags.iter().any(|f| arg == f || arg.starts_with(&format!("{}=", f))) {
+        if legacy_flags
+            .iter()
+            .any(|f| arg == f || arg.starts_with(&format!("{}=", f)))
+        {
             let flag = arg.split('=').next().unwrap_or(arg);
             eprintln!(
                 "{}: flag '{}' is deprecated and will be removed in 0.2.0. \
@@ -313,30 +310,30 @@ fn run() -> i32 {
             result
         }
         Some((CMD_VERIFY_NOTARY, sub_matches)) => {
-            let master_verifying_key : Option<VerifyingKey> = if let Some(key_file) = sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY) {
-                match VerifyingKey::from_file(Path::new(key_file)) {
-                    Ok(key) => Some(key),
-                    Err(e) => {
-                        println!("{} to read master verifying key: {}", "Failed".red(), e);
-                        return 1;
+            let master_verifying_key: Option<VerifyingKey> =
+                if let Some(key_file) = sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY) {
+                    match VerifyingKey::from_file(Path::new(key_file)) {
+                        Ok(key) => Some(key),
+                        Err(e) => {
+                            println!("{} to read master verifying key: {}", "Failed".red(), e);
+                            return 1;
+                        }
                     }
-                }
-            } else {
-                None
-            };
+                } else {
+                    None
+                };
             let notary_certificate_file = Path::new(
                 sub_matches
                     .get_one::<String>(ARG_NOTARY_CERTIFICATE)
                     .unwrap(),
             );
-            let notary_certificate =
-                match NotaryCertificateV1::from_file(notary_certificate_file) {
-                    Ok(cert) => cert,
-                    Err(e) => {
-                        println!("{} to read notary certificate: {}", "Failed".red(), e);
-                        return 1;
-                    }
-                };
+            let notary_certificate = match NotaryCertificateV1::from_file(notary_certificate_file) {
+                Ok(cert) => cert,
+                Err(e) => {
+                    println!("{} to read notary certificate: {}", "Failed".red(), e);
+                    return 1;
+                }
+            };
             verify_notary_cmd(&master_verifying_key, &notary_certificate)
         }
         Some((CMD_GENERATE_GHOST_KEY, sub_matches)) => {
@@ -347,14 +344,14 @@ fn run() -> i32 {
                 NOTARY_CERT_FILENAME,
                 LEGACY_DELEGATE_CERT_FILENAME,
             );
-            let notary_certificate =
-                match NotaryCertificateV1::from_file(&notary_certificate_file) {
-                    Ok(cert) => cert,
-                    Err(e) => {
-                        eprintln!("{} to read notary certificate: {}", "Failed".red(), e);
-                        return 1;
-                    }
-                };
+            let notary_certificate = match NotaryCertificateV1::from_file(&notary_certificate_file)
+            {
+                Ok(cert) => cert,
+                Err(e) => {
+                    eprintln!("{} to read notary certificate: {}", "Failed".red(), e);
+                    return 1;
+                }
+            };
             let notary_signing_key_file = resolve_notary_file(
                 notary_dir_path,
                 NOTARY_SIGNING_KEY_FILENAME,
@@ -377,17 +374,18 @@ fn run() -> i32 {
             generate_ghost_key_cmd(&notary_certificate, &notary_signing_key, &output_dir)
         }
         Some((CMD_VERIFY_GHOST_KEY, sub_matches)) => {
-            let master_verifying_key : Option<VerifyingKey> = if let Some(key_file) = sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY) {
-                match VerifyingKey::from_file(Path::new(key_file)) {
-                    Ok(key) => Some(key),
-                    Err(e) => {
-                        eprintln!("{} to read master verifying key: {}", "Failed".red(), e);
-                        return 1;
+            let master_verifying_key: Option<VerifyingKey> =
+                if let Some(key_file) = sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY) {
+                    match VerifyingKey::from_file(Path::new(key_file)) {
+                        Ok(key) => Some(key),
+                        Err(e) => {
+                            eprintln!("{} to read master verifying key: {}", "Failed".red(), e);
+                            return 1;
+                        }
                     }
-                }
-            } else {
-                None
-            };
+                } else {
+                    None
+                };
             let ghost_certificate_file = Path::new(
                 sub_matches
                     .get_one::<String>(ARG_GHOST_CERTIFICATE)
@@ -403,7 +401,8 @@ fn run() -> i32 {
             verify_ghost_key_cmd(&master_verifying_key, &ghost_certificate)
         }
         Some((CMD_SIGN_MESSAGE, sub_matches)) => {
-            let ghost_certificate_file = Path::new(sub_matches.get_one::<String>("ghost_certificate").unwrap());
+            let ghost_certificate_file =
+                Path::new(sub_matches.get_one::<String>("ghost_certificate").unwrap());
             let ghost_certificate = match GhostkeyCertificateV1::from_file(ghost_certificate_file) {
                 Ok(cert) => cert,
                 Err(e) => {
@@ -411,7 +410,8 @@ fn run() -> i32 {
                     return 1;
                 }
             };
-            let ghost_signing_key_file = Path::new(sub_matches.get_one::<String>("ghost_signing_key").unwrap());
+            let ghost_signing_key_file =
+                Path::new(sub_matches.get_one::<String>("ghost_signing_key").unwrap());
             let ghost_signing_key = match SigningKey::from_file(ghost_signing_key_file) {
                 Ok(key) => key,
                 Err(e) => {
@@ -432,22 +432,31 @@ fn run() -> i32 {
                 message.as_bytes().to_vec()
             };
             let output_file = Path::new(sub_matches.get_one::<String>("output").unwrap());
-            sign_message_cmd(ghost_certificate, &ghost_signing_key, &message_content, output_file)
+            sign_message_cmd(
+                ghost_certificate,
+                &ghost_signing_key,
+                &message_content,
+                output_file,
+            )
         }
         Some((CMD_VERIFY_SIGNED_MESSAGE, sub_matches)) => {
-            let signed_message_file = Path::new(sub_matches.get_one::<String>("signed_message").unwrap());
-            let master_verifying_key = if let Some(key_file) = sub_matches.get_one::<String>("master_verifying_key") {
-                match VerifyingKey::from_file(Path::new(key_file)) {
-                    Ok(key) => Some(key),
-                    Err(e) => {
-                        eprintln!("{} to read master verifying key: {}", "Failed".red(), e);
-                        return 1;
+            let signed_message_file =
+                Path::new(sub_matches.get_one::<String>("signed_message").unwrap());
+            let master_verifying_key =
+                if let Some(key_file) = sub_matches.get_one::<String>("master_verifying_key") {
+                    match VerifyingKey::from_file(Path::new(key_file)) {
+                        Ok(key) => Some(key),
+                        Err(e) => {
+                            eprintln!("{} to read master verifying key: {}", "Failed".red(), e);
+                            return 1;
+                        }
                     }
-                }
-            } else {
-                None
-            };
-            let output_file = sub_matches.get_one::<String>("output").map(|s| Path::new(s));
+                } else {
+                    None
+                };
+            let output_file = sub_matches
+                .get_one::<String>("output")
+                .map(|s| Path::new(s));
             verify_signed_message_cmd(signed_message_file, &master_verifying_key, output_file)
         }
         _ => {

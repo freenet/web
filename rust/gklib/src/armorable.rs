@@ -51,7 +51,7 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
         };
 
         let upper_name = Self::camel_case_to_upper(name);
-        
+
         // Check for an existing version suffix
         if let Some(version_index) = upper_name.rfind('_') {
             let (_, version) = upper_name.split_at(version_index);
@@ -99,7 +99,8 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
 
     fn to_file(&self, file_path: &Path) -> Result<(), GhostkeyError> {
         let pem_content = self.to_armored_string()?;
-        let mut file = File::create(file_path).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
+        let mut file =
+            File::create(file_path).map_err(|e| GhostkeyError::IOError(e.to_string()))?;
         file.write_all(pem_content.as_bytes())
             .map_err(|e| GhostkeyError::IOError(e.to_string()))?;
         Ok(())

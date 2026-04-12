@@ -2,13 +2,13 @@ use super::errors::GhostkeyError;
 use super::errors::GhostkeyError::{RSAError, SignatureVerificationError};
 use super::notary_certificate::NotaryCertificateV1;
 use super::util::{create_keypair, unblinded_rsa_sign};
+use crate::armorable::Armorable;
 use blind_rsa_signatures::{
     KeyPair, Options, SecretKey as RSASigningKey, Signature as RSASignature,
 };
 use ed25519_dalek::*;
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
-use crate::armorable::Armorable;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct GhostkeyCertificateV1 {
@@ -41,8 +41,11 @@ impl GhostkeyCertificateV1 {
             Self {
                 notary: notary_certificate.clone(),
                 verifying_key: ghost_verifying_key.clone(),
-                signature: unblinded_rsa_sign(&notary_keypair, &Armorable::to_bytes(&ghost_verifying_key).unwrap())
-                    .unwrap(),
+                signature: unblinded_rsa_sign(
+                    &notary_keypair,
+                    &Armorable::to_bytes(&ghost_verifying_key).unwrap(),
+                )
+                .unwrap(),
             },
             ghost_signing_key.clone(),
         )
@@ -73,13 +76,13 @@ impl GhostkeyCertificateV1 {
 
         match verification {
             Ok(_) => Ok(info),
-            Err(e) => Err(Box::new(SignatureVerificationError(
-                format!("Failed to verify ghostkey certificate: {}", e),
-            ))),
+            Err(e) => Err(Box::new(SignatureVerificationError(format!(
+                "Failed to verify ghostkey certificate: {}",
+                e
+            )))),
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {

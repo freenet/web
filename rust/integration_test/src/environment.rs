@@ -1,10 +1,10 @@
 use anyhow::{Context, Result};
-use std::process::Command;
-use std::path::{Path, PathBuf};
+use colored::Colorize;
 use std::env;
 use std::fs;
 use std::io::Write;
-use colored::Colorize;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
 pub async fn setup_environment() -> Result<PathBuf> {
     let temp_dir = env::temp_dir().join("ghost_key_test");
@@ -34,14 +34,25 @@ fn generate_master_key(temp_dir: &Path) -> Result<PathBuf> {
     let master_key_file = temp_dir.join("master_signing_key.pem");
     let cli_dir = std::env::current_dir()?.join("../cli");
     let output = Command::new("cargo")
-        .args(&["run", "--quiet", "--manifest-path", cli_dir.join("Cargo.toml").to_str().unwrap(), "--", "generate-master-key", "--output-dir"])
+        .args(&[
+            "run",
+            "--quiet",
+            "--manifest-path",
+            cli_dir.join("Cargo.toml").to_str().unwrap(),
+            "--",
+            "generate-master-key",
+            "--output-dir",
+        ])
         .arg(temp_dir)
         .current_dir(&cli_dir)
         .output()
         .context("Failed to execute generate-master-key command")?;
 
     if !output.status.success() {
-        let error_msg = format!("Failed to generate master key: {}", String::from_utf8_lossy(&output.stderr));
+        let error_msg = format!(
+            "Failed to generate master key: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
         return Err(anyhow::anyhow!(error_msg));
     }
 
