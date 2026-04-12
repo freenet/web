@@ -944,3 +944,75 @@ picture.app-screenshot img {
     color: #80bfff;
   }
 }
+
+/* ===================================================================
+   Ghost Keys diagram shortcodes
+   =================================================================== */
+.gk-diagram {
+  --gk-bg:          #ffffff;
+  --gk-fg:          #1a1a1a;
+  --gk-muted:       #6b7280;
+  --gk-accent:      #339966;
+  --gk-accent-soft: #33996618;
+  --gk-border:      #e5e7eb;
+  --gk-shadow:      0 1px 2px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.05);
+
+  margin: 2rem auto;
+  padding: clamp(1rem, 3vw, 2rem);
+  background: var(--gk-bg);
+  border: 1px solid var(--gk-border);
+  border-radius: .75rem;
+  box-shadow: var(--gk-shadow);
+  color: var(--gk-fg);
+  max-width: 1000px;
+}
+.gk-diagram figcaption {
+  margin-top: 1rem;
+  color: var(--gk-muted);
+  font-size: .85rem;
+  text-align: center;
+  max-width: 720px;
+  margin-inline: auto;
+}
+.gk-diagram .gk-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--gk-fg);
+  font-family: inherit;
+}
+.gk-diagram .gk-svg text { fill: currentColor; font-size: 14px; font-family: inherit; }
+.gk-diagram .gk-svg .gk-small { font-size: 12px; fill: var(--gk-muted); }
+.gk-diagram .gk-svg .gk-label { font-size: 14px; font-weight: 600; }
+.gk-diagram .gk-svg .gk-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; fill: var(--gk-muted); }
+.gk-diagram .gk-svg .gk-box   { fill: var(--gk-bg); stroke: currentColor; stroke-width: 1.5; }
+.gk-diagram .gk-svg .gk-box-accent { fill: var(--gk-accent-soft); stroke: var(--gk-accent); stroke-width: 1.8; }
+.gk-diagram .gk-svg .gk-line  { stroke: currentColor; stroke-width: 1.8; fill: none; }
+.gk-diagram .gk-svg .gk-line-accent { stroke: var(--gk-accent); stroke-width: 1.8; fill: none; }
+.gk-diagram .gk-svg .gk-dot-accent  { fill: var(--gk-accent); }
+.gk-diagram .gk-svg .gk-accent-text { fill: var(--gk-accent); }
+.gk-diagram .gk-svg .gk-dashed      { stroke-dasharray: 5 4; }
+
+/* Wide vs narrow responsive swap */
+.gk-diagram svg.gk-svg.gk-wide   { display: block; }
+.gk-diagram svg.gk-svg.gk-narrow { display: none; }
+@media (max-width: 900px) {
+  .gk-diagram svg.gk-svg.gk-wide   { display: none; }
+  .gk-diagram svg.gk-svg.gk-narrow { display: block; }
+  .gk-diagram .gk-svg text       { font-size: 16px; }
+  .gk-diagram .gk-svg .gk-small  { font-size: 14px; }
+  .gk-diagram .gk-svg .gk-label  { font-size: 16px; }
+  .gk-diagram .gk-svg .gk-mono   { font-size: 14px; }
+}
+
+@media (prefers-color-scheme: dark) {
+  .gk-diagram {
+    --gk-bg:          #1e1e1e;
+    --gk-fg:          #e7e9ee;
+    --gk-muted:       #9aa3b2;
+    --gk-accent:      #4ade80;
+    --gk-accent-soft: #4ade8022;
+    --gk-border:      #2a2a2a;
+    --gk-shadow:      0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.4);
+  }
+}

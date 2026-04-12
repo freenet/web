@@ -1,0 +1,140 @@
+<figure class="gk-diagram">
+  <svg class="gk-svg gk-wide" viewBox="0 0 1000 560" role="img" aria-label="Ghost Keys delegate architecture">
+    <defs>
+      <marker id="gk-arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+      </marker>
+      <marker id="gk-arrow2-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--gk-accent)"/>
+      </marker>
+    </defs>
+
+    <rect class="gk-box" x="40" y="40" width="660" height="380" rx="14"/>
+    <text class="gk-label" x="60" y="68">Your Freenet node</text>
+
+    <rect class="gk-box" x="80" y="130" width="200" height="110" rx="10"/>
+    <text class="gk-label" x="180" y="160" text-anchor="middle">App</text>
+    <text class="gk-small" x="180" y="185" text-anchor="middle">River, a forum,</text>
+    <text class="gk-small" x="180" y="203" text-anchor="middle">a voting dApp…</text>
+    <text class="gk-mono"  x="180" y="225" text-anchor="middle">wants a signed message</text>
+
+    <rect class="gk-box-accent" x="420" y="130" width="240" height="170" rx="10"/>
+    <text class="gk-label gk-accent-text" x="540" y="160" text-anchor="middle">Ghost Keys delegate</text>
+    <text class="gk-small" x="540" y="180" text-anchor="middle">runs in a WASM sandbox</text>
+
+    <rect class="gk-box" x="455" y="205" width="170" height="70" rx="8"/>
+    <text class="gk-label" x="540" y="232" text-anchor="middle">private key</text>
+    <text class="gk-small" x="540" y="252" text-anchor="middle">runtime blocks export</text>
+
+    <line class="gk-line" x1="285" y1="165" x2="415" y2="165" marker-end="url(#gk-arrow2)"/>
+    <text class="gk-mono" x="350" y="155" text-anchor="middle">SignMessage</text>
+
+    <line class="gk-line-accent" x1="415" y1="205" x2="285" y2="205" marker-end="url(#gk-arrow2-accent)"/>
+    <text class="gk-mono gk-accent-text" x="350" y="222" text-anchor="middle">SignResult</text>
+
+    <rect class="gk-box" x="420" y="330" width="240" height="70" rx="10"/>
+    <text class="gk-label" x="540" y="355" text-anchor="middle">Permission prompt</text>
+    <text class="gk-small" x="540" y="377" text-anchor="middle">you decide: allow once ·</text>
+    <text class="gk-small" x="540" y="393" text-anchor="middle">always · deny</text>
+
+    <line class="gk-line gk-dashed" x1="540" y1="300" x2="540" y2="327" marker-end="url(#gk-arrow2)"/>
+
+    <line class="gk-line" x1="180" y1="240" x2="180" y2="455" marker-end="url(#gk-arrow2)"/>
+    <text class="gk-mono" x="193" y="290" text-anchor="start">signed message</text>
+    <text class="gk-mono" x="193" y="308" text-anchor="start">+ certificate</text>
+
+    <rect class="gk-box" x="80" y="455" width="220" height="70" rx="10"/>
+    <text class="gk-label" x="190" y="482" text-anchor="middle">Any verifier</text>
+    <text class="gk-small" x="190" y="504" text-anchor="middle">offline — no server needed</text>
+
+    <g transform="translate(740, 90)">
+      <text class="gk-label" x="0" y="0">Why it matters</text>
+
+      <circle class="gk-dot-accent" cx="6" cy="30" r="4"/>
+      <text class="gk-text" x="20" y="34">Key is unexportable</text>
+      <text class="gk-small" x="20" y="52">a hostile app can’t steal it</text>
+
+      <circle class="gk-dot-accent" cx="6" cy="90" r="4"/>
+      <text class="gk-text" x="20" y="94">Scoped signatures</text>
+      <text class="gk-small" x="20" y="112">tied to the requesting app</text>
+      <text class="gk-small" x="20" y="128">so they can’t be replayed</text>
+
+      <circle class="gk-dot-accent" cx="6" cy="166" r="4"/>
+      <text class="gk-text" x="20" y="170">You approve each app</text>
+      <text class="gk-small" x="20" y="188">allow once, always, or deny</text>
+
+      <circle class="gk-dot-accent" cx="6" cy="226" r="4"/>
+      <text class="gk-text" x="20" y="230">Offline verification</text>
+      <text class="gk-small" x="20" y="248">no call-home, no gatekeeper</text>
+    </g>
+  </svg>
+
+  <svg class="gk-svg gk-narrow" viewBox="0 0 360 1080" role="img" aria-label="Ghost Keys delegate (stacked)">
+    <defs>
+      <marker id="gk-arrow2n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+      </marker>
+      <marker id="gk-arrow2n-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--gk-accent)"/>
+      </marker>
+    </defs>
+
+    <rect class="gk-box" x="10" y="30" width="340" height="620" rx="14"/>
+    <text class="gk-label" x="26" y="58">Your Freenet node</text>
+
+    <rect class="gk-box" x="40" y="90" width="280" height="110" rx="10"/>
+    <text class="gk-label" x="180" y="122" text-anchor="middle">App</text>
+    <text class="gk-small" x="180" y="148" text-anchor="middle">River, a forum,</text>
+    <text class="gk-small" x="180" y="168" text-anchor="middle">a voting dApp…</text>
+
+    <line class="gk-line" x1="130" y1="200" x2="130" y2="250" marker-end="url(#gk-arrow2n)"/>
+    <text class="gk-mono" x="120" y="230" text-anchor="end">SignMessage</text>
+
+    <line class="gk-line-accent" x1="230" y1="250" x2="230" y2="200" marker-end="url(#gk-arrow2n-accent)"/>
+    <text class="gk-mono gk-accent-text" x="240" y="230" text-anchor="start">SignResult</text>
+
+    <rect class="gk-box-accent" x="40" y="250" width="280" height="160" rx="10"/>
+    <text class="gk-label gk-accent-text" x="180" y="282" text-anchor="middle">Ghost Keys delegate</text>
+    <text class="gk-small" x="180" y="302" text-anchor="middle">runs in a WASM sandbox</text>
+
+    <rect class="gk-box" x="70" y="320" width="220" height="70" rx="8"/>
+    <text class="gk-label" x="180" y="348" text-anchor="middle">private key</text>
+    <text class="gk-small" x="180" y="370" text-anchor="middle">runtime blocks export</text>
+
+    <line class="gk-line gk-dashed" x1="180" y1="410" x2="180" y2="450" marker-end="url(#gk-arrow2n)"/>
+
+    <rect class="gk-box" x="40" y="450" width="280" height="90" rx="10"/>
+    <text class="gk-label" x="180" y="482" text-anchor="middle">Permission prompt</text>
+    <text class="gk-small" x="180" y="508" text-anchor="middle">allow once · always · deny</text>
+    <text class="gk-small" x="180" y="526" text-anchor="middle">you decide, per app</text>
+
+    <line class="gk-line" x1="180" y1="540" x2="180" y2="700" marker-end="url(#gk-arrow2n)"/>
+    <text class="gk-mono" x="190" y="600" text-anchor="start">signed message</text>
+    <text class="gk-mono" x="190" y="620" text-anchor="start">+ certificate</text>
+
+    <rect class="gk-box" x="40" y="700" width="280" height="90" rx="10"/>
+    <text class="gk-label" x="180" y="732" text-anchor="middle">Any verifier</text>
+    <text class="gk-small" x="180" y="756" text-anchor="middle">offline — no server needed</text>
+
+    <text class="gk-label" x="20" y="830">Why it matters</text>
+
+    <circle class="gk-dot-accent" cx="26" cy="862" r="4"/>
+    <text class="gk-text" x="42" y="866">Key is unexportable</text>
+    <text class="gk-small" x="42" y="886">a hostile app can’t steal it</text>
+
+    <circle class="gk-dot-accent" cx="26" cy="918" r="4"/>
+    <text class="gk-text" x="42" y="922">Scoped signatures</text>
+    <text class="gk-small" x="42" y="942">tied to the requesting app,</text>
+    <text class="gk-small" x="42" y="960">can’t be replayed elsewhere</text>
+
+    <circle class="gk-dot-accent" cx="26" cy="990" r="4"/>
+    <text class="gk-text" x="42" y="994">You approve each app</text>
+    <text class="gk-small" x="42" y="1014">allow once, always, or deny</text>
+
+    <circle class="gk-dot-accent" cx="26" cy="1046" r="4"/>
+    <text class="gk-text" x="42" y="1050">Offline verification</text>
+    <text class="gk-small" x="42" y="1070">no call-home, no gatekeeper</text>
+  </svg>
+
+  <figcaption>The Ghost Keys delegate runs in a WASM sandbox inside your Freenet node. Apps request signatures through a message API; the private key stays inside the sandbox, signatures are scoped to the requesting app, and the resulting certificate can be verified by anyone, offline.</figcaption>
+</figure>
