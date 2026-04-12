@@ -4,34 +4,88 @@ use colored::Colorize;
 use ed25519_dalek::*;
 use ghostkey_lib::armorable::Armorable;
 use ghostkey::commands::{
-    generate_delegate_cmd, generate_ghost_key_cmd, generate_master_key_cmd, verify_delegate_cmd,
-    verify_ghost_key_cmd, sign_message_cmd, verify_signed_message_cmd,
+    generate_ghost_key_cmd, generate_master_key_cmd, generate_notary_cmd, resolve_notary_file,
+    sign_message_cmd, verify_ghost_key_cmd, verify_notary_cmd, verify_signed_message_cmd,
+    LEGACY_DELEGATE_CERT_FILENAME, LEGACY_DELEGATE_SIGNING_KEY_FILENAME, NOTARY_CERT_FILENAME,
+    NOTARY_SIGNING_KEY_FILENAME,
 };
-use ghostkey_lib::delegate_certificate::DelegateCertificateV1;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
+use ghostkey_lib::notary_certificate::NotaryCertificateV1;
 use log::info;
 use std::path::Path;
 use std::process;
 use std::fs;
 
 const CMD_GENERATE_MASTER_KEY: &str = "generate-master-key";
-const CMD_GENERATE_DELEGATE: &str = "generate-delegate";
-const CMD_VERIFY_DELEGATE: &str = "verify-delegate";
+const CMD_GENERATE_NOTARY: &str = "generate-notary";
+const CMD_VERIFY_NOTARY: &str = "verify-notary";
 const CMD_GENERATE_GHOST_KEY: &str = "generate-ghost-key";
 const CMD_VERIFY_GHOST_KEY: &str = "verify-ghost-key";
 const CMD_SIGN_MESSAGE: &str = "sign-message";
 const CMD_VERIFY_SIGNED_MESSAGE: &str = "verify-signed-message";
+
+// Legacy subcommand names — still parsed via clap aliases for backward
+// compatibility, warned on via pre-parse in main().
+const LEGACY_CMD_GENERATE_DELEGATE: &str = "generate-delegate";
+const LEGACY_CMD_VERIFY_DELEGATE: &str = "verify-delegate";
 
 const ARG_OUTPUT_DIR: &str = "output-dir";
 const ARG_IGNORE_PERMISSIONS: &str = "ignore-permissions";
 const ARG_MASTER_SIGNING_KEY: &str = "master-signing-key";
 const ARG_INFO: &str = "info";
 const ARG_MASTER_VERIFYING_KEY: &str = "master-verifying-key";
-const ARG_DELEGATE_CERTIFICATE: &str = "delegate-certificate";
-const ARG_DELEGATE_DIR: &str = "delegate-dir";
+const ARG_NOTARY_CERTIFICATE: &str = "notary-certificate";
+const ARG_NOTARY_DIR: &str = "notary-dir";
 const ARG_GHOST_CERTIFICATE: &str = "ghost-certificate";
 
+// Legacy flag names accepted as aliases.
+const LEGACY_ARG_DELEGATE_CERTIFICATE: &str = "delegate-certificate";
+const LEGACY_ARG_DELEGATE_DIR: &str = "delegate-dir";
+
+/// Scan raw argv for legacy (pre-0.1.5) subcommand and flag names and emit a
+/// one-shot deprecation warning before clap parses. Clap's `Command::alias`
+/// and `Arg::alias` report the canonical name in matches, so this pre-scan is
+/// the only way to notice which spelling the user typed.
+fn warn_on_legacy_argv() {
+    let legacy_tokens = [
+        LEGACY_CMD_GENERATE_DELEGATE,
+        LEGACY_CMD_VERIFY_DELEGATE,
+    ];
+    let legacy_flags = [
+        "--delegate-certificate",
+        "--delegate-dir",
+    ];
+
+    let args: Vec<String> = std::env::args().collect();
+    let mut warned = false;
+    for arg in args.iter().skip(1) {
+        if legacy_tokens.contains(&arg.as_str()) {
+            eprintln!(
+                "{}: subcommand '{}' is deprecated and will be removed in 0.2.0. \
+                 Use '{}' instead. See freenet/web#24.",
+                "warning".yellow(),
+                arg,
+                arg.replace("delegate", "notary"),
+            );
+            warned = true;
+        }
+        if legacy_flags.iter().any(|f| arg == f || arg.starts_with(&format!("{}=", f))) {
+            let flag = arg.split('=').next().unwrap_or(arg);
+            eprintln!(
+                "{}: flag '{}' is deprecated and will be removed in 0.2.0. \
+                 Use '{}' instead. See freenet/web#24.",
+                "warning".yellow(),
+                flag,
+                flag.replace("delegate", "notary"),
+            );
+            warned = true;
+        }
+    }
+    let _ = warned;
+}
+
 fn main() {
+    warn_on_legacy_argv();
     let exit_code = run();
     process::exit(exit_code);
 }
@@ -77,8 +131,9 @@ fn run() -> i32 {
                 ),
         )
         .subcommand(
-            Command::new(CMD_GENERATE_DELEGATE)
-                .about("Generates a new delegate signing key and certificate")
+            Command::new(CMD_GENERATE_NOTARY)
+                .alias(LEGACY_CMD_GENERATE_DELEGATE)
+                .about("Generates a new notary signing key and certificate")
                 .arg(
                     Arg::new(ARG_MASTER_SIGNING_KEY)
                         .long(ARG_MASTER_SIGNING_KEY)
@@ -89,14 +144,14 @@ fn run() -> i32 {
                 .arg(
                     Arg::new(ARG_INFO)
                         .long(ARG_INFO)
-                        .help("The info string to be included in the delegate key certificate")
+                        .help("The info string to be included in the notary certificate")
                         .required(true)
                         .value_name("STRING"),
                 )
                 .arg(
                     Arg::new(ARG_OUTPUT_DIR)
                         .long(ARG_OUTPUT_DIR)
-                        .help("The directory to output the delegate keys and certificate")
+                        .help("The directory to output the notary keys and certificate")
                         .required(true)
                         .value_name("DIR"),
                 )
@@ -108,8 +163,9 @@ fn run() -> i32 {
                 ),
         )
         .subcommand(
-            Command::new(CMD_VERIFY_DELEGATE)
-                .about("Verifies a delegate key certificate using the master verifying key")
+            Command::new(CMD_VERIFY_NOTARY)
+                .alias(LEGACY_CMD_VERIFY_DELEGATE)
+                .about("Verifies a notary certificate using the master verifying key")
                 .arg(
                     Arg::new(ARG_MASTER_VERIFYING_KEY)
                         .long(ARG_MASTER_VERIFYING_KEY)
@@ -118,20 +174,22 @@ fn run() -> i32 {
                         .value_name("FILE"),
                 )
                 .arg(
-                    Arg::new(ARG_DELEGATE_CERTIFICATE)
-                        .long(ARG_DELEGATE_CERTIFICATE)
-                        .help("The file containing the delegate certificate")
+                    Arg::new(ARG_NOTARY_CERTIFICATE)
+                        .long(ARG_NOTARY_CERTIFICATE)
+                        .alias(LEGACY_ARG_DELEGATE_CERTIFICATE)
+                        .help("The file containing the notary certificate")
                         .required(true)
                         .value_name("FILE"),
                 ),
         )
         .subcommand(
             Command::new(CMD_GENERATE_GHOST_KEY)
-                .about("Generates a ghost key from a delegate signing key")
+                .about("Generates a ghost key from a notary signing key")
                 .arg(
-                    Arg::new(ARG_DELEGATE_DIR)
-                        .long(ARG_DELEGATE_DIR)
-                        .help("The directory containing the delegate certificate and signing key")
+                    Arg::new(ARG_NOTARY_DIR)
+                        .long(ARG_NOTARY_DIR)
+                        .alias(LEGACY_ARG_DELEGATE_DIR)
+                        .help("The directory containing the notary certificate and signing key")
                         .required(true)
                         .value_name("DIR"),
                 )
@@ -222,7 +280,7 @@ fn run() -> i32 {
             }
             result
         }
-        Some((CMD_GENERATE_DELEGATE, sub_matches)) => {
+        Some((CMD_GENERATE_NOTARY, sub_matches)) => {
             let master_signing_key_file = Path::new(
                 sub_matches
                     .get_one::<String>(ARG_MASTER_SIGNING_KEY)
@@ -245,16 +303,16 @@ fn run() -> i32 {
             let ignore_permissions = sub_matches.get_flag(ARG_IGNORE_PERMISSIONS);
 
             let result =
-                generate_delegate_cmd(&master_signing_key, info, output_dir, ignore_permissions);
+                generate_notary_cmd(&master_signing_key, info, output_dir, ignore_permissions);
             if result == 0 {
                 println!(
                     "{}",
-                    "Delegate key generation completed successfully.".green()
+                    "Notary key generation completed successfully.".green()
                 );
             }
             result
         }
-        Some((CMD_VERIFY_DELEGATE, sub_matches)) => {
+        Some((CMD_VERIFY_NOTARY, sub_matches)) => {
             let master_verifying_key : Option<VerifyingKey> = if let Some(key_file) = sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY) {
                 match VerifyingKey::from_file(Path::new(key_file)) {
                     Ok(key) => Some(key),
@@ -266,39 +324,46 @@ fn run() -> i32 {
             } else {
                 None
             };
-            let delegate_certificate_file = Path::new(
+            let notary_certificate_file = Path::new(
                 sub_matches
-                    .get_one::<String>(ARG_DELEGATE_CERTIFICATE)
+                    .get_one::<String>(ARG_NOTARY_CERTIFICATE)
                     .unwrap(),
             );
-            let delegate_certificate =
-                match DelegateCertificateV1::from_file(delegate_certificate_file) {
+            let notary_certificate =
+                match NotaryCertificateV1::from_file(notary_certificate_file) {
                     Ok(cert) => cert,
                     Err(e) => {
-                        println!("{} to read delegate certificate: {}", "Failed".red(), e);
+                        println!("{} to read notary certificate: {}", "Failed".red(), e);
                         return 1;
                     }
                 };
-            verify_delegate_cmd(&master_verifying_key, &delegate_certificate)
+            verify_notary_cmd(&master_verifying_key, &notary_certificate)
         }
         Some((CMD_GENERATE_GHOST_KEY, sub_matches)) => {
-            let delegate_dir = sub_matches.get_one::<String>(ARG_DELEGATE_DIR).unwrap();
-            let delegate_certificate_file =
-                Path::new(delegate_dir).join("delegate_certificate.pem");
-            let delegate_certificate =
-                match DelegateCertificateV1::from_file(&delegate_certificate_file) {
+            let notary_dir = sub_matches.get_one::<String>(ARG_NOTARY_DIR).unwrap();
+            let notary_dir_path = Path::new(notary_dir);
+            let notary_certificate_file = resolve_notary_file(
+                notary_dir_path,
+                NOTARY_CERT_FILENAME,
+                LEGACY_DELEGATE_CERT_FILENAME,
+            );
+            let notary_certificate =
+                match NotaryCertificateV1::from_file(&notary_certificate_file) {
                     Ok(cert) => cert,
                     Err(e) => {
-                        eprintln!("{} to read delegate certificate: {}", "Failed".red(), e);
+                        eprintln!("{} to read notary certificate: {}", "Failed".red(), e);
                         return 1;
                     }
                 };
-            let delegate_signing_key_file =
-                Path::new(delegate_dir).join("delegate_signing_key.pem");
-            let delegate_signing_key = match RSASigningKey::from_file(&delegate_signing_key_file) {
+            let notary_signing_key_file = resolve_notary_file(
+                notary_dir_path,
+                NOTARY_SIGNING_KEY_FILENAME,
+                LEGACY_DELEGATE_SIGNING_KEY_FILENAME,
+            );
+            let notary_signing_key = match RSASigningKey::from_file(&notary_signing_key_file) {
                 Ok(key) => key,
                 Err(e) => {
-                    eprintln!("{} to read delegate signing key: {}", "Failed".red(), e);
+                    eprintln!("{} to read notary signing key: {}", "Failed".red(), e);
                     return 1;
                 }
             };
@@ -309,7 +374,7 @@ fn run() -> i32 {
                 return 1;
             }
 
-            generate_ghost_key_cmd(&delegate_certificate, &delegate_signing_key, &output_dir)
+            generate_ghost_key_cmd(&notary_certificate, &notary_signing_key, &output_dir)
         }
         Some((CMD_VERIFY_GHOST_KEY, sub_matches)) => {
             let master_verifying_key : Option<VerifyingKey> = if let Some(key_file) = sub_matches.get_one::<String>(ARG_MASTER_VERIFYING_KEY) {

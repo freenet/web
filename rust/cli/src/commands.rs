@@ -1,7 +1,7 @@
 use ghostkey_lib::armorable::*;
-use ghostkey_lib::delegate_certificate::DelegateCertificateV1;
 use ghostkey_lib::errors::GhostkeyError;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
+use ghostkey_lib::notary_certificate::NotaryCertificateV1;
 use ghostkey_lib::signed_message::SignedMessage;
 use ghostkey_lib::util::create_keypair;
 use blind_rsa_signatures::SecretKey as RSASigningKey;
@@ -10,8 +10,38 @@ use ed25519_dalek::*;
 use log::info;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use rand_core::OsRng;
+
+/// Canonical on-disk filenames for the notary certificate and signing key.
+pub const NOTARY_CERT_FILENAME: &str = "notary_certificate.pem";
+pub const NOTARY_SIGNING_KEY_FILENAME: &str = "notary_signing_key.pem";
+
+/// Legacy (pre-0.1.5) on-disk filenames, still accepted for reads.
+pub const LEGACY_DELEGATE_CERT_FILENAME: &str = "delegate_certificate.pem";
+pub const LEGACY_DELEGATE_SIGNING_KEY_FILENAME: &str = "delegate_signing_key.pem";
+
+/// Resolve a notary file from a directory, accepting the legacy filename as a
+/// fallback with a deprecation warning. Returns the path that exists.
+pub fn resolve_notary_file(dir: &Path, canonical: &str, legacy: &str) -> PathBuf {
+    let new_path = dir.join(canonical);
+    if new_path.exists() {
+        return new_path;
+    }
+    let old_path = dir.join(legacy);
+    if old_path.exists() {
+        eprintln!(
+            "{}: reading legacy file {}. Rename to {} — the old name will \
+             be removed in 0.2.0. See freenet/web#24.",
+            "warning".yellow(),
+            old_path.display(),
+            canonical,
+        );
+        return old_path;
+    }
+    // Return the canonical path so the caller sees a clean "not found" error.
+    new_path
+}
 
 pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i32 {
     let (signing_key, verifying_key) = match create_keypair(&mut OsRng) {
@@ -79,50 +109,50 @@ pub fn generate_master_key_cmd(output_dir: &Path, ignore_permissions: bool) -> i
     0
 }
 
-pub fn generate_delegate_cmd(
+pub fn generate_notary_cmd(
     master_signing_key: &SigningKey,
     info: &String,
     output_dir: &Path,
     ignore_permissions: bool,
 ) -> i32 {
-    let (delegate_certificate, delegate_signing_key) =
-        match DelegateCertificateV1::new(&master_signing_key, &info) {
+    let (notary_certificate, notary_signing_key) =
+        match NotaryCertificateV1::new(&master_signing_key, &info) {
             Ok(result) => result,
             Err(e) => {
-                eprintln!("{} to create delegate certificate: {}", "Failed".red(), e);
+                eprintln!("{} to create notary certificate: {}", "Failed".red(), e);
                 return 1;
             }
         };
-    let delegate_certificate_file = output_dir.join("delegate_certificate.pem");
-    let delegate_signing_key_file = output_dir.join("delegate_signing_key.pem");
+    let notary_certificate_file = output_dir.join(NOTARY_CERT_FILENAME);
+    let notary_signing_key_file = output_dir.join(NOTARY_SIGNING_KEY_FILENAME);
     info!(
-        "Writing delegate certificate to {}",
-        delegate_certificate_file.display()
+        "Writing notary certificate to {}",
+        notary_certificate_file.display()
     );
-    if let Err(e) = delegate_certificate.to_file(&delegate_certificate_file) {
-        eprintln!("{} to write delegate certificate: {}", "Failed".red(), e);
+    if let Err(e) = notary_certificate.to_file(&notary_certificate_file) {
+        eprintln!("{} to write notary certificate: {}", "Failed".red(), e);
         return 1;
     }
     println!(
         "{} written {}: {}",
-        "Delegate certificate",
+        "Notary certificate",
         "successfully".green(),
-        delegate_certificate_file.display().to_string().yellow()
+        notary_certificate_file.display().to_string().yellow()
     );
     info!(
-        "Writing delegate signing key to {}",
-        delegate_signing_key_file.display()
+        "Writing notary signing key to {}",
+        notary_signing_key_file.display()
     );
-    if let Err(e) = delegate_signing_key.to_file(&delegate_signing_key_file) {
-        eprintln!("{} to write delegate signing key: {}", "Failed".red(), e);
+    if let Err(e) = notary_signing_key.to_file(&notary_signing_key_file) {
+        eprintln!("{} to write notary signing key: {}", "Failed".red(), e);
         return 1;
     }
     if let Err(e) = fs::set_permissions(
-        &delegate_signing_key_file,
+        &notary_signing_key_file,
         fs::Permissions::from_mode(0o600),
     ) {
         eprintln!(
-            "{} to set permissions on delegate signing key file: {}",
+            "{} to set permissions on notary signing key file: {}",
             "Failed".red(),
             e
         );
@@ -130,14 +160,14 @@ pub fn generate_delegate_cmd(
     }
     println!(
         "{} written {}: {}",
-        "Delegate signing key",
+        "Notary signing key",
         "successfully".green(),
-        delegate_signing_key_file.display().to_string().yellow()
+        notary_signing_key_file.display().to_string().yellow()
     );
     if !ignore_permissions {
-        if let Err(e) = require_strict_permissions(&delegate_signing_key_file) {
+        if let Err(e) = require_strict_permissions(&notary_signing_key_file) {
             eprintln!(
-                "{} to set permissions on delegate signing key file: {}",
+                "{} to set permissions on notary signing key file: {}",
                 "Failed".red(),
                 e
             );
@@ -146,28 +176,28 @@ pub fn generate_delegate_cmd(
     } else {
         info!(
             "Ignoring permission checks for {}",
-            delegate_certificate_file.display()
+            notary_certificate_file.display()
         );
         info!(
             "Ignoring permission checks for {}",
-            delegate_signing_key_file.display()
+            notary_signing_key_file.display()
         );
     }
     0
 }
 
-pub fn verify_delegate_cmd(
+pub fn verify_notary_cmd(
     master_verifying_key: &Option<VerifyingKey>,
-    delegate_certificate: &DelegateCertificateV1,
+    notary_certificate: &NotaryCertificateV1,
 ) -> i32 {
-    match delegate_certificate.verify(master_verifying_key) {
+    match notary_certificate.verify(master_verifying_key) {
         Ok(info) => {
-            println!("Delegate certificate {}", "verified".green());
+            println!("Notary certificate {}", "verified".green());
             println!("Info: {}", info.blue());
             0
         }
         Err(e) => {
-            eprintln!("{} to verify delegate certificate: {}", "Failed".red(), e);
+            eprintln!("{} to verify notary certificate: {}", "Failed".red(), e);
             1
         }
     }
@@ -183,7 +213,7 @@ pub fn sign_message_cmd(
         eprintln!("{}: Ghost signing key does not match ghost verifying key", "Error".red());
         return 1;
     }
-    
+
     let signature = ghost_signing_key.sign(message);
     let signed_message = SignedMessage {
         certificate: ghost_certificate,
@@ -257,17 +287,17 @@ pub fn verify_signed_message_cmd(
 }
 
 pub fn generate_ghost_key_cmd(
-    delegate_certificate: &DelegateCertificateV1,
-    delegate_signing_key: &RSASigningKey,
+    notary_certificate: &NotaryCertificateV1,
+    notary_signing_key: &RSASigningKey,
     output_dir: &Path,
 ) -> i32 {
-    if delegate_signing_key.public_key().unwrap() != delegate_certificate.payload.notary_verifying_key {
-        eprintln!("{}: Delegate signing key does not match delegate verifying key", "Error".red());
+    if notary_signing_key.public_key().unwrap() != notary_certificate.payload.notary_verifying_key {
+        eprintln!("{}: Notary signing key does not match notary verifying key", "Error".red());
         return 1;
     }
-    
+
     let (ghost_key_certificate, ghost_key_signing_key) =
-        GhostkeyCertificateV1::new(delegate_certificate, delegate_signing_key);
+        GhostkeyCertificateV1::new(notary_certificate, notary_signing_key);
     let ghost_key_certificate_file = output_dir.join("ghost_key_certificate.pem");
     let ghost_key_signing_key_file = output_dir.join("ghost_key_signing_key.pem");
     info!(
