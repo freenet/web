@@ -126,7 +126,7 @@
 
       // Read the canonical notary field first, fall back to the legacy
       // delegate field for API servers still on ghostkey_lib < 0.1.5.
-      // Tracking removal of the fallback in 0.2.0 — see freenet/web#24.
+      // Tracking removal of the fallback for a future release — see freenet/web#24.
       const { client_secret: clientSecret, payment_intent_id } = data;
       const notaryCertBase64 = data.notary_certificate_base64 || data.delegate_certificate_base64;
 

@@ -140,7 +140,7 @@ async function generateAndSignCertificate(paymentIntentId) {
       // delegate key for sessions opened before the rename. We write the
       // canonical key on migration so future reads are clean, but we do
       // NOT delete the legacy key for one release in case an old cached
-      // tab reads it. Removal tracked in freenet/web#24 for 0.2.0.
+      // tab reads it. Removal tracked for a future release in freenet/web#24.
       let notaryCertificateBase64 = localStorage.getItem('notary_certificate_base64');
       if (!notaryCertificateBase64) {
         notaryCertificateBase64 = localStorage.getItem('delegate_certificate_base64');

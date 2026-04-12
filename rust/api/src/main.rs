@@ -24,7 +24,6 @@ mod routes;
 /// `DELEGATE_DIR` is also read (in `delegates::notary_dir`) for backward
 /// compatibility with existing deployments. See freenet/web#24.
 pub static NOTARY_DIR: &str = "NOTARY_DIR";
-pub static LEGACY_DELEGATE_DIR: &str = "DELEGATE_DIR";
 
 async fn serve_http01_challenge(
     challenge_dir: Arc<Mutex<Option<PathBuf>>>,
@@ -150,10 +149,25 @@ async fn main() {
     for arg in std::env::args().skip(1) {
         if arg == "--delegate-dir" || arg.starts_with("--delegate-dir=") {
             eprintln!(
-                "warning: --delegate-dir is deprecated and will be removed in 0.2.0. \
+                "warning: --delegate-dir is deprecated and will be removed in a future release. \
                  Use --notary-dir instead. See freenet/web#24."
             );
             break;
+        }
+    }
+
+    // If the operator is running with only the legacy DELEGATE_DIR env var
+    // set (e.g. via systemd unit or .env), hydrate NOTARY_DIR from it so
+    // clap's .env("NOTARY_DIR") binding below can satisfy the required
+    // flag without forcing an immediate migration. Warn loudly so the
+    // signal is not buried.
+    if env::var_os("NOTARY_DIR").is_none() {
+        if let Some(legacy) = env::var_os("DELEGATE_DIR") {
+            eprintln!(
+                "warning: DELEGATE_DIR env var is deprecated and will be removed in a \
+                 future release. Rename to NOTARY_DIR. See freenet/web#24."
+            );
+            env::set_var("NOTARY_DIR", legacy);
         }
     }
 
@@ -162,8 +176,13 @@ async fn main() {
             Arg::new("notary-dir")
                 .long("notary-dir")
                 .alias("delegate-dir")
+                .env("NOTARY_DIR")
                 .value_name("DIR")
-                .help("Sets the notary directory")
+                .help(
+                    "Directory containing per-amount notary certificates and signing keys. \
+                     Falls back to the NOTARY_DIR env var and then to the legacy \
+                     DELEGATE_DIR env var for backward compatibility.",
+                )
                 .required(true),
         )
         .arg(
@@ -229,11 +248,11 @@ async fn main() {
     let challenge_dir = matches
         .get_one::<String>("challenge-dir")
         .map(PathBuf::from);
-    // Set both env vars for backward compatibility: new callers read
-    // NOTARY_DIR first, but the legacy DELEGATE_DIR is still honored by
-    // `delegates::notary_dir` if NOTARY_DIR is absent. See #24.
+    // Canonical env var for downstream consumers (e.g. `delegates::notary_dir`).
+    // The legacy `DELEGATE_DIR` hydration path above already fired before
+    // clap parsed, so by this point NOTARY_DIR is either already set by
+    // the operator or we set it from DELEGATE_DIR ourselves.
     env::set_var(NOTARY_DIR, notary_dir);
-    env::set_var(LEGACY_DELEGATE_DIR, notary_dir);
 
     env_logger::builder()
         .format_timestamp(Some(env_logger::TimestampPrecision::Millis))

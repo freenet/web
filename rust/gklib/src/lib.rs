@@ -1,5 +1,5 @@
 pub mod armorable;
-/// Deprecated module path. Use [`notary_certificate`] instead. Will be removed in 0.2.0.
+/// Deprecated module path. Use [`notary_certificate`] instead. Will be removed in a future release.
 #[allow(deprecated)]
 pub mod delegate_certificate;
 pub mod errors;

@@ -23,10 +23,10 @@ pub fn setup_notary_keys(temp_dir: &Path) -> Result<()> {
     generate_notary_keys(&master_key_file, &notary_dir)?;
     print_result(true);
 
-    // Set both the canonical and legacy env vars — downstream code is in
-    // the middle of migrating (#24).
+    // Set NOTARY_DIR for the API server. The pre-rename code also set
+    // GHOSTKEY_DELEGATE_KEY_DIR but nothing in the repo reads it — it was
+    // dead code, dropped here.
     env::set_var("NOTARY_DIR", notary_dir.to_str().unwrap());
-    env::set_var("GHOSTKEY_DELEGATE_KEY_DIR", notary_dir.to_str().unwrap());
     Ok(())
 }
 

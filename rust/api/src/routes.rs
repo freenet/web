@@ -67,7 +67,7 @@ pub struct DonationRequest {
 
 /// HTTP response for donation create / update.
 ///
-/// During the 0.1.5 → 0.2.0 transition the notary certificate is emitted in
+/// During the 0.2.0 rename transition the notary certificate is emitted in
 /// BOTH `delegate_certificate_base64` (legacy) and `notary_certificate_base64`
 /// (canonical) fields with identical values. See `SignCertificateResponse`
 /// for the full rationale and freenet/web#24 for tracking.

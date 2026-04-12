@@ -23,6 +23,13 @@ pub const LEGACY_DELEGATE_SIGNING_KEY_FILENAME: &str = "delegate_signing_key.pem
 
 /// Resolve a notary file from a directory, accepting the legacy filename as a
 /// fallback with a deprecation warning. Returns the path that exists.
+///
+/// Note that this resolves cert and signing-key files independently. In the
+/// CLI that's fine because `generate-notary` always writes both with the
+/// same scheme in the same call, so partial migrations aren't created by
+/// this code path. The API server (which DOES face partial-migration risk
+/// across per-amount files) uses a different directory-level resolver in
+/// `rust/api/src/delegates.rs::pick_scheme`.
 pub fn resolve_notary_file(dir: &Path, canonical: &str, legacy: &str) -> PathBuf {
     let new_path = dir.join(canonical);
     if new_path.exists() {
@@ -32,7 +39,7 @@ pub fn resolve_notary_file(dir: &Path, canonical: &str, legacy: &str) -> PathBuf
     if old_path.exists() {
         eprintln!(
             "{}: reading legacy file {}. Rename to {} — the old name will \
-             be removed in 0.2.0. See freenet/web#24.",
+             be removed in a future release. See freenet/web#24.",
             "warning".yellow(),
             old_path.display(),
             canonical,
@@ -359,6 +366,69 @@ pub fn verify_ghost_key_cmd(
             eprintln!("{} to verify ghost certificate: {}", "Failed".red(), e);
             1
         }
+    }
+}
+
+#[cfg(test)]
+mod resolve_tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    fn touch(path: &Path) {
+        std::fs::write(path, b"placeholder").unwrap();
+    }
+
+    #[test]
+    fn resolve_prefers_canonical_when_both_exist() {
+        let dir = tempdir().unwrap();
+        touch(&dir.path().join(NOTARY_CERT_FILENAME));
+        touch(&dir.path().join(LEGACY_DELEGATE_CERT_FILENAME));
+        let resolved = resolve_notary_file(
+            dir.path(),
+            NOTARY_CERT_FILENAME,
+            LEGACY_DELEGATE_CERT_FILENAME,
+        );
+        assert_eq!(resolved, dir.path().join(NOTARY_CERT_FILENAME));
+    }
+
+    #[test]
+    fn resolve_falls_back_to_legacy_filename() {
+        let dir = tempdir().unwrap();
+        touch(&dir.path().join(LEGACY_DELEGATE_CERT_FILENAME));
+        let resolved = resolve_notary_file(
+            dir.path(),
+            NOTARY_CERT_FILENAME,
+            LEGACY_DELEGATE_CERT_FILENAME,
+        );
+        assert_eq!(resolved, dir.path().join(LEGACY_DELEGATE_CERT_FILENAME));
+    }
+
+    #[test]
+    fn resolve_returns_canonical_on_not_found() {
+        // Nothing exists — return the canonical path so the downstream
+        // open() error references the new name, not the legacy one.
+        let dir = tempdir().unwrap();
+        let resolved = resolve_notary_file(
+            dir.path(),
+            NOTARY_CERT_FILENAME,
+            LEGACY_DELEGATE_CERT_FILENAME,
+        );
+        assert_eq!(resolved, dir.path().join(NOTARY_CERT_FILENAME));
+    }
+
+    #[test]
+    fn resolve_handles_signing_key_filename() {
+        let dir = tempdir().unwrap();
+        touch(&dir.path().join(LEGACY_DELEGATE_SIGNING_KEY_FILENAME));
+        let resolved = resolve_notary_file(
+            dir.path(),
+            NOTARY_SIGNING_KEY_FILENAME,
+            LEGACY_DELEGATE_SIGNING_KEY_FILENAME,
+        );
+        assert_eq!(
+            resolved,
+            dir.path().join(LEGACY_DELEGATE_SIGNING_KEY_FILENAME)
+        );
     }
 }
 

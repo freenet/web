@@ -2,7 +2,7 @@
 //! `master → notary → ghost key`.
 //!
 //! Historically this was called "delegate certificate"; it was renamed to
-//! "notary" in 0.1.5 to deconflict with Freenet's own `Delegate` (WASM agent)
+//! "notary" in 0.2.0 to deconflict with Freenet's own `Delegate` (WASM agent)
 //! concept. See issue freenet/web#24.
 //!
 //! Wire-format compatibility: the CBOR field names inside the signed payload

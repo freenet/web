@@ -14,12 +14,14 @@ ecosystem.
 ## Main Components
 
 - `NotaryCertificateV1`: Represents a notary certificate signed by the master key.
-  Historically called `DelegateCertificateV1`; renamed in 0.1.5 to deconflict with
-  Freenet's own `Delegate` (WASM agent) concept. The old name is preserved as a
-  deprecated type alias and the old module path
+  Historically called `DelegateCertificateV1`; renamed in 0.2.0 to deconflict with
+  Freenet's own `Delegate` (sandboxed WASM agent) concept. In particular the
+  Ghostkey Vault (https://github.com/freenet/ghostkeys) is the delegate that
+  holds user ghost keys on a Freenet node — "vault" is its product name.
+  The old name is preserved as a deprecated type alias and the old module path
   (`ghostkey_lib::delegate_certificate`) continues to re-export the renamed
-  types through a stub module. Both will be removed in 0.2.0. See issue
-  freenet/web#24.
+  types through a stub module. Both are slated for removal in a future
+  release. See issue freenet/web#24.
 - `GhostkeyCertificateV1`: Represents a ghost key certificate signed by a notary key
 - `Armorable`: Trait for serializing and deserializing objects to/from bytes and armored strings
 
@@ -29,7 +31,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ghostkey_lib = "0.1.5" # Replace with the latest version
+ghostkey_lib = "0.2" # Replace with the latest version
 ```
 
 Example usage:

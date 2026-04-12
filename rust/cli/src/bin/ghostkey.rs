@@ -55,7 +55,7 @@ fn warn_on_legacy_argv() {
     for arg in args.iter().skip(1) {
         if legacy_tokens.contains(&arg.as_str()) {
             eprintln!(
-                "{}: subcommand '{}' is deprecated and will be removed in 0.2.0. \
+                "{}: subcommand '{}' is deprecated and will be removed in a future release. \
                  Use '{}' instead. See freenet/web#24.",
                 "warning".yellow(),
                 arg,
@@ -69,7 +69,7 @@ fn warn_on_legacy_argv() {
         {
             let flag = arg.split('=').next().unwrap_or(arg);
             eprintln!(
-                "{}: flag '{}' is deprecated and will be removed in 0.2.0. \
+                "{}: flag '{}' is deprecated and will be removed in a future release. \
                  Use '{}' instead. See freenet/web#24.",
                 "warning".yellow(),
                 flag,

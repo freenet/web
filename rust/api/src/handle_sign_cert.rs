@@ -18,12 +18,12 @@ pub struct SignCertificateRequest {
 
 /// HTTP response for successful certificate signing.
 ///
-/// During the 0.1.5 → 0.2.0 transition the notary certificate is emitted in
+/// During the 0.2.0 rename transition the notary certificate is emitted in
 /// BOTH `delegate_certificate_base64` (legacy) and `notary_certificate_base64`
 /// (canonical) fields with identical values. This lets already-cached browser
 /// JS (which only reads the legacy name) keep working while freshly served
-/// JS picks up the new field. Planned removal of the legacy field in 0.2.0.
-/// See freenet/web#24.
+/// JS picks up the new field. The legacy field is slated for removal in a
+/// future release. See freenet/web#24.
 #[derive(Debug, Serialize)]
 pub struct SignCertificateResponse {
     pub blind_signature_base64: String,
@@ -125,7 +125,7 @@ pub async fn sign_certificate(
             .to_base64()
             .map_err(|e| CertificateError::MiscError(e.to_string()))?,
         // Dual-emit: legacy name for cached browser JS, canonical name for
-        // freshly served JS. Remove the legacy field in 0.2.0 (#24).
+        // freshly served JS. Remove the legacy field in a future release (#24).
         delegate_certificate_base64: cert_base64.clone(),
         notary_certificate_base64: cert_base64,
         amount: amount_cents,

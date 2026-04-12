@@ -217,8 +217,10 @@ fn analyze_validation_error(stderr: &str, stdout: &str) -> String {
         "The ghostkey certificate signature is invalid. This could be due to tampering, use of an incorrect master key, or a mismatch between the certificate data and the signature."
     } else if stderr.contains("Invalid certificate format") {
         "The ghostkey certificate has an invalid format. It may be corrupted or not properly encoded."
-    } else if stderr.contains("Delegate certificate validation failed") {
-        "The delegate certificate within the ghostkey certificate is invalid. This could indicate an issue with the delegate key generation or signing process."
+    } else if stderr.contains("Notary certificate validation failed")
+        || stderr.contains("Delegate certificate validation failed")
+    {
+        "The notary certificate within the ghostkey certificate is invalid. This could indicate an issue with the notary key generation or signing process."
     } else if stderr.contains("Invalid ghostkey verifying key") {
         "The ghostkey verifying key in the certificate is invalid. This could be due to incorrect key generation or corruption of the certificate."
     } else if stdout.contains("amount mismatch") {

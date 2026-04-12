@@ -15,7 +15,7 @@ pub struct GhostkeyCertificateV1 {
     /// The notary certificate that attests to this ghost key.
     ///
     /// The CBOR field name is frozen as `"delegate"` via `#[serde(rename)]`
-    /// for backward compatibility with certs issued before the 0.1.5 rename.
+    /// for backward compatibility with certs issued before the 0.2.0 rename.
     /// See [`crate::notary_certificate`] for the rename rationale.
     #[serde(rename = "delegate")]
     pub notary: NotaryCertificateV1,

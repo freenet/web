@@ -56,10 +56,10 @@ Commands:
   verify-ghost-key     Verifies a ghost key certificate using the master verifying key
   help                 Print this message or the help of the given subcommand(s)
 
-The pre-0.1.5 spellings `generate-delegate`, `verify-delegate`,
+The legacy spellings `generate-delegate`, `verify-delegate`,
 `--delegate-certificate`, and `--delegate-dir` are still accepted as
-deprecated aliases and print a warning on use. They will be removed in 0.2.0.
-See freenet/web#24.
+deprecated aliases and print a warning on use. They will be removed in a
+future release. See freenet/web#24.
 
 Options:
   -h, --help     Print help
