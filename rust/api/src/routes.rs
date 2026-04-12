@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
 use ghostkey_lib::armorable::Armorable;
 
-use crate::delegates::get_delegate;
+use crate::delegates::get_notary;
 use crate::handle_sign_cert::{CertificateError, sign_certificate, SignCertificateRequest, SignCertificateResponse};
 use crate::invite;
 use crate::rate_limit::RateLimiter;
@@ -63,11 +63,18 @@ pub struct DonationRequest {
     pub amount: i64,
 }
 
+/// HTTP response for donation create / update.
+///
+/// During the 0.1.5 → 0.2.0 transition the notary certificate is emitted in
+/// BOTH `delegate_certificate_base64` (legacy) and `notary_certificate_base64`
+/// (canonical) fields with identical values. See `SignCertificateResponse`
+/// for the full rationale and freenet/web#24 for tracking.
 #[derive(Serialize)]
 pub struct DonationResponse {
     pub client_secret: String,
     pub payment_intent_id: String,
     pub delegate_certificate_base64: String,
+    pub notary_certificate_base64: String,
 }
 
 async fn index() -> impl IntoResponse {
@@ -218,18 +225,21 @@ async fn create_donation(
     info!("Payment intent created successfully");
     
     let amount_dollars = request.amount / 100;
-    
-    let (delegate_certificate, _) = get_delegate(amount_dollars as u64).map_err(|e| {
-        error!("Error getting delegate: {:?}", e);
-        DonationError::OtherError("Error getting delegate".to_string())
+
+    let (notary_certificate, _) = get_notary(amount_dollars as u64).map_err(|e| {
+        error!("Error getting notary: {:?}", e);
+        DonationError::OtherError("Error getting notary".to_string())
     })?;
-    
+
+    let cert_base64 = notary_certificate.to_base64().unwrap();
+
     match intent.client_secret {
         Some(secret) => {
             Ok(Json(DonationResponse {
                 client_secret: secret,
                 payment_intent_id: intent.id.to_string(),
-                delegate_certificate_base64: delegate_certificate.to_base64().unwrap(),
+                delegate_certificate_base64: cert_base64.clone(),
+                notary_certificate_base64: cert_base64,
             }))
         },
         None => {
@@ -267,16 +277,19 @@ async fn update_donation(
     info!("Payment intent updated successfully");
 
     let amount_dollars = request.amount / 100;
-    
-    let (delegate_certificate, _) = get_delegate(amount_dollars as u64).map_err(|e| {
-        error!("Error getting delegate: {:?}", e);
-        DonationError::OtherError("Error getting delegate".to_string())
+
+    let (notary_certificate, _) = get_notary(amount_dollars as u64).map_err(|e| {
+        error!("Error getting notary: {:?}", e);
+        DonationError::OtherError("Error getting notary".to_string())
     })?;
-    
+
+    let cert_base64 = notary_certificate.to_base64().unwrap();
+
     Ok(Json(DonationResponse {
         client_secret: updated_intent.client_secret.unwrap_or_default(),
         payment_intent_id: updated_intent.id.to_string(),
-        delegate_certificate_base64: delegate_certificate.to_base64().unwrap(),
+        delegate_certificate_base64: cert_base64.clone(),
+        notary_certificate_base64: cert_base64,
     }))
 }
 

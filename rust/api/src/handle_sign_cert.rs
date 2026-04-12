@@ -7,7 +7,7 @@ use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 
 use ghostkey_lib::armorable::Armorable;
 
-use crate::delegates::sign_with_delegate_key;
+use crate::delegates::sign_with_notary_key;
 pub use crate::errors::CertificateError;
 
 #[derive(Debug, Deserialize)]
@@ -16,10 +16,19 @@ pub struct SignCertificateRequest {
     blinded_ghost_key_base64: String,
 }
 
+/// HTTP response for successful certificate signing.
+///
+/// During the 0.1.5 → 0.2.0 transition the notary certificate is emitted in
+/// BOTH `delegate_certificate_base64` (legacy) and `notary_certificate_base64`
+/// (canonical) fields with identical values. This lets already-cached browser
+/// JS (which only reads the legacy name) keep working while freshly served
+/// JS picks up the new field. Planned removal of the legacy field in 0.2.0.
+/// See freenet/web#24.
 #[derive(Debug, Serialize)]
 pub struct SignCertificateResponse {
     pub blind_signature_base64: String,
     pub delegate_certificate_base64: String,
+    pub notary_certificate_base64: String,
     pub amount: u64,
 }
 
@@ -87,18 +96,24 @@ pub async fn sign_certificate(request: SignCertificateRequest) -> Result<SignCer
 
     let amount_cents = pi.amount as u64;
     let amount_dollars = amount_cents / 100;
-    let blind_signature = sign_with_delegate_key(&blinded_ghostkey, amount_dollars)
+    let blind_signature = sign_with_notary_key(&blinded_ghostkey, amount_dollars)
         .map_err(|e| {
-            log::error!("Error in sign_with_delegate_key: {:?}", e);
+            log::error!("Error in sign_with_notary_key: {:?}", e);
             e
         })?;
 
-    let (delegate_certificate, _) = crate::delegates::get_delegate(amount_dollars)?;
-    
+    let (notary_certificate, _) = crate::delegates::get_notary(amount_dollars)?;
+
+    let cert_base64 = notary_certificate
+        .to_base64()
+        .map_err(|e| CertificateError::MiscError(e.to_string()))?;
+
     Ok(SignCertificateResponse {
         blind_signature_base64: blind_signature.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
-        // TODO: Shouldn't be needed if this is being stored in localstorage
-        delegate_certificate_base64: delegate_certificate.to_base64().map_err(|e| CertificateError::MiscError(e.to_string()))?,
+        // Dual-emit: legacy name for cached browser JS, canonical name for
+        // freshly served JS. Remove the legacy field in 0.2.0 (#24).
+        delegate_certificate_base64: cert_base64.clone(),
+        notary_certificate_base64: cert_base64,
         amount: amount_cents,
     })
 }

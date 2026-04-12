@@ -56,20 +56,31 @@ echo "Using temporary directory: $temp_dir"
 run_test "Generate master key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master-1" 0
 check_files "$temp_dir/master-1" "master_signing_key.pem" "master_verifying_key.pem"
 
-# Test generate-delegate
-run_test "Generate delegate" "cargo run --bin ghostkey -- generate-delegate --master-signing-key $temp_dir/master-1/master_signing_key.pem --info 'Test Delegate' --output-dir $temp_dir/delegate-1" 0
-check_files "$temp_dir/delegate-1" "delegate_certificate.pem" "delegate_signing_key.pem"
+# Test generate-notary (canonical spelling) — writes new notary_*.pem files
+run_test "Generate notary" "cargo run --bin ghostkey -- generate-notary --master-signing-key $temp_dir/master-1/master_signing_key.pem --info 'Test Notary' --output-dir $temp_dir/notary-1" 0
+check_files "$temp_dir/notary-1" "notary_certificate.pem" "notary_signing_key.pem"
 
-# Test verify-delegate (should succeed)
-run_test "Verify delegate with valid certificate" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --delegate-certificate $temp_dir/delegate-1/delegate_certificate.pem" 0
+# Test verify-notary (should succeed)
+run_test "Verify notary with valid certificate" "cargo run --bin ghostkey -- verify-notary --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --notary-certificate $temp_dir/notary-1/notary_certificate.pem" 0
 
-# Test verify-delegate with invalid certificate (should fail)
+# Test legacy generate-delegate alias — should still work and emit deprecation warning
+run_test "Generate delegate (legacy alias)" "cargo run --bin ghostkey -- generate-delegate --master-signing-key $temp_dir/master-1/master_signing_key.pem --info 'Test Delegate' --output-dir $temp_dir/delegate-1" 0
+check_files "$temp_dir/delegate-1" "notary_certificate.pem" "notary_signing_key.pem"
+
+# Test legacy verify-delegate alias with legacy --delegate-certificate flag
+run_test "Verify delegate (legacy alias)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --delegate-certificate $temp_dir/delegate-1/notary_certificate.pem" 0
+
+# Test verify-notary with invalid certificate (should fail)
 echo "Invalid certificate" > $temp_dir/INVALID_CERTIFICATE
-run_test "Verify delegate with invalid certificate (should fail)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --delegate-certificate $temp_dir/INVALID_CERTIFICATE" 1
+run_test "Verify notary with invalid certificate (should fail)" "cargo run --bin ghostkey -- verify-notary --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --notary-certificate $temp_dir/INVALID_CERTIFICATE" 1
 
-# Test generate-ghost-key
-run_test "Generate ghost key" "cargo run --bin ghostkey -- generate-ghost-key --delegate-dir $temp_dir/delegate-1 --output-dir $temp_dir/ghost-1" 0
+# Test generate-ghost-key with new --notary-dir flag
+run_test "Generate ghost key" "cargo run --bin ghostkey -- generate-ghost-key --notary-dir $temp_dir/notary-1 --output-dir $temp_dir/ghost-1" 0
 check_files "$temp_dir/ghost-1" "ghost_key_certificate.pem" "ghost_key_signing_key.pem"
+
+# Test generate-ghost-key with legacy --delegate-dir flag (should still work)
+run_test "Generate ghost key (legacy --delegate-dir)" "cargo run --bin ghostkey -- generate-ghost-key --delegate-dir $temp_dir/notary-1 --output-dir $temp_dir/ghost-1b" 0
+check_files "$temp_dir/ghost-1b" "ghost_key_certificate.pem" "ghost_key_signing_key.pem"
 
 # Test verify-ghost-key
 run_test "Verify ghost key" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-1/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghost_key_certificate.pem" 0
@@ -78,8 +89,8 @@ run_test "Verify ghost key" "cargo run --bin ghostkey -- verify-ghost-key --mast
 run_test "Generate second master key" "cargo run --bin ghostkey -- generate-master-key --output-dir $temp_dir/master-2" 0
 check_files "$temp_dir/master-2" "master_signing_key.pem" "master_verifying_key.pem"
 
-# Test verify-delegate with wrong master key (should fail)
-run_test "Verify delegate with wrong master key (should fail)" "cargo run --bin ghostkey -- verify-delegate --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --delegate-certificate $temp_dir/delegate-1/delegate_certificate.pem" 1
+# Test verify-notary with wrong master key (should fail)
+run_test "Verify notary with wrong master key (should fail)" "cargo run --bin ghostkey -- verify-notary --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --notary-certificate $temp_dir/notary-1/notary_certificate.pem" 1
 
 # Test verify-ghost-key with wrong master key (should fail)
 run_test "Verify ghost key with wrong master key (should fail)" "cargo run --bin ghostkey -- verify-ghost-key --master-verifying-key $temp_dir/master-2/master_verifying_key.pem --ghost-certificate $temp_dir/ghost-1/ghost_key_certificate.pem" 1
@@ -101,7 +112,7 @@ run_test "Verify signed message with output to file" "cargo run --bin ghostkey -
 run_test "Verify message content" "cmp -s \"$temp_dir/test_message.txt\" \"$temp_dir/verified_message.txt\"" 0
 
 # Test sign-message with mismatched ghost signing key (should fail)
-run_test "Generate another ghost key" "cargo run --bin ghostkey -- generate-ghost-key --delegate-dir $temp_dir/delegate-1 --output-dir $temp_dir/ghost-2" 0
+run_test "Generate another ghost key" "cargo run --bin ghostkey -- generate-ghost-key --notary-dir $temp_dir/notary-1 --output-dir $temp_dir/ghost-2" 0
 run_test "Sign message with mismatched ghost signing key" "cargo run --bin ghostkey -- sign-message --ghost-certificate $temp_dir/ghost-1/ghost_key_certificate.pem --ghost-signing-key $temp_dir/ghost-2/ghost_key_signing_key.pem --message $temp_dir/test_message.txt --output $temp_dir/signed_message_mismatched.pem" 1
 
 # Clean up

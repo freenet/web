@@ -77,9 +77,9 @@ fn start_hugo() -> Result<Child> {
 }
 
 async fn start_api(temp_dir: &Path) -> Result<Child> {
-    let delegate_dir = temp_dir.join("delegates");
+    let notary_dir = temp_dir.join("notaries");
     let mut child = Command::new("cargo")
-        .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", delegate_dir.to_str().unwrap()])
+        .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--notary-dir", notary_dir.to_str().unwrap()])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()

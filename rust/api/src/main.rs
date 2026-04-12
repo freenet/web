@@ -25,7 +25,11 @@ mod errors;
 mod invite;
 mod rate_limit;
 
-pub static DELEGATE_DIR: &str = "DELEGATE_DIR";
+/// Canonical env var for the notary key directory. The legacy name
+/// `DELEGATE_DIR` is also read (in `delegates::notary_dir`) for backward
+/// compatibility with existing deployments. See freenet/web#24.
+pub static NOTARY_DIR: &str = "NOTARY_DIR";
+pub static LEGACY_DELEGATE_DIR: &str = "DELEGATE_DIR";
 
 async fn serve_http01_challenge(
     challenge_dir: Arc<Mutex<Option<PathBuf>>>,
@@ -122,11 +126,25 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
 
 #[tokio::main]
 async fn main() {
+    // Pre-scan argv for the legacy --delegate-dir spelling so we can emit a
+    // deprecation warning before clap normalizes it to the canonical name.
+    // (See the same pattern in rust/cli/src/bin/ghostkey.rs.)
+    for arg in std::env::args().skip(1) {
+        if arg == "--delegate-dir" || arg.starts_with("--delegate-dir=") {
+            eprintln!(
+                "warning: --delegate-dir is deprecated and will be removed in 0.2.0. \
+                 Use --notary-dir instead. See freenet/web#24."
+            );
+            break;
+        }
+    }
+
     let matches = Command::new("Freenet Certified Donation API")
-        .arg(Arg::new("delegate-dir")
-            .long("delegate-dir")
+        .arg(Arg::new("notary-dir")
+            .long("notary-dir")
+            .alias("delegate-dir")
             .value_name("DIR")
-            .help("Sets the delegate directory")
+            .help("Sets the notary directory")
             .required(true))
         .arg(Arg::new("tls-cert")
             .long("tls-cert")
@@ -170,10 +188,14 @@ async fn main() {
             .help("Path to rate limit JSON file"))
         .get_matches();
 
-    let delegate_dir = matches.get_one::<String>("delegate-dir").unwrap();
+    let notary_dir = matches.get_one::<String>("notary-dir").unwrap();
     let user_port = matches.get_one::<u16>("port");
     let challenge_dir = matches.get_one::<String>("challenge-dir").map(PathBuf::from);
-    env::set_var(DELEGATE_DIR, delegate_dir);
+    // Set both env vars for backward compatibility: new callers read
+    // NOTARY_DIR first, but the legacy DELEGATE_DIR is still honored by
+    // `delegates::notary_dir` if NOTARY_DIR is absent. See #24.
+    env::set_var(NOTARY_DIR, notary_dir);
+    env::set_var(LEGACY_DELEGATE_DIR, notary_dir);
 
     env_logger::builder()
         .format_timestamp(Some(env_logger::TimestampPrecision::Millis))
@@ -188,7 +210,7 @@ async fn main() {
         Err(e) => error!("Failed to load .env file: {}", e),
     }
 
-    env::var("DELEGATE_DIR").expect("DELEGATE_DIR environment variable not set");
+    env::var("NOTARY_DIR").expect("NOTARY_DIR environment variable not set");
 
     let challenge_dir = Arc::new(Mutex::new(challenge_dir));
 
