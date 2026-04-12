@@ -12,7 +12,7 @@ use super::errors::GhostkeyError;
 use super::errors::GhostkeyError::Base64DecodeError;
 
 /// Legacy PEM armor labels to accept on read for backward compatibility with
-/// pre-0.1.5 files. Writes always use the canonical (current) label.
+/// pre-0.2.0 files. Writes always use the canonical (current) label.
 ///
 /// Added as part of the ghost-key `delegate` → `notary` rename (issue
 /// freenet/web#24). The blanket `Armorable` impl prevents per-type trait

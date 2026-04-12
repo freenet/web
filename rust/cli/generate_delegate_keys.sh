@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# DEPRECATED — renamed to generate_notary_keys.sh in 0.1.5.
+# DEPRECATED — renamed to generate_notary_keys.sh in 0.2.0.
 # Execs the new script unchanged. Will be removed in a future release.
 # See freenet/web#24.
 

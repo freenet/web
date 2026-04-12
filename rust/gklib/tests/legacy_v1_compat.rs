@@ -1,4 +1,4 @@
-//! Regression tests against pre-0.1.5 ghost-key certificate bytes.
+//! Regression tests against pre-0.2.0 ghost-key certificate bytes.
 //!
 //! Fixtures in `tests/fixtures/legacy_v1/` were generated from an unmodified
 //! checkout of main before the delegate → notary rename landed (issue

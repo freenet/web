@@ -9,7 +9,7 @@ Ghost keys are a cryptographic mechanism used in Freenet to provide anonymous, u
 They allow donors to prove they have made a donation without revealing their identity or linking
 multiple donations together. Ghost keys are created through a multi-step process involving master
 keys, notary certificates, and finally the ghost key itself. (The notary certificate was called
-"delegate certificate" before 0.1.5; see freenet/web#24.)
+"delegate certificate" before 0.2.0; see freenet/web#24.)
 
 ## Purpose of Ghost Keys
 

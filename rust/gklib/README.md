@@ -64,7 +64,7 @@ assert_eq!(verified_info, info);
 ## Wire-Format Compatibility
 
 Ghost-key certificates minted by `ghostkey_lib` 0.1.4 and earlier are fully
-interchangeable with 0.1.5. The rename is a source-API change only:
+interchangeable with 0.2.0. The rename is a source-API change only:
 
 - CBOR field names in the signed payload are frozen via `#[serde(rename)]`.
 - PEM armor headers accept both `BEGIN NOTARY_CERTIFICATE_V1` (new writes)

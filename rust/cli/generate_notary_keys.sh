@@ -3,7 +3,7 @@
 # Generate a set of per-amount notary certificates and signing keys for the
 # Freenet donation API.
 #
-# Renamed from generate_delegate_keys.sh in 0.1.5 (issue freenet/web#24).
+# Renamed from generate_delegate_keys.sh in 0.2.0 (issue freenet/web#24).
 # The old name is preserved as a stub that execs this script with a
 # deprecation warning. The --delegate-dir flag is accepted as a legacy
 # alias for --notary-dir.

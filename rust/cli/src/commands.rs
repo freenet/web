@@ -17,7 +17,7 @@ use std::path::{Path, PathBuf};
 pub const NOTARY_CERT_FILENAME: &str = "notary_certificate.pem";
 pub const NOTARY_SIGNING_KEY_FILENAME: &str = "notary_signing_key.pem";
 
-/// Legacy (pre-0.1.5) on-disk filenames, still accepted for reads.
+/// Legacy (pre-0.2.0) on-disk filenames, still accepted for reads.
 pub const LEGACY_DELEGATE_CERT_FILENAME: &str = "delegate_certificate.pem";
 pub const LEGACY_DELEGATE_SIGNING_KEY_FILENAME: &str = "delegate_signing_key.pem";
 

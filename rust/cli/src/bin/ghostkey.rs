@@ -42,7 +42,7 @@ const ARG_GHOST_CERTIFICATE: &str = "ghost-certificate";
 const LEGACY_ARG_DELEGATE_CERTIFICATE: &str = "delegate-certificate";
 const LEGACY_ARG_DELEGATE_DIR: &str = "delegate-dir";
 
-/// Scan raw argv for legacy (pre-0.1.5) subcommand and flag names and emit a
+/// Scan raw argv for legacy (pre-0.2.0) subcommand and flag names and emit a
 /// one-shot deprecation warning before clap parses. Clap's `Command::alias`
 /// and `Arg::alias` report the canonical name in matches, so this pre-scan is
 /// the only way to notice which spelling the user typed.
