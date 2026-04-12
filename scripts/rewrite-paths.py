@@ -1,10 +1,14 @@
-"""Rewrite hardcoded absolute asset paths in Hugo HTML output for Freenet hosting.
+"""Rewrite absolute paths in Hugo HTML output for Freenet hosting.
 
 Usage: python3 rewrite-paths.py <output-dir> <base-path>
 
 Hugo templates use relURL which respects baseURL, but raw HTML in markdown
-content (e.g., <img src="/img/foo.webp">) uses absolute paths that must be
-rewritten to include the Freenet contract base path.
+content uses absolute paths like href="/about/news/" or src="/img/foo.webp"
+that must be rewritten to include the Freenet contract base path.
+
+This script rewrites ALL href/src/srcset attributes that start with "/"
+(but not "//" protocol-relative or external URLs) to prepend the base path.
+Paths that already start with the base path are left unchanged.
 """
 
 import os
@@ -12,14 +16,8 @@ import re
 import sys
 
 output_dir = sys.argv[1]
-base = sys.argv[2]
-
-# Directories that contain assets referenced with absolute paths in content
-ASSET_DIRS = r"(img|images|pdf|css|js)"
-
-# Patterns: src="/img/...", srcset="/images/...", href="/pdf/..." (quoted and unquoted)
-QUOTED = re.compile(r'((?:src|srcset|href)=")/' + ASSET_DIRS + r"/")
-UNQUOTED = re.compile(r"((?:src|srcset|href)=)/" + ASSET_DIRS + r"/")
+base = sys.argv[2].rstrip("/")
+base_stripped = base.lstrip("/")
 
 count = 0
 for root, dirs, files in os.walk(output_dir):
@@ -29,8 +27,39 @@ for root, dirs, files in os.walk(output_dir):
         path = os.path.join(root, fname)
         with open(path) as f:
             content = f.read()
-        new_content = QUOTED.sub(rf"\1{base}/\2/", content)
-        new_content = UNQUOTED.sub(rf"\1{base}/\2/", new_content)
+
+        def rewrite_quoted(m):
+            prefix = m.group(1)  # e.g. href="
+            path_after_slash = m.group(2)
+            if path_after_slash.startswith(base_stripped):
+                return m.group(0)
+            return f'{prefix}{base}/{path_after_slash}'
+
+        def rewrite_unquoted(m):
+            prefix = m.group(1)  # e.g. href=
+            path_after_slash = m.group(2)
+            if path_after_slash.startswith(base_stripped):
+                return m.group(0)
+            return f'{prefix}{base}/{path_after_slash}'
+
+        # Quoted: href="/foo" -> href="/base/foo" (but not href="//...")
+        new_content = re.sub(
+            r'((?:href|src|srcset)=")/((?!/)[^"]*)',
+            rewrite_quoted, content
+        )
+        # Unquoted: href=/foo -> href=/base/foo
+        new_content = re.sub(
+            r'((?:href|src|srcset)=)/((?!/|"|>)\S*)',
+            rewrite_unquoted, new_content
+        )
+        # Special case: href=/ (bare root, unquoted) -> href=/base/
+        new_content = re.sub(
+            r'(href=)/([>\s])',
+            rf'\1{base}/\2', new_content
+        )
+        # Special case: href="/" (bare root, quoted)
+        new_content = new_content.replace('href="/"', f'href="{base}/"')
+
         if new_content != content:
             with open(path, "w") as f:
                 f.write(new_content)
