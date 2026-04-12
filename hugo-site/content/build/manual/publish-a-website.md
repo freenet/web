@@ -160,7 +160,9 @@ Sites are served through a Freenet gateway inside a sandboxed iframe. Here's wha
 - Large sites -- the archive is compressed with xz; the contract supports up to 100MB
 
 **Won't work:**
-- **Server-side logic** -- no PHP, SSR, or API routes
+- **Traditional server-side logic** -- the website contract serves static files only. For dynamic
+  behavior (user accounts, real-time updates, data storage), build a
+  [full dApp with contracts and delegates](/build/manual/tutorial/) instead.
 - **External CDN resources** -- Google Fonts, external images, and CDN-hosted libraries are blocked
   by the iframe's Content Security Policy. Bundle all fonts and assets locally.
 - **External API calls** -- `fetch()` to GitHub, Stripe, analytics services, etc. are blocked by
