@@ -41,7 +41,7 @@ fn generate_keypair_and_blind_core(delegate_certificate_base64: String, seed: Ve
     let verifying_key_bytes = Armorable::to_bytes(&ec_verifying_key)
         .map_err(|_| "Failed to convert verifying key to bytes".to_string())?;
 
-    let blinding_result = delegate_certificate.payload.delegate_verifying_key
+    let blinding_result = delegate_certificate.payload.notary_verifying_key
         .blind(&mut rng, verifying_key_bytes, false, &Options::default())
         .map_err(|_| "Blinding operation failed".to_string())?;
 
@@ -83,7 +83,7 @@ fn generate_ghost_key_certificate_core(
     let delegate_certificate = DelegateCertificateV1::from_base64(&delegate_certificate_base64)
         .map_err(|e| format!("Invalid delegate certificate: {}", e))?;
 
-    let delegate_verifying_key = &delegate_certificate.clone().payload.delegate_verifying_key;
+    let delegate_verifying_key = &delegate_certificate.clone().payload.notary_verifying_key;
     let blinding_secret = Secret(BASE64_STANDARD.decode(blinding_secret_base64).unwrap());
 
     let ec_verifying_key = ed25519_dalek::VerifyingKey::from_base64(&ec_verifying_key_base64)
@@ -104,7 +104,7 @@ fn generate_ghost_key_certificate_core(
     ).map_err(|e| format!("Unblinding operation failed: {}", e))?;
 
     let ghost_key_certificate = GhostkeyCertificateV1 {
-        delegate: delegate_certificate.clone(),
+        notary: delegate_certificate.clone(),
         verifying_key: ec_verifying_key,
         signature: unblinded_signature,
     };

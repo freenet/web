@@ -261,7 +261,7 @@ pub fn generate_ghost_key_cmd(
     delegate_signing_key: &RSASigningKey,
     output_dir: &Path,
 ) -> i32 {
-    if delegate_signing_key.public_key().unwrap() != delegate_certificate.payload.delegate_verifying_key {
+    if delegate_signing_key.public_key().unwrap() != delegate_certificate.payload.notary_verifying_key {
         eprintln!("{}: Delegate signing key does not match delegate verifying key", "Error".red());
         return 1;
     }

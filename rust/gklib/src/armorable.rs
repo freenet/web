@@ -11,6 +11,20 @@ use serde::{Deserialize, Serialize};
 use super::errors::GhostkeyError;
 use super::errors::GhostkeyError::Base64DecodeError;
 
+/// Legacy PEM armor labels to accept on read for backward compatibility with
+/// pre-0.1.5 files. Writes always use the canonical (current) label.
+///
+/// Added as part of the ghost-key `delegate` → `notary` rename (issue
+/// freenet/web#24). The blanket `Armorable` impl prevents per-type trait
+/// overrides, so aliases are centralized here instead.
+fn legacy_armor_aliases(canonical: &str) -> &'static [&'static str] {
+    match canonical {
+        "NOTARY_CERTIFICATE_V1" => &["DELEGATE_CERTIFICATE_V1"],
+        "NOTARY_PAYLOAD_V1" => &["DELEGATE_PAYLOAD_V1"],
+        _ => &[],
+    }
+}
+
 pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
     fn to_bytes(&self) -> Result<Vec<u8>, GhostkeyError> {
         let mut buf = Vec::new();
@@ -96,10 +110,14 @@ pub trait Armorable: Serialize + for<'de> Deserialize<'de> + 'static {
         Self: Sized,
     {
         let struct_name = Self::struct_name();
-        let possible_labels = vec![
+        let mut possible_labels = vec![
             struct_name.clone(),
             struct_name.trim_end_matches("_V1").to_string(),
         ];
+        for alias in legacy_armor_aliases(&struct_name) {
+            possible_labels.push((*alias).to_string());
+            possible_labels.push(alias.trim_end_matches("_V1").to_string());
+        }
 
         for label in possible_labels {
             let begin_label = format!("-----BEGIN {}-----", label);
