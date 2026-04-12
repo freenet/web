@@ -89,11 +89,15 @@ cd rust/cli
 cargo build --release
 """
 
-[tasks.generate-delegate-keys]
-description = "Generate delegate keys"
+[tasks.generate-notary-keys]
+description = "Generate notary keys (see freenet/web#24 for the delegate → notary rename)"
 script = """
-./rust/cli/generate_delegate_keys.sh --master-key ./path/to/master_signing_key.pem --delegate-dir ./path/to/delegate/dir
+./rust/cli/generate_notary_keys.sh --master-key ./path/to/master_signing_key.pem --notary-dir ./path/to/notary/dir
 """
+
+[tasks.generate-delegate-keys]
+description = "DEPRECATED — alias for generate-notary-keys"
+dependencies = ["generate-notary-keys"]
 
 [tasks.test-ghostkey]
 description = "Run ghostkey tests"

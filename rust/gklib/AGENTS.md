@@ -6,13 +6,36 @@ Ghost Keys provide anonymous, verifiable identities backed by Freenet donations.
 ## Core Flow
 1. User donates via Stripe and generates an Ed25519 key pair locally.
 2. Public key is blinded (RSA blind signatures, RFC 9474) before being sent to the server.
-3. Server signs the blinded key with its delegate RSA key and returns the signature.
+3. Server signs the blinded key with its notary RSA key and returns the signature.
 4. Browser unblinds the signature and combines it with metadata to form the Ghost Key certificate.
-5. Trust chain: Freenet master key → delegate certificate → Ghost Key certificate.
+5. Trust chain: Freenet master key → notary certificate → Ghost Key certificate.
+
+## Terminology — "notary", "delegate", and "vault"
+The PKI intermediate (this crate's `NotaryCertificateV1`) was historically
+called "delegate certificate". It was renamed to "notary" in 0.2.0 (issue
+freenet/web#24) because it collided with Freenet's own `Delegate` (sandboxed
+WASM agent) concept.
+
+Three distinct concepts, do not confuse them:
+
+- **notary certificate** — the PKI intermediate, defined here. The key that
+  witnesses a donation and signs an attestation.
+- **Freenet `Delegate`** — the generic Freenet platform primitive: a
+  sandboxed WASM agent running inside a Freenet node.
+- **Ghostkey Vault** — the specific `freenet/ghostkeys` delegate that stores
+  user ghost keys and handles identity operations. "Vault" is its product
+  name (see `ghostkeys/ui/`), which is what humans should reach for when
+  talking about where users store their keys. Issue #24 called it a "wallet
+  delegate", but the actual product name is vault — use that.
+
+Deprecated `delegate_*` type aliases and the `delegate_certificate` module
+path are preserved through the 0.2 release line and slated for removal in a
+future release.
 
 ## Key Modules
 - `armorable.rs`: Base64 serialization trait for cryptographic objects.
-- `delegate_certificate.rs`: Delegate key management and verification.
+- `notary_certificate.rs`: Notary key management and verification (was `delegate_certificate.rs`).
+- `delegate_certificate.rs`: Deprecated stub re-exporting the renamed types.
 - `ghost_key_certificate.rs`: Certificate creation and validation logic.
 - `util.rs`: Blind signature helpers and cryptographic utilities.
 - `errors.rs`: Error types used across the library.
@@ -45,8 +68,11 @@ cargo make integration-test
 ## Useful CLI Commands
 ```bash
 ghostkey generate-master-key
-ghostkey generate-delegate --master-signing-key master.pem --info "test"
-ghostkey generate-ghost-key --delegate-cert delegate.pem --delegate-key delegate-key.pem
+ghostkey generate-notary --master-signing-key master.pem --info "test"
+ghostkey generate-ghost-key --notary-dir path/to/notaries --output-dir path/to/ghost
 ghostkey verify-ghost-key --ghost-certificate ghost.pem
 ghostkey sign-message --ghost-certificate ghost.pem --ghost-signing-key key.pem --message "test"
 ```
+
+The old `generate-delegate` / `verify-delegate` / `--delegate-dir` / `--delegate-certificate`
+spellings are still accepted as deprecated aliases.

@@ -136,12 +136,23 @@ function generateTestCertificate() {
 async function generateAndSignCertificate(paymentIntentId) {
   console.log("Starting generateAndSignCertificate");
   try {
-      const delegateCertificateBase64 = localStorage.getItem('delegate_certificate_base64');
-      
+      // Read the canonical notary key first, fall back to the legacy
+      // delegate key for sessions opened before the rename. We write the
+      // canonical key on migration so future reads are clean, but we do
+      // NOT delete the legacy key for one release in case an old cached
+      // tab reads it. Removal tracked for a future release in freenet/web#24.
+      let notaryCertificateBase64 = localStorage.getItem('notary_certificate_base64');
+      if (!notaryCertificateBase64) {
+        notaryCertificateBase64 = localStorage.getItem('delegate_certificate_base64');
+        if (notaryCertificateBase64) {
+          localStorage.setItem('notary_certificate_base64', notaryCertificateBase64);
+        }
+      }
+
     // Generate key pair and blind the public key using WebAssembly
     console.log("Generating key pair and blinding public key");
     const seed = crypto.getRandomValues(new Uint8Array(32));
-    const result = wasmModule.wasm_generate_keypair_and_blind(delegateCertificateBase64, seed);
+    const result = wasmModule.wasm_generate_keypair_and_blind(notaryCertificateBase64, seed);
     
     if (typeof result === 'string') {
       throw new Error(result); // This is an error message
@@ -193,7 +204,7 @@ async function generateAndSignCertificate(paymentIntentId) {
     // Generate the Ghostkey certificate using WebAssembly
     console.log("Generating Ghost Key certificate");
     const ghostkeyCertResult = wasmModule.wasm_generate_ghost_key_certificate(
-      delegateCertificateBase64,
+      notaryCertificateBase64,
       signData.blind_signature_base64,
       blindingSecret,
       publicKey,

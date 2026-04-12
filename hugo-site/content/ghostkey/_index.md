@@ -45,7 +45,7 @@ privacy, security, and control over their digital presence.
 3. The server verifies the donation and signs the blinded public key with its RSA key.
 4. The server then sends the blinded signature back to the browser, which unblinds it.
 5. The browser combines the unblinded signature with a certificate that authenticates the server's
-   signing key (known as the delegate key), the donation amount, and the date the delegate key was
+   signing key (the notary key), the donation amount, and the date the notary key was
    created.
 6. Finally, the browser presents this certificate to the user along with a corresponding signing
    key, proving the donation was made without revealing the user's identity.

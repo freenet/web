@@ -1,21 +1,21 @@
+use base64::prelude::*;
 use base64::Engine;
+use blind_rsa_signatures::{BlindSignature, Options, Secret};
+use ed25519_dalek::{Signer, Verifier};
+use ghostkey_lib::armorable::Armorable;
+use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
+use ghostkey_lib::notary_certificate::NotaryCertificateV1;
+use ghostkey_lib::signed_message::SignedMessage;
+use ghostkey_lib::util::create_keypair;
+use ghostkey_lib::FREENET_MASTER_VERIFYING_KEY_BASE64;
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
-use ghostkey_lib::armorable::Armorable;
-use ghostkey_lib::util::create_keypair;
-use ghostkey_lib::signed_message::SignedMessage;
-use ghostkey_lib::FREENET_MASTER_VERIFYING_KEY_BASE64;
-use blind_rsa_signatures::{BlindSignature, Options, Secret};
-use ghostkey_lib::delegate_certificate::DelegateCertificateV1;
-use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
-use ed25519_dalek::{Signer, Verifier};
-use base64::prelude::*;
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
 #[cfg(target_arch = "wasm32")]
-use js_sys::{Object, Reflect, JsString};
+use js_sys::{JsString, Object, Reflect};
 
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -27,21 +27,27 @@ struct KeypairAndBlindResult {
 }
 
 #[allow(dead_code)]
-fn generate_keypair_and_blind_core(delegate_certificate_base64: String, seed: Vec<u8>) -> Result<KeypairAndBlindResult, String> {
+fn generate_keypair_and_blind_core(
+    notary_certificate_base64: String,
+    seed: Vec<u8>,
+) -> Result<KeypairAndBlindResult, String> {
     if seed.len() != 32 {
         return Err("Seed must be exactly 32 bytes".to_string());
     }
 
     let mut rng = ChaCha20Rng::from_seed(seed.try_into().expect("Seed must be 32 bytes"));
-    let (ec_signing_key, ec_verifying_key) = create_keypair(&mut rng).map_err(|_| "Failed to create keypair".to_string())?;
+    let (ec_signing_key, ec_verifying_key) =
+        create_keypair(&mut rng).map_err(|_| "Failed to create keypair".to_string())?;
 
-    let delegate_certificate = DelegateCertificateV1::from_base64(&delegate_certificate_base64)
-        .map_err(|e| format!("Invalid delegate certificate: {}", e))?;
+    let notary_certificate = NotaryCertificateV1::from_base64(&notary_certificate_base64)
+        .map_err(|e| format!("Invalid notary certificate: {}", e))?;
 
     let verifying_key_bytes = Armorable::to_bytes(&ec_verifying_key)
         .map_err(|_| "Failed to convert verifying key to bytes".to_string())?;
 
-    let blinding_result = delegate_certificate.payload.delegate_verifying_key
+    let blinding_result = notary_certificate
+        .payload
+        .notary_verifying_key
         .blind(&mut rng, verifying_key_bytes, false, &Options::default())
         .map_err(|_| "Blinding operation failed".to_string())?;
 
@@ -55,14 +61,37 @@ fn generate_keypair_and_blind_core(delegate_certificate_base64: String, seed: Ve
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
-pub fn wasm_generate_keypair_and_blind(delegate_certificate_base64: String, seed: Vec<u8>) -> JsValue {
-    match generate_keypair_and_blind_core(delegate_certificate_base64, seed) {
+pub fn wasm_generate_keypair_and_blind(
+    notary_certificate_base64: String,
+    seed: Vec<u8>,
+) -> JsValue {
+    match generate_keypair_and_blind_core(notary_certificate_base64, seed) {
         Ok(result) => {
             let return_obj = Object::new();
-            Reflect::set(&return_obj, &JsString::from("ec_signing_key"), &JsString::from(result.ec_signing_key)).unwrap();
-            Reflect::set(&return_obj, &JsString::from("ec_verifying_key"), &JsString::from(result.ec_verifying_key)).unwrap();
-            Reflect::set(&return_obj, &JsString::from("blinded_signing_key"), &JsString::from(result.blinded_signing_key)).unwrap();
-            Reflect::set(&return_obj, &JsString::from("blinding_secret"), &JsString::from(result.blinding_secret)).unwrap();
+            Reflect::set(
+                &return_obj,
+                &JsString::from("ec_signing_key"),
+                &JsString::from(result.ec_signing_key),
+            )
+            .unwrap();
+            Reflect::set(
+                &return_obj,
+                &JsString::from("ec_verifying_key"),
+                &JsString::from(result.ec_verifying_key),
+            )
+            .unwrap();
+            Reflect::set(
+                &return_obj,
+                &JsString::from("blinded_signing_key"),
+                &JsString::from(result.blinded_signing_key),
+            )
+            .unwrap();
+            Reflect::set(
+                &return_obj,
+                &JsString::from("blinding_secret"),
+                &JsString::from(result.blinding_secret),
+            )
+            .unwrap();
             return_obj.into()
         }
         Err(err) => JsValue::from_str(&err),
@@ -71,19 +100,19 @@ pub fn wasm_generate_keypair_and_blind(delegate_certificate_base64: String, seed
 
 #[allow(dead_code)]
 fn generate_ghost_key_certificate_core(
-    delegate_certificate_base64: String,
+    notary_certificate_base64: String,
     blinded_signature_base64: String,
     blinding_secret_base64: String,
     ec_verifying_key_base64: String,
-    ec_signing_key_base64: String
+    ec_signing_key_base64: String,
 ) -> Result<GhostKeyCertificateResult, String> {
     let blind_signature = BlindSignature::from_base64(&blinded_signature_base64)
         .map_err(|_| "Invalid blinded signature".to_string())?;
 
-    let delegate_certificate = DelegateCertificateV1::from_base64(&delegate_certificate_base64)
-        .map_err(|e| format!("Invalid delegate certificate: {}", e))?;
+    let notary_certificate = NotaryCertificateV1::from_base64(&notary_certificate_base64)
+        .map_err(|e| format!("Invalid notary certificate: {}", e))?;
 
-    let delegate_verifying_key = &delegate_certificate.clone().payload.delegate_verifying_key;
+    let notary_verifying_key = &notary_certificate.clone().payload.notary_verifying_key;
     let blinding_secret = Secret(BASE64_STANDARD.decode(blinding_secret_base64).unwrap());
 
     let ec_verifying_key = ed25519_dalek::VerifyingKey::from_base64(&ec_verifying_key_base64)
@@ -95,23 +124,27 @@ fn generate_ghost_key_certificate_core(
     let verifying_key_bytes = Armorable::to_bytes(&ec_verifying_key)
         .map_err(|_| "Failed to convert verifying key to bytes".to_string())?;
 
-    let unblinded_signature = delegate_verifying_key.finalize(
-        &blind_signature,
-        &blinding_secret,
-        None,
-        verifying_key_bytes,
-        &Options::default(),
-    ).map_err(|e| format!("Unblinding operation failed: {}", e))?;
+    let unblinded_signature = notary_verifying_key
+        .finalize(
+            &blind_signature,
+            &blinding_secret,
+            None,
+            verifying_key_bytes,
+            &Options::default(),
+        )
+        .map_err(|e| format!("Unblinding operation failed: {}", e))?;
 
     let ghost_key_certificate = GhostkeyCertificateV1 {
-        delegate: delegate_certificate.clone(),
+        notary: notary_certificate.clone(),
         verifying_key: ec_verifying_key,
         signature: unblinded_signature,
     };
-    
-    let armored_certificate = ghost_key_certificate.to_armored_string()
+
+    let armored_certificate = ghost_key_certificate
+        .to_armored_string()
         .map_err(|_| "Failed to armor ghostkey certificate".to_string())?;
-    let armored_signing_key = ec_signing_key.to_armored_string()
+    let armored_signing_key = ec_signing_key
+        .to_armored_string()
         .map_err(|_| "Failed to armor signing key".to_string())?;
 
     Ok(GhostKeyCertificateResult {
@@ -123,14 +156,14 @@ fn generate_ghost_key_certificate_core(
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn wasm_generate_ghost_key_certificate(
-    delegate_certificate_base64: String,
+    notary_certificate_base64: String,
     blinded_signature_base64: String,
     blinding_secret_base64: String,
     ec_verifying_key_base64: String,
-    ec_signing_key_base64: String
+    ec_signing_key_base64: String,
 ) -> Result<JsValue, JsValue> {
     match generate_ghost_key_certificate_core(
-        delegate_certificate_base64,
+        notary_certificate_base64,
         blinded_signature_base64,
         blinding_secret_base64,
         ec_verifying_key_base64,
@@ -138,10 +171,20 @@ pub fn wasm_generate_ghost_key_certificate(
     ) {
         Ok(result) => {
             let return_obj = js_sys::Object::new();
-            js_sys::Reflect::set(&return_obj, &JsValue::from_str("armored_ghost_key_cert"), &JsValue::from_str(&result.armored_ghost_key_cert)).unwrap();
-            js_sys::Reflect::set(&return_obj, &JsValue::from_str("armored_ghost_key_signing_key"), &JsValue::from_str(&result.armored_ghost_key_signing_key)).unwrap();
+            js_sys::Reflect::set(
+                &return_obj,
+                &JsValue::from_str("armored_ghost_key_cert"),
+                &JsValue::from_str(&result.armored_ghost_key_cert),
+            )
+            .unwrap();
+            js_sys::Reflect::set(
+                &return_obj,
+                &JsValue::from_str("armored_ghost_key_signing_key"),
+                &JsValue::from_str(&result.armored_ghost_key_signing_key),
+            )
+            .unwrap();
             Ok(JsValue::from(return_obj))
-        },
+        }
         Err(err) => Err(JsValue::from_str(&format!("Error: {}", err))),
     }
 }
@@ -154,51 +197,67 @@ mod tests {
     fn test_round_trip() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
         let (master_signing_key, master_verifying_key) = create_keypair(&mut rng).unwrap();
-        let (delegate_certificate, delegate_signing_key) = DelegateCertificateV1::new(&master_signing_key, &"Test Delegate".to_string()).unwrap();
+        let (notary_certificate, notary_signing_key) =
+            NotaryCertificateV1::new(&master_signing_key, &"Test Notary".to_string()).unwrap();
 
-        let delegate_certificate_base64 = delegate_certificate.to_base64().unwrap();
+        let notary_certificate_base64 = notary_certificate.to_base64().unwrap();
         let seed = [0u8; 32].to_vec();
-        let result = generate_keypair_and_blind_core(delegate_certificate_base64.clone(), seed).unwrap();
+        let result =
+            generate_keypair_and_blind_core(notary_certificate_base64.clone(), seed).unwrap();
 
         let blinded_signing_key = BlindSignature::from_base64(&result.blinded_signing_key).unwrap();
-        let blinded_signature = delegate_signing_key.blind_sign(&mut rng, blinded_signing_key, &Options::default()).unwrap();
+        let blinded_signature = notary_signing_key
+            .blind_sign(&mut rng, blinded_signing_key, &Options::default())
+            .unwrap();
 
         let generated = generate_ghost_key_certificate_core(
-            delegate_certificate_base64,
+            notary_certificate_base64,
             blinded_signature.to_base64().unwrap(),
             result.blinding_secret,
             result.ec_verifying_key,
             result.ec_signing_key,
-        ).unwrap();
+        )
+        .unwrap();
 
-        let ghost_key_certificate = GhostkeyCertificateV1::from_armored_string(&generated.armored_ghost_key_cert).unwrap();
+        let ghost_key_certificate =
+            GhostkeyCertificateV1::from_armored_string(&generated.armored_ghost_key_cert).unwrap();
         let verified = ghost_key_certificate.verify(&Some(master_verifying_key));
 
-        assert!(verified.is_ok(), "Verification failed: {:?}", verified.unwrap_err());
-        assert_eq!(verified.unwrap(), "Test Delegate");
+        assert!(
+            verified.is_ok(),
+            "Verification failed: {:?}",
+            verified.unwrap_err()
+        );
+        assert_eq!(verified.unwrap(), "Test Notary");
     }
 
     #[test]
     fn test_sign_and_verify_message() {
         let mut rng = ChaCha20Rng::from_seed([1u8; 32]);
         let (master_signing_key, master_verifying_key) = create_keypair(&mut rng).unwrap();
-        let (delegate_certificate, delegate_signing_key) = DelegateCertificateV1::new(&master_signing_key, &"Test Delegate $50".to_string()).unwrap();
+        let (notary_certificate, notary_signing_key) =
+            NotaryCertificateV1::new(&master_signing_key, &"Test Notary $50".to_string()).unwrap();
 
         // Generate ghostkey
-        let delegate_certificate_base64 = delegate_certificate.to_base64().unwrap();
+        let notary_certificate_base64 = notary_certificate.to_base64().unwrap();
         let seed = [1u8; 32].to_vec();
-        let keypair_result = generate_keypair_and_blind_core(delegate_certificate_base64.clone(), seed).unwrap();
+        let keypair_result =
+            generate_keypair_and_blind_core(notary_certificate_base64.clone(), seed).unwrap();
 
-        let blinded_signing_key = BlindSignature::from_base64(&keypair_result.blinded_signing_key).unwrap();
-        let blinded_signature = delegate_signing_key.blind_sign(&mut rng, blinded_signing_key, &Options::default()).unwrap();
+        let blinded_signing_key =
+            BlindSignature::from_base64(&keypair_result.blinded_signing_key).unwrap();
+        let blinded_signature = notary_signing_key
+            .blind_sign(&mut rng, blinded_signing_key, &Options::default())
+            .unwrap();
 
         let cert_result = generate_ghost_key_certificate_core(
-            delegate_certificate_base64,
+            notary_certificate_base64,
             blinded_signature.to_base64().unwrap(),
             keypair_result.blinding_secret,
             keypair_result.ec_verifying_key,
             keypair_result.ec_signing_key.clone(),
-        ).unwrap();
+        )
+        .unwrap();
 
         // Sign a message
         let message = b"Hello, Freenet!".to_vec();
@@ -206,17 +265,16 @@ mod tests {
             cert_result.armored_ghost_key_cert.clone(),
             cert_result.armored_ghost_key_signing_key.clone(),
             message.clone(),
-        ).unwrap();
+        )
+        .unwrap();
 
         // Verify the signed message
         let master_key_base64 = master_verifying_key.to_base64().unwrap();
-        let verify_result = verify_signed_message_core(
-            signed_message_armored,
-            Some(master_key_base64),
-        ).unwrap();
+        let verify_result =
+            verify_signed_message_core(signed_message_armored, Some(master_key_base64)).unwrap();
 
         assert!(verify_result.valid);
-        assert_eq!(verify_result.info, "Test Delegate $50");
+        assert_eq!(verify_result.info, "Test Notary $50");
         assert_eq!(verify_result.message, message);
     }
 
@@ -224,23 +282,29 @@ mod tests {
     fn test_sign_with_wrong_key_fails() {
         let mut rng = ChaCha20Rng::from_seed([2u8; 32]);
         let (master_signing_key, _master_verifying_key) = create_keypair(&mut rng).unwrap();
-        let (delegate_certificate, delegate_signing_key) = DelegateCertificateV1::new(&master_signing_key, &"Test".to_string()).unwrap();
+        let (notary_certificate, notary_signing_key) =
+            NotaryCertificateV1::new(&master_signing_key, &"Test".to_string()).unwrap();
 
         // Generate ghostkey
-        let delegate_certificate_base64 = delegate_certificate.to_base64().unwrap();
+        let notary_certificate_base64 = notary_certificate.to_base64().unwrap();
         let seed = [2u8; 32].to_vec();
-        let keypair_result = generate_keypair_and_blind_core(delegate_certificate_base64.clone(), seed).unwrap();
+        let keypair_result =
+            generate_keypair_and_blind_core(notary_certificate_base64.clone(), seed).unwrap();
 
-        let blinded_signing_key = BlindSignature::from_base64(&keypair_result.blinded_signing_key).unwrap();
-        let blinded_signature = delegate_signing_key.blind_sign(&mut rng, blinded_signing_key, &Options::default()).unwrap();
+        let blinded_signing_key =
+            BlindSignature::from_base64(&keypair_result.blinded_signing_key).unwrap();
+        let blinded_signature = notary_signing_key
+            .blind_sign(&mut rng, blinded_signing_key, &Options::default())
+            .unwrap();
 
         let cert_result = generate_ghost_key_certificate_core(
-            delegate_certificate_base64,
+            notary_certificate_base64,
             blinded_signature.to_base64().unwrap(),
             keypair_result.blinding_secret,
             keypair_result.ec_verifying_key,
             keypair_result.ec_signing_key.clone(),
-        ).unwrap();
+        )
+        .unwrap();
 
         // Try to sign with a different key
         let (wrong_signing_key, _) = create_keypair(&mut rng).unwrap();
@@ -298,7 +362,8 @@ fn sign_message_core(
     };
 
     // Return armored signed message
-    signed_message.to_armored_string()
+    signed_message
+        .to_armored_string()
         .map_err(|e| format!("Failed to armor signed message: {}", e))
 }
 
@@ -313,7 +378,11 @@ pub fn wasm_sign_message(
     ghost_signing_key_armored: String,
     message: Vec<u8>,
 ) -> Result<JsValue, JsValue> {
-    match sign_message_core(ghost_certificate_armored, ghost_signing_key_armored, message) {
+    match sign_message_core(
+        ghost_certificate_armored,
+        ghost_signing_key_armored,
+        message,
+    ) {
         Ok(armored) => Ok(JsValue::from_str(&armored)),
         Err(err) => Err(JsValue::from_str(&err)),
     }
@@ -339,20 +408,24 @@ fn verify_signed_message_core(
     let master_key = match master_verifying_key_base64 {
         Some(key) => Some(
             ed25519_dalek::VerifyingKey::from_base64(&key)
-                .map_err(|e| format!("Invalid master verifying key: {}", e))?
+                .map_err(|e| format!("Invalid master verifying key: {}", e))?,
         ),
         None => Some(
             ed25519_dalek::VerifyingKey::from_base64(FREENET_MASTER_VERIFYING_KEY_BASE64)
-                .map_err(|e| format!("Invalid default master key: {}", e))?
+                .map_err(|e| format!("Invalid default master key: {}", e))?,
         ),
     };
 
-    // Verify the certificate chain (master -> delegate -> ghostkey)
-    let info = signed_message.certificate.verify(&master_key)
+    // Verify the certificate chain (master -> notary -> ghostkey)
+    let info = signed_message
+        .certificate
+        .verify(&master_key)
         .map_err(|e| format!("Certificate verification failed: {}", e))?;
 
     // Verify the message signature
-    signed_message.certificate.verifying_key
+    signed_message
+        .certificate
+        .verifying_key
         .verify(&signed_message.message, &signed_message.signature)
         .map_err(|_| "Message signature verification failed".to_string())?;
 
@@ -370,7 +443,7 @@ fn verify_signed_message_core(
 ///
 /// Returns an object with:
 /// - valid: boolean (always true if no error)
-/// - info: string (delegate info from certificate)
+/// - info: string (notary info from certificate)
 /// - message: Uint8Array (the original message bytes)
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
@@ -382,12 +455,18 @@ pub fn wasm_verify_signed_message(
         Ok(result) => {
             let return_obj = js_sys::Object::new();
             js_sys::Reflect::set(&return_obj, &JsValue::from_str("valid"), &JsValue::TRUE).unwrap();
-            js_sys::Reflect::set(&return_obj, &JsValue::from_str("info"), &JsValue::from_str(&result.info)).unwrap();
+            js_sys::Reflect::set(
+                &return_obj,
+                &JsValue::from_str("info"),
+                &JsValue::from_str(&result.info),
+            )
+            .unwrap();
             js_sys::Reflect::set(
                 &return_obj,
                 &JsValue::from_str("message"),
-                &js_sys::Uint8Array::from(&result.message[..])
-            ).unwrap();
+                &js_sys::Uint8Array::from(&result.message[..]),
+            )
+            .unwrap();
             Ok(JsValue::from(return_obj))
         }
         Err(err) => Err(JsValue::from_str(&err)),

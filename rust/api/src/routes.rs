@@ -5,20 +5,22 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use axum::{
-    routing::{get, post},
-    Router,
+    extract::{ConnectInfo, Path, State},
     http::{HeaderMap, StatusCode},
     response::{IntoResponse, Json},
-    extract::{ConnectInfo, Path, State},
+    routing::{get, post},
+    Router,
 };
 use ed25519_dalek::{SigningKey, VerifyingKey};
+use ghostkey_lib::armorable::Armorable;
 use log::{error, info};
 use serde::{Deserialize, Serialize};
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
-use ghostkey_lib::armorable::Armorable;
 
-use crate::delegates::get_delegate;
-use crate::handle_sign_cert::{CertificateError, sign_certificate, SignCertificateRequest, SignCertificateResponse};
+use crate::delegates::get_notary;
+use crate::handle_sign_cert::{
+    sign_certificate, CertificateError, SignCertificateRequest, SignCertificateResponse,
+};
 use crate::invite;
 use crate::rate_limit::RateLimiter;
 
@@ -63,11 +65,18 @@ pub struct DonationRequest {
     pub amount: i64,
 }
 
+/// HTTP response for donation create / update.
+///
+/// During the 0.2.0 rename transition the notary certificate is emitted in
+/// BOTH `delegate_certificate_base64` (legacy) and `notary_certificate_base64`
+/// (canonical) fields with identical values. See `SignCertificateResponse`
+/// for the full rationale and freenet/web#24 for tracking.
 #[derive(Serialize)]
 pub struct DonationResponse {
     pub client_secret: String,
     pub payment_intent_id: String,
     pub delegate_certificate_base64: String,
+    pub notary_certificate_base64: String,
 }
 
 async fn index() -> impl IntoResponse {
@@ -90,7 +99,7 @@ async fn sign_certificate_route(
         Ok(response) => {
             info!("Certificate signed successfully");
             Ok(Json(response))
-        },
+        }
         Err(e) => {
             error!("Error signing certificate: {:?}", e);
             match e {
@@ -119,7 +128,7 @@ async fn sign_certificate_route(
                     })))
                 }
             }
-        },
+        }
     }
 }
 
@@ -138,15 +147,21 @@ impl IntoResponse for DonationError {
             DonationError::StripeError(e) => {
                 error!("Stripe error: {:?}", e);
                 (StatusCode::INTERNAL_SERVER_ERROR, "Stripe error occurred")
-            },
+            }
             DonationError::EnvError(e) => {
                 error!("Environment variable error: {:?}", e);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Environment variable error")
-            },
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Environment variable error",
+                )
+            }
             DonationError::OtherError(e) => {
                 error!("Other error: {:?}", e);
-                (StatusCode::INTERNAL_SERVER_ERROR, "An unexpected error occurred")
-            },
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "An unexpected error occurred",
+                )
+            }
         };
 
         let body = Json(ErrorResponse {
@@ -162,7 +177,7 @@ async fn create_donation(
     Json(request): Json<DonationRequest>,
 ) -> Result<Json<DonationResponse>, DonationError> {
     info!("Received create-donation request: {:?}", request);
-    
+
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(&secret_key);
 
@@ -216,31 +231,33 @@ async fn create_donation(
         .map_err(DonationError::StripeError)?;
 
     info!("Payment intent created successfully");
-    
+
     let amount_dollars = request.amount / 100;
-    
-    let (delegate_certificate, _) = get_delegate(amount_dollars as u64).map_err(|e| {
-        error!("Error getting delegate: {:?}", e);
-        DonationError::OtherError("Error getting delegate".to_string())
+
+    let (notary_certificate, _) = get_notary(amount_dollars as u64).map_err(|e| {
+        error!("Error getting notary: {:?}", e);
+        DonationError::OtherError("Error getting notary".to_string())
     })?;
-    
+
+    let cert_base64 = notary_certificate.to_base64().unwrap();
+
     match intent.client_secret {
-        Some(secret) => {
-            Ok(Json(DonationResponse {
-                client_secret: secret,
-                payment_intent_id: intent.id.to_string(),
-                delegate_certificate_base64: delegate_certificate.to_base64().unwrap(),
-            }))
-        },
+        Some(secret) => Ok(Json(DonationResponse {
+            client_secret: secret,
+            payment_intent_id: intent.id.to_string(),
+            delegate_certificate_base64: cert_base64.clone(),
+            notary_certificate_base64: cert_base64,
+        })),
         None => {
             error!("Client secret is missing from the PaymentIntent");
-            Err(DonationError::OtherError("Client secret is missing".to_string()))
+            Err(DonationError::OtherError(
+                "Client secret is missing".to_string(),
+            ))
         }
     }
 }
 
-#[derive(Deserialize)]
-#[derive(Debug)]
+#[derive(Deserialize, Debug)]
 pub struct UpdateDonationRequest {
     pub payment_intent_id: String,
     pub amount: i64,
@@ -254,7 +271,8 @@ async fn update_donation(
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(&secret_key);
 
-    let payment_intent_id = PaymentIntentId::from_str(&request.payment_intent_id).map_err(|_| DonationError::InvalidCurrency)?;
+    let payment_intent_id = PaymentIntentId::from_str(&request.payment_intent_id)
+        .map_err(|_| DonationError::InvalidCurrency)?;
     let params = stripe::UpdatePaymentIntent {
         amount: Some(request.amount),
         ..Default::default()
@@ -267,37 +285,48 @@ async fn update_donation(
     info!("Payment intent updated successfully");
 
     let amount_dollars = request.amount / 100;
-    
-    let (delegate_certificate, _) = get_delegate(amount_dollars as u64).map_err(|e| {
-        error!("Error getting delegate: {:?}", e);
-        DonationError::OtherError("Error getting delegate".to_string())
+
+    let (notary_certificate, _) = get_notary(amount_dollars as u64).map_err(|e| {
+        error!("Error getting notary: {:?}", e);
+        DonationError::OtherError("Error getting notary".to_string())
     })?;
-    
+
+    let cert_base64 = notary_certificate.to_base64().unwrap();
+
     Ok(Json(DonationResponse {
         client_secret: updated_intent.client_secret.unwrap_or_default(),
         payment_intent_id: updated_intent.id.to_string(),
-        delegate_certificate_base64: delegate_certificate.to_base64().unwrap(),
+        delegate_certificate_base64: cert_base64.clone(),
+        notary_certificate_base64: cert_base64,
     }))
 }
 
 async fn check_payment_status_route(
     Path(payment_intent_id): Path<String>,
 ) -> Result<StatusCode, DonationError> {
-    info!("Received check-payment-status request for PaymentIntent ID: {}", payment_intent_id);
+    info!(
+        "Received check-payment-status request for PaymentIntent ID: {}",
+        payment_intent_id
+    );
 
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(&secret_key);
 
-    let payment_intent_id = PaymentIntentId::from_str(&payment_intent_id).map_err(|_| DonationError::InvalidCurrency)?;
+    let payment_intent_id = PaymentIntentId::from_str(&payment_intent_id)
+        .map_err(|_| DonationError::InvalidCurrency)?;
 
-    let intent = stripe::PaymentIntent::retrieve(&client, &payment_intent_id, &[]).await.map_err(DonationError::StripeError)?;
+    let intent = stripe::PaymentIntent::retrieve(&client, &payment_intent_id, &[])
+        .await
+        .map_err(DonationError::StripeError)?;
 
     if intent.status == stripe::PaymentIntentStatus::Succeeded {
         info!("Payment intent succeeded");
         Ok(StatusCode::OK)
     } else {
         error!("Payment intent not successful: {:?}", intent.status);
-        Err(DonationError::OtherError("Payment not successful".to_string()))
+        Err(DonationError::OtherError(
+            "Payment not successful".to_string(),
+        ))
     }
 }
 
@@ -359,14 +388,16 @@ async fn create_room_invite(
         }
         Ok(false) => {
             // Rate limited
-            let retry_after = state.rate_limiter.get_retry_after(client_ip)
-                .ok()
-                .flatten();
-            info!("Rate limited IP: {}, retry_after: {:?}", client_ip, retry_after);
+            let retry_after = state.rate_limiter.get_retry_after(client_ip).ok().flatten();
+            info!(
+                "Rate limited IP: {}, retry_after: {:?}",
+                client_ip, retry_after
+            );
             return Err((
                 StatusCode::TOO_MANY_REQUESTS,
                 Json(InviteErrorResponse {
-                    error: "Rate limited. You can request up to 20 invites per 24 hours.".to_string(),
+                    error: "Rate limited. You can request up to 20 invites per 24 hours."
+                        .to_string(),
                     retry_after_seconds: retry_after,
                 }),
             ));
@@ -412,7 +443,10 @@ pub fn get_routes() -> Router {
         .route("/sign-certificate", post(sign_certificate_route))
         .route("/create-donation", post(create_donation))
         .route("/update-donation", post(update_donation))
-        .route("/check-payment-status/:payment_intent_id", get(check_payment_status_route))
+        .route(
+            "/check-payment-status/:payment_intent_id",
+            get(check_payment_status_route),
+        )
 }
 
 /// Get routes that require invite state (for River room invites)

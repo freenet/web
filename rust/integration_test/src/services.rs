@@ -1,11 +1,11 @@
 use anyhow::{Context, Result};
-use std::process::{Command, Stdio, Child};
-use std::path::Path;
-use std::time::{Duration, Instant};
-use std::thread;
-use std::io::{BufRead, BufReader};
-use tokio::time::sleep;
 use colored::*;
+use std::io::{BufRead, BufReader};
+use std::path::Path;
+use std::process::{Child, Command, Stdio};
+use std::thread;
+use std::time::{Duration, Instant};
+use tokio::time::sleep;
 
 const API_PORT: u16 = 8000;
 const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
@@ -37,7 +37,11 @@ async fn kill_process_if_running(port: u16, _process_name: &str) -> Result<()> {
     Ok(())
 }
 
-pub async fn cleanup_processes(hugo_handle: &mut Child, api_handle: &mut Child, chromedriver_handle: Option<Child>) {
+pub async fn cleanup_processes(
+    hugo_handle: &mut Child,
+    api_handle: &mut Child,
+    chromedriver_handle: Option<Child>,
+) {
     kill_process(hugo_handle, "Hugo");
     kill_process(api_handle, "API");
     if let Some(mut handle) = chromedriver_handle {
@@ -77,9 +81,16 @@ fn start_hugo() -> Result<Child> {
 }
 
 async fn start_api(temp_dir: &Path) -> Result<Child> {
-    let delegate_dir = temp_dir.join("delegates");
+    let notary_dir = temp_dir.join("notaries");
     let mut child = Command::new("cargo")
-        .args(&["run", "--manifest-path", "../api/Cargo.toml", "--", "--delegate-dir", delegate_dir.to_str().unwrap()])
+        .args(&[
+            "run",
+            "--manifest-path",
+            "../api/Cargo.toml",
+            "--",
+            "--notary-dir",
+            notary_dir.to_str().unwrap(),
+        ])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
@@ -92,11 +103,17 @@ async fn start_api(temp_dir: &Path) -> Result<Child> {
     let stderr_reader = BufReader::new(stderr);
 
     let stdout_thread = thread::spawn(move || {
-        stdout_reader.lines().collect::<Result<Vec<_>, _>>().unwrap_or_default()
+        stdout_reader
+            .lines()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap_or_default()
     });
 
     let stderr_thread = thread::spawn(move || {
-        stderr_reader.lines().collect::<Result<Vec<_>, _>>().unwrap_or_default()
+        stderr_reader
+            .lines()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap_or_default()
     });
 
     let start_time = Instant::now();
@@ -141,12 +158,15 @@ async fn start_api(temp_dir: &Path) -> Result<Child> {
     stdout.iter().for_each(|line| println!("{}", line));
     println!("API stderr:");
     stderr.iter().for_each(|line| eprintln!("{}", line));
-    Err(anyhow::anyhow!("API failed to start within the timeout period"))
+    Err(anyhow::anyhow!(
+        "API failed to start within the timeout period"
+    ))
 }
 
 async fn is_api_ready() -> Result<()> {
     let client = reqwest::Client::new();
-    client.get(&format!("http://localhost:{}/health", API_PORT))
+    client
+        .get(&format!("http://localhost:{}/health", API_PORT))
         .send()
         .await
         .context("Failed to connect to API health endpoint")?

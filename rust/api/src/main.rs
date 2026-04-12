@@ -1,52 +1,60 @@
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::{env, fs, path::PathBuf, sync::Arc};
-use std::net::{SocketAddr, IpAddr, Ipv4Addr};
 
-use clap::{Arg, Command, value_parser};
+use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
+use axum_server::tls_rustls::RustlsConfig;
+use clap::{value_parser, Arg, Command};
 use dotenv::dotenv;
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use log::{error, info, warn, LevelFilter};
 use tokio::sync::Mutex;
-use axum::{
-    routing::get,
-    Router,
-    http::StatusCode,
-    response::IntoResponse,
-};
-use tower_http::trace::TraceLayer;
 use tower_http::cors::CorsLayer;
-use axum_server::tls_rustls::RustlsConfig;
+use tower_http::trace::TraceLayer;
 
 use crate::routes::InviteState;
 
-mod routes;
-mod handle_sign_cert;
 mod delegates;
 mod errors;
+mod handle_sign_cert;
 mod invite;
 mod rate_limit;
+mod routes;
 
-pub static DELEGATE_DIR: &str = "DELEGATE_DIR";
+/// Canonical env var for the notary key directory. The legacy name
+/// `DELEGATE_DIR` is also read (in `delegates::notary_dir`) for backward
+/// compatibility with existing deployments. See freenet/web#24.
+pub static NOTARY_DIR: &str = "NOTARY_DIR";
 
 async fn serve_http01_challenge(
     challenge_dir: Arc<Mutex<Option<PathBuf>>>,
     uri: axum::http::Uri,
 ) -> impl IntoResponse {
-    let path = uri.path().trim_start_matches('/').trim_start_matches(".well-known/acme-challenge/");
+    let path = uri
+        .path()
+        .trim_start_matches('/')
+        .trim_start_matches(".well-known/acme-challenge/");
     let challenge_dir = challenge_dir.lock().await;
-    
+
     if let Some(dir) = &*challenge_dir {
         let file_path = dir.join(path);
         if file_path.is_file() {
             match tokio::fs::read_to_string(&file_path).await {
                 Ok(content) => (StatusCode::OK, content),
-                Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Failed to read challenge file".to_string()),
+                Err(_) => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Failed to read challenge file".to_string(),
+                ),
             }
         } else {
-            let error_message = format!("Challenge file not found at path: {}", file_path.display());
+            let error_message =
+                format!("Challenge file not found at path: {}", file_path.display());
             (StatusCode::NOT_FOUND, error_message)
         }
     } else {
-        (StatusCode::NOT_FOUND, "Challenge directory not configured".to_string())
+        (
+            StatusCode::NOT_FOUND,
+            "Challenge directory not configured".to_string(),
+        )
     }
 }
 
@@ -65,22 +73,29 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
     let owner_vk_str = matches.get_one::<String>("room-owner-vk")?;
     let room_name = matches.get_one::<String>("room-name")?.clone();
     let rate_limit_file = PathBuf::from(
-        matches.get_one::<String>("rate-limit-file")
+        matches
+            .get_one::<String>("rate-limit-file")
             .map(|s| s.as_str())
-            .unwrap_or("/var/lib/gkapi/invite_rate_limits.json")
+            .unwrap_or("/var/lib/gkapi/invite_rate_limits.json"),
     );
 
     // Load signing key from file (32 bytes raw)
     let signing_key_bytes = match fs::read(signing_key_path) {
         Ok(bytes) => bytes,
         Err(e) => {
-            error!("Failed to read room signing key from {}: {}", signing_key_path, e);
+            error!(
+                "Failed to read room signing key from {}: {}",
+                signing_key_path, e
+            );
             return None;
         }
     };
 
     if signing_key_bytes.len() != 32 {
-        error!("Room signing key must be exactly 32 bytes, got {}", signing_key_bytes.len());
+        error!(
+            "Room signing key must be exactly 32 bytes, got {}",
+            signing_key_bytes.len()
+        );
         return None;
     }
 
@@ -92,13 +107,19 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
     let owner_vk_bytes = match bs58::decode(owner_vk_str).into_vec() {
         Ok(bytes) => bytes,
         Err(e) => {
-            error!("Failed to decode room owner verifying key from base58: {}", e);
+            error!(
+                "Failed to decode room owner verifying key from base58: {}",
+                e
+            );
             return None;
         }
     };
 
     if owner_vk_bytes.len() != 32 {
-        error!("Room owner verifying key must be exactly 32 bytes, got {}", owner_vk_bytes.len());
+        error!(
+            "Room owner verifying key must be exactly 32 bytes, got {}",
+            owner_vk_bytes.len()
+        );
         return None;
     }
 
@@ -122,58 +143,116 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
 
 #[tokio::main]
 async fn main() {
+    // Pre-scan argv for the legacy --delegate-dir spelling so we can emit a
+    // deprecation warning before clap normalizes it to the canonical name.
+    // (See the same pattern in rust/cli/src/bin/ghostkey.rs.)
+    for arg in std::env::args().skip(1) {
+        if arg == "--delegate-dir" || arg.starts_with("--delegate-dir=") {
+            eprintln!(
+                "warning: --delegate-dir is deprecated and will be removed in a future release. \
+                 Use --notary-dir instead. See freenet/web#24."
+            );
+            break;
+        }
+    }
+
+    // If the operator is running with only the legacy DELEGATE_DIR env var
+    // set (e.g. via systemd unit or .env), hydrate NOTARY_DIR from it so
+    // clap's .env("NOTARY_DIR") binding below can satisfy the required
+    // flag without forcing an immediate migration. Warn loudly so the
+    // signal is not buried.
+    if env::var_os("NOTARY_DIR").is_none() {
+        if let Some(legacy) = env::var_os("DELEGATE_DIR") {
+            eprintln!(
+                "warning: DELEGATE_DIR env var is deprecated and will be removed in a \
+                 future release. Rename to NOTARY_DIR. See freenet/web#24."
+            );
+            env::set_var("NOTARY_DIR", legacy);
+        }
+    }
+
     let matches = Command::new("Freenet Certified Donation API")
-        .arg(Arg::new("delegate-dir")
-            .long("delegate-dir")
-            .value_name("DIR")
-            .help("Sets the delegate directory")
-            .required(true))
-        .arg(Arg::new("tls-cert")
-            .long("tls-cert")
-            .value_name("FILE")
-            .help("Path to TLS certificate file"))
-        .arg(Arg::new("tls-key")
-            .long("tls-key")
-            .value_name("FILE")
-            .help("Path to TLS private key file"))
-        .arg(Arg::new("port")
-            .long("port")
-            .value_name("PORT")
-            .help("Sets the port to listen on")
-            .value_parser(value_parser!(u16)))
-        .arg(Arg::new("challenge-dir")
-            .long("challenge-dir")
-            .value_name("DIR")
-            .help("Directory for HTTP-01 challenge tokens"))
+        .arg(
+            Arg::new("notary-dir")
+                .long("notary-dir")
+                .alias("delegate-dir")
+                .env("NOTARY_DIR")
+                .value_name("DIR")
+                .help(
+                    "Directory containing per-amount notary certificates and signing keys. \
+                     Falls back to the NOTARY_DIR env var and then to the legacy \
+                     DELEGATE_DIR env var for backward compatibility.",
+                )
+                .required(true),
+        )
+        .arg(
+            Arg::new("tls-cert")
+                .long("tls-cert")
+                .value_name("FILE")
+                .help("Path to TLS certificate file"),
+        )
+        .arg(
+            Arg::new("tls-key")
+                .long("tls-key")
+                .value_name("FILE")
+                .help("Path to TLS private key file"),
+        )
+        .arg(
+            Arg::new("port")
+                .long("port")
+                .value_name("PORT")
+                .help("Sets the port to listen on")
+                .value_parser(value_parser!(u16)),
+        )
+        .arg(
+            Arg::new("challenge-dir")
+                .long("challenge-dir")
+                .value_name("DIR")
+                .help("Directory for HTTP-01 challenge tokens"),
+        )
         // River room invite configuration
-        .arg(Arg::new("room-signing-key")
-            .long("room-signing-key")
-            .value_name("FILE")
-            .env("ROOM_SIGNING_KEY_FILE")
-            .help("Path to room member's signing key (32 bytes raw)"))
-        .arg(Arg::new("room-owner-vk")
-            .long("room-owner-vk")
-            .value_name("KEY")
-            .env("ROOM_OWNER_VK")
-            .help("Room owner's verifying key (base58 encoded)"))
-        .arg(Arg::new("room-name")
-            .long("room-name")
-            .value_name("NAME")
-            .env("ROOM_NAME")
-            .default_value("Freenet Chat")
-            .help("Display name of the room"))
-        .arg(Arg::new("rate-limit-file")
-            .long("rate-limit-file")
-            .value_name("FILE")
-            .env("RATE_LIMIT_FILE")
-            .default_value("/var/lib/gkapi/invite_rate_limits.json")
-            .help("Path to rate limit JSON file"))
+        .arg(
+            Arg::new("room-signing-key")
+                .long("room-signing-key")
+                .value_name("FILE")
+                .env("ROOM_SIGNING_KEY_FILE")
+                .help("Path to room member's signing key (32 bytes raw)"),
+        )
+        .arg(
+            Arg::new("room-owner-vk")
+                .long("room-owner-vk")
+                .value_name("KEY")
+                .env("ROOM_OWNER_VK")
+                .help("Room owner's verifying key (base58 encoded)"),
+        )
+        .arg(
+            Arg::new("room-name")
+                .long("room-name")
+                .value_name("NAME")
+                .env("ROOM_NAME")
+                .default_value("Freenet Chat")
+                .help("Display name of the room"),
+        )
+        .arg(
+            Arg::new("rate-limit-file")
+                .long("rate-limit-file")
+                .value_name("FILE")
+                .env("RATE_LIMIT_FILE")
+                .default_value("/var/lib/gkapi/invite_rate_limits.json")
+                .help("Path to rate limit JSON file"),
+        )
         .get_matches();
 
-    let delegate_dir = matches.get_one::<String>("delegate-dir").unwrap();
+    let notary_dir = matches.get_one::<String>("notary-dir").unwrap();
     let user_port = matches.get_one::<u16>("port");
-    let challenge_dir = matches.get_one::<String>("challenge-dir").map(PathBuf::from);
-    env::set_var(DELEGATE_DIR, delegate_dir);
+    let challenge_dir = matches
+        .get_one::<String>("challenge-dir")
+        .map(PathBuf::from);
+    // Canonical env var for downstream consumers (e.g. `delegates::notary_dir`).
+    // The legacy `DELEGATE_DIR` hydration path above already fired before
+    // clap parsed, so by this point NOTARY_DIR is either already set by
+    // the operator or we set it from DELEGATE_DIR ourselves.
+    env::set_var(NOTARY_DIR, notary_dir);
 
     env_logger::builder()
         .format_timestamp(Some(env_logger::TimestampPrecision::Millis))
@@ -188,7 +267,7 @@ async fn main() {
         Err(e) => error!("Failed to load .env file: {}", e),
     }
 
-    env::var("DELEGATE_DIR").expect("DELEGATE_DIR environment variable not set");
+    env::var("NOTARY_DIR").expect("NOTARY_DIR environment variable not set");
 
     let challenge_dir = Arc::new(Mutex::new(challenge_dir));
 
@@ -201,7 +280,10 @@ async fn main() {
 
     // Add invite routes if configured
     if let Some(state) = invite_state {
-        info!("River room invite endpoint enabled for room: {}", state.room_name);
+        info!(
+            "River room invite endpoint enabled for room: {}",
+            state.room_name
+        );
         app = app.merge(routes::get_invite_routes(state));
     } else {
         warn!("River room invite endpoint not configured. Set ROOM_SIGNING_KEY_FILE and ROOM_OWNER_VK to enable.");
@@ -213,10 +295,12 @@ async fn main() {
         .fallback(not_found);
 
     let challenge_dir_clone = challenge_dir.clone();
-    let challenge_app = Router::new()
-        .fallback(move |uri| serve_http01_challenge(challenge_dir_clone.clone(), uri));
+    let challenge_app =
+        Router::new().fallback(move |uri| serve_http01_challenge(challenge_dir_clone.clone(), uri));
 
-    let (is_https, default_port) = if matches.get_one::<String>("tls-cert").is_some() && matches.get_one::<String>("tls-key").is_some() {
+    let (is_https, default_port) = if matches.get_one::<String>("tls-cert").is_some()
+        && matches.get_one::<String>("tls-key").is_some()
+    {
         (true, 443)
     } else {
         (false, 8000)
@@ -231,7 +315,10 @@ async fn main() {
             info!("TLS certificate and key provided. Starting in HTTPS mode.");
             let tls_cert = matches.get_one::<String>("tls-cert").unwrap();
             let tls_key = matches.get_one::<String>("tls-key").unwrap();
-            let tls_config = RustlsConfig::from_pem_file(PathBuf::from(tls_cert), PathBuf::from(tls_key)).await.unwrap();
+            let tls_config =
+                RustlsConfig::from_pem_file(PathBuf::from(tls_cert), PathBuf::from(tls_key))
+                    .await
+                    .unwrap();
             axum_server::bind_rustls(addr, tls_config)
                 .serve(app.into_make_service_with_connect_info::<SocketAddr>())
                 .await
@@ -239,16 +326,28 @@ async fn main() {
         } else {
             info!("No TLS certificate and key provided. Starting in HTTP mode.");
             let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-            axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>()).await.unwrap();
+            axum::serve(
+                listener,
+                app.into_make_service_with_connect_info::<SocketAddr>(),
+            )
+            .await
+            .unwrap();
         }
     };
 
     if challenge_dir.lock().await.is_some() {
         let http_challenge_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 80);
-        info!("Starting HTTP-01 challenge server on {}", http_challenge_addr);
-        let challenge_listener = tokio::net::TcpListener::bind(http_challenge_addr).await.unwrap();
+        info!(
+            "Starting HTTP-01 challenge server on {}",
+            http_challenge_addr
+        );
+        let challenge_listener = tokio::net::TcpListener::bind(http_challenge_addr)
+            .await
+            .unwrap();
         let challenge_server = tokio::task::spawn(async move {
-            axum::serve(challenge_listener, challenge_app).await.unwrap();
+            axum::serve(challenge_listener, challenge_app)
+                .await
+                .unwrap();
         });
 
         tokio::select! {
