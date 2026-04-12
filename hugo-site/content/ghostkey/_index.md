@@ -1,81 +1,138 @@
 ---
-title: "Freenet Ghost Key"
+title: "Ghost Keys"
 date: 2024-07-10
 draft: false
 layout: "single"
 ---
 
-{{< bulma-button href="/ghostkey/create/" color="#339966" >}}Donate to Get Your Ghost
-Key{{< /bulma-button >}}
+A Ghost Key is an **anonymous, verifiable identity** backed by a donation to Freenet.
+You hold your Ghost Keys in the **Ghostkey Vault** — a Freenet delegate running inside
+your Freenet node — and any Freenet app can ask the vault to sign with one to prove you
+hold a scarce, donation-backed identity, without ever learning who you are.
 
-### Learn More
+You can also read the [introductory article](/about/news/introducing-ghost-keys/) or
+[watch the interview](/about/news/ghost-keys-ian-interview/).
 
-- [What is a Ghost Key?](#what-is-a-ghost-key)
-- [How do Ghost Keys work?](#how-do-ghost-keys-work)
-- [How much should I donate?](#how-much-should-i-donate)
-- [How do I store my Ghost Key?](#how-do-i-store-my-ghost-key)
-- [How do I use my Ghost Key?](#how-do-i-use-my-ghost-key)
+## Why Ghost Keys exist
 
-You can also read an [introductory article about Ghost Keys](/about/news/introducing-ghost-keys/), or
-[watch a discussion](/about/news/ghost-keys-ian-interview/) about it.
+There is no negative trust on the Internet. Identities are free to create, so a bad
+reputation never sticks: spammers, bots, and Sybil attackers just spin up fresh accounts.
+The usual fixes — captchas, phone numbers, "real name" policies — all trade your privacy
+for a weak signal that you're human.
 
-# What is a Ghost Key? {#what-is-a-ghost-key}
+Ghost Keys take a different route. When you donate to Freenet, your browser mints a
+cryptographic identity tied to that donation. The donation is the "skin in the game" —
+you can't farm identities for free — but the donation and the identity are
+**unlinkable**: the server that takes your money never sees the key it's authorizing.
 
-Ghost keys address a crucial challenge on the Internet: establishing trust without sacrificing
-privacy. With personal data commoditized by big tech, ghost keys are a way to maintain anonymity
-while tackling serious problems like bots and spam.
+The result is an identity that is:
 
-Here's how it works: when you make a donation to Freenet, your web browser generates a
-public-private key pair. The public key is then encrypted, or blinded, and sent to our server. The
-server signs this blinded key and sends it back to your browser, which decrypts the signature,
-creating a cryptographic certificate that is signed by the server without the server ever seeing it.
-This process ensures that your identity is not linked to your donation, providing a unique
-certificate that proves you've invested value.
+- **Anonymous** — the issued key cannot be linked back to your donation; Freenet learns
+  that someone donated, not who holds the resulting key.
+- **Scarce** — it costs real value to create, so Sybil attacks get expensive fast.
+- **Portable** — it works across any Freenet app, and any app can verify it offline.
 
-By linking trust to anonymity, ghost keys eliminate the need for cumbersome captchas. They block
-spam, prevent bots, and secure your interactions, making them a powerful tool for those who value
-privacy, security, and control over their digital presence.
+### Why donations?
 
-# How Do Ghost Keys Work? {#how-do-ghost-keys-work}
+Freenet is built to remove central points of trust, so tying identity to a donation
+processed by a central server is a deliberate design choice rather than an accident.
+There are three reasons:
 
-1. After a donation is completed the browser generates an
-   [elliptic curve](https://en.wikipedia.org/wiki/EdDSA) key pair.
-2. The **public key** is [blinded](https://www.rfc-editor.org/rfc/rfc9474.html) and sent to the
-   server.
-3. The server verifies the donation and signs the blinded public key with its RSA key.
-4. The server then sends the blinded signature back to the browser, which unblinds it.
-5. The browser combines the unblinded signature with a certificate that authenticates the server's
-   signing key (the notary key), the donation amount, and the date the notary key was
-   created.
-6. Finally, the browser presents this certificate to the user along with a corresponding signing
-   key, proving the donation was made without revealing the user's identity.
-7. The user stores this certificate and signing key safely
+1. **It reuses off-the-shelf Sybil resistance.** Credit card networks already do
+   meaningful identity work at the payment layer. Building a comparable decentralized
+   mint is an open research problem we haven't solved.
+2. **It funds the project.** Identity issuance becomes a revenue source for the rest
+   of Freenet's work, instead of a cost center.
+3. **It doesn't compromise anonymity.** Blind signing bounds the damage: the party
+   that takes your money is cryptographically prevented from learning the key it's
+   signing, so even a fully compromised donation server cannot correlate donors to
+   Ghost Keys.
 
-# How much should I donate? {#how-much-should-i-donate}
+We're actively exploring decentralized alternatives — see
+[Proof of Trust](/about/news/799-proof-of-trust-a-wealth-unbiased-consensus-mechanism-for-distributed-systems/).
+Until one of them matures, the centralized mint is the pragmatic compromise.
 
-The minimum donation is just $1, but you can donate however much you can afford. The donation amount
-will be securely recorded in your Ghost Key certificate, and in the future it's possible that access
-and perks on the network will be reserved for those who donate more or who donated earlier. Think of
-it like a "founding member" club.
+## How it works: blind signing
 
-# How do I store my Ghost Key? {#how-do-i-store-my-ghost-key}
+{{< ghostkeys-diagram-blindsign >}}
 
-If you have a Freenet peer running on your computer, click "Import to Freenet" on the success page
-after purchasing. This imports your Ghost Key into a
-[delegate](https://freenet.org/build/manual/components/delegates/) on your node -- a secure
-local agent that stores your signing key and handles identity operations on your behalf. Your
-signing key never leaves your node.
+Your browser generates an Ed25519 keypair and
+[blinds](https://en.wikipedia.org/wiki/Blind_signature) the public key before sending
+it to the donation server. The server verifies the donation and signs the blinded key
+with its RSA signing key. Your browser then unblinds the signature, producing a valid
+signature on your real public key — one the server has never seen.
 
-We also recommend downloading your Ghost Key as a backup in case you need to set up a new node.
+The signed public key, together with the donation amount and the notary certificate
+that signed it, forms your **Ghost Key certificate**. Anyone can verify the certificate
+chains back to Freenet's master key; no one can link it to the donation that produced
+it.
 
-# How do I use my Ghost Key? {#how-do-i-use-my-ghost-key}
+## Using Ghost Keys from a Freenet app
 
-Once imported, applications can request to use your Ghost Key for identity verification through the
-delegate. You'll be prompted for permission each time.
+Once imported, your Ghost Key doesn't just sit in a file. It lives inside the
+**Ghostkey Vault** — a Freenet delegate, i.e. a sandboxed WASM agent running inside
+your Freenet node. Apps on Freenet talk to the vault through a message API to request
+signatures; the private key never leaves the sandbox.
 
-If you're a developer building on Freenet and want to integrate ghost key verification into your
-app, see the [ghostkeys delegate](https://github.com/freenet/ghostkeys) repository for the full
-API, integration guide, and source code.
+{{< ghostkeys-diagram-delegate >}}
 
-A [command line tool](https://crates.io/crates/ghostkey) is also available for verifying ghost keys
-and signing messages outside of Freenet.
+Under the hood, an app sends a `SignMessage` request with a scope (the app's identity,
+attested by the runtime) and a payload. The vault wraps the payload in a
+`ScopedPayload`, signs it with your Ed25519 key, and returns a `SignResult` containing
+the signature and your certificate. The first time a given app asks, you're prompted
+to *allow once*, *always allow*, or *deny*.
+
+Two properties matter here:
+
+- **The private key is inaccessible to apps.** Freenet apps running on your node cannot
+  extract key material through the vault's API — the runtime enforces the sandbox and
+  there is no call that hands out the raw key. (You can still back up your own key file
+  separately; see below.)
+- **Signatures are scoped.** The runtime attests which app made each signing request,
+  and the vault embeds that scope in the signed payload. As long as verifiers check
+  the scope, a malicious app can't harvest a signature and replay it against a
+  different app.
+
+Verification works offline. Any recipient of a signed message can check the signature
+and certificate with no call-home, no gatekeeper, and no dependency on Freenet being
+online.
+
+## What you can build with them
+
+Ghost Keys are a primitive, not a product. A few of the things they unlock:
+
+- **Spam-resistant chat and forums.** [River](https://freenet.org/river/) and other
+  Freenet apps can require a Ghost Key to post, making flood attacks costly without
+  tying posts to real-world identity.
+- **Sybil-resistant voting and polling.** One Ghost Key, one voice — additional votes
+  cost additional donations, cheap for individuals and expensive at scale.
+- **Web-of-trust reputation.** Ghost Keys are stable, portable identities, so
+  reputation can accumulate against them and travel between apps.
+- **Paywall-free gated content.** Prove you contributed, without handing over an email
+  or card.
+
+## Storage, backup, and the CLI
+
+If you're running a Freenet node, click **Import to Freenet** on the success page after
+donating — this installs your Ghost Key into the Ghostkey Vault on your node. We also
+recommend downloading the certificate and signing key as a backup, so you can move your
+identity to a new node later.
+
+For developers, everything is open source:
+
+- The [`freenet/ghostkeys`](https://github.com/freenet/ghostkeys) repository contains
+  the Ghostkey Vault, its Dioxus UI, and the protocol types. This is what you integrate
+  against if you're building a Freenet app.
+- The [`ghostkey` CLI](https://crates.io/crates/ghostkey) lets you verify certificates
+  and sign messages outside of Freenet — useful for scripts, CI, or non-Freenet tools
+  that want to check Ghost Key signatures.
+
+## How much should I donate?
+
+The minimum is **$1**. Donate as much as you can — the amount is recorded in your
+certificate, so apps that want to grant additional privileges to larger donors can do
+so.
+
+<p style="text-align: center; margin: 2.5rem 0;">
+<a href="/ghostkey/create/" class="funding-donate-button">Donate to Get Your Ghost Key</a>
+</p>
