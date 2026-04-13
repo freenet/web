@@ -42,8 +42,7 @@ This skill guides you through building contracts, delegates, and UI for Freenet 
   example demonstrating how to build a Freenet app
 - [River](https://github.com/freenet/river) - decentralized group chat app built on Freenet (in
   development)
-- [Freenet Wiki](https://github.com/freenet/freenet-wiki) - decentralized wiki with real-time
-  collaborative editing (in development)
+- [Delta](https://github.com/freenet/delta) - decentralized publishing app built on Freenet
 
 ## Ideas: Open Issues for Decentralized Services
 
