@@ -1,0 +1,67 @@
+name: Publish to Freenet
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'rust/**'
+      - '*.md'
+      - 'LICENSE'
+  workflow_dispatch:
+
+concurrency:
+  group: publish-freenet
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.146.4'
+          extended: true
+
+      - name: Install cargo-make
+        run: cargo install --debug cargo-make
+
+      - name: Install fdev
+        run: cargo install fdev
+        env:
+          CARGO_TERM_COLOR: always
+
+      - name: Write signing key
+        run: |
+          mkdir -p ~/.config/freenet/website-keys
+          echo '${{ secrets.FREENET_WEBSITE_KEY }}' > ~/.config/freenet/website-keys/freenet-org.toml
+
+      - name: Build for Freenet
+        run: cargo make build-freenet
+        env:
+          FREENET_CONTRACT_KEY: ${{ secrets.FREENET_CONTRACT_KEY }}
+
+      - name: Publish to Freenet
+        run: |
+          max_attempts=3
+          delay=10
+          for attempt in $(seq 1 $max_attempts); do
+            echo "Publish attempt $attempt/$max_attempts..."
+            if fdev --node-url "${{ secrets.RIVER_GATEWAY_URL }}" \
+                website publish target/freenet-site --key freenet-org 2>&1; then
+              echo "Published successfully on attempt $attempt"
+              exit 0
+            fi
+            if [ "$attempt" -lt "$max_attempts" ]; then
+              echo "Failed, retrying in ${delay}s..."
+              sleep "$delay"
+              delay=$((delay * 2))
+            fi
+          done
+          echo "::warning::Failed to publish to Freenet after $max_attempts attempts"
+          exit 1
