@@ -13,6 +13,12 @@ hold a scarce, donation-backed identity, without ever learning who you are.
 You can also read the [introductory article](/about/news/introducing-ghost-keys/) or
 [watch the interview](/about/news/ghost-keys-ian-interview/).
 
+> **⚠️ Back up your Ghost Key immediately after creating it.** The Ghostkey Vault
+> delegate is still early software and storage is not yet reliable: keys can and do
+> disappear from the vault. When you receive your certificate and signing key, save
+> both to a password manager or other secure backup **before** importing to Freenet.
+> Without a backup, a lost key cannot be recovered and the donation behind it is gone.
+
 ## Why Ghost Keys exist
 
 There is no negative trust on the Internet. Identities are free to create, so a bad
@@ -155,10 +161,14 @@ Ghost Keys are a primitive, not a product. A few of the things they unlock:
 
 ## Storage, backup, and the CLI
 
-If you're running a Freenet node, click **Import to Freenet** on the success page after
-donating; this installs your Ghost Key into the Ghostkey Vault on your node. We also
-recommend downloading the certificate and signing key as a backup, so you can move your
-identity to a new node later.
+**Back up first, import second.** On the success page after donating, save both the
+certificate and the signing key to a password manager (or another secure location)
+**before** you click **Import to Freenet**. The Ghostkey Vault delegate is still
+early software: keys have been observed disappearing from the vault after import, and
+without a saved backup the key (and the donation behind it) cannot be recovered. Treat
+the vault as a convenience, not as the authoritative store of your key, until this is
+fixed. Progress is tracked in
+[freenet/ghostkeys#3](https://github.com/freenet/ghostkeys/issues/3).
 
 For developers, everything is open source:
 
