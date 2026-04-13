@@ -60,6 +60,14 @@ for root, dirs, files in os.walk(output_dir):
         # Special case: href="/" (bare root, quoted)
         new_content = new_content.replace('href="/"', f'href="{base}/"')
 
+        # Remove menu links to pages stripped from the Freenet build.
+        # Match by href containing /ghostkey/ since the class name varies
+        # with Hugo minification.
+        new_content = re.sub(
+            r'<a[^>]*href=["\']?[^"\'>\s]*/ghostkey/[^>]*>[^<]*</a>',
+            '', new_content
+        )
+
         if new_content != content:
             with open(path, "w") as f:
                 f.write(new_content)
