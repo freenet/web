@@ -13,7 +13,7 @@ usage. Use the table of contents below to navigate through the manual.
 
 ---
 
-## 📚 Table of Contents
+## Table of Contents
 
 1. [Introduction](introduction)
 2. [Components](#components)
@@ -25,7 +25,7 @@ usage. Use the table of contents below to navigate through the manual.
 
 ---
 
-## 📝 Introduction
+## Introduction
 
 Learn the basics of Freenet and its purpose.
 
@@ -44,7 +44,7 @@ Explore the key components of Freenet:
 
 ---
 
-## 🏗️ Architecture {#architecture}
+## Architecture {#architecture}
 
 Understand Freenet's architecture and how it works:
 
@@ -54,7 +54,7 @@ Understand Freenet's architecture and how it works:
 
 ---
 
-## 👩‍💻 Developer Guide {#developer-guide}
+## Developer Guide {#developer-guide}
 
 Resources for building on Freenet:
 
@@ -65,14 +65,14 @@ Resources for building on Freenet:
 
 ---
 
-## 🛠️ Examples {#examples}
+## Examples {#examples}
 
 - [Antiflood Tokens](examples/antiflood-tokens)
 - [Blind Trust Tokens](examples/blind-trust-tokens)
 
 ---
 
-## 🌐 Community and Support {#community-and-support}
+## Community and Support {#community-and-support}
 
 Get involved with the Freenet community:
 
@@ -80,7 +80,7 @@ Get involved with the Freenet community:
 
 ---
 
-## 📖 Reference {#reference}
+## Reference {#reference}
 
 Additional resources and glossary:
 
