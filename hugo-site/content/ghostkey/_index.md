@@ -27,8 +27,10 @@ cryptographic identity tied to that donation. The donation is the "skin in the g
 
 The result is an identity that is:
 
-- **Anonymous**: the issued key cannot be linked back to your donation; Freenet learns
-  that someone donated, not who holds the resulting key.
+- **Anonymous at issue**: the issued key cannot be linked back to your donation;
+  Freenet learns that someone donated, not who holds the resulting key. See
+  [What Ghost Keys don't hide](#what-ghost-keys-dont-hide) below for the limits
+  at use time.
 - **Scarce**: it costs real value to create, so Sybil attacks get expensive fast.
 - **Portable**: it works across any Freenet app, and any app can verify it offline.
 
@@ -66,6 +68,46 @@ The signed public key, together with the donation amount and the notary certific
 that signed it, forms your **Ghost Key certificate**. Anyone can verify the certificate
 chains back to Freenet's master key; no one can link it to the donation that produced
 it.
+
+## What Ghost Keys don't hide
+
+Blind signing protects the link between your donation and your Ghost Key: the donation
+server never sees the key it is authorizing, so it cannot correlate donors to keys.
+That guarantee holds at **issuance**.
+
+It does not automatically hold at **use**. Once you use a Ghost Key to sign a message
+that ends up in contract state (a chat post, a vote, a reputation claim), the key's
+public half goes into that state, visible to anyone who reads the contract. Two messages
+signed by the same Ghost Key are cryptographically linkable to the same holder. The link
+is to a pseudonym, not to your real identity or your donation, but it is a persistent
+pseudonym: activity across apps that share the same Ghost Key can be correlated by any
+observer.
+
+What this means in practice:
+
+- **Cross-app correlation is possible.** If you use the same Ghost Key in two contracts,
+  an observer of both contracts can tell it is the same holder.
+- **Long-term linkability is possible.** Every message signed by a given key stays
+  linked to that key for as long as the state exists.
+- **Real-identity linkage is not automatic.** That still requires the pseudonym to leak
+  through the content of what you sign, a side channel, or a deanonymization attack at
+  the app layer.
+
+The mitigation we are building toward is to **match key lifetime to the privacy unit
+you actually want**. For apps where continuity is the feature, such as room membership
+or long-lived reputation, a single stable Ghost Key is the right choice, and that is
+what works today. For votes, ephemeral posts, and one-off signals, a fresh key per
+action is the right choice, and that is on our roadmap: a single donation will issue
+a *bundle* of blinded Ghost Keys so the economic model stays unchanged (you pay once
+for a supply, not per stamp) while apps get per-action unlinkability. The Ghostkey
+Vault already supports holding multiple keys; the missing piece is bundled issuance.
+Tracked in [freenet/ghostkeys#2](https://github.com/freenet/ghostkeys/issues/2).
+
+A stronger mitigation is on the roadmap as a longer-horizon design direction: proving
+that a valid Ghost Key signed a message *without revealing the key itself*, using a
+zero-knowledge proof over the certificate. It would require redesigning the signature
+format and the verifier, and is a substantial piece of work, but it is the direction
+we expect Ghost Keys to move in.
 
 ## Using Ghost Keys from a Freenet app
 
