@@ -11,4 +11,4 @@ Freenet is a peer‑to‑peer network that replaces the client‑server structur
 
 The Core is a compact binary, under 5 MB, and installs in seconds on desktop, mobile, or embedded hardware. Once launched it finds nearby peers and self‑organises into a small‑world overlay that routes requests efficiently without any central directory.
 
-On this foundation you can build websites, group chat, marketplaces, or any real‑time app. A browser points to your local node, downloads the app code, and interacts with other Freenet apps through WebSocket APIs—no external servers, accounts, or tracking.
+On this foundation you can build websites, group chat, marketplaces, or any real‑time app. A browser points to your local node, downloads the app code, and interacts with other Freenet apps through WebSocket APIs, with no external servers, accounts, or tracking.

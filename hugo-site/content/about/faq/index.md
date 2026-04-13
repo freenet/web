@@ -142,7 +142,7 @@ Additionally, you don't have to use Freenet through a browser. The "Freenet core
 and can be easily embedded in other software, which can then communicate with the Freenet core over
 an HTTP/WebSocket API.
 
-In contrast, most other systems function more like toolkits for building decentralized apps—akin to
+In contrast, most other systems function more like toolkits for building decentralized apps, akin to
 providing a crankshaft rather than a complete car. Developers use them to integrate peer-to-peer
 functionality into existing applications, often requiring extra components and setup for end-users.
 
@@ -167,7 +167,7 @@ decentralized systems that are scalable and interoperable by default.
 
 Freenet is fully decentralized, unlike federated systems where multiple entities control different
 servers. Moving from a centralized system to a federated one is like going from a dictatorship to
-feudalism—an improvement, but users still have to trust the system operators. Freenet eliminates
+feudalism; an improvement, but users still have to trust the system operators. Freenet eliminates
 this need for trust by distributing control, ensuring the sovereignty of each user.
 
 # Who is behind Freenet? {#who-is-behind-freenet}

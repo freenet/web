@@ -33,13 +33,13 @@ The contract is your application's backend. It runs as WebAssembly on untrusted 
 network.
 
 > **A different model**: Blockchain contracts are transaction processors replicated everywhere.
-> Freenet contracts are general-purpose replicated data structures—they can model any shared data,
-> from chat to documents to games—and exist only on subscribing nodes. This scales without
+> Freenet contracts are general-purpose replicated data structures (they can model any shared data,
+> from chat to documents to games) and exist only on subscribing nodes. This scales without
 > practical limit.
 
 **Key properties:**
 - Defines what valid state looks like and how it can be modified
-- Runs on peers you don't control—assume it's adversarial
+- Runs on peers you don't control; assume it's adversarial
 - Cannot store private keys (anyone can read the code and state)
 - The contract's key is the hash of its WASM code
 
@@ -77,7 +77,7 @@ must handle this correctly.
 
 ### Commutative Monoids
 
-Contract state must form a **commutative monoid**—updates can be applied in any order and still
+Contract state must form a **commutative monoid**: updates can be applied in any order and still
 produce the same final state.
 
 <img src="/images/tutorial/commutative-sync.svg" alt="Commutative synchronization between peers" style="max-width: 560px;">
@@ -345,7 +345,7 @@ my-app-common = { workspace = true }
 
 ## 6. Delegate Development
 
-Delegates handle secrets and run locally. They're optional—simple apps may not need them.
+Delegates handle secrets and run locally. They're optional; simple apps may not need them.
 
 ```rust
 // delegates/my-delegate/src/lib.rs
@@ -382,7 +382,7 @@ impl DelegateInterface for Delegate {
 ## 7. UI Development
 
 The UI connects to the local Freenet Kernel via WebSocket to interact with contracts. River uses
-[Dioxus](https://dioxuslabs.com)—a Rust framework that compiles to WebAssembly, giving you a
+[Dioxus](https://dioxuslabs.com), a Rust framework that compiles to WebAssembly, giving you a
 type-safe UI that shares code with your contracts.
 
 ### Basic Dioxus Component

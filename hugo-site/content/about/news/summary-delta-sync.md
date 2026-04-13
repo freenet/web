@@ -23,7 +23,7 @@ Traditional approaches often require coordination mechanisms, such as **consensu
 Paxos or Raft), to ensure consistency. However, these methods can be resource-intensive, require
 high communication overhead, and often struggle with scalability, especially when dealing with
 frequent updates across many nodes. The famous **CAP theorem** even states that distributed systems
-can only guarantee two of three properties—**Consistency, Availability, and Partition Tolerance**—at
+can only guarantee two of three properties (**Consistency, Availability, and Partition Tolerance**) at
 any given time, making it hard to achieve strong consistency while keeping a system always available
 and partition-tolerant.
 
@@ -52,7 +52,7 @@ transferred.
 
 - Each node generates a **summary** of its current state, which is a compact representation of what
   it knows.
-- Nodes exchange these summaries, allowing them to create a **delta**—the set of changes needed to
+- Nodes exchange these summaries, allowing them to create a **delta**: the set of changes needed to
   bring their state up to date with the other node's state.
 
 These summaries and deltas can be extremely efficient because they’re represented as arbitrary byte
@@ -63,7 +63,7 @@ arrays, and their structure is defined by the Wasm contract.
 In Freenet, the key-values are stored using a [small
 world]({{< relref "small-world-networks.md" >}}) topology, which has interesting properties for distributed
 consistency. For a given key, nodes subscribe to the value, forming a connected "tree" structure, with
-the root being the node closest to the key. Updates propagate through this tree using a mechanism—similar
+the root being the node closest to the key. Updates propagate through this tree using a mechanism similar
 to a virus spreading through a network. This ensures that changes are efficiently propagated to all subscribing
 nodes, quickly achieving eventual consistency.
 
@@ -73,7 +73,7 @@ To help understand how multiple updates can occur simultaneously yet lead to the
 can use a **color mixing** analogy. Imagine updates represented by different colors spreading
 through the tree of nodes. As updates propagate and meet at nodes, their colors mix. Even though the
 updates might reach different nodes in different orders, the merging process ensures that, in the
-end, each node arrives at the same color—demonstrating a consistent and commutative outcome.
+end, each node arrives at the same color, demonstrating a consistent and commutative outcome.
 
 By using **Summary-Delta Synchronization**, Freenet sidesteps the traditional difficulties of strong
 consistency:

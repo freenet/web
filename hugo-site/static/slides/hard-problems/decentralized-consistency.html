@@ -12,12 +12,12 @@
 
   <aside class="notes">
     <ul>
-      <li>Consistency without central authority — hardest problem in distributed systems</li>
-      <li>Bitcoin context: ~$7–8B/year electricity, ~175 TWh (Cambridge Centre for Alternative Finance) — just to agree on who owns what</li>
+      <li>Consistency without central authority: the hardest problem in distributed systems</li>
+      <li>Bitcoin context: ~$7–8B/year electricity, ~175 TWh (Cambridge Centre for Alternative Finance), just to agree on who owns what</li>
       <li>Our approach: state = arbitrary bytes, contract provides merge function</li>
-      <li>Key property: merge(A,B) = merge(B,A), associative, has identity — aka "commutative monoid"</li>
+      <li>Key property: merge(A,B) = merge(B,A), associative, has identity, aka "commutative monoid"</li>
       <li>Result: peers receive updates in any order, guaranteed convergence. No leader election, no voting, no proof-of-work</li>
-      <li>Contracts are WASM — full flexibility in defining state and merge logic</li>
+      <li>Contracts are WASM, with full flexibility in defining state and merge logic</li>
     </ul>
   </aside>
 </section>

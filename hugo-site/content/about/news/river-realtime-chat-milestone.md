@@ -9,7 +9,7 @@ aliases = ["/news/river-realtime-chat-milestone/"]
 
 <img src="/img/river-first-chat.webp" alt="River chat - first live conversation" style="width: 100%; max-width: 700px; border: 1px solid #ccc; border-radius: 5px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px;">
 
-We've reached an important milestone: real-time group chat between users on different machines, communicating through the Freenet network with sub-second message latency. The screenshot above captures the first live conversation—no servers, no federation, just peers.
+We've reached an important milestone: real-time group chat between users on different machines, communicating through the Freenet network with sub-second message latency. The screenshot above captures the first live conversation: no servers, no federation, just peers.
 
 #### A Proof of Concept
 
@@ -17,6 +17,6 @@ We've reached an important milestone: real-time group chat between users on diff
 
 #### Why This Matters
 
-Freenet is designed to make general-purpose decentralized applications practical. Unlike federated systems that still rely on servers, Freenet applications have no central infrastructure—data propagates through the peer-to-peer network. River is the first demonstration of this working end-to-end with real users.
+Freenet is designed to make general-purpose decentralized applications practical. Unlike federated systems that still rely on servers, Freenet applications have no central infrastructure; data propagates through the peer-to-peer network. River is the first demonstration of this working end-to-end with real users.
 
 We'll share more as the platform matures.

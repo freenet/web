@@ -39,7 +39,7 @@ honestly and aren't tampering with the data, without revealing private informati
 cryptographic methods only go so far in verifying the integrity of these remote operations.
 
 By using ZKPs, Freenet can run code on untrusted peers and cryptographically verify that these peers
-are behaving as expected—without exposing the data being processed or stored.
+are behaving as expected, without exposing the data being processed or stored.
 
 ## An Anonymous Reputation System based on Zero-Knowledge Proofs
 

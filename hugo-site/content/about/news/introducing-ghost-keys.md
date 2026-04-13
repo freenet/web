@@ -20,14 +20,14 @@ issues. Today, AI-driven bots not only overwhelm us with spam but also manipulat
 political discourse at scale.
 
 The root of the problem is that internet identities can be created at no cost. As a result, there's
-no effective mechanism for "negative trust"—a bad reputation doesn't stick. This allows bad actors
+no effective mechanism for "negative trust"; a bad reputation doesn't stick. This allows bad actors
 to operate with near impunity, as they can easily generate new identities and continue their
 activities.
 
 #### Introducing Ghost Keys: Anonymous and Verifiable Identities
 
 Ghost Keys offer a unique approach to addressing these issues by providing a way to certify
-identities through a real-world action—a small donation to [Freenet](https://freenet.org/). This
+identities through a real-world action: a small donation to [Freenet](https://freenet.org/). This
 allows users to establish trust without compromising privacy, offering a solution particularly
 suited to decentralized systems.
 
@@ -38,7 +38,7 @@ connect it to your donation. Once your donation is confirmed, the server signs t
 key and sends it back. Your browser then unblinds it, producing a signed public key that proves your
 donation. This signed key, along with other data, forms a certificate that you can store securely.
 
-This identity is backed by a real-world action—giving it "skin in the game." Unlike throwaway
+This identity is backed by a real-world action, giving it "skin in the game." Unlike throwaway
 accounts, Ghost Keys are designed to be persistent and valuable because they aren't free to create.
 This makes them particularly well-suited for reputation systems where accountability matters.
 
@@ -57,7 +57,7 @@ across the network. For example, if User A trusts User B, and User B trusts User
 have a certain level of trust for User C, even without direct interaction.
 
 As this system scales, it will create a decentralized trust network that allows users to assess the
-credibility of others without relying on a centralized authority—an essential step for strengthening
+credibility of others without relying on a centralized authority, an essential step for strengthening
 Freenet's decentralized infrastructure.
 
 #### Why Donations?

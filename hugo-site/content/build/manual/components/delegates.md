@@ -6,7 +6,7 @@ aliases:
   - /resources/manual/components/delegates/
 ---
 
-When you use an application that handles private keys—a wallet, a messaging app, anything with cryptographic identity—you're trusting that application with your secrets. Every library it imports, every dependency, every line of code has access to the same memory where your keys live. A single vulnerability anywhere in that stack can expose everything.
+When you use an application that handles private keys (a wallet, a messaging app, anything with cryptographic identity), you're trusting that application with your secrets. Every library it imports, every dependency, every line of code has access to the same memory where your keys live. A single vulnerability anywhere in that stack can expose everything.
 
 Delegates change this equation. A delegate holds your secrets and performs sensitive operations on your behalf, but the application itself never sees the secrets. The app asks the delegate to sign a message; the delegate returns a signature. The private key never crosses the boundary.
 
@@ -14,9 +14,9 @@ This is the core idea: **applications can use secrets without receiving them**.
 
 ## How delegates work
 
-Delegates are software components that run inside the Freenet Core on a user's device. Other components—UIs, contracts, other delegates—can only interact with a delegate by sending messages. They cannot read its internal state directly.
+Delegates are software components that run inside the Freenet Core on a user's device. Other components (UIs, contracts, other delegates) can only interact with a delegate by sending messages. They cannot read its internal state directly.
 
-This is the same security principle that classic encapsulation aimed for—data accessed only through controlled methods—but enforced by the platform across real trust boundaries. If a UI is buggy or compromised, the delegate can still refuse unsafe requests and keep secrets protected.
+This is the same security principle that classic encapsulation aimed for (data accessed only through controlled methods), but enforced by the platform across real trust boundaries. If a UI is buggy or compromised, the delegate can still refuse unsafe requests and keep secrets protected.
 
 ## How delegates fit into the architecture
 
@@ -52,11 +52,11 @@ Beyond handling messages, delegates can create, read, and modify contracts; crea
 
 ## Use cases
 
-A **key manager delegate** stores private keys and signs data on request, possibly prompting the user for permission. An **inbox delegate** monitors an inbox contract, downloads new messages, decrypts them, and stores them privately for UIs to display. A **contacts delegate** stores and retrieves contact information. An **alerts delegate** watches for events—like mentions in a discussion—and notifies the user.
+A **key manager delegate** stores private keys and signs data on request, possibly prompting the user for permission. An **inbox delegate** monitors an inbox contract, downloads new messages, decrypts them, and stores them privately for UIs to display. A **contacts delegate** stores and retrieves contact information. An **alerts delegate** watches for events (like mentions in a discussion) and notifies the user.
 
 Delegates can also synchronize with identical delegate instances running on other devices the user controls. With an appropriate shared secret, they communicate securely via Freenet and act as backups and replicas of each other.
 
-For a real-world example, River's [chat delegate](https://github.com/freenet/river/tree/main/delegates/chat-delegate) stores per-room signing keys and signs messages, invitations, and room configurations on behalf of the UI—without ever exposing the keys.
+For a real-world example, River's [chat delegate](https://github.com/freenet/river/tree/main/delegates/chat-delegate) stores per-room signing keys and signs messages, invitations, and room configurations on behalf of the UI, without ever exposing the keys.
 
 ## Comparison to service workers
 

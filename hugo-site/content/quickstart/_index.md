@@ -5,14 +5,14 @@ draft: false
 ---
 
 {{< alert type="warning" >}}
-**Alpha Software:** Freenet is under active development and may be unstable. New versions are released frequently—sometimes multiple times per day—and older versions will stop working as the network evolves.
+**Alpha Software:** Freenet is under active development and may be unstable. New versions are released frequently (sometimes multiple times per day), and older versions will stop working as the network evolves.
 
 During alpha testing:
 - **Telemetry:** Your peer will report diagnostic data to our servers for debugging purposes, including peer activity and general system info (e.g., your OS).
 - **Auto-updates:** Your peer will automatically update when new versions become available.
 {{< /alert >}}
 
-Get started with Freenet in minutes. Install the software and join River—the world's first truly decentralized group chat.
+Get started with Freenet in minutes. Install the software and join River, the world's first truly decentralized group chat.
 
 ## Step 1: Install Freenet
 

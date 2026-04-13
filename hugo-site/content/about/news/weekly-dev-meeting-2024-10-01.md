@@ -34,7 +34,7 @@ aliases = ["/news/weekly-dev-meeting-2024-10-01/"]
 - **Testing and Release Prep:** Focus remains on fixing test failures and updating tests to match
   recent changes, as well as deploying the latest version to the test network for live testing.
 - **Tooling and Deployment:** After the initial release, attention will turn towards improving the
-  toolchain for deploying, versioning, and upgrading contracts—key for a smooth developer experience
+  toolchain for deploying, versioning, and upgrading contracts, which is key for a smooth developer experience
   in the future.
 
 **Group Chat System Update:**

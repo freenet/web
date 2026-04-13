@@ -7,12 +7,12 @@ draft: false
 The `freenet.toml` file for each UI component/contract is called its _manifest_. It is written in
 the [TOML](https://toml.io/) format. Manifest files consist of the following sections:
 
-- [[contract]](#the-contract-section) — Defines a contract.
-  - [type](#the-type-field) — Contract type.
-  - [lang](#the-lang-field) — Contract source language.
-  - [output_dir](#the-output_dir-field) — Output path for build artifacts.
-- [[webapp]](#the-contract-section) — Configuration for UI component containers.
-- [[state]](#the-state-section) — Optionally seed a state.
+- [[contract]](#the-contract-section): Defines a contract.
+  - [type](#the-type-field): Contract type.
+  - [lang](#the-lang-field): Contract source language.
+  - [output_dir](#the-output_dir-field): Output path for build artifacts.
+- [[webapp]](#the-contract-section): Configuration for UI component containers.
+- [[state]](#the-state-section): Optionally seed a state.
 
 ## The `[contract]` section
 
@@ -93,7 +93,7 @@ The following fields are supported:
 webpack =  true
 ```
 
-- `webpack` — if set webpack will be used when packaging the contract state.
+- `webpack`: if set webpack will be used when packaging the contract state.
 
 ### The `[webapp.javascript]` options section
 
@@ -106,7 +106,7 @@ The following fields are supported:
 webpack =  true
 ```
 
-- `webpack` — if set webpack will be used when packaging the contract state.
+- `webpack`: if set webpack will be used when packaging the contract state.
 
 ### The `[webapp.state-sources]` options section
 

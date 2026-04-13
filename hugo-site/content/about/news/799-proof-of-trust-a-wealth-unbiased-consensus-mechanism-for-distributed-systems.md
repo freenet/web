@@ -28,7 +28,7 @@ benefit or defecting for individual gain at the other's expense. In a similar ve
 involves two existing network participants who must decide to cooperate or defect when attempting to
 create a new user.
 
-Participants must first stake something of value—such as their ability to create new users for a set
+Participants must first stake something of value, such as their ability to create new users for a set
 period. The outcome varies based on their choices:
 
 1. **Both Cooperate**: A new user is created.

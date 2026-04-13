@@ -5,7 +5,7 @@ draft: false
 layout: "home"
 ---
 
-Freenet is a peer-to-peer platform for decentralized applications—communication, collaboration, and
+Freenet is a peer-to-peer platform for decentralized applications: communication, collaboration, and
 commerce without reliance on big tech. Your computer becomes part of a global network where apps
 are unstoppable, interoperable, and built on open protocols.
 
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 ### For Users
 
-Freenet apps run in your browser and look like normal websites—but they can't be taken down,
+Freenet apps run in your browser and look like normal websites, but they can't be taken down,
 don't track you, and run peer-to-peer, not on the cloud.
 
 [Try it now →](/quickstart/)
