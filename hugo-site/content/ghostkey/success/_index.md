@@ -14,11 +14,11 @@ without revealing your identity. Please wait a moment while we process your info
 
 ## What's Next?
 
-> **⚠️ Back up first, import second.** The Ghostkey Vault delegate is still early
-> software and keys have been observed disappearing from the vault after import.
-> **Save your Ghost Key before clicking Import to Freenet.** If it's lost from the
-> vault and you have no backup, the key and the donation behind it cannot be recovered.
-> Tracked in [freenet/ghostkeys#3](https://github.com/freenet/ghostkeys/issues/3).
+> **⚠️ Back up first, import second.** The Ghostkey Vault delegate is experimental
+> and can lose keys. **Save your Ghost Key before clicking Import to Freenet.** If
+> the vault loses it and you have no backup, the key and the donation behind it
+> cannot be recovered. Tracked in
+> [freenet/ghostkeys#3](https://github.com/freenet/ghostkeys/issues/3).
 
 **1. Backup (do this first):** Download your Ghost Key and save both the certificate
 and the signing key somewhere safe, such as a secure note in a password manager. This
