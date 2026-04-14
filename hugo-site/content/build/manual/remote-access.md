@@ -40,8 +40,13 @@ Nebula, or a similar overlay, your devices get private IPs on a network only
 you control. You can grant the node's API access to that overlay with two
 steps:
 
-1. **Bind the API to the overlay interface** (or to `0.0.0.0` / `::`) so the
-   socket is reachable from the overlay at all:
+1. **Bind the API to a non-loopback address** so the socket is reachable from
+   the overlay at all. This is important: the node only installs the
+   source-IP filter when the API is bound to something other than loopback,
+   so leaving `ws-api-address = "127.0.0.1"` means the `allowed-source-cidrs`
+   entry below has no effect (it can't, the socket never sees overlay
+   traffic). Bind to the overlay interface's IP, or to the wildcard
+   address:
 
    ```toml
    # ~/.config/freenet/config.toml
