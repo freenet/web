@@ -59,6 +59,7 @@ Understand Freenet's architecture and how it works:
 Resources for building on Freenet:
 
 - [Publish a Website](publish-a-website): Host a static website on Freenet -- no coding required.
+- [Remote Access to a Node](remote-access): Safely reach your local node's API from another device (SSH tunnel, Tailscale).
 - [Tutorial: Create an App](tutorial): Step-by-step guide to creating a decentralized app.
 - [Contract Interfaces](contract-interface): Reference for contract interfaces.
 - [Manifest Format](manifest): Details about the `freenet.toml` configuration format.
