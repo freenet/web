@@ -40,7 +40,32 @@ Traditional encapsulation is mostly a convention. If code runs in the same proce
 
 A common use case is message signing. A UI wants to send an authenticated message, but instead of retrieving the user's private key, it asks the delegate: "Please sign this payload." The delegate checks who is asking and whether the request is allowed. If allowed, it produces a signature and returns it to the UI. The private key never leaves the delegate.
 
-<img src="/delegate-signing.svg" alt="Delegate signing flow" style="max-width: 480px;">
+<img src="/delegate-signing.svg" alt="Delegate signing flow" style="max-width: 480px; display: block; margin: 1.5rem auto;">
+
+## Requesting user consent
+
+A delegate MAY defer a decision to the user. When a delegate receives a request whose disposition depends on user intent, for example the signing of an unfamiliar payload, or an action initiated by a caller the delegate does not yet trust, it emits a `RequestUserInput` message containing a prompt string and an ordered set of response options.
+
+Freenet Core routes the prompt to the shell page that hosts Freenet applications in the browser. The shell page is trusted and runs outside the sandboxed application iframe. It renders the prompt as an overlay above the iframe, displaying the delegate's message, the offered options, the identity of the delegate, and the attested identity of the caller (either a UI contract or another delegate). When the user selects an option, the selection is delivered to the delegate as an `InboundDelegateMsg::UserResponse`. The delegate then resumes processing and determines the outcome.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="/img/delegate-permission-prompt-dark.png">
+  <img src="/img/delegate-permission-prompt-light.png" alt="A Permission Request overlay. The card shows the delegate's message ('A Freenet application (DLog47hE...) is requesting access to your ghostkey identity (oiQaxxSwKF8)'), three buttons (Allow Once, Always Allow, Deny), the attested delegate identity, and an auto-deny countdown." style="max-width: 520px; display: block; margin: 1.5rem auto;">
+</picture>
+
+The screenshot above shows a ghostkey delegate prompting the user. The card is drawn by the shell page on top of the application iframe; the delegate's own message appears in a quoted block, the caller and delegate identities are supplied by Freenet Core, and an auto-deny countdown ensures the request cannot hang indefinitely.
+
+The following properties hold:
+
+1. The prompt is initiated by the delegate. An application cannot construct, suppress, or answer a prompt on the user's behalf; it can only submit requests to the delegate, which decides whether to involve the user.
+
+2. The prompt is rendered outside the application sandbox. The overlay is drawn by the shell page in its own DOM. A compromised or hostile UI cannot read, obscure, or synthesize input to it.
+
+3. Caller identity is attested by the platform. The delegate and caller identifiers presented to the user are supplied by Freenet Core, not by the caller. Delegates MAY apply distinct policies to distinct callers on this basis.
+
+4. Absence of a response is treated as denial. If the prompt is not answered within the timeout, the request is denied and the delegate is notified accordingly. A missed prompt cannot result in an approval.
+
+Together, these properties make the delegate a consent boundary rather than an advisory one. A key-manager delegate, for instance, may sign routine messages for a caller it has previously accepted and prompt the user the first time an unrecognised caller requests a signature; because the caller cannot bypass the delegate, the user's answer is authoritative.
 
 ## Implementation notes
 
@@ -48,7 +73,7 @@ Delegates are implemented in WebAssembly and conform to the `DelegateInterface` 
 
 All durable delegate state must be stored using the secrets mechanism rather than in-process global state. This keeps private data under the delegate boundary and allows the core to manage it securely.
 
-Beyond handling messages, delegates can create, read, and modify contracts; create other delegates; and ask the user questions for permission prompts or configuration.
+Beyond handling messages, delegates can create, read, and modify contracts; create other delegates; and prompt the user for consent as described above.
 
 ## Use cases
 
