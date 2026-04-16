@@ -17,8 +17,8 @@ are unstoppable, interoperable, and built on open protocols.
 
 ## How Freenet Works
 
-Peers form a network organized by location on a ring. Messages route between peers to store,
-retrieve, and synchronize shared state -- no servers required.
+Peers form a small-world network organized by location on a ring. Messages find their destination
+in just a few hops, scaling efficiently to millions of peers -- no servers required.
 
 {{< network-hero alt="Freenet peer-to-peer network visualization" >}}
 
