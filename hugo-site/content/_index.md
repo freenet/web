@@ -15,30 +15,12 @@ are unstoppable, interoperable, and built on open protocols.
 
 <div class="action-column">
 
-## See it in Action
+## How Freenet Works
 
-River is decentralized group chat built on Freenet. No servers to run or rely on, no admins who
-control your data - just conversations that belong entirely to their participants.
+Peers form a network organized by location on a ring. Messages route between peers to store,
+retrieve, and synchronize shared state -- no servers required.
 
-{{< app-screenshot light="images/river-screenshot-light.png" dark="images/river-screenshot-dark.png" alt="River - decentralized chat on Freenet" >}}
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  var container = document.querySelector('.screenshot-container');
-  if (!container) return;
-  container.addEventListener('click', function() {
-    var img = container.querySelector('img');
-    var overlay = document.createElement('div');
-    overlay.className = 'screenshot-lightbox';
-    var clone = document.createElement('img');
-    clone.src = img.currentSrc || img.src;
-    clone.alt = img.alt;
-    overlay.appendChild(clone);
-    overlay.addEventListener('click', function() { overlay.remove(); });
-    document.body.appendChild(overlay);
-  });
-});
-</script>
+{{< network-hero alt="Freenet peer-to-peer network visualization" >}}
 
 </div>
 

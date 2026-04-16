@@ -579,6 +579,37 @@ p.page-end-spacer {
   }
 }
 
+/* Network hero animation */
+#network-hero {
+  max-width: 420px;
+  margin: 0.5rem auto;
+  aspect-ratio: 1 / 1;
+}
+
+.network-hero-link {
+  text-align: center;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.network-hero-link a {
+  font-size: 0.8rem;
+  color: #888;
+  text-decoration: none;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.network-hero-link a:hover {
+  opacity: 1;
+  color: #007bff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .network-hero-link a:hover {
+    color: #7ecfef;
+  }
+}
+
 /* App screenshot styling with click-to-expand */
 .screenshot-container {
   position: relative;

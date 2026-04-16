@@ -1,0 +1,10 @@
+{{- $alt := .Get "alt" | default "Freenet network visualization" -}}
+<div id="network-hero" role="img" aria-label="{{ $alt }}">
+  <noscript>
+    <p style="text-align:center;color:#888;padding:2rem 0;">Network visualization requires JavaScript.</p>
+  </noscript>
+</div>
+<div class="network-hero-link">
+  <a href="http://nova.locut.us:3133/" target="_blank" rel="noopener">Live network dashboard &rarr;</a>
+</div>
+<script src="{{ "js/network-hero.js" | relURL }}" defer></script>
