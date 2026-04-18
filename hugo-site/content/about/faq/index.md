@@ -225,25 +225,17 @@ Run:
 freenet uninstall
 ```
 
-This stops the service, removes the `freenet` and `fdev` binaries, and (with confirmation) deletes your data, config, cache, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to preserve your data.
+This stops the service, removes the `freenet` and `fdev` binaries, and (with confirmation) deletes your data, config, cache, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to preserve all of them.
 
-**Do not run `sudo freenet uninstall`** if you installed with the `curl | sh` one-liner. The installer puts the binary in `~/.local/bin`, which is not on `sudo`'s PATH, so the command either fails silently or operates on the wrong user's files. Only use `sudo` if you originally installed with `--system`.
+**Do not run `sudo freenet uninstall`** if you installed with the `curl | sh` one-liner. The installer puts the binary in `~/.local/bin`, which is not on `sudo`'s default PATH, so the command fails with `command not found` and your install is left untouched. Only use `sudo` if you originally installed with `--system`.
 
 If the `freenet` binary isn't on your PATH, invoke it by full path: `~/.local/bin/freenet uninstall`.
 
 If you installed with `cargo install freenet`, the binary is in `~/.cargo/bin/freenet`; run `cargo uninstall freenet` and then clean up the data directories below.
 
-As a manual fallback (e.g. if the binary is missing or broken), delete these paths on Linux:
+On Windows, `freenet uninstall` has a known gap and may leave the config folder behind — after running it, also manually remove `%LOCALAPPDATA%\Freenet\bin`, `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`, and `%APPDATA%\The Freenet Project Inc\Freenet`.
 
-- `~/.local/bin/freenet`, `~/.local/bin/fdev`
-- `~/.config/systemd/user/freenet.service` (after `systemctl --user disable --now freenet.service`)
-- `~/.local/share/Freenet`, `~/.config/Freenet`, `~/.cache/Freenet`, `~/.cache/freenet`, `~/.local/state/freenet`
-
-On macOS the data, config, cache, and log directories are under `~/Library/Application Support/Freenet`, `~/Library/Caches/Freenet`, and `~/Library/Logs/Freenet`.
-
-On Windows, `freenet uninstall` has a known gap and may leave the config folder behind. After running it, manually remove `%LOCALAPPDATA%\Freenet\bin`, `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`, and `%APPDATA%\The Freenet Project Inc\Freenet`. The [Quick Start guide](/quickstart/#uninstalling) has the full PowerShell snippet.
-
-Full uninstall instructions, including the manual fallback, are in the [Quick Start guide](/quickstart/#uninstalling).
+The [Quick Start guide](/quickstart/#uninstalling) has the full per-platform manual-fallback snippets (Linux systemd, macOS launchd, Windows PowerShell) for when the binary is missing or broken.
 
 # Why does the Freenet project use and mention AI tools? {#why-does-the-freenet-project-use-and-mention-ai-tools}
 

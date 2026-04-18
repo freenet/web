@@ -61,9 +61,9 @@ To remove Freenet completely:
 freenet uninstall
 ```
 
-This stops the service, removes the binaries, and (with confirmation) deletes your data, config, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to preserve your data.
+This stops the service, removes the binaries, and (with confirmation) deletes your data, config, cache, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to preserve all of them.
 
-**Do not run `sudo freenet uninstall`** for a normal `curl | sh` install. The installer puts the binary in `~/.local/bin`, which is not on `sudo`'s PATH, so the command either fails silently or operates on the wrong user's files. Only use `sudo` if you originally installed with `--system`.
+**Do not run `sudo freenet uninstall`** for a normal `curl | sh` install. The installer puts the binary in `~/.local/bin`, which is not on `sudo`'s default PATH, so `sudo freenet uninstall` fails with `command not found` and your install is left untouched. Only use `sudo` if you originally installed with `--system` (in which case the unit file is at `/etc/systemd/system/freenet.service`).
 
 If `freenet` isn't on your PATH, call it by full path: `~/.local/bin/freenet uninstall`.
 
@@ -86,18 +86,35 @@ rm -rf ~/.local/share/Freenet ~/.config/Freenet ~/.cache/Freenet \
        ~/.cache/freenet ~/.local/state/freenet
 ```
 
-On macOS, the data, config, cache, and log directories live under `~/Library/Application Support/Freenet`, `~/Library/Caches/Freenet`, and `~/Library/Logs/Freenet` instead.
+**macOS.** The service is a launchd user agent and the data dirs use a bundle-ID layout, so the Linux snippet above doesn't apply. Instead:
 
-**Windows.** On Windows the PowerShell installer (`irm https://freenet.org/install.ps1 | iex`) lays things out a bit differently, and the bundled `freenet uninstall` has a known gap: it removes the data directory but may leave the config folder behind. After running the uninstall, delete these folders manually (PowerShell):
+```bash
+# Stop and remove the user agent
+launchctl unload ~/Library/LaunchAgents/org.freenet.node.plist 2>/dev/null
+rm -f ~/Library/LaunchAgents/org.freenet.node.plist
+
+# Remove binaries
+rm -f ~/.local/bin/freenet ~/.local/bin/fdev \
+      ~/.local/bin/freenet-service-wrapper.sh
+
+# Remove data, config, cache, and logs
+rm -rf ~/Library/Application\ Support/The-Freenet-Project-Inc.Freenet \
+       ~/Library/Caches/The-Freenet-Project-Inc.Freenet \
+       ~/Library/Caches/The-Freenet-Project-Inc.freenet \
+       ~/Library/Logs/freenet
+```
+
+**Windows.** The PowerShell installer (`irm https://freenet.org/install.ps1 | iex`) installs the binaries under `%LOCALAPPDATA%\Freenet\bin\`, and `freenet uninstall` has a known gap: it removes the data directory but may leave the config folder behind. After running the uninstall, delete any remaining folders manually (PowerShell):
 
 ```powershell
 # Binaries
 Remove-Item -Recurse -Force "$env:LOCALAPPDATA\Freenet\bin" -ErrorAction SilentlyContinue
 
-# Data (Local AppData)
+# Data and logs (Local AppData)
 Remove-Item -Recurse -Force "$env:LOCALAPPDATA\The Freenet Project Inc\Freenet" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\freenet\logs" -ErrorAction SilentlyContinue
 
-# Config and logs (Roaming AppData)
+# Config (Roaming AppData)
 Remove-Item -Recurse -Force "$env:APPDATA\The Freenet Project Inc\Freenet" -ErrorAction SilentlyContinue
 ```
 
