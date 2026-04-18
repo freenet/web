@@ -53,6 +53,73 @@ riverctl room list                          # list your rooms
 
 Run `riverctl --help` for the full list of commands.
 
+## Uninstalling
+
+To remove Freenet completely:
+
+```bash
+freenet uninstall
+```
+
+This stops the service, removes the binaries, and (with confirmation) deletes your data, config, cache, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to preserve all of them.
+
+**Do not run `sudo freenet uninstall`** for a normal `curl | sh` install. The installer puts the binary in `~/.local/bin`, which is not on `sudo`'s default PATH, so `sudo freenet uninstall` fails with `command not found` and your install is left untouched. Only use `sudo` if you originally installed with `--system` (in which case the unit file is at `/etc/systemd/system/freenet.service`).
+
+If `freenet` isn't on your PATH, call it by full path: `~/.local/bin/freenet uninstall`.
+
+**Installed with `cargo install freenet`?** The binary lives in `~/.cargo/bin/freenet`. Run `cargo uninstall freenet` (and `cargo uninstall fdev` if you also installed that), then remove the data directories listed below.
+
+### Manual fallback
+
+If the binary is missing or broken, remove everything by hand:
+
+```bash
+# Stop and remove the user service (if installed)
+systemctl --user disable --now freenet.service 2>/dev/null
+rm -f ~/.config/systemd/user/freenet.service
+
+# Remove binaries
+rm -f ~/.local/bin/freenet ~/.local/bin/fdev
+
+# Remove data, config, cache, and logs
+rm -rf ~/.local/share/Freenet ~/.config/Freenet ~/.cache/Freenet \
+       ~/.cache/freenet ~/.local/state/freenet
+```
+
+**macOS.** The service is a launchd user agent and the data dirs use a bundle-ID layout, so the Linux snippet above doesn't apply. Instead:
+
+```bash
+# Stop and remove the user agent
+launchctl unload ~/Library/LaunchAgents/org.freenet.node.plist 2>/dev/null
+rm -f ~/Library/LaunchAgents/org.freenet.node.plist
+
+# Remove binaries
+rm -f ~/.local/bin/freenet ~/.local/bin/fdev \
+      ~/.local/bin/freenet-service-wrapper.sh
+
+# Remove data, config, cache, and logs
+rm -rf ~/Library/Application\ Support/The-Freenet-Project-Inc.Freenet \
+       ~/Library/Caches/The-Freenet-Project-Inc.Freenet \
+       ~/Library/Caches/The-Freenet-Project-Inc.freenet \
+       ~/Library/Logs/freenet
+```
+
+**Windows.** The PowerShell installer (`irm https://freenet.org/install.ps1 | iex`) installs the binaries under `%LOCALAPPDATA%\Freenet\bin\`, and `freenet uninstall` has a known gap: it removes the data directory but may leave the config folder behind. After running the uninstall, delete any remaining folders manually (PowerShell):
+
+```powershell
+# Binaries
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\Freenet\bin" -ErrorAction SilentlyContinue
+
+# Data and logs (Local AppData)
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\The Freenet Project Inc\Freenet" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\freenet\logs" -ErrorAction SilentlyContinue
+
+# Config (Roaming AppData)
+Remove-Item -Recurse -Force "$env:APPDATA\The Freenet Project Inc\Freenet" -ErrorAction SilentlyContinue
+```
+
+Also check `HKCU:\Software\Microsoft\Windows\CurrentVersion\Run` in the registry for any leftover `Freenet` startup entry and remove it.
+
 ## Troubleshooting
 
 If you run into problems, join our [Matrix chat](https://matrix.to/#/#freenet-locutus:matrix.org) for help.
