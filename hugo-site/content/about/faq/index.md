@@ -20,6 +20,7 @@ aliases:
 - [What is the status of Freenet?](#what-is-the-status-of-freenet)
 - [Can I follow Freenet on social media?](#can-i-follow-freenet-on-social-media)
 - [How can I financially support Freenet development?](#how-can-i-financially-support-freenet-development)
+- [How do I uninstall Freenet?](#how-do-i-uninstall-freenet)
 - [Why does the Freenet project use and mention AI tools?](#why-does-the-freenet-project-use-and-mention-ai-tools)
 
 Freenet is a fully decentralized, peer-to-peer network and a drop-in replacement for the world wide
@@ -215,6 +216,32 @@ You can [donate via credit card or cryptocurrency](/donate), or donate through o
 If you are in a position to make a larger contribution or grant please
 {{< email-protect "gro.teneerf@nai" "email Ian" >}} or reach out to him on
 [𝕏](https://x.com/sanity).
+
+# How do I uninstall Freenet? {#how-do-i-uninstall-freenet}
+
+Run:
+
+```bash
+freenet uninstall
+```
+
+This stops the service, removes the `freenet` and `fdev` binaries, and (with confirmation) deletes your data, config, cache, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to preserve your data.
+
+**Do not run `sudo freenet uninstall`** if you installed with the `curl | sh` one-liner. The installer puts the binary in `~/.local/bin`, which is not on `sudo`'s PATH, so the command either fails silently or operates on the wrong user's files. Only use `sudo` if you originally installed with `--system`.
+
+If the `freenet` binary isn't on your PATH, invoke it by full path: `~/.local/bin/freenet uninstall`.
+
+If you installed with `cargo install freenet`, the binary is in `~/.cargo/bin/freenet`; run `cargo uninstall freenet` and then clean up the data directories below.
+
+As a manual fallback (e.g. if the binary is missing or broken), delete these paths on Linux:
+
+- `~/.local/bin/freenet`, `~/.local/bin/fdev`
+- `~/.config/systemd/user/freenet.service` (after `systemctl --user disable --now freenet.service`)
+- `~/.local/share/Freenet`, `~/.config/Freenet`, `~/.cache/Freenet`, `~/.cache/freenet`, `~/.local/state/freenet`
+
+On macOS the data, config, cache, and log directories are under `~/Library/Application Support/Freenet`, `~/Library/Caches/Freenet`, and `~/Library/Logs/Freenet`.
+
+Full uninstall instructions, including the manual fallback, are also in the [Quick Start guide](/quickstart/#uninstalling).
 
 # Why does the Freenet project use and mention AI tools? {#why-does-the-freenet-project-use-and-mention-ai-tools}
 

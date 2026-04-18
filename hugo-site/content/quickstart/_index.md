@@ -53,6 +53,41 @@ riverctl room list                          # list your rooms
 
 Run `riverctl --help` for the full list of commands.
 
+## Uninstalling
+
+To remove Freenet completely:
+
+```bash
+freenet uninstall
+```
+
+This stops the service, removes the binaries, and (with confirmation) deletes your data, config, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to preserve your data.
+
+**Do not run `sudo freenet uninstall`** for a normal `curl | sh` install. The installer puts the binary in `~/.local/bin`, which is not on `sudo`'s PATH, so the command either fails silently or operates on the wrong user's files. Only use `sudo` if you originally installed with `--system`.
+
+If `freenet` isn't on your PATH, call it by full path: `~/.local/bin/freenet uninstall`.
+
+**Installed with `cargo install freenet`?** The binary lives in `~/.cargo/bin/freenet`. Run `cargo uninstall freenet` (and `cargo uninstall fdev` if you also installed that), then remove the data directories listed below.
+
+### Manual fallback
+
+If the binary is missing or broken, remove everything by hand:
+
+```bash
+# Stop and remove the user service (if installed)
+systemctl --user disable --now freenet.service 2>/dev/null
+rm -f ~/.config/systemd/user/freenet.service
+
+# Remove binaries
+rm -f ~/.local/bin/freenet ~/.local/bin/fdev
+
+# Remove data, config, cache, and logs
+rm -rf ~/.local/share/Freenet ~/.config/Freenet ~/.cache/Freenet \
+       ~/.cache/freenet ~/.local/state/freenet
+```
+
+On macOS, the data, config, cache, and log directories live under `~/Library/Application Support/Freenet`, `~/Library/Caches/Freenet`, and `~/Library/Logs/Freenet` instead.
+
 ## Troubleshooting
 
 If you run into problems, join our [Matrix chat](https://matrix.to/#/#freenet-locutus:matrix.org) for help.
