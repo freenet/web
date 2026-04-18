@@ -33,13 +33,7 @@ Anonymity and Unobservability* (2001) and is widely cited in research on peer-to
 architectures and censorship-resistant systems. The original implementation was later renamed
 [Hyphanet](https://www.hyphanet.org/) and continues as a separate project.
 
-## Companies and Other Work (2000-2012)
-
-**Uprizer, Inc.** (2000): Co-founded in Santa Monica, California, to commercialize ideas related
-to Freenet. In January 2001, Uprizer raised $4 million in Series A funding from investors
-including Intel Capital.
-
-**Cematics LLC** (2002): Founded to develop distributed systems products.
+## Companies and Other Work (2004-2012)
 
 **Revver** (2004): Co-founded a video distribution platform that, on launch in November 2005,
 became one of the first services to share advertising revenue directly with creators of
@@ -49,8 +43,6 @@ user-generated video.
 October 2009.
 
 **OneSpot** (2012): Co-founded; also released LastCalc as open source.
-
-**DataRobot**: Served as advisor on scalable data processing.
 
 ## Freenet (2023 Relaunch)
 
