@@ -58,10 +58,11 @@ Run `riverctl --help` for the full list of commands.
 To remove Freenet completely:
 
 ```bash
-freenet uninstall
+freenet uninstall                                 # preferred
+curl -fsSL https://freenet.org/uninstall.sh | sh  # fallback
 ```
 
-This stops the service, removes the binaries, and (with confirmation) deletes your data, config, cache, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to preserve all of them.
+Either command stops the service, removes the binaries, and (with confirmation) deletes your data, config, cache, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to preserve all of them. The second form is useful when the installed `freenet` binary is missing, broken, or not on your PATH.
 
 **Do not run `sudo freenet uninstall`** for a normal `curl | sh` install. The installer puts the binary in `~/.local/bin`, which is not on `sudo`'s default PATH, so `sudo freenet uninstall` fails with `command not found` and your install is left untouched. Only use `sudo` if you originally installed with `--system` (in which case the unit file is at `/etc/systemd/system/freenet.service`).
 
@@ -82,7 +83,7 @@ rm -f ~/.config/systemd/user/freenet.service
 rm -f ~/.local/bin/freenet ~/.local/bin/fdev
 
 # Remove data, config, cache, and logs
-rm -rf ~/.local/share/Freenet ~/.config/Freenet ~/.cache/Freenet \
+rm -rf ~/.local/share/freenet ~/.config/freenet \
        ~/.cache/freenet ~/.local/state/freenet
 ```
 

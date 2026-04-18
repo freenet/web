@@ -233,7 +233,7 @@ If the `freenet` binary isn't on your PATH, invoke it by full path: `~/.local/bi
 
 If you installed with `cargo install freenet`, the binary is in `~/.cargo/bin/freenet`; run `cargo uninstall freenet` and then clean up the data directories below.
 
-On Windows, `freenet uninstall` has a known gap and may leave the config folder behind — after running it, also manually remove `%LOCALAPPDATA%\Freenet\bin`, `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`, and `%APPDATA%\The Freenet Project Inc\Freenet`.
+On Windows, `freenet uninstall` has a known gap and may leave the config folder behind; after running it, also manually remove `%LOCALAPPDATA%\Freenet\bin`, `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`, and `%APPDATA%\The Freenet Project Inc\Freenet`.
 
 The [Quick Start guide](/quickstart/#uninstalling) has the full per-platform manual-fallback snippets (Linux systemd, macOS launchd, Windows PowerShell) for when the binary is missing or broken.
 

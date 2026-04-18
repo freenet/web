@@ -55,7 +55,7 @@ detect_os() {
             echo "macos"
             ;;
         MINGW*|MSYS*|CYGWIN*)
-            error "Windows is not yet supported. Please check https://freenet.org for updates."
+            error "For Windows, use PowerShell: irm https://freenet.org/install.ps1 | iex"
             ;;
         *)
             error "Unsupported operating system: $os"
@@ -85,17 +85,34 @@ detect_arch() {
     esac
 }
 
-# Build the target triple for downloading
+# Build the target triple for downloading (primary choice)
 get_target_triple() {
     os=$1
     arch=$2
 
     case "$os" in
         linux)
+            # Use musl for static linking - works on all Linux distros regardless of glibc version
             echo "${arch}-unknown-linux-musl"
             ;;
         macos)
             echo "${arch}-apple-darwin"
+            ;;
+    esac
+}
+
+# Get fallback target triple for older releases that don't have musl binaries
+get_fallback_target_triple() {
+    os=$1
+    arch=$2
+
+    case "$os" in
+        linux)
+            echo "${arch}-unknown-linux-gnu"
+            ;;
+        *)
+            # No fallback needed for non-Linux
+            echo ""
             ;;
     esac
 }
@@ -116,6 +133,20 @@ download() {
         wget -q "$url" -O "$dest"
     else
         error "Neither curl nor wget found. Please install one of them."
+    fi
+}
+
+# Try to download, return 0 on success, 1 on failure (without exiting)
+try_download() {
+    url=$1
+    dest=$2
+
+    if has_cmd curl; then
+        curl -fsSL "$url" -o "$dest" 2>/dev/null
+    elif has_cmd wget; then
+        wget -q "$url" -O "$dest" 2>/dev/null
+    else
+        return 1
     fi
 }
 
@@ -182,53 +213,39 @@ check_path() {
     esac
 }
 
-# Add install directory to PATH in the user's shell config
-ensure_in_path() {
+# Provide shell-specific PATH instructions
+print_path_instructions() {
     dir=$1
-    shell=$(basename "${SHELL:-/bin/sh}")
-    path_line="export PATH=\"\$HOME/.local/bin:\$PATH\""
+    shell=$(basename "$SHELL")
+
+    warn "$dir is not in your PATH"
+    echo ""
+    echo "Add it to your PATH by adding this line to your shell configuration:"
+    echo ""
 
     case "$shell" in
         bash)
-            # Prefer .bash_profile on macOS (login shell), .bashrc on Linux
-            if [ "$(detect_os)" = "macos" ]; then
-                rc="$HOME/.bash_profile"
-            else
-                rc="$HOME/.bashrc"
-            fi
-            if [ -f "$rc" ] && grep -qF '.local/bin' "$rc"; then
-                return 0
-            fi
-            echo "" >> "$rc"
-            echo "$path_line" >> "$rc"
-            info "Added $dir to PATH in $rc"
-            warn "Restart your shell or run: source $rc"
+            echo "  echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.bashrc"
+            echo ""
+            echo "Then reload your shell:"
+            echo "  source ~/.bashrc"
             ;;
         zsh)
-            rc="$HOME/.zshrc"
-            if [ -f "$rc" ] && grep -qF '.local/bin' "$rc"; then
-                return 0
-            fi
-            echo "" >> "$rc"
-            echo "$path_line" >> "$rc"
-            info "Added $dir to PATH in $rc"
-            warn "Restart your shell or run: source $rc"
+            echo "  echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.zshrc"
+            echo ""
+            echo "Then reload your shell:"
+            echo "  source ~/.zshrc"
             ;;
         fish)
-            if fish -c 'contains -- ~/.local/bin $fish_user_paths' 2>/dev/null; then
-                return 0
-            fi
-            fish -c 'fish_add_path ~/.local/bin' 2>/dev/null || true
-            info "Added $dir to PATH via fish_add_path"
+            echo "  fish_add_path ~/.local/bin"
             ;;
         *)
-            warn "$dir is not in your PATH"
+            echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
             echo ""
-            echo "Add this line to your shell configuration file:"
-            echo "  $path_line"
-            echo ""
+            echo "Add this line to your shell's configuration file."
             ;;
     esac
+    echo ""
 }
 
 # Main installation logic
@@ -236,21 +253,12 @@ main() {
     info "Freenet Installer"
     echo ""
 
-    # Telemetry disclosure
-    printf "${YELLOW}Note:${NC} Freenet collects anonymous telemetry data by default during alpha\n"
-    echo "      to help diagnose network issues. This includes:"
-    echo "      - Operation timing (connect, put, get, subscribe, update)"
-    echo "      - Network topology information"
-    echo "      - NO contract content is ever transmitted"
-    echo ""
-    echo "      To disable telemetry, run: freenet --telemetry-enabled=false"
-    echo "      Or set FREENET_TELEMETRY_ENABLED=false in your environment"
-    echo ""
-
     # Detect platform
     os=$(detect_os)
     arch=$(detect_arch)
     target=$(get_target_triple "$os" "$arch")
+    fallback_target=$(get_fallback_target_triple "$os" "$arch")
+    using_fallback=false
 
     info "Detected platform: $os ($arch)"
 
@@ -287,11 +295,25 @@ main() {
         checksums_available=true
     fi
 
-    # Download freenet
+    # Download freenet (try musl first, fall back to gnu for older releases)
     info "Downloading freenet..."
     freenet_archive="freenet-${target}.tar.gz"
     freenet_url="https://github.com/freenet/freenet-core/releases/download/v${version}/${freenet_archive}"
-    download "$freenet_url" "$tmp_dir/freenet.tar.gz"
+
+    if ! try_download "$freenet_url" "$tmp_dir/freenet.tar.gz"; then
+        # Try fallback target (gnu) for older releases
+        if [ -n "$fallback_target" ]; then
+            warn "Musl binary not available, trying glibc version..."
+            freenet_archive="freenet-${fallback_target}.tar.gz"
+            freenet_url="https://github.com/freenet/freenet-core/releases/download/v${version}/${freenet_archive}"
+            if ! try_download "$freenet_url" "$tmp_dir/freenet.tar.gz"; then
+                error "Failed to download freenet binary for version $version"
+            fi
+            using_fallback=true
+        else
+            error "Failed to download freenet binary for version $version"
+        fi
+    fi
 
     # Verify freenet checksum
     if [ "$checksums_available" = true ]; then
@@ -304,11 +326,18 @@ main() {
         fi
     fi
 
-    # Download fdev
+    # Download fdev (use same target as freenet)
     info "Downloading fdev..."
-    fdev_archive="fdev-${target}.tar.gz"
+    if [ "$using_fallback" = true ]; then
+        fdev_archive="fdev-${fallback_target}.tar.gz"
+    else
+        fdev_archive="fdev-${target}.tar.gz"
+    fi
     fdev_url="https://github.com/freenet/freenet-core/releases/download/v${version}/${fdev_archive}"
-    download "$fdev_url" "$tmp_dir/fdev.tar.gz"
+
+    if ! try_download "$fdev_url" "$tmp_dir/fdev.tar.gz"; then
+        error "Failed to download fdev binary for version $version"
+    fi
 
     # Verify fdev checksum
     if [ "$checksums_available" = true ]; then
@@ -319,6 +348,12 @@ main() {
         else
             warn "Checksum not found for $fdev_archive"
         fi
+    fi
+
+    # Warn about glibc compatibility if using fallback
+    if [ "$using_fallback" = true ]; then
+        warn "Using glibc-linked binary. If you see 'GLIBC_X.XX not found' errors,"
+        warn "please upgrade to a newer Freenet version or build from source."
     fi
 
     # Extract binaries
@@ -361,53 +396,31 @@ main() {
     mv -- "$tmp_dir/fdev" "$install_dir/fdev"
     chmod +x "$install_dir/freenet" "$install_dir/fdev"
 
-    # On macOS, remove quarantine attribute to allow unsigned binaries to run
-    if [ "$os" = "macos" ]; then
-        xattr -d com.apple.quarantine "$install_dir/freenet" 2>/dev/null || true
-        xattr -d com.apple.quarantine "$install_dir/fdev" 2>/dev/null || true
-    fi
-
     # Verify the installed binary works
     if ! "$install_dir/freenet" --version >/dev/null 2>&1; then
-        if [ "$os" = "macos" ]; then
-            error "Binary verification failed. macOS may be blocking the unsigned binary.
-Try running: xattr -d com.apple.quarantine $install_dir/freenet $install_dir/fdev
-Then run: $install_dir/freenet --version"
-        else
-            error "Installed binary verification failed. The binary may be corrupted or incompatible with your system."
-        fi
+        error "Installed binary verification failed. The binary may be corrupted or incompatible with your system."
     fi
 
     success "Freenet $version installed successfully!"
     echo ""
 
-    # Ensure install directory is in PATH
+    # Check PATH
     if ! check_path "$install_dir"; then
-        ensure_in_path "$install_dir"
+        print_path_instructions "$install_dir"
     fi
 
     # Ask about service installation (unless FREENET_NO_SERVICE is set)
     if [ "${FREENET_NO_SERVICE:-0}" != "1" ]; then
         echo ""
-        printf "Would you like to install Freenet as a user service (auto-starts on login)? [y/N] "
-        read -r response </dev/tty
+        printf "Would you like to install Freenet as a system service? [y/N] "
+        read -r response
         case "$response" in
             [yY]|[yY][eE][sS])
                 info "Installing service..."
                 "$install_dir/freenet" service install
                 echo ""
-                printf "Would you like to start the service now? [Y/n] "
-                read -r start_response </dev/tty
-                case "$start_response" in
-                    [nN]|[nN][oO])
-                        success "Service installed! Start it with: freenet service start"
-                        ;;
-                    *)
-                        info "Starting service..."
-                        "$install_dir/freenet" service start
-                        success "Freenet is now running!"
-                        ;;
-                esac
+                success "Service installed! Start it with: freenet service start"
+                echo "  Once running, open http://127.0.0.1:7509/ to view your Freenet dashboard."
                 ;;
             *)
                 info "Skipping service installation"
@@ -421,6 +434,17 @@ Then run: $install_dir/freenet --version"
     echo ""
     echo "To run Freenet manually:"
     echo "  freenet network"
+    echo ""
+    echo "Once running, open http://127.0.0.1:7509/ to view your Freenet dashboard."
+    echo ""
+    echo "To uninstall Freenet completely:"
+    echo "  freenet uninstall                                       # preferred"
+    echo "  curl -fsSL https://freenet.org/uninstall.sh | sh        # fallback"
+    echo ""
+    echo "Do NOT prefix either command with 'sudo'. This installer placed Freenet"
+    echo "under $install_dir, which is typically not on sudo's PATH — sudo would"
+    echo "fail with 'command not found' and leave your install untouched. Only"
+    echo "use sudo if you originally installed with 'freenet service install --system'."
     echo ""
     echo "For more information, visit: https://freenet.org"
 }
