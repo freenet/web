@@ -7,86 +7,77 @@ aliases:
 ---
 
 Ian Clarke is a computer scientist and entrepreneur, best known as the creator of
-[Freenet](https://freenet.org), a pioneering decentralized peer-to-peer platform designed to enable
-censorship-resistant communication and data storage.
+[Freenet](https://freenet.org), a decentralized peer-to-peer platform for censorship-resistant
+communication and applications. He is founder and President of Freenet Project Inc., the
+501(c)(3) non-profit that develops the project.
 
-## Early Life and Education
+<!--more-->
 
-Born on 16 February 1977 in Navan, County Meath, Ireland, Clarke developed an early interest in
-computing after watching the film *WarGames* at age six. By age ten he had written his first
-computer program.
+## Education
 
-Clarke attended Dundalk Grammar School, where he won the Senior Chemical, Physical, and Mathematical
-section of the Young Scientist Exhibition twice: in 1993 with "The C Neural Network Construction
-Kit" and in 1994 with "Mapping Internal Variations in Translucency within a Translucent Object using
-Beams of Light."
+Clarke studied Computer Science and Artificial Intelligence at the University of Edinburgh,
+graduating in 1999. His final-year project, "A Distributed, Decentralised Information Storage and
+Retrieval System," became the design that launched Freenet.
 
-In 1995 he enrolled at the University of Edinburgh to study Computer Science and Artificial
-Intelligence, where he became president of the Artificial Intelligence Society, reviving it from
-dormancy.
+## Freenet (Original)
 
-## Development of Freenet
+Clarke released the Freenet design paper publicly in July 1999 and invited volunteers to help
+implement it. Freenet was publicly released in March 2000 as version 0.1. Unlike contemporaries
+such as Napster, Freenet had no central indexes and instead distributed encrypted data across
+participating nodes, making the network resilient to shutdowns and tracing. The system surpassed
+two million downloads.
 
-In his final year at Edinburgh, Clarke completed a project titled "A Distributed, Decentralised
-Information Storage and Retrieval System." After receiving his grade in July 1999, he released the
-paper publicly and invited volunteers to help implement the design. The resulting free software
-project became Freenet, attracting significant attention from both mainstream and technology media.
-
-Freenet was publicly released in March 2000 as version 0.1. Unlike contemporaries such as Napster,
-Freenet eschewed central indexes and instead distributed encrypted data across participating nodes,
-making the network resilient to shutdowns and tracing. The system achieved over two million
-downloads.
-
-Clarke's foundational paper, "Freenet: A Distributed Anonymous Information Storage and Retrieval
+His foundational paper, "Freenet: A Distributed Anonymous Information Storage and Retrieval
 System," was published in the *Proceedings of the International Workshop on Design Issues in
-Anonymity and Unobservability* (2001) and has been widely cited in research on peer-to-peer
-architectures and censorship-resistant systems.
+Anonymity and Unobservability* (2001) and is widely cited in research on peer-to-peer
+architectures and censorship-resistant systems. The original implementation was later renamed
+[Hyphanet](https://www.hyphanet.org/) and continues as a separate project.
 
-In 2023, Clarke relaunched Freenet as a new project distinct from the legacy implementation (which
-was renamed Hyphanet), designing it as a scalable, peer-to-peer drop-in replacement for the
-centralized web. In 2024, he introduced [Ghost Keys](https://freenet.org/ghostkey/), a cryptographic
-mechanism enabling anonymous reputation building via verifiable real-world actions, addressing
-longstanding challenges in pseudonymous systems without compromising privacy.
+## Companies and Other Work (2000-2012)
 
-## Professional Career
-
-**Logica plc** (August 1999): Software developer in the Space Division at Logica, a London-based
-consulting company.
-
-**Instil Ltd** (February 2000): Joined a London-based software startup.
-
-**Uprizer, Inc.** (August 2000): Co-founded in Santa Monica, California, to commercialize
-Freenet-related ideas. In January 2001, Uprizer raised $4 million in Series A funding from investors
+**Uprizer, Inc.** (2000): Co-founded in Santa Monica, California, to commercialize ideas related
+to Freenet. In January 2001, Uprizer raised $4 million in Series A funding from investors
 including Intel Capital.
 
-**Cematics LLC** (September 2002): Founded to develop distributed systems products.
+**Cematics LLC** (2002): Founded to develop distributed systems products.
 
-**Revver** (December 2004): Worked on video distribution technology. Revver, unveiled in November
-2005, became one of the first platforms to compensate creators of user-generated video content.
+**Revver** (2004): Co-founded a video distribution platform that, on launch in November 2005,
+became one of the first services to share advertising revenue directly with creators of
+user-generated video.
 
-**SenseArray** (December 2006): Founded in Austin, Texas. Released the Swarm distributed computing
-tool in October 2009.
+**SenseArray** (2006): Founded in Austin, Texas. Released the Swarm distributed computing tool in
+October 2009.
 
-**OneSpot** (January 2012): Co-founded; also open-sourced LastCalc, a calculator application.
+**OneSpot** (2012): Co-founded; also released LastCalc as open source.
 
-**DataRobot**: Served as advisor, contributing insights on scalable data processing drawn from his
-distributed systems background.
+**DataRobot**: Served as advisor on scalable data processing.
 
-**Mediator.ai LLC**: Austin-based venture exploring integrations of AI with decentralized
-architectures.
+## Freenet (2023 Relaunch)
+
+In 2023 Clarke launched a new generation of Freenet, redesigned from scratch in Rust as a
+decentralized application platform rather than a file-sharing network. The current Freenet is a
+global key-value store in which keys are WebAssembly "contracts" that define the rules for
+validating and updating their associated state. Combined with small-world routing, this lets
+developers build real-time, decentralized applications such as messaging, social networks, and
+collaboration tools that run in any standard web browser, with no central servers.
+
+In 2024, Clarke introduced [Ghost Keys](https://freenet.org/ghostkey/), a blind-signature-based
+mechanism that lets users build anonymous reputation tied to verifiable real-world actions, such
+as a payment, without exposing identity.
 
 ## Recognition
 
-In 2003, Clarke was named to the [MIT Technology Review TR35](https://www.technologyreview.com/innovator/ian-clarke/)
-list as one of the top 100 innovators in the world under the age of 35.
+In 2003, Clarke was named to the
+[MIT Technology Review TR35](https://www.technologyreview.com/innovator/ian-clarke/) list as one
+of the top 100 innovators in the world under the age of 35.
 
 ## Selected Publications
 
 - I. Clarke, O. Sandberg, B. Wiley, and T.W. Hong, "Freenet: A Distributed Anonymous Information
-  Storage and Retrieval System," in *Proc. International Workshop on Design Issues in Anonymity and
-  Unobservability*, 2001.
-- I. Clarke, S.G. Miller, T.W. Hong, O. Sandberg, and B. Wiley, "Protecting Free Expression Online
-  with Freenet," *IEEE Internet Computing*, vol. 6, no. 1, pp. 40-49, 2002.
+  Storage and Retrieval System," in *Proc. International Workshop on Design Issues in Anonymity
+  and Unobservability*, 2001.
+- I. Clarke, S.G. Miller, T.W. Hong, O. Sandberg, and B. Wiley, "Protecting Free Expression
+  Online with Freenet," *IEEE Internet Computing*, vol. 6, no. 1, pp. 40-49, 2002.
 
 ## External Links
 
