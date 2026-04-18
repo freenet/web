@@ -88,6 +88,21 @@ rm -rf ~/.local/share/Freenet ~/.config/Freenet ~/.cache/Freenet \
 
 On macOS, the data, config, cache, and log directories live under `~/Library/Application Support/Freenet`, `~/Library/Caches/Freenet`, and `~/Library/Logs/Freenet` instead.
 
+**Windows.** On Windows the PowerShell installer (`irm https://freenet.org/install.ps1 | iex`) lays things out a bit differently, and the bundled `freenet uninstall` has a known gap: it removes the data directory but may leave the config folder behind. After running the uninstall, delete these folders manually (PowerShell):
+
+```powershell
+# Binaries
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\Freenet\bin" -ErrorAction SilentlyContinue
+
+# Data (Local AppData)
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\The Freenet Project Inc\Freenet" -ErrorAction SilentlyContinue
+
+# Config and logs (Roaming AppData)
+Remove-Item -Recurse -Force "$env:APPDATA\The Freenet Project Inc\Freenet" -ErrorAction SilentlyContinue
+```
+
+Also check `HKCU:\Software\Microsoft\Windows\CurrentVersion\Run` in the registry for any leftover `Freenet` startup entry and remove it.
+
 ## Troubleshooting
 
 If you run into problems, join our [Matrix chat](https://matrix.to/#/#freenet-locutus:matrix.org) for help.

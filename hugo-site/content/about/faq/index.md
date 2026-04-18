@@ -241,7 +241,9 @@ As a manual fallback (e.g. if the binary is missing or broken), delete these pat
 
 On macOS the data, config, cache, and log directories are under `~/Library/Application Support/Freenet`, `~/Library/Caches/Freenet`, and `~/Library/Logs/Freenet`.
 
-Full uninstall instructions, including the manual fallback, are also in the [Quick Start guide](/quickstart/#uninstalling).
+On Windows, `freenet uninstall` has a known gap and may leave the config folder behind. After running it, manually remove `%LOCALAPPDATA%\Freenet\bin`, `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`, and `%APPDATA%\The Freenet Project Inc\Freenet`. The [Quick Start guide](/quickstart/#uninstalling) has the full PowerShell snippet.
+
+Full uninstall instructions, including the manual fallback, are in the [Quick Start guide](/quickstart/#uninstalling).
 
 # Why does the Freenet project use and mention AI tools? {#why-does-the-freenet-project-use-and-mention-ai-tools}
 
