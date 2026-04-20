@@ -179,8 +179,10 @@ Freenet was started by Ian Clarke in 1999 and grew out of his undergraduate [pap
 To further the goals of the project, Ian Clarke and Steven Starr co-founded The Freenet Project, a
 501c3 non-profit in 2001.
 
-In 2024, The Freenet Project non-profit board of directors consists of Ian Clarke, Steven Starr, and
-Michael Grube. Ian and Steven are actively involved in the day-to-day operations of the project.
+In <span id="board-year">2026</span>, The Freenet Project non-profit board of directors consists of
+Ian Clarke, Steven Starr, and Michael Grube. Ian and Steven are actively involved in the day-to-day
+operations of the project.
+<script>document.getElementById("board-year").textContent=new Date().getFullYear();</script>
 
 # How does Freenet handle harmful content? {#how-does-freenet-handle-harmful-content}
 
