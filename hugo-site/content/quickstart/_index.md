@@ -18,9 +18,10 @@ Get started with Freenet in minutes. Install the software and join River, the wo
 
 {{< os-install >}}
 
-## Step 2: Join Freenet Official
+## Step 2: Chat with other Freenet users on River
 
-Get an invite to our community chat. You can request up to 5 invites per day.
+River is our decentralized group chat, built on Freenet. Click below to get an invite to the
+**Freenet Official** room (up to 5 invites per day).
 
 {{< river-invite-button room="Freenet Official" >}}
 
