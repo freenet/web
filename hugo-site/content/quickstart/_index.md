@@ -87,10 +87,24 @@ rm -rf ~/.local/share/freenet ~/.config/freenet \
        ~/.cache/freenet ~/.local/state/freenet
 ```
 
-**macOS.** The service is a launchd user agent and the data dirs use a bundle-ID layout, so the Linux snippet above doesn't apply. Instead:
+**macOS (DMG install).** Click the menu bar rabbit → **Quit Freenet**, then drag `Freenet.app` from `/Applications` to the Trash. To also remove data and configuration:
 
 ```bash
-# Stop and remove the user agent
+# Remove the launch-at-login agent
+launchctl bootout gui/$UID/org.freenet.Freenet 2>/dev/null
+rm -f ~/Library/LaunchAgents/org.freenet.Freenet.plist
+
+# Remove data, config, cache, and logs
+rm -rf ~/Library/Application\ Support/The-Freenet-Project-Inc.Freenet \
+       ~/Library/Caches/The-Freenet-Project-Inc.Freenet \
+       ~/Library/Caches/Freenet \
+       ~/Library/Logs/freenet
+```
+
+**macOS (legacy `install.sh` install).** Older installs use the `org.freenet.node` agent and binaries under `~/.local/bin`:
+
+```bash
+# Stop and remove the legacy user agent
 launchctl unload ~/Library/LaunchAgents/org.freenet.node.plist 2>/dev/null
 rm -f ~/Library/LaunchAgents/org.freenet.node.plist
 
