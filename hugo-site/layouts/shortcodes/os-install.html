@@ -5,6 +5,7 @@
 
 .os-install-tabs .tab-buttons {
     display: flex;
+    flex-wrap: wrap;
     gap: 0;
     border-bottom: 2px solid #e5e7eb;
     margin-bottom: 1.25rem;
@@ -57,6 +58,42 @@
     margin-bottom: 0.75rem;
 }
 
+.os-install-tabs .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.875rem 1.5rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
+    border-radius: 8px;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(0, 102, 204, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    margin-bottom: 1rem;
+}
+
+.os-install-tabs .download-btn:hover,
+.os-install-tabs .download-btn:focus {
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(0, 102, 204, 0.35);
+    transform: translateY(-1px);
+}
+
+.os-install-tabs .download-btn:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.5), 0 6px 20px rgba(0, 102, 204, 0.35);
+}
+
+.os-install-tabs .download-btn svg {
+    width: 1.25em;
+    height: 1.25em;
+    flex-shrink: 0;
+}
+
 @media (prefers-color-scheme: dark) {
     .os-install-tabs .tab-buttons {
         border-bottom-color: #374151;
@@ -73,6 +110,19 @@
 
     .os-install-tabs .tab-btn.active {
         border-bottom-color: #4da6ff;
+    }
+
+    .os-install-tabs .download-btn {
+        box-shadow: 0 4px 14px rgba(77, 166, 255, 0.25);
+    }
+
+    .os-install-tabs .download-btn:hover,
+    .os-install-tabs .download-btn:focus {
+        box-shadow: 0 6px 20px rgba(77, 166, 255, 0.4);
+    }
+
+    .os-install-tabs .download-btn:focus-visible {
+        box-shadow: 0 0 0 4px rgba(77, 166, 255, 0.6), 0 6px 20px rgba(77, 166, 255, 0.4);
     }
 }
 </style>
@@ -94,17 +144,22 @@
     </div>
 
     <div class="tab-pane" data-os="windows" role="tabpanel" id="os-pane-windows" aria-labelledby="os-tab-windows">
-        <p><a href="https://github.com/freenet/freenet-core/releases/latest/download/freenet.exe">Download freenet.exe</a>
-        and run it. The setup wizard will guide you through installation, then start Freenet as a background
-        service with a system tray icon.</p>
+        <a class="download-btn" href="https://github.com/freenet/freenet-core/releases/latest/download/freenet.exe">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+            Download for Windows
+        </a>
+        <p>Run the installer. The setup wizard guides you through installation, then starts Freenet
+        as a background service with a system tray icon.</p>
     </div>
 
     <div class="tab-pane" data-os="mac" role="tabpanel" id="os-pane-mac" aria-labelledby="os-tab-mac">
-        <p><a href="https://github.com/freenet/freenet-core/releases/latest/download/Freenet.dmg">Download Freenet.dmg</a>,
-        open it, and drag <strong>Freenet</strong> into <strong>Applications</strong>. Launch it from
-        Launchpad or Spotlight &mdash; a rabbit icon appears in the menu bar, and Freenet will start
+        <a class="download-btn" href="https://github.com/freenet/freenet-core/releases/latest/download/Freenet.dmg">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            Download for macOS
+        </a>
+        <p>Open the DMG and drag <strong>Freenet</strong> into <strong>Applications</strong>. Launch
+        it from Launchpad or Spotlight. A rabbit icon appears in the menu bar, and Freenet starts
         automatically at login from then on.</p>
-        <p>The DMG is signed and notarized by Apple, so macOS opens it without Gatekeeper warnings.</p>
     </div>
 
     <div class="tab-pane active" data-os="linux" role="tabpanel" id="os-pane-linux" aria-labelledby="os-tab-linux">
