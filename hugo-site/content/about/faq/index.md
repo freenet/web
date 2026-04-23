@@ -237,7 +237,7 @@ If you installed with `cargo install freenet`, the binary is in `~/.cargo/bin/fr
 
 On Windows, `freenet uninstall` has a known gap and may leave the config folder behind; after running it, also manually remove `%LOCALAPPDATA%\Freenet\bin`, `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`, and `%APPDATA%\The Freenet Project Inc\Freenet`.
 
-The [Quick Start guide](/quickstart/#uninstalling) has the full per-platform manual-fallback snippets (Linux systemd, macOS launchd, Windows PowerShell) for when the binary is missing or broken.
+The [Uninstall guide](/uninstall/) has the full per-platform manual-fallback snippets (Linux systemd, macOS launchd, Windows PowerShell) for when the binary is missing or broken.
 
 # Why does the Freenet project use and mention AI tools? {#why-does-the-freenet-project-use-and-mention-ai-tools}
 

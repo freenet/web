@@ -88,6 +88,19 @@
     box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.5), 0 6px 20px rgba(0, 102, 204, 0.35);
 }
 
+.os-install-tabs .install-note {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid #0066CC;
+    background: rgba(0, 102, 204, 0.06);
+    border-radius: 0 6px 6px 0;
+    font-size: 0.95rem;
+}
+
+.os-install-tabs .install-note strong {
+    color: #004C99;
+}
+
 .os-install-tabs .download-btn svg {
     width: 1.25em;
     height: 1.25em;
@@ -110,6 +123,15 @@
 
     .os-install-tabs .tab-btn.active {
         border-bottom-color: #4da6ff;
+    }
+
+    .os-install-tabs .install-note {
+        border-left-color: #4da6ff;
+        background: rgba(77, 166, 255, 0.08);
+    }
+
+    .os-install-tabs .install-note strong {
+        color: #4da6ff;
     }
 
     .os-install-tabs .download-btn {
@@ -160,6 +182,11 @@
         <p>Open the DMG and drag <strong>Freenet</strong> into <strong>Applications</strong>. Launch
         it from Launchpad or Spotlight. A rabbit icon appears in the menu bar, and Freenet starts
         automatically at login from then on.</p>
+        <div class="install-note">
+            <strong>Already installed Freenet via <code>install.sh</code>?</strong>
+            Uninstall the old version first so it doesn't conflict with the new app. See the
+            <a href="/uninstall/#macos-legacy-installsh-install">legacy macOS uninstall steps</a>.
+        </div>
     </div>
 
     <div class="tab-pane active" data-os="linux" role="tabpanel" id="os-pane-linux" aria-labelledby="os-tab-linux">
