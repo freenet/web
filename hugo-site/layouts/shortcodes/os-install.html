@@ -5,6 +5,7 @@
 
 .os-install-tabs .tab-buttons {
     display: flex;
+    flex-wrap: wrap;
     gap: 0;
     border-bottom: 2px solid #e5e7eb;
     margin-bottom: 1.25rem;
@@ -81,6 +82,12 @@
     transform: translateY(-1px);
 }
 
+.os-install-tabs .download-btn:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.5), 0 6px 20px rgba(0, 102, 204, 0.35);
+}
+
 .os-install-tabs .download-btn svg {
     width: 1.25em;
     height: 1.25em;
@@ -103,6 +110,19 @@
 
     .os-install-tabs .tab-btn.active {
         border-bottom-color: #4da6ff;
+    }
+
+    .os-install-tabs .download-btn {
+        box-shadow: 0 4px 14px rgba(77, 166, 255, 0.25);
+    }
+
+    .os-install-tabs .download-btn:hover,
+    .os-install-tabs .download-btn:focus {
+        box-shadow: 0 6px 20px rgba(77, 166, 255, 0.4);
+    }
+
+    .os-install-tabs .download-btn:focus-visible {
+        box-shadow: 0 0 0 4px rgba(77, 166, 255, 0.6), 0 6px 20px rgba(77, 166, 255, 0.4);
     }
 }
 </style>
@@ -138,8 +158,8 @@
             Download for macOS
         </a>
         <p>Open the DMG and drag <strong>Freenet</strong> into <strong>Applications</strong>. Launch
-        it from Launchpad or Spotlight &mdash; a rabbit icon appears in the menu bar, and Freenet
-        starts automatically at login from then on.</p>
+        it from Launchpad or Spotlight. A rabbit icon appears in the menu bar, and Freenet starts
+        automatically at login from then on.</p>
     </div>
 
     <div class="tab-pane active" data-os="linux" role="tabpanel" id="os-pane-linux" aria-labelledby="os-tab-linux">
