@@ -47,15 +47,21 @@ theme = "freenet"
     parent = "About"
 
   [[menu.main]]
+    name = "Podcast"
+    url = "/about/podcast/"
+    weight = 4
+    parent = "About"
+
+  [[menu.main]]
     name = "University"
     url = "/about/university/"
-    weight = 4
+    weight = 5
     parent = "About"
 
   [[menu.main]]
     name = "People"
     url = "/about/people/"
-    weight = 5
+    weight = 6
     parent = "About"
 
   [[menu.main]]
