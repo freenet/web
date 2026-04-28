@@ -6,6 +6,6 @@ aliases:
 ---
 
 The Freenet podcast, _Decentralize Everything_, explores the ideas, technology, and people behind
-building a decentralized internet. New episodes weekly.
+building a decentralized internet.
 
 {{< latest-news tag="podcast" >}}
