@@ -409,11 +409,26 @@ main() {
         print_path_instructions "$install_dir"
     fi
 
-    # Ask about service installation (unless FREENET_NO_SERVICE is set)
+    # Ask about service installation (unless FREENET_NO_SERVICE is set).
+    # When the script is piped via `curl ... | sh`, stdin is the pipe carrying
+    # script bytes, not the terminal, so a plain `read` cannot capture
+    # keystrokes. Read from /dev/tty when stdin isn't a TTY; if no TTY is
+    # available at all (truly non-interactive shell), skip the prompt rather
+    # than failing under `set -eu`. Note: `[ -r /dev/tty ]` is unreliable —
+    # the access check can pass even when the process has no controlling tty
+    # and the subsequent open fails. Probe by actually opening /dev/tty.
     if [ "${FREENET_NO_SERVICE:-0}" != "1" ]; then
         echo ""
-        printf "Would you like to install Freenet as a system service? [y/N] "
-        read -r response
+        response=""
+        if [ -t 0 ]; then
+            printf "Would you like to install Freenet as a system service? [y/N] "
+            read -r response
+        elif { true </dev/tty; } 2>/dev/null; then
+            printf "Would you like to install Freenet as a system service? [y/N] "
+            read -r response </dev/tty
+        else
+            info "Non-interactive shell detected; skipping service installation prompt."
+        fi
         case "$response" in
             [yY]|[yY][eE][sS])
                 info "Installing service..."
