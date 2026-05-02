@@ -45,8 +45,6 @@ This skill guides you through building contracts, delegates, and UI for Freenet 
 - [Delta](https://github.com/freenet/delta) - decentralized publishing app built on Freenet
 - [freenet-git](https://github.com/freenet/freenet-git) - decentralized Git collaboration on
   Freenet (in development)
-- [ghostkeys](https://github.com/freenet/ghostkeys) - Freenet delegate for managing
-  [ghost key](/ghostkey/) identities
 
 ## Recently Merged Features
 
