@@ -9,3 +9,10 @@ Episode 2 of the Freenet podcast, "Decentralize Everything." Ian Clarke explores
 be decentralized using Freenet, and what that would mean for collaborative software development.
 
 {{< youtube id="JZIS3pOrJyw" >}}
+
+The work-in-progress project discussed in this episode is
+[freenet-git](https://github.com/freenet/freenet-git/).
+
+### Also available on
+
+- [𝕏](https://x.com/FreenetOrg/status/2050566913365828018)
