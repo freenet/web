@@ -43,14 +43,10 @@ This skill guides you through building contracts, delegates, and UI for Freenet 
 - [River](https://github.com/freenet/river) - decentralized group chat app built on Freenet (in
   development)
 - [Delta](https://github.com/freenet/delta) - decentralized publishing app built on Freenet
-
-## Ideas: Open Issues for Decentralized Services
-
-{{< decentralized-services-issues >}}
-
-## Weekly Developer Meetings
-
-{{< latest-news tag="dev-meeting" >}}
+- [freenet-git](https://github.com/freenet/freenet-git) - decentralized Git collaboration on
+  Freenet (in development)
+- [ghostkeys](https://github.com/freenet/ghostkeys) - Freenet delegate for managing
+  [ghost key](/ghostkey/) identities
 
 ## Recently Merged Features
 
