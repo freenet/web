@@ -1,9 +1,11 @@
 {{ $tag := .Get "tag" | default "front-page" }}
 {{ $includeReleases := .Get "include-releases" | default "false" }}
+{{ $limit := int (.Get "limit" | default 5) }}
 {{ $newsSection := .Site.GetPage "/about/news" }}
 {{ $news := $newsSection.RegularPages }}
 {{ $news := where $news "Params.tags" "intersect" (slice $tag) }}
 {{ $sortedNews := sort $news "Date" "desc" }}
+{{ $displayNews := cond (gt $limit 0) (first $limit $sortedNews) $sortedNews }}
 
 {{ if eq $includeReleases "true" }}
   {{/* Build JSON array of static news items for JavaScript */}}
@@ -68,7 +70,7 @@
   </script>
 {{ else }}
   <ul>
-    {{ range first 5 $sortedNews }}
+    {{ range $displayNews }}
       <li>
         <strong>{{ .Date.Format "January 2, 2006" }}</strong> -
         <a href="{{ .Permalink }}">{{ .Title }}</a>

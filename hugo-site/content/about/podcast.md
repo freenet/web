@@ -8,4 +8,4 @@ aliases:
 The Freenet podcast, _Decentralize Everything_, explores the ideas, technology, and people behind
 building a decentralized internet.
 
-{{< latest-news tag="podcast" >}}
+{{< latest-news tag="podcast" limit="0" >}}

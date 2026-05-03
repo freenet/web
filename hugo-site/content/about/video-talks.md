@@ -7,4 +7,4 @@ aliases:
 
 Here you will find a collection of video talks about Freenet.
 
-{{< latest-news tag="video-talk" >}}
+{{< latest-news tag="video-talk" limit="0" >}}
