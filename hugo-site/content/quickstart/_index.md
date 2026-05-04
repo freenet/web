@@ -1,52 +1,71 @@
 ---
-title: "Quick Start"
+title: "Try Freenet: Join River"
 date: 2025-01-01
 draft: false
 ---
 
-{{< alert type="warning" >}}
-**Alpha Software:** Freenet is under active development and may be unstable. New versions are released frequently (sometimes multiple times per day), and older versions will stop working as the network evolves.
+Install Freenet and you'll be dropped into **Freenet Official**, a live River room where Freenet
+users and developers hang out. This is the same River app Freenet users use day to day, not a mock
+demo.
 
-During alpha testing:
-- **Telemetry:** Your peer will report diagnostic data to our servers for debugging purposes, including peer activity and general system info (e.g., your OS).
-- **Auto-updates:** Your peer will automatically update when new versions become available.
-{{< /alert >}}
+River is group chat with no company, homeserver, or relay layer in the middle. The room runs as a
+Freenet contract on the peer-to-peer network itself.
 
-Get started with Freenet in minutes. Install the software and join River, the world's first truly decentralized group chat.
+{{< alert type="warning" >}} **Alpha notes:** Freenet is under active development. During alpha
+testing:
 
-## Step 1: Install Freenet
+- Your peer auto-updates as the network evolves; older versions stop working over time.
+- Your peer reports diagnostic telemetry to help debug the network, including peer activity and
+  general system info such as your OS.
+- Do not use alpha builds for anything sensitive yet. {{< /alert >}}
+
+## What you're trying
+
+When you join River on Freenet:
+
+- there is no central chat server
+- there is no homeserver to choose
+- the room state is managed by a Freenet contract
+- your browser UI talks to your local Freenet peer
+- messages move through the peer-to-peer network
+
+## Step 1: Install Freenet to enter the room
+
+First install the Freenet app. It runs a local peer in the background, then opens Freenet apps like
+River in your browser.
 
 {{< os-install >}}
 
-## Step 2: Chat with other Freenet users on River
+## Step 2: Join Freenet Official
 
-River is our decentralized group chat, built on Freenet. Click below to get an invite to the
-**Freenet Official** room (up to 5 invites per day).
+Freenet Official is a live River room for Freenet users and developers. There is usually activity
+every day, so this is the fastest way to see Freenet working.
+
+Click below to get an invite code. Invites are limited to 5 per day.
 
 {{< river-invite-button room="Freenet Official" >}}
 
-Clicking the link opens River in your browser and automatically joins you to the room using
-the invite code.
+Clicking the link opens River in your browser and automatically joins you to the room using the
+invite code.
 
 Prefer the terminal? River has a full-featured CLI, `riverctl`. See the
-[riverctl README](https://github.com/freenet/river/blob/main/cli/README.md) for install and
-usage.
+[riverctl README](https://github.com/freenet/river/blob/main/cli/README.md) for install and usage.
 
 ## Troubleshooting
 
-If you run into problems, join our [Matrix chat](https://matrix.to/#/#freenet-locutus:matrix.org) for help.
+If you run into problems, join our [Matrix chat](https://matrix.to/#/#freenet-locutus:matrix.org)
+for help.
 
 **Invite didn't work?** If River opened but you're not in the room, try restarting Freenet
-(`freenet service restart`), then come back to this page and click the invite button again for
-a fresh invite code. If you see the room but can't send messages, click the **"i"** icon next to
-the room name, click **"Leave Room"**, then get a new invite.
+(`freenet service restart`), then come back to this page and click the invite button again for a
+fresh invite code. If you see the room but can't send messages, click the **"i"** icon next to the
+room name, click **"Leave Room"**, then get a new invite.
 
-**Containers & headless servers:** If service installation fails (common in LXC/Docker), use
-the system-wide service instead: `sudo freenet service install --system`
+**Containers & headless servers:** If service installation fails (common in LXC/Docker), use the
+system-wide service instead: `sudo freenet service install --system`
 
-**Network requirements:** Freenet uses UDP hole punching for peer-to-peer connections. Most
-home routers support this without configuration. Strict corporate firewalls may block
-connections.
+**Network requirements:** Freenet uses UDP hole punching for peer-to-peer connections. Most home
+routers support this without configuration. Strict corporate firewalls may block connections.
 
 Need to remove Freenet? See the [uninstall guide](/uninstall/).
 
