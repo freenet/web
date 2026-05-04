@@ -4,44 +4,30 @@ date: 2025-01-01
 draft: false
 ---
 
-Install Freenet and you'll be dropped into **Freenet Official**, a live River room where Freenet
-users and developers hang out. This is the same River app Freenet users use day to day, not a mock
-demo.
+Install Freenet and you'll join the live chat room where the project's developers and users talk.
+It's the fastest way to see the network in action.
 
-River is group chat with no company, homeserver, or relay layer in the middle. The room runs as a
-Freenet contract on the peer-to-peer network itself.
+The room runs as a Freenet contract: code that lives across the peer-to-peer network instead of on
+a central server. No company hosts it, no account to make, no admin who can shut it down.
 
-{{< alert type="warning" >}} **Alpha notes:** Freenet is under active development. During alpha
-testing:
+{{< alert type="warning" >}} **Alpha notes:** Freenet is under active development.
 
-- Your peer auto-updates as the network evolves; older versions stop working over time.
-- Your peer reports diagnostic telemetry to help debug the network, including peer activity and
-  general system info such as your OS.
+- **Auto-updates:** your peer updates as the network evolves; older versions stop working over
+  time.
+- **Telemetry:** your peer reports diagnostic data to help debug the network, including peer
+  activity and general system info such as your OS.
 - Do not use alpha builds for anything sensitive yet. {{< /alert >}}
-
-## What you're trying
-
-When you join River on Freenet:
-
-- there is no central chat server
-- there is no homeserver to choose
-- the room state is managed by a Freenet contract
-- your browser UI talks to your local Freenet peer
-- messages move through the peer-to-peer network
 
 ## Step 1: Install Freenet to enter the room
 
-First install the Freenet app. It runs a local peer in the background, then opens Freenet apps like
-River in your browser.
+First install the app. It runs a local peer in the background, then opens apps like River in your
+browser.
 
 {{< os-install >}}
 
-## Step 2: Join Freenet Official
+## Step 2: Join the room
 
-Freenet Official is a live River room for Freenet users and developers. There is usually activity
-every day, so this is the fastest way to see Freenet working.
-
-Click below to get an invite code. Invites are limited to 5 per day.
+Click below to get an invite to the **Freenet Official** room. Invites are limited to 5 per day.
 
 {{< river-invite-button room="Freenet Official" >}}
 
