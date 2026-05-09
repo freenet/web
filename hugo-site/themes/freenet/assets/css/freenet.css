@@ -579,6 +579,88 @@ p.page-end-spacer {
   }
 }
 
+/* Talk card (homepage YouTube thumbnail) */
+.talk-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  max-width: 280px;
+}
+
+@media screen and (max-width: 900px) {
+  .talk-card {
+    max-width: 360px;
+  }
+}
+
+.talk-card:hover,
+.talk-card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.talk-card-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+}
+
+.talk-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.talk-card-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0.9;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.talk-card:hover .talk-card-play,
+.talk-card:focus-visible .talk-card-play {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.talk-card-meta {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.talk-card-title {
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.talk-card-caption {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+@media (prefers-color-scheme: dark) {
+  .talk-card {
+    background: #1a1a1a;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .talk-card-caption {
+    color: #94a3b8;
+  }
+}
+
 /* Network hero animation */
 #network-hero {
   max-width: 420px;

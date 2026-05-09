@@ -32,6 +32,14 @@ in just a few hops, scaling efficiently to millions of peers -- no servers requi
 
 [More news...](/about/news/)
 
+## Watch
+
+{{< talk-card
+    id="3SxNBz1VTE0"
+    title="Freenet Lives! Real-Time Decentralized Apps at Scale"
+    href="/about/news/freenet-lives-video-talk/"
+    caption="30-min talk at FUTO" >}}
+
 </div>
 
 </div>
