@@ -39,6 +39,9 @@
       {{- continue }}
     {{- end }}
     {{- $attrs := dict "href" .URL }}
+    {{- if or (hasPrefix .URL "http://") (hasPrefix .URL "https://") }}
+      {{- $attrs = merge $attrs (dict "target" "_blank" "rel" "noopener") }}
+    {{- end }}
     {{- if $page.IsMenuCurrent .Menu . }}
       {{- $attrs = merge $attrs (dict "class" "navbar-item is-active" "aria-current" "page") }}
     {{- else if $page.HasMenuCurrent .Menu .}}

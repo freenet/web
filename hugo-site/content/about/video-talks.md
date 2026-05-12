@@ -5,6 +5,7 @@ aliases:
   - /resources/video-talks/
 ---
 
-Here you will find a collection of video talks about Freenet.
+Here you will find a collection of video talks about Freenet. Subscribe on our
+[YouTube channel](https://www.youtube.com/@FreenetOrg) for new uploads.
 
 {{< latest-news tag="video-talk" limit="0" >}}

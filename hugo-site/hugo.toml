@@ -47,8 +47,8 @@ theme = "freenet"
     parent = "About"
 
   [[menu.main]]
-    name = "Podcast"
-    url = "/about/podcast/"
+    name = "YouTube"
+    url = "https://www.youtube.com/@FreenetOrg"
     weight = 4
     parent = "About"
 
