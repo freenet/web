@@ -43,6 +43,7 @@ This skill guides you through building contracts, delegates, and UI for Freenet 
 - [River](https://github.com/freenet/river) - decentralized group chat app built on Freenet (in
   development)
 - [Delta](https://github.com/freenet/delta) - decentralized publishing app built on Freenet
+- [Mail](https://github.com/freenet/mail) - decentralized email app built on Freenet
 - [freenet-git](https://github.com/freenet/freenet-git) - decentralized Git collaboration on
   Freenet (in development)
 
