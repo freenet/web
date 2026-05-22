@@ -212,8 +212,8 @@ advocate for unrestricted exchange of intellectual, scientific, literary, social
 creative, human rights, and cultural expressions, free from interference by state, private, or
 special interests.
 
-You can [donate via credit card or cryptocurrency](/donate), or donate through our
-[Ghost Key](/ghostkey/) mechanism to establish a verifiable cryptographic identity.
+You can [donate via credit card](/donate), or donate through our [Ghost Key](/ghostkey/) mechanism
+to establish a verifiable cryptographic identity.
 
 If you are in a position to make a larger contribution or grant please
 {{< email-protect "gro.teneerf@nai" "email Ian" >}} or reach out to him on
