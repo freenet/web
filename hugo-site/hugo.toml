@@ -88,21 +88,16 @@ theme = "freenet"
     parent = "Build"
 
   [[menu.main]]
-    name = "Support"
-    url = "/donate/"
+    identifier = "ghost-keys"
+    name = "Ghost Keys"
+    url = "/ghostkey/"
     weight = 4
 
   [[menu.main]]
-    name = "Ghost Keys"
-    url = "/ghostkey/"
-    weight = 1
-    parent = "Support"
-
-  [[menu.main]]
+    identifier = "donate"
     name = "Donate"
     url = "/donate/"
-    weight = 2
-    parent = "Support"
+    weight = 5
 
 [params]
   stripePublishableKeyTest = "pk_test_51PUf6RCCPv9UL23G0yLdnS51VCStEcnqzd2AftFWiXAOjFOgonYRRBL6F5eKOCrr2yuEHCBDqqYa8H0w7ouRyW6d00awdNMKsf"

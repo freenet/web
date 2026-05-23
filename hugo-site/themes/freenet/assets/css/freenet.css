@@ -318,6 +318,47 @@ p.page-end-spacer {
     opacity: 0.8;
 }
 
+/* Donate header button — restrained, persistent, institutional */
+.navbar-item.donate-nav-button {
+    color: var(--color-primary) !important;
+    border: 1.5px solid var(--color-primary);
+    border-radius: 999px;
+    padding: 0.35rem 1.1rem;
+    margin: 0 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    align-self: center;
+}
+
+.navbar-item.donate-nav-button:hover {
+    background-color: var(--color-primary);
+    color: #ffffff !important;
+}
+
+/* Two render points: navbar-end (desktop) and navbar-brand (mobile, next to
+   burger). Show one at a time so the button is always visible. */
+.navbar-item.donate-nav-button-mobile {
+    display: none;
+}
+
+@media screen and (max-width: 1023px) {
+    .navbar-end .navbar-item.donate-nav-button {
+        display: none;
+    }
+
+    .navbar-item.donate-nav-button-mobile {
+        display: inline-flex;
+        align-items: center;
+        margin-left: auto;
+        margin-right: 0.5rem;
+        padding: 0.3rem 0.95rem;
+        font-size: 0.9rem;
+    }
+}
+
 /* Burger menu color and animation */
 .navbar-burger span {
     background-color: #0066CC;
@@ -505,6 +546,17 @@ p.page-end-spacer {
 
     .navbar-item.ghost-key:hover {
         opacity: 0.8;
+    }
+
+    /* Dark mode Donate header button */
+    .navbar-item.donate-nav-button {
+        color: #4da6ff !important;
+        border-color: #4da6ff;
+    }
+
+    .navbar-item.donate-nav-button:hover {
+        background-color: #4da6ff;
+        color: #0a0a0a !important;
     }
 }
 /* Custom button styles */
@@ -821,6 +873,49 @@ picture.app-screenshot img {
 
   .secondary-links a:hover {
     color: #4da6ff;
+  }
+}
+
+/* Institutional statement in footer — quiet, just establishes 501(c)(3) status */
+.footer-institutional {
+  max-width: 720px;
+  margin: 2rem auto 1rem;
+  padding: 0 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+.footer-institutional p {
+  margin: 0;
+}
+
+.footer-institutional a {
+  color: #64748b;
+  text-decoration: underline;
+  text-decoration-color: rgba(100, 116, 139, 0.4);
+  text-underline-offset: 2px;
+}
+
+.footer-institutional a:hover {
+  color: var(--color-primary);
+  text-decoration-color: var(--color-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  .footer-institutional,
+  .footer-institutional a {
+    color: #94a3b8;
+  }
+
+  .footer-institutional a {
+    text-decoration-color: rgba(148, 163, 184, 0.4);
+  }
+
+  .footer-institutional a:hover {
+    color: #4da6ff;
+    text-decoration-color: #4da6ff;
   }
 }
 

@@ -1,0 +1,23 @@
+<div class="footer-institutional">
+    <p>
+        Founded in 2001, Freenet is a 501(c)(3) nonprofit organization dedicated to the development
+        of open and democratic digital infrastructure. Contributions supporting Freenet's ongoing
+        development can be made directly through
+        <a href="/donate/">freenet.org/donate</a>.
+        For larger philanthropic contributions, institutional partnerships, or grant discussions,
+        please contact <span id="institutional-contact-email"></span>.
+    </p>
+</div>
+<script type="text/javascript">
+(function () {
+    const reversed = "gro.teneerf@nai";
+    const email = reversed.split('').reverse().join('');
+    const el = document.getElementById("institutional-contact-email");
+    if (el) {
+        const a = document.createElement('a');
+        a.href = 'mailto:' + email;
+        a.textContent = email;
+        el.replaceWith(a);
+    }
+})();
+</script>
