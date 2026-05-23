@@ -47,21 +47,9 @@ theme = "freenet"
     parent = "About"
 
   [[menu.main]]
-    name = "YouTube"
-    url = "https://www.youtube.com/@FreenetOrg"
-    weight = 4
-    parent = "About"
-
-  [[menu.main]]
-    name = "University"
-    url = "/about/university/"
-    weight = 5
-    parent = "About"
-
-  [[menu.main]]
     name = "People"
     url = "/about/people/"
-    weight = 6
+    weight = 4
     parent = "About"
 
   [[menu.main]]
@@ -70,28 +58,57 @@ theme = "freenet"
     weight = 3
 
   [[menu.main]]
+    name = "Quickstart"
+    url = "/quickstart/"
+    weight = 1
+    parent = "Build"
+
+  [[menu.main]]
     name = "Tutorial"
     url = "/build/manual/tutorial/"
-    weight = 1
+    weight = 2
     parent = "Build"
 
   [[menu.main]]
     name = "Manual"
     url = "/build/manual/"
-    weight = 2
-    parent = "Build"
-
-  [[menu.main]]
-    name = "Example Apps"
-    url = "/build/#example-apps"
     weight = 3
     parent = "Build"
 
   [[menu.main]]
-    identifier = "ghost-keys"
-    name = "Ghost Keys"
-    url = "/ghostkey/"
+    name = "Apps"
+    url = "/apps/"
     weight = 4
+
+  [[menu.main]]
+    name = "River"
+    url = "/apps/#river"
+    weight = 1
+    parent = "Apps"
+
+  [[menu.main]]
+    name = "Delta"
+    url = "/apps/#delta"
+    weight = 2
+    parent = "Apps"
+
+  [[menu.main]]
+    name = "Mail"
+    url = "/apps/#mail"
+    weight = 3
+    parent = "Apps"
+
+  [[menu.main]]
+    name = "freenet-git"
+    url = "/apps/#freenet-git"
+    weight = 4
+    parent = "Apps"
+
+  [[menu.main]]
+    name = "All apps & components →"
+    url = "/apps/"
+    weight = 5
+    parent = "Apps"
 
   [[menu.main]]
     identifier = "donate"

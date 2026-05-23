@@ -22,6 +22,7 @@ usage. Use the table of contents below to navigate through the manual.
 5. [Examples](#examples)
 6. [Community and Support](#community-and-support)
 7. [Reference](#reference)
+8. [Further reading](#further-reading)
 
 ---
 
@@ -86,3 +87,15 @@ Get involved with the Freenet community:
 Additional resources and glossary:
 
 - [Glossary](glossary)
+
+---
+
+## Further reading {#further-reading}
+
+Deep-dive articles on the design principles behind Freenet's architecture:
+
+- [Understanding Small World Networks](/about/news/small-world-networks/): the routing intuition
+  behind the P2P network. How Freenet finds destinations in just a few hops without a central
+  index.
+- [Understanding Freenet's Delta-Sync](/about/news/summary-delta-sync/): how shared state stays
+  consistent across the network using mergeable, additive updates rather than full snapshots.

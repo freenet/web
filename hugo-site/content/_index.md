@@ -83,8 +83,8 @@ decentralized internet infrastructure that matters.
 
 <div class="secondary-links">
 
+[Apps](/apps/) ·
 [Video Talks](/about/video-talks/) ·
-[Podcast](/about/podcast/) ·
 [Matrix Chat](https://matrix.to/#/#freenet-locutus:matrix.org) ·
 [GitHub](https://github.com/freenet/freenet-core) ·
 [FAQ](/about/faq/)
