@@ -334,7 +334,7 @@ p.page-end-spacer {
 }
 
 .navbar-item.donate-nav-button:hover {
-    background-color: var(--color-primary);
+    background-color: var(--color-primary) !important;
     color: #ffffff !important;
 }
 
@@ -555,7 +555,7 @@ p.page-end-spacer {
     }
 
     .navbar-item.donate-nav-button:hover {
-        background-color: #4da6ff;
+        background-color: #4da6ff !important;
         color: #0a0a0a !important;
     }
 }
