@@ -5,7 +5,6 @@ draft: false
 aliases:
   - /dev/
   - /dev/platform/
-  - /dev/apps/
 ---
 
 ## Getting Started
@@ -36,16 +35,14 @@ This skill guides you through building contracts, delegates, and UI for Freenet 
 
 *   **[ghostkeys](https://github.com/freenet/ghostkeys)**: A Freenet delegate for managing [ghost key](/ghostkey/) identities, enabling trust verification without revealing identity through blind-signed cryptographic certificates.
 
-## Example Apps
+## Example Apps {#example-apps}
 
-- [freenet-ping](https://github.com/freenet/freenet-core/tree/main/apps/freenet-ping) - a simple
-  example demonstrating how to build a Freenet app
-- [River](https://github.com/freenet/river) - decentralized group chat app built on Freenet (in
-  development)
-- [Delta](https://github.com/freenet/delta) - decentralized publishing app built on Freenet
-- [Mail](https://github.com/freenet/mail) - decentralized email app built on Freenet
-- [freenet-git](https://github.com/freenet/freenet-git) - decentralized Git collaboration on
-  Freenet (in development)
+See [Apps & Ecosystem](/apps/) for a current list of applications and components built on Freenet,
+including links to the source code for each project.
+
+A minimal worked example for developers:
+[freenet-ping](https://github.com/freenet/freenet-core/tree/main/apps/freenet-ping) — the smallest
+useful Freenet app, demonstrating the contract / delegate / UI loop end-to-end.
 
 ## Recently Merged Features
 
