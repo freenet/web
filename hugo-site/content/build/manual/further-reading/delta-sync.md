@@ -1,10 +1,11 @@
 ---
 aliases:
   - /news/summary-delta-sync/
+  - /about/news/summary-delta-sync/
 title: "Understanding Freenet's Delta-Sync"
 date: 2024-11-30
 draft: false
-tags: ["front-page", "university"]
+tags: ["further-reading"]
 head:
   - - link
     - rel: stylesheet

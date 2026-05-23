@@ -22,6 +22,8 @@ Decentralized group chat. Encrypted rooms that work even if every Freenet
 contributor disappears tomorrow. The fastest way to see Freenet in action: the
 [Quickstart](/quickstart/) joins you to the live developers' room.
 
+{{< app-screenshot light="/images/apps/river.png" alt="River decentralized group chat interface" >}}
+
 → [github.com/freenet/river](https://github.com/freenet/river)
 
 ### Delta {#delta}
@@ -54,11 +56,18 @@ Decentralized marketplace for peer-to-peer commerce. Anonymous,
 donation-backed identities paired with a blind-signature feedback mechanism
 provide accountability without a central operator. Early design.
 
+→ [github.com/freenet/harvest](https://github.com/freenet/harvest)
+
 ### Atlas {#atlas}
 
 Decentralized discovery layer: a framework for publishing signed metadata
 about Freenet content and building competing, pluralistic search,
 recommendation, and curation systems on top. Early RFC.
+
+{{< app-screenshot light="/images/apps/atlas.png" alt="Atlas discovery UI mockup" >}}
+
+The screenshot above is an early design mockup, not a working UI. Atlas is
+still at the RFC stage.
 
 → [github.com/freenet/atlas](https://github.com/freenet/atlas)
 
@@ -67,6 +76,8 @@ recommendation, and curation systems on top. Early RFC.
 Decentralized live social feed (posts, profiles, follows, likes), designed as
 a high-churn live surface that complements [Atlas](#atlas) for durable
 discovery and archival.
+
+{{< app-screenshot light="/images/apps/raven.png" alt="Raven microblogging interface" >}}
 
 → [github.com/freenet/raven](https://github.com/freenet/raven)
 
