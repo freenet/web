@@ -1,10 +1,11 @@
 ---
 aliases:
   - /news/small-world-networks/
+  - /about/news/small-world-networks/
 title: "Understanding Small World Networks"
 date: 2024-11-25
 draft: false
-tags: ["front-page", "university"]
+tags: ["further-reading"]
 head:
   - - link
     - rel: stylesheet
