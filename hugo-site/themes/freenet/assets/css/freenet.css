@@ -302,22 +302,6 @@ p.page-end-spacer {
     display: inline-block; /* Fit the content width */
 }
 
-/* Ghost Key styling */
-.navbar-item.ghost-key {
-    font-weight: bold;
-    background-color: transparent;
-    border-radius: 4px;
-    background-image: radial-gradient(circle, #339966 0%, #1f5c3d 50%, #000000 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-
-.navbar-item.ghost-key:hover {
-    background-color: transparent;
-    opacity: 0.8;
-}
-
 /* Donate header button — restrained, persistent, institutional */
 .navbar-item.donate-nav-button {
     color: var(--color-primary) !important;
@@ -520,14 +504,6 @@ p.page-end-spacer {
         border-bottom-color: #3a3a3a;
     }
 
-    /* Dark mode Ghost Key styling */
-    .navbar-item.ghost-key {
-        background-image: radial-gradient(circle, #4dcc8f 0%, #339966 50%, #E0E0E0 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-    }
-
     /* Mobile image handling */
     @media screen and (max-width: 800px) {
         div[style*="float: right"] {
@@ -542,10 +518,6 @@ p.page-end-spacer {
         div[style*="float: right"] + p {
             min-width: 200px; /* Ensures at least ~10 words can fit */
         }
-    }
-
-    .navbar-item.ghost-key:hover {
-        opacity: 0.8;
     }
 
     /* Dark mode Donate header button */

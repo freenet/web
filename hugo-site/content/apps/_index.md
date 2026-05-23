@@ -10,7 +10,7 @@ aliases:
 
 The apps below run on Freenet rather than on a company's servers. They are
 unstoppable, interoperable by default, and built on the same open protocol.
-Everything in Freenet's ecosystem — apps, tools, components — can interoperate
+Everything in Freenet's ecosystem (apps, tools, components) can interoperate
 without coordination, so the line between "an app" and "a building block" is
 deliberately thin.
 
@@ -19,7 +19,7 @@ deliberately thin.
 ### River {#river}
 
 Decentralized group chat. Encrypted rooms that work even if every Freenet
-contributor disappears tomorrow. The fastest way to see Freenet in action — the
+contributor disappears tomorrow. The fastest way to see Freenet in action: the
 [Quickstart](/quickstart/) joins you to the live developers' room.
 
 → [github.com/freenet/river](https://github.com/freenet/river)
@@ -64,7 +64,7 @@ recommendation, and curation systems on top. Early RFC.
 
 ### Raven {#raven}
 
-Decentralized live social feed — posts, profiles, follows, likes — designed as
+Decentralized live social feed (posts, profiles, follows, likes), designed as
 a high-churn live surface that complements [Atlas](#atlas) for durable
 discovery and archival.
 

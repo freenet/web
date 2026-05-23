@@ -41,7 +41,7 @@ See [Apps & Ecosystem](/apps/) for a current list of applications and components
 including links to the source code for each project.
 
 A minimal worked example for developers:
-[freenet-ping](https://github.com/freenet/freenet-core/tree/main/apps/freenet-ping) — the smallest
+[freenet-ping](https://github.com/freenet/freenet-core/tree/main/apps/freenet-ping): the smallest
 useful Freenet app, demonstrating the contract / delegate / UI loop end-to-end.
 
 ## Recently Merged Features

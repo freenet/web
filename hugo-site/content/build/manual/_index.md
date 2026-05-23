@@ -94,8 +94,8 @@ Additional resources and glossary:
 
 Deep-dive articles on the design principles behind Freenet's architecture:
 
-- [Understanding Small World Networks](/about/news/small-world-networks/) — the routing intuition
-  behind the P2P network: how Freenet finds destinations in just a few hops without a central
+- [Understanding Small World Networks](/about/news/small-world-networks/): the routing intuition
+  behind the P2P network. How Freenet finds destinations in just a few hops without a central
   index.
-- [Understanding Freenet's Delta-Sync](/about/news/summary-delta-sync/) — how shared state stays
+- [Understanding Freenet's Delta-Sync](/about/news/summary-delta-sync/): how shared state stays
   consistent across the network using mergeable, additive updates rather than full snapshots.
