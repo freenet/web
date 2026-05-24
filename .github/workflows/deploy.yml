@@ -7,6 +7,9 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:  # Manual trigger from the Actions tab, e.g. to refresh
+                     # the whitepaper PDF after a paper-1 release without
+                     # needing a code change in this repo.
 
 jobs:
   build:
