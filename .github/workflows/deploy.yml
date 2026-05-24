@@ -100,8 +100,8 @@ jobs:
 
   deploy:
     needs: build
-    # Only run on push to main branch
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Run on push to main, or on manual workflow_dispatch
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-22.04
     permissions:
       pages: write
