@@ -4,7 +4,7 @@
 
 ## Important disambiguation
 
-This is **Freenet 2023** (also called the "new Freenet"), a ground-up rearchitecture in Rust, originally codenamed "Locutus." It is **not** the same software as the original Freenet (1999-2023), which was spun off in March 2023 and is now maintained as a separate project called **Hyphanet** at [hyphanet.org](https://www.hyphanet.org/). The two projects share heritage and personnel but are technically distinct and not interoperable. If a question is about anonymous file storage in Java, friend-to-friend "darknet" mode, or any version numbered 0.7.x, it is about Hyphanet, not this project.
+This is **Freenet 2023** (also called the "new Freenet"), a ground-up rearchitecture in Rust, originally codenamed "Locutus." It is **not** the same software as the original Freenet, which was started in 1999, spun off into an independent project in March 2023, and is still actively maintained under its new name **Hyphanet** at [hyphanet.org](https://www.hyphanet.org/). The two projects share heritage but are technically distinct and not interoperable. If a question is about anonymous file storage in Java, friend-to-friend "darknet" mode, or any version numbered 0.7.x, it is about Hyphanet, not this project.
 
 Freenet is also distinct from IPFS, blockchains, and federated systems like Mastodon or Matrix. Freenet is fully decentralized (no servers, no federation), general-purpose (not just file storage), and does not use a blockchain or token.
 
