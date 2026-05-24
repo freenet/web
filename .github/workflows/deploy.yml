@@ -61,6 +61,24 @@ jobs:
         if: steps.cache-wasm.outputs.cache-hit != 'true'
         run: cargo make build-wasm-release
 
+      # Refresh whitepaper PDF from the paper-1 'latest' release so the
+      # deployed PDF always matches the most recent successful build of
+      # github.com/freenet/paper-1. A download failure falls back to the
+      # committed snapshot under hugo-site/static/pdf/ so deploy never
+      # blocks on the paper repo.
+      - name: Refresh whitepaper PDF
+        run: |
+          set -u
+          url="https://github.com/freenet/paper-1/releases/latest/download/freenet-whitepaper.pdf"
+          tmp="$(mktemp)"
+          if curl -L --fail --silent --show-error -o "$tmp" "$url"; then
+            mv "$tmp" hugo-site/static/pdf/freenet-whitepaper.pdf
+            echo "Refreshed whitepaper PDF from paper-1 latest release."
+          else
+            rm -f "$tmp"
+            echo "::warning::Could not fetch whitepaper PDF; using committed snapshot."
+          fi
+
       # Build the site using cargo-make
       - name: Build Site
         run: cargo make build-site
