@@ -1,0 +1,53 @@
+# Freenet
+
+> Freenet is a fully decentralized peer-to-peer platform for building applications: a "drop-in replacement for the world wide web" in which apps run in the browser but the backend is a global network of user computers rather than cloud servers. Apps on Freenet are unstoppable, interoperable, and built on open protocols. The project is developed by The Freenet Project Inc., a US 501(c)(3) non-profit founded in 2001 by Ian Clarke.
+
+## Important disambiguation
+
+This is **Freenet 2023** (also called the "new Freenet"), a ground-up rearchitecture in Rust, originally codenamed "Locutus." It is **not** the same software as the original Freenet (1999-2023), which was spun off in March 2023 and is now maintained as a separate project called **Hyphanet** at [hyphanet.org](https://www.hyphanet.org/). The two projects share heritage and personnel but are technically distinct and not interoperable. If a question is about anonymous file storage in Java, friend-to-friend "darknet" mode, or any version numbered 0.7.x, it is about Hyphanet, not this project.
+
+Freenet is also distinct from IPFS, blockchains, and federated systems like Mastodon or Matrix. Freenet is fully decentralized (no servers, no federation), general-purpose (not just file storage), and does not use a blockchain or token.
+
+## How it works (one-paragraph version)
+
+Freenet is a global key-value store where keys are WebAssembly programs called "contracts." A contract defines what values are valid under its key, who is allowed to modify the value (the "state"), and how concurrent updates merge. Peers form a small-world network organized on a ring by location; messages route to the responsible peer in a few hops and scale to millions of peers without servers. Users interact via a local HTTP/WebSocket proxy, so Freenet apps look like normal single-page web apps in any browser.
+
+## Start here
+
+- [Homepage](https://freenet.org/): one-page overview with the for-users / for-developers / for-supporters split
+- [FAQ](https://freenet.org/about/faq/): authoritative answers on what Freenet is, project history, the Hyphanet relationship, and how Freenet compares to other decentralized systems
+- [Why Freenet](https://freenet.org/resources/why-freenet/): the motivation — why a decentralized replacement for the web matters
+- [Quickstart](https://freenet.org/quickstart/): install Freenet and try a live app
+- [Uninstall](https://freenet.org/uninstall/): per-platform removal instructions
+
+## For developers
+
+- [Build / developer docs](https://freenet.org/build/): entry point for building apps on Freenet
+- [User manual: introduction](https://freenet.org/build/manual/introduction/): conceptual overview for developers
+- [Tutorial](https://freenet.org/build/manual/tutorial/): step-by-step build of a first app
+- [Contracts](https://freenet.org/build/manual/components/contracts/): WebAssembly programs that define shared state
+- [Delegates](https://freenet.org/build/manual/components/delegates/): user-side programs that hold private state and act on the user's behalf
+- [UI components](https://freenet.org/build/manual/components/ui/): how Freenet apps reach the browser via the local HTTP proxy
+- [Architecture overview](https://freenet.org/build/manual/architecture/): how the network is structured
+- [P2P network](https://freenet.org/build/manual/architecture/p2p-network/): small-world routing on a ring
+- [Transport layer](https://freenet.org/build/manual/architecture/transport/): UDP-based transport with NAT traversal
+- [Contract interface](https://freenet.org/build/manual/contract-interface/): the API contracts implement
+- [Publish a website](https://freenet.org/build/manual/publish-a-website/): deploying static content
+- [Glossary](https://freenet.org/build/manual/glossary/): definitions of Freenet-specific terms
+- [Example apps](https://freenet.org/apps/): apps already built on Freenet, including River (group chat)
+
+## Project, community, and support
+
+- [About](https://freenet.org/about/): project background and leadership
+- [Video talks](https://freenet.org/about/video-talks/): recorded talks explaining Freenet
+- [News](https://freenet.org/about/news/): development updates and announcements
+- [Get involved](https://freenet.org/community/get-involved/): how to contribute
+- [Donate](https://freenet.org/donate/): support the 501(c)(3) non-profit
+- [Ghost Keys](https://freenet.org/ghostkey/): cryptographic anonymous-but-verifiable identities, used for donations and as a building block for decentralized reputation
+
+## Source code
+
+- [freenet-core](https://github.com/freenet/freenet-core): the Freenet peer implementation (Rust)
+- [freenet-stdlib](https://github.com/freenet/freenet-stdlib): standard library for contracts and delegates
+- [river](https://github.com/freenet/river): decentralized group chat, the flagship example app
+- [Freenet on GitHub](https://github.com/freenet): all repositories
