@@ -11,6 +11,12 @@ on:
                      # the whitepaper PDF after a paper-1 release without
                      # needing a code change in this repo.
 
+env:
+  # Opt the Node 20-targeting actions (checkout, cache, upload-artifact)
+  # into Node.js 24 ahead of the September 2026 forced cutover. Silences
+  # the deprecation warning on every run.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-22.04
