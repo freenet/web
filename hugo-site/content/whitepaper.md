@@ -21,6 +21,17 @@ small-world adaptive routing, and the delegate model for private state.
   </a>
 </div>
 
+## Overview video (AI-generated)
+
+A roughly twelve-minute spoken overview of the whitepaper, produced by
+[Google NotebookLM](https://notebooklm.google/) from the paper text. The
+voices and discussion are AI-generated; the underlying material is the paper.
+
+{{< talk-card
+    id="DZNedczsHuY"
+    title="Freenet Whitepaper: AI Overview"
+    caption="NotebookLM audio overview of the paper" >}}
+
 ## What it covers
 
 The whitepaper is design-oriented. It describes the architecture as currently
