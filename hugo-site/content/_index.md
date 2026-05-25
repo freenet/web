@@ -66,6 +66,8 @@ maintain, no cloud bills, no terms of service.
 
 [Read the Tutorial →](/build/manual/tutorial/)
 
+[Read the Whitepaper →](/whitepaper/)
+
 </div>
 
 <div class="home-section">
