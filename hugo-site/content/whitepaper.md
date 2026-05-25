@@ -36,14 +36,7 @@ Section headings:
 8. Related work
 9. Conclusion
 
-## Source and rebuilds
-
-The whitepaper source lives at
-[github.com/freenet/paper-1](https://github.com/freenet/paper-1) as a small
-LaTeX project. A GitHub Actions workflow rebuilds the PDF on every push to
-`main`; the latest build is also attached to the
-[`latest` release](https://github.com/freenet/paper-1/releases/tag/latest).
-Pull requests are welcome.
+Source: [github.com/freenet/paper-1](https://github.com/freenet/paper-1).
 
 ## Citing
 
