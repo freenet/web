@@ -10,27 +10,12 @@ A whitepaper describing the architecture of Freenet: contracts as
 application-defined join-semilattices, summary/delta synchronization,
 small-world adaptive routing, and the delegate model for private state.
 
-<div style="margin: 1.5em 0; display: flex; flex-wrap: wrap; gap: 1em;">
+<div style="margin: 1.5em 0;">
   <a href="/pdf/freenet-whitepaper.pdf"
      style="display: inline-block; padding: 0.6em 1.2em; background: #2a5b8a; color: white; text-decoration: none; border-radius: 4px; font-weight: 600;">
     Read the whitepaper (PDF)
   </a>
-  <a href="https://github.com/freenet/paper-1"
-     style="display: inline-block; padding: 0.6em 1.2em; background: #444; color: white; text-decoration: none; border-radius: 4px; font-weight: 600;">
-    View source on GitHub
-  </a>
 </div>
-
-## Overview video (AI-generated)
-
-A roughly twelve-minute spoken overview of the whitepaper, produced by
-[Google NotebookLM](https://notebooklm.google/) from the paper text. The
-voices and discussion are AI-generated; the underlying material is the paper.
-
-{{< talk-card
-    id="DZNedczsHuY"
-    title="Freenet Whitepaper: AI Overview"
-    caption="NotebookLM audio overview of the paper" >}}
 
 ## What it covers
 
@@ -66,3 +51,7 @@ Pull requests are welcome.
 Clarke, I. (2026). Freenet: A Peer-to-Peer Platform for Real-Time
 Decentralized Applications. https://freenet.org/whitepaper/
 ```
+
+There is also an [AI-generated audio overview](https://www.youtube.com/watch?v=DZNedczsHuY)
+of the paper produced by Google NotebookLM. The paper itself is the canonical
+source; the overview is less precise.
