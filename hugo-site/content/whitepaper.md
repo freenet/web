@@ -45,6 +45,6 @@ Clarke, I. (2026). Freenet: A Peer-to-Peer Platform for Real-Time
 Decentralized Applications. https://freenet.org/whitepaper/
 ```
 
-There is also an [AI-generated audio overview](https://www.youtube.com/watch?v=DZNedczsHuY)
+There is also an [AI-generated video overview](https://www.youtube.com/watch?v=DZNedczsHuY)
 of the paper produced by Google NotebookLM. The paper itself is the canonical
 source; the overview is less precise.
