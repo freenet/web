@@ -2,6 +2,7 @@
 title: "Ian Clarke"
 date: 2026-04-03
 draft: false
+weight: 1
 aliases:
   - /people/ian-clarke/
 ---
