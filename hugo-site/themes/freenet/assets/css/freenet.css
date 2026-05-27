@@ -1213,16 +1213,21 @@ picture.app-screenshot img {
 
 .person-headshot {
   float: right;
+  clear: right;
   width: 220px;
+  height: 220px;
+  object-fit: cover;
+  object-position: center 20%;
   margin: 0 0 20px 20px;
   border-radius: 4px;
 }
 @media screen and (max-width: 600px) {
   .person-headshot {
     float: none;
+    clear: none;
     display: block;
-    width: 100%;
-    max-width: 260px;
+    width: 220px;
+    height: 220px;
     margin: 0 auto 16px;
   }
 }
