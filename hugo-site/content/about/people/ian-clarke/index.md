@@ -6,6 +6,8 @@ aliases:
   - /people/ian-clarke/
 ---
 
+<img src="ian-clarke.jpg" alt="Ian Clarke" style="float: right; width: 220px; margin: 0 0 20px 20px; border-radius: 4px;">
+
 Ian Clarke is a computer scientist and entrepreneur, best known as the creator of
 [Freenet](https://freenet.org), a decentralized peer-to-peer platform for censorship-resistant
 communication and applications. He is founder and President of Freenet Project Inc., the
