@@ -1211,23 +1211,26 @@ picture.app-screenshot img {
   }
 }
 
+.child-entry {
+  display: flow-root;
+  margin-bottom: 1.5rem;
+}
+
 .person-headshot {
   float: right;
-  clear: right;
-  width: 220px;
-  height: 220px;
+  width: 160px;
+  height: 160px;
   object-fit: cover;
   object-position: center 20%;
-  margin: 0 0 20px 20px;
+  margin: 0 0 12px 20px;
   border-radius: 4px;
 }
 @media screen and (max-width: 600px) {
   .person-headshot {
     float: none;
-    clear: none;
     display: block;
-    width: 220px;
-    height: 220px;
+    width: 180px;
+    height: 180px;
     margin: 0 auto 16px;
   }
 }
