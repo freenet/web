@@ -8,15 +8,17 @@
         </div>
         <div>
           {{ range .Pages }}
-              <h2 class="title is-5">
-                <a href="{{ .RelPermalink }}" style="color: #444444;">{{ .LinkTitle }}</a>
-              </h2>
-              {{ if eq .Section "news" }}
-                <p class="date">{{ .Date.Format "2 January, 2006" }}</p>
-              {{ end }}
-              <div class="content">
-                {{ .Summary }}
-              </div>
+              <section class="child-entry">
+                <h2 class="title is-5">
+                  <a href="{{ .RelPermalink }}" style="color: #444444;">{{ .LinkTitle }}</a>
+                </h2>
+                {{ if eq .Section "news" }}
+                  <p class="date">{{ .Date.Format "2 January, 2006" }}</p>
+                {{ end }}
+                <div class="content">
+                  {{ .Summary }}
+                </div>
+              </section>
           {{ end }}
         </div>
       {{ else }}
