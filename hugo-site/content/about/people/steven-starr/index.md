@@ -2,6 +2,7 @@
 title: "Steven Starr"
 date: 2026-05-27
 draft: false
+weight: 2
 aliases:
   - /people/steven-starr/
 ---
