@@ -15,6 +15,7 @@ aliases:
 - [Will the new Freenet be backwards compatible with the old Freenet?](#will-the-new-freenet-be-backwards-compatible-with-the-old-freenet)
 - [Why was Freenet rearchitected and rebranded?](#why-was-freenet-rearchitected-and-rebranded)
 - [How does Freenet compare to other decentralized systems?](#how-does-freenet-compare-to-other-decentralized-systems)
+- [Does Freenet have decentralized domain names or DNS?](#does-freenet-have-decentralized-domain-names-or-dns)
 - [Who is behind Freenet?](#who-is-behind-freenet)
 - [How does Freenet handle harmful content?](#how-does-freenet-handle-harmful-content)
 - [What is the status of Freenet?](#what-is-the-status-of-freenet)
@@ -170,6 +171,30 @@ Freenet is fully decentralized, unlike federated systems where multiple entities
 servers. Moving from a centralized system to a federated one is like going from a dictatorship to
 feudalism; an improvement, but users still have to trust the system operators. Freenet eliminates
 this need for trust by distributing control, ensuring the sovereignty of each user.
+
+# Does Freenet have decentralized domain names or DNS? {#does-freenet-have-decentralized-domain-names-or-dns}
+
+Not currently, and largely by design. Domain names bundle together three separate jobs —
+identification, human-readable naming, and discovery — and we think DNS is the wrong abstraction for
+all three on a decentralized network:
+
+- **Identification:** Freenet identifies content and applications by contract hashes
+  (content-addressed keys). These are fully decentralized and cryptographically strong, but not
+  human-friendly.
+
+- **Human-readable naming:** This runs into
+  [Zooko's triangle](https://en.wikipedia.org/wiki/Zooko%27s_triangle) — a name can be at most two
+  of human-meaningful, secure, and decentralized. DNS buys memorability by being centralized.
+  Freenet favors petname-style local naming instead; a global human-readable namespace inevitably
+  forces either a central authority or a squatting land-grab.
+
+- **Discovery:** "Find the thing I want" is really a search problem, not a naming one, and search
+  and recommendation are a far better fit for it than a global namespace. This is what we're
+  designing in [Atlas](https://github.com/freenet/atlas), a decentralized discovery layer (still at
+  the design stage).
+
+So Freenet has no direct equivalent of decentralized domain names, because we don't think DNS is the
+right abstraction for either identification or discovery.
 
 # Who is behind Freenet? {#who-is-behind-freenet}
 
