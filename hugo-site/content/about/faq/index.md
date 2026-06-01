@@ -179,14 +179,16 @@ human-readable naming, and discovery. We think DNS is the wrong fit for all thre
 network.
 
 - **Identification:** Freenet identifies content and applications by contract hashes, which are
-  content-addressed keys. They're fully decentralized and cryptographically strong, but not
+  content-addressed keys. They're fully decentralized and cryptographically verifiable, but not
   human-friendly.
 
 - **Human-readable naming:** This is the problem captured by
   [Zooko's triangle](https://en.wikipedia.org/wiki/Zooko%27s_triangle): a name can be at most two of
   human-meaningful, secure, and decentralized. DNS gets memorability by being centralized. Freenet
-  prefers petname-style local naming instead. A global human-readable namespace tends to force
-  either a central authority or a race to squat every good name.
+  prefers local, personal naming instead: memorable nicknames each user keeps for the identities
+  they care about, like the contacts list on your phone (a "petname" system). Because the names are
+  personal rather than global, there's no central registry to control and no race to squat every
+  good name.
 
 - **Discovery:** "Find the thing I want" is really a search problem, not a naming one, and search and
   recommendation handle it better than a global namespace can. That's what we're designing in
