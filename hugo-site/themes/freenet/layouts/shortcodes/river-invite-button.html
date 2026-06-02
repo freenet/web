@@ -156,7 +156,11 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const apiUrl = window.ghostkeyApiUrl;
-    const riverBaseUrl = 'http://127.0.0.1:7509/v1/contract/web/raAqMhMG7KUpXBU2SxgCQ3Vh4PYjttxdSWd9ftV7RLv/';
+    // Use localhost rather than the literal 127.0.0.1 so the link works on
+    // Windows: the node binds its API on the IPv6 loopback by default, and
+    // Windows resolves "localhost" to ::1 (reachable) while the literal IPv4
+    // address is refused. localhost is reachable on every platform.
+    const riverBaseUrl = 'http://localhost:7509/v1/contract/web/raAqMhMG7KUpXBU2SxgCQ3Vh4PYjttxdSWd9ftV7RLv/';
 
     const getInviteBtn = document.getElementById('get-invite-btn');
     const inviteForm = document.getElementById('invite-form');

@@ -281,7 +281,10 @@ function displayCertificate(armoredCertificate, armoredSigningKey) {
         const certB64 = urlSafeBase64(armoredCertificate);
         const skB64 = urlSafeBase64(armoredSigningKey);
         const contractId = 'DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N';
-        const importUrl = `http://127.0.0.1:7509/v1/contract/web/${contractId}/#import=${certB64}.${skB64}`;
+        // Use localhost rather than the literal 127.0.0.1: the node binds its
+        // API on the IPv6 loopback by default, so on Windows "localhost" (::1)
+        // is reachable while the literal IPv4 address is refused.
+        const importUrl = `http://localhost:7509/v1/contract/web/${contractId}/#import=${certB64}.${skB64}`;
         window.open(importUrl, '_blank');
       });
     }
