@@ -33,6 +33,16 @@ Then point your browser or client at `http://127.0.0.1:7509/`. The traffic is
 authenticated and encrypted by SSH, and the node itself never exposes 7509 to
 anything other than loopback.
 
+> 💡 **This is the right option for browser apps like River.** Because your
+> browser loads the page from `http://127.0.0.1:7509/`, it sees a **localhost
+> origin**, which browsers treat as a
+> [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts).
+> Features that browsers permit only in a secure context, most visibly
+> **desktop notifications**, then work just as they do for a local node, with
+> no TLS certificate and no browser security warning. Reaching the same node
+> directly over plain HTTP at a non-loopback address (its LAN or overlay IP)
+> is *not* a secure context, so those features are silently disabled there.
+
 ## Option 2: Tailscale (or another private overlay)
 
 If you use [Tailscale](https://tailscale.com/), [WireGuard](https://www.wireguard.com/),
@@ -80,6 +90,13 @@ steps:
 
 With both set, the node will accept API requests from any device on your
 tailnet but continue to reject everything else.
+
+> ℹ️ **Browser apps still need a localhost origin.** With this option you open
+> the node at its overlay IP (for example `http://100.64.1.5:7509/`), which is
+> a non-localhost origin and therefore *not* a secure context. Secure-context
+> browser features such as desktop notifications will not work there. If you
+> need them, use the SSH tunnel (Option 1) so the browser sees a `127.0.0.1`
+> origin, or terminate HTTPS in front of the node with a real certificate.
 
 ### What the allowlist does *not* do
 
