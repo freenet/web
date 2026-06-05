@@ -6,6 +6,9 @@ aliases:
   - /resources/manual/contract-interface/
 ---
 
+This page documents the Rust contract-authoring API. To connect a user interface to a node, see
+[Client SDKs](/build/manual/#client-sdks).
+
 ## Terms
 
 - [Contract State](/build/manual/glossary#contract-state) - data associated with a contract that can be

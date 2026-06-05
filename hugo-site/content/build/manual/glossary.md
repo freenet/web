@@ -8,10 +8,10 @@ aliases:
 
 ## Application
 
-Software that uses Freenet as a back-end. This includes native software distributed independenly of
+Software that uses Freenet as a back-end. This includes native software distributed independently of
 Freenet but which uses Freenet as a back-end (perhaps bundling Freenet), and
-[web applications](/manual/glossary#web-application) that are distributed over Freenet and run in a
-web browser.
+[web applications](/build/manual/glossary#web-application) that are distributed over Freenet and run
+in a web browser.
 
 ## Contract
 
@@ -27,7 +27,7 @@ contract is to determine:
 A contract that contains an application or component as state, accessed through the web proxy.
 
 For example, if the contract id is `6C2KyVMtqw8D5wWa8Y7e14VmDNXXXv9CQ3m44PC9YbD2` then visiting
-`http://localhost:PORT/contract/web/6C2KyVMtqw8D5wWa8Y7e14VmDNXXXv9CQ3m44PC9YbD2` will cause the
+`http://localhost:7509/v1/contract/web/6C2KyVMtqw8D5wWa8Y7e14VmDNXXXv9CQ3m44PC9YbD2/` will cause the
 application/component to be retrieved from Freenet, decompressed, and sent to the browser where it
 can execute.
 
@@ -49,8 +49,8 @@ Represents a modification to some state - similar to a [diff](https://en.wikiped
 source code. The exact format of a delta is determined by the contract. A contract will determine
 whether a delta is valid - perhaps by verifying it is signed by someone authorized to modify the
 contract state. A delta may be created in response to a
-[State Summary](/manual/glossary#state-summary) as part of the
-[State Synchronization](/manual/glossary#state-synchronization) mechanism.
+[State Summary](/build/manual/glossary#state-summary) as part of the
+[State Synchronization](/build/manual/glossary#state-synchronization) mechanism.
 
 ## Parameters
 
@@ -66,9 +66,9 @@ contain the same state. In the original Freenet, this was known as a
 ## State Summary
 
 Given a contract state, this is a small piece of data that can be used to determine a
-[delta](/manual/glossary#delta) between two contracts as part of the
-[state synchronization](/manual/glossary#state-synchronization) mechanism. The format of a state
-summary is determined by the state's contract.
+[delta](/build/manual/glossary#delta) between two contracts as part of the
+[state synchronization](/build/manual/glossary#state-synchronization) mechanism. The format of a
+state summary is determined by the state's contract.
 
 ## State Synchronization
 
@@ -81,7 +81,7 @@ efficiently merged over the network to ensure
 Software built on Freenet and distributed through Freenet.
 
 Applications run in the browser and can be built with tools like React, TypeScript, and Vue.js. An
-application may use multiple components and [contracts](/manual/glossary#contract).
+application may use multiple components and [contracts](/build/manual/glossary#contract).
 
 Applications are compressed and distributed via a
-[container contract](/manual/glossary#container-contract).
+[container contract](/build/manual/glossary#container-contract).

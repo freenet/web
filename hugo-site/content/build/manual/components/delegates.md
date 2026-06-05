@@ -79,7 +79,7 @@ Beyond handling messages, delegates can create, read, and modify contracts; crea
 
 A **key manager delegate** stores private keys and signs data on request, possibly prompting the user for permission. An **inbox delegate** monitors an inbox contract, downloads new messages, decrypts them, and stores them privately for UIs to display. A **contacts delegate** stores and retrieves contact information. An **alerts delegate** watches for events (like mentions in a discussion) and notifies the user.
 
-Delegates store their state encrypted on the local device. Recent prior values are kept as snapshots so accidental overwrites can be recovered. Cross-device synchronization is not yet implemented — see [issue #3050](https://github.com/freenet/freenet-core/issues/3050) for the planned vault-delegate primitive.
+Delegates store their state encrypted on the local device. Recent prior values are kept as snapshots so accidental overwrites can be recovered. Cross-device synchronization is not yet implemented; see [issue #3050](https://github.com/freenet/freenet-core/issues/3050) for the planned vault-delegate primitive.
 
 For a real-world example, River's [chat delegate](https://github.com/freenet/river/tree/main/delegates/chat-delegate) stores per-room signing keys and signs messages, invitations, and room configurations on behalf of the UI, without ever exposing the keys.
 

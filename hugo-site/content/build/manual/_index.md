@@ -19,10 +19,11 @@ usage. Use the table of contents below to navigate through the manual.
 2. [Components](#components)
 3. [Architecture](#architecture)
 4. [Developer Guide](#developer-guide)
-5. [Examples](#examples)
-6. [Community and Support](#community-and-support)
-7. [Reference](#reference)
-8. [Further reading](#further-reading)
+5. [Client SDKs](#client-sdks)
+6. [Examples](#examples)
+7. [Community and Support](#community-and-support)
+8. [Reference](#reference)
+9. [Further reading](#further-reading)
 
 ---
 
@@ -34,7 +35,7 @@ Learn the basics of Freenet and its purpose.
 
 ---
 
-## Components
+## Components {#components}
 
 Explore the key components of Freenet:
 
@@ -60,15 +61,31 @@ Understand Freenet's architecture and how it works:
 Resources for building on Freenet:
 
 - [Publish a Website](publish-a-website): Host a static website on Freenet -- no coding required.
-- [Remote Access to a Node](remote-access): Safely reach your local node's API from another device (SSH tunnel, Tailscale).
+- [Remote Access to a Node](remote-access): Safely reach your local node's API from another device
+  (SSH tunnel, Tailscale).
 - [Tutorial: Create an App](tutorial): Step-by-step guide to creating a decentralized app.
-- [Contract Interfaces](contract-interface): Reference for contract interfaces.
+- [Contract Interfaces](contract-interface): The Rust contract-authoring API (`ContractInterface`).
+  Full API on [docs.rs](https://docs.rs/freenet-stdlib).
 - [Manifest Format](manifest): Details about the `freenet.toml` configuration format.
+
+---
+
+## Client SDKs {#client-sdks}
+
+Libraries for connecting a user interface to a Freenet node over WebSocket:
+
+- [TypeScript SDK](typescript-sdk): The browser/Node.js client -- `@freenetorg/freenet-stdlib`.
+  Recommended for most UIs.
+- Rust client (Dioxus): use `freenet-stdlib` with the `net` feature; see
+  [docs.rs](https://docs.rs/freenet-stdlib) and [River](https://github.com/freenet/river) for the
+  reference implementation.
 
 ---
 
 ## Examples {#examples}
 
+- [Example Apps](example-app): Canonical apps to learn from -- freenet-ping (minimal Rust), Raven
+  (TypeScript + Vite), and River (Dioxus).
 - [Antiflood Tokens](examples/antiflood-tokens)
 - [Blind Trust Tokens](examples/blind-trust-tokens)
 
@@ -97,8 +114,7 @@ Deep-dive articles on the design principles behind Freenet's architecture:
 - [Understanding Small World Networks](/build/manual/further-reading/small-world-networks/): the
   routing intuition behind the P2P network. How Freenet finds destinations in just a few hops
   without a central index.
-- [Understanding Freenet's Delta-Sync](/build/manual/further-reading/delta-sync/): how shared
-  state stays consistent across the network using mergeable, additive updates rather than full
-  snapshots.
+- [Understanding Freenet's Delta-Sync](/build/manual/further-reading/delta-sync/): how shared state
+  stays consistent across the network using mergeable, additive updates rather than full snapshots.
 
 See [Further reading](/build/manual/further-reading/) for the full collection.

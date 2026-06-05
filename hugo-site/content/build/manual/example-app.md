@@ -1,130 +1,66 @@
 ---
-title: "Example App"
+title: "Example Apps"
 date: 2025-04-13
 draft: false
 aliases:
   - /resources/manual/example-app/
 ---
 
-# Build freenet from source on Linux:
+The fastest way to learn how a Freenet application fits together (contract, optional delegate, and
+UI) is to read a working one. These are the canonical examples, from smallest to most complete:
 
-There is a single line command to build all freenet on Linux.
+- **[freenet-ping](https://github.com/freenet/freenet-core/tree/main/apps/freenet-ping)**: the
+  smallest useful app. A Rust contract plus a small CLI that publishes, updates, and subscribes.
+  Best for understanding the contract lifecycle without any UI.
+- **[Raven](https://github.com/freenet/raven)**: a decentralized microblogging app and a complete
+  **TypeScript + Vite** frontend built on the
+  [`@freenetorg/freenet-stdlib`](https://www.npmjs.com/package/@freenetorg/freenet-stdlib) SDK. The
+  reference for a browser frontend.
+- **[River](https://github.com/freenet/river)**: a production decentralized group-chat app with a
+  **Dioxus** (Rust → WebAssembly) UI and a chat delegate. The reference for the patterns in the
+  [tutorial](/build/manual/tutorial/).
 
-```
-git clone https://github.com/freenet/freenet-core && .\build-all.sh
-```
+For a step-by-step walkthrough of building your own app, follow the
+[tutorial](/build/manual/tutorial/).
 
-then you could test it by building and deploying any web application:
-
-```
-.\build-examples.sh
-```
-
-.
-
-# Build freenet from source on Linux from command line:
-
-You could also run this:
-
-```bash
-wget https://sh.rustup.rs ; sh index.html -y &&\
-  source "$HOME/.cargo/env" &&\
-  rustup default stable &&\
-  rustup target add wasm32-unknown-unknown &&\
-  (sh curl -L https://git.io/n-install | bash) ; ~/n/bin/n latest ; ~/n/bin/npm install -g typescript webpack &&\
-  git clone https://github.com/freenet/freenet-core/ &&\
-  cd freenet-core &&\
-  git submodule update --init --recursive &&\
-  export CARGO_TARGET_DIR="$(pwd)/target" &&\
-  cd stdlib/typescript/ &&\
-  npm run dev.package &&\
-  cd ../.. &&\
-  cargo install --path crates/core --force &&\
-  cargo install --path crates/fdev --force &&\
-  cd ./modules/identity-management/ &&\
-  make build &&\
-  cd ../antiflood-tokens/ &&\
-  rm Cargo.lock ; make build &&\
-  cd ../../apps/freenet-email-app &&\
-  make build
-```
-
-Let's decompose this:
-
-Install rust:
+## Prerequisites
 
 ```bash
-wget https://sh.rustup.rs ; sh index.html -y && source "$HOME/.cargo/env"
+# Rust toolchain + the WebAssembly target
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+rustup target add wasm32-unknown-unknown
+
+# The Freenet node and the fdev developer tool
+git clone https://github.com/freenet/freenet-core.git
+cd freenet-core
+cargo install --path crates/core   # `freenet` (the node)
+cargo install --path crates/fdev   # `fdev` (publish/dev tooling)
 ```
 
-then select rustup toolchain and add webasm target with:
+A TypeScript UI (such as Raven) additionally needs [npm](https://www.npmjs.com/); the SDK is pulled
+in with `npm install @freenetorg/freenet-stdlib`.
 
-```
-rustup default stable && rustup target add wasm32-unknown-unknown
-```
+## Running freenet-ping
 
-Install `n` tu update typescript latter:
+`freenet-ping` ships a small Makefile. From `apps/freenet-ping` in the freenet-core checkout:
 
-```
-sh curl -L https://git.io/n-install | bash)
-```
+```bash
+# Start a local node in another terminal first:
+freenet local
 
-Update `npm`. Warning: required! You must do that to have the latest npm packages.
+# Build the contract and CLI
+make -f run-ping.mk build
 
-```
-~/n/bin/n latest
-```
-
-Install typescript and `webpack` to `build` `freenet-email-app` example.
-
-```
-~/n/bin/npm install -g typescript webpack
+# Run against the local node's WebSocket API port
+make -f run-ping.mk run WS_PORT=7509
 ```
 
-clone the project:
+The app generates a random name and sends an update every second, logging the responses it receives
+from the contract. See the
+[freenet-ping README](https://github.com/freenet/freenet-core/tree/main/apps/freenet-ping) for the
+full set of options.
 
-`git clone https://github.com/freenet/freenet-core/ && cd freenet-core &&  git submodule update --init --recursive`
+## Publishing a website
 
-set the build environment part (mandatory):
-
-```
-export CARGO_TARGET_DIR="$(pwd)/target"
-```
-
-build typescript stdlib.
-
-```
-cd stdlib/typescript/ && npm run dev.package && cd ../..
-```
-
-Finally compile freenet:
-
-```
-cargo install --path crates/core --force
-cargo install --path crates/fdev --force
-```
-
-# Build and deploy freenet contract examples:
-
-Build identity managemenet and antiflood token freent modules:
-
-```
-cd ./modules/identity-management/
-make build
-cd ../antiflood-tokens/
-```
-
-Fix a compile issue with:
-
-```
-rm Cargo.lock
-```
-
-```
-make build
-```
-
-```
-cd ../../apps/freenet-email-app
-make build
-```
+To wrap a static site or a built UI in a signed web container and serve it over Freenet, see
+[Publish a Website](/build/manual/publish-a-website/).

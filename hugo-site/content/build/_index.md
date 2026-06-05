@@ -14,17 +14,20 @@ peer-to-peer network with no servers to maintain.
 
 - [Tutorial](/build/manual/tutorial/) - Build your first Freenet app
 - [Manual](/build/manual/) - Architecture, components, and reference
+- [TypeScript SDK](/build/manual/typescript-sdk/) - Connect a browser or Node.js UI to a node with `@freenetorg/freenet-stdlib`
 
 ## AI-Assisted Development
 
-Install the [freenet-dapp-builder](https://github.com/freenet/freenet-agent-skills/tree/main/skills/dapp-builder) skill for Claude Code:
+Install the [dapp-builder](https://github.com/freenet/freenet-agent-skills/tree/main/skills/dapp-builder) skill for Claude Code:
 
 ```bash
 /plugin marketplace add freenet/freenet-agent-skills
-/plugin install freenet-dapp-builder
+/plugin install freenet@freenet-agent-skills
 ```
 
-This skill guides you through building contracts, delegates, and UI for Freenet apps.
+This installs the `freenet` plugin, whose `dapp-builder` skill guides you through building
+contracts, delegates, and UI for Freenet apps. The plugin also bundles `local-dev` and other
+development skills.
 
 ## Developer Tools
 

@@ -70,5 +70,5 @@ CONTRACT_SRC_DIR=./web /location/of/freenet/docker/fdev.sh build
 From the base directory of the contract project.
 
 ```sh
-/location/of/freenet/docker/fdev.sh publish --code target/wasm32-unknown-unknown/release/freenet_microblogging_web.wasm --state web/build/freenet/contract-state
+/location/of/freenet/docker/fdev.sh publish --code target/wasm32-unknown-unknown/release/my_contract.wasm contract --state web/build/freenet/contract-state
 ```
