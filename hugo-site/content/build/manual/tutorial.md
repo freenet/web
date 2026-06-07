@@ -107,13 +107,14 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 rustup target add wasm32-unknown-unknown
 ```
 
-### Freenet
+### Freenet and fdev
 
 ```bash
 # Clone and build from source
 git clone https://github.com/freenet/freenet-core.git
 cd freenet-core
-cargo install --path crates/core
+cargo install --path crates/core   # installs `freenet` (the node)
+cargo install --path crates/fdev   # installs `fdev` (the developer tool used to publish)
 ```
 
 ### Build Tools
@@ -170,13 +171,17 @@ ciborium = "0.2.2"
 serde = { version = "1.0", features = ["derive"] }
 
 # Freenet
-freenet-scaffold = "0.2.1"
-freenet-scaffold-macro = "0.2.1"
-freenet-stdlib = { version = "0.1.30", features = ["contract"] }
+freenet-scaffold = "0.2"
+freenet-scaffold-macro = "0.2"
+freenet-stdlib = { version = "0.8", features = ["contract"] }
 
 # Your shared types
 my-app-common = { path = "common" }
 ```
+
+> Rather than copy version numbers that age, let Cargo fill in the current releases for you:
+> `cargo add freenet-stdlib --features contract` and `cargo add freenet-scaffold freenet-scaffold-macro`.
+> The latest versions are on [crates.io](https://crates.io/crates/freenet-stdlib).
 
 ---
 
@@ -381,8 +386,40 @@ impl DelegateInterface for Delegate {
 
 ## 7. UI Development
 
-The UI connects to the local Freenet Kernel via WebSocket to interact with contracts. River uses
-[Dioxus](https://dioxuslabs.com), a Rust framework that compiles to WebAssembly, giving you a
+The UI connects to the local Freenet Kernel via WebSocket to interact with contracts. You can use any
+web framework. There are two first-class paths: **TypeScript + Vite**, a standard web frontend using
+the published SDK, and **Dioxus**, a Rust framework that compiles to WebAssembly and shares code with
+your contracts. River uses Dioxus.
+
+### TypeScript + Vite
+
+Install the SDK from npm (the current release, no version pin needed):
+
+```bash
+npm install @freenetorg/freenet-stdlib
+```
+
+Connect to the node and interact with your contract. Derive the WebSocket URL from the page location
+so the app works wherever it is served from:
+
+```typescript
+import { FreenetWsApi, ContractKey, GetRequest, SubscribeRequest } from "@freenetorg/freenet-stdlib";
+
+const wsUrl = new URL(`ws://${location.host}/v1/contract/command`);
+const api = new FreenetWsApi(wsUrl, handler, ""); // empty auth: the container shell injects it
+
+const key = ContractKey.fromInstanceId("<base58-instance-id>");
+await api.get(new GetRequest(key, true));      // promise-based; also fires handler.onContractGet
+await api.subscribe(new SubscribeRequest(key, [])); // live updates via handler.onContractUpdateNotification
+```
+
+See [User Interface](/build/manual/components/ui/) for the full API (handler callbacks, updates, and
+Vite/CSP notes) and [Raven](https://github.com/freenet/raven) (a decentralized microblogging app)
+for a complete TypeScript + Vite reference.
+
+### Dioxus
+
+[Dioxus](https://dioxuslabs.com) is a Rust framework that compiles to WebAssembly, giving you a
 type-safe UI that shares code with your contracts.
 
 ### Basic Dioxus Component
@@ -440,7 +477,7 @@ args = ["test", "--workspace"]
 # Start Freenet in local mode (no network)
 freenet local
 
-# In another terminal, build and publish your contract
+# In another terminal, build your contract (see Deployment below to publish)
 cargo make build
 ```
 
@@ -467,8 +504,10 @@ After building, publish your contract to the network:
 
 ```bash
 # The contract WASM is in target/wasm32-unknown-unknown/release/
-freenet publish \
+# `-p 7509` targets the local node's WebSocket API port (7509 is the default).
+fdev -p 7509 publish \
     --code target/wasm32-unknown-unknown/release/my_contract.wasm \
+    contract \
     --state initial_state.cbor
 ```
 

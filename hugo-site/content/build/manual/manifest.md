@@ -11,7 +11,7 @@ the [TOML](https://toml.io/) format. Manifest files consist of the following sec
   - [type](#the-type-field): Contract type.
   - [lang](#the-lang-field): Contract source language.
   - [output_dir](#the-output_dir-field): Output path for build artifacts.
-- [[webapp]](#the-contract-section): Configuration for UI component containers.
+- [[webapp]](#the-webapp-section): Configuration for UI component containers.
 - [[state]](#the-state-section): Optionally seed a state.
 
 ## The `[contract]` section
@@ -28,9 +28,9 @@ The type of the contract being packaged. Currently the following types are suppo
 
 - `standard`, the default type, it can be elided. This is just a standard
   [contract](/build/manual/glossary#contract).
-- `webapp`, a web app [container contract](/build/manual/glossary#container-contract). Additionally to the
-  container contract the UI component source will be compiled and packaged as the state of the
-  contract.
+- `webapp`, a web app [container contract](/build/manual/glossary#container-contract). Additionally
+  to the container contract the UI component source will be compiled and packaged as the state of
+  the contract.
 
 ### The `lang` field
 
@@ -57,6 +57,12 @@ written to the relative directory `./build/freenet` from the manifest file direc
 ## The `[webapp]` section
 
 An optional section, only specified in case of `webapp` contracts.
+
+> **Two ways to package a UI.** The fields below let `fdev` build and bundle your web app while
+> packaging the container contract. Alternatively, and what the modern **TypeScript + Vite**
+> examples do, you build the UI yourself with your own tooling and publish the finished archive
+> directly with `fdev publish --webapp-archive`. See [User Interface](/build/manual/components/ui/)
+> and [Publish a Website](/build/manual/publish-a-website/).
 
 ### The `lang` field
 
@@ -135,7 +141,7 @@ posts = { path = "../contracts/posts" }
 
 An optional list of contract dependencies that will be embedded and available in the state of the
 contract. Each entry under this entry represents an alias to the contract code, it must include a
-`path` field that specifies the relative location of the dependency from this manifesto directory.
+`path` field that specifies the relative location of the dependency from this manifest directory.
 
 If dependencies are specified they will be compiled and appended to the contract state, under the
 `contracts` directory, and as such, become available from the HTTP gateway. A `dependencies.json`

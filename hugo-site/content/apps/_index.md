@@ -75,7 +75,8 @@ still at the RFC stage.
 
 Decentralized live social feed (posts, profiles, follows, likes), designed as
 a high-churn live surface that complements [Atlas](#atlas) for durable
-discovery and archival.
+discovery and archival. Built with TypeScript and Vite, Raven is also the
+reference frontend for the [TypeScript SDK](/build/manual/typescript-sdk/).
 
 {{< app-screenshot light="/images/apps/raven.png" alt="Raven microblogging interface" >}}
 
