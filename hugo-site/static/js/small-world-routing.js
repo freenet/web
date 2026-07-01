@@ -361,7 +361,7 @@ async function initVisualization() {
         if (playPauseBtn) {
             const icon = playPauseBtn.querySelector('i');
             if (icon) {
-                icon.className = 'fas fa-play';
+                icon.className = 'fnicon fnicon-play';
             }
         }
         
@@ -394,7 +394,7 @@ async function initVisualization() {
             const btn = document.getElementById('routingPlayPauseBtn');
             if (btn) {
                 const icon = btn.querySelector('i');
-                if (icon) icon.className = 'fas fa-play';
+                if (icon) icon.className = 'fnicon fnicon-play';
             }
             if (routeTimeout) clearTimeout(routeTimeout);
         }
@@ -419,10 +419,10 @@ async function initVisualization() {
         }
         
         if (isPlaying) {
-            icon.className = 'fas fa-pause';
+            icon.className = 'fnicon fnicon-pause';
             startNewRoute();
         } else {
-            icon.className = 'fas fa-play';
+            icon.className = 'fnicon fnicon-play';
             clearTimeout(routeTimeout);
         }
     }

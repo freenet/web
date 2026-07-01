@@ -14,7 +14,7 @@
     .message {
       r: 5;
     }
-    svg {
+    .visualization-wrapper svg {
       display: block;
       margin: 0 auto;
       width: 100%;
@@ -41,7 +41,7 @@
         min-height: 450px;
         margin: 1rem auto;
       }
-      svg {
+      .visualization-wrapper svg {
         transform: scale(0.85);
         transform-origin: center top;
       }
@@ -52,7 +52,7 @@
     <div class="buttons is-centered" style="margin: 0.25rem;">
       <button id="resetConvergenceBtn" class="button is-medium">
         <span class="icon">
-          <i class="fas fa-undo"></i>
+          <i class="fnicon fnicon-reset"></i>
         </span>
         <span>Reset</span>
       </button>
@@ -210,7 +210,7 @@
     // Initialize visualization
     function initializeVisualization() {
       // Remove existing SVG if it exists
-      d3.select("svg").remove();
+      d3.select(".visualization-wrapper svg").remove();
       
       // Generate new tree data with current parameters
       const { width, height } = getContainerDimensions();

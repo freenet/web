@@ -359,7 +359,7 @@ waitForD3().then(() => {
             const btn = document.getElementById('scalePlayPauseBtn');
             if (btn) {
                 const icon = btn.querySelector('i');
-                if (icon) icon.className = 'fas fa-play';
+                if (icon) icon.className = 'fnicon fnicon-play';
             }
             if (animationFrame) cancelAnimationFrame(animationFrame);
         }
@@ -370,7 +370,7 @@ waitForD3().then(() => {
             isSimulating = true;
             const btn = document.getElementById('scalePlayPauseBtn');
             const icon = btn.querySelector('i');
-            icon.className = 'fas fa-pause';
+            icon.className = 'fnicon fnicon-pause';
             AnimationCoordinator.setActive('scale');
             
             async function step() {
@@ -420,7 +420,7 @@ waitForD3().then(() => {
                     isSimulating = false;
                     const btn = document.getElementById('scalePlayPauseBtn');
                     const icon = btn.querySelector('i');
-                    icon.className = 'fas fa-play';
+                    icon.className = 'fnicon fnicon-play';
                 }
             }
             
@@ -429,7 +429,7 @@ waitForD3().then(() => {
             isSimulating = false;
             const btn = document.getElementById('scalePlayPauseBtn');
             const icon = btn.querySelector('i');
-            icon.className = 'fas fa-play';
+            icon.className = 'fnicon fnicon-play';
             if (animationFrame) {
                 cancelAnimationFrame(animationFrame);
             }
@@ -483,7 +483,7 @@ waitForD3().then(() => {
         
         const btn = document.getElementById('scalePlayPauseBtn');
         const icon = btn.querySelector('i');
-        icon.className = 'fas fa-play';
+        icon.className = 'fnicon fnicon-play';
     }
     
 });

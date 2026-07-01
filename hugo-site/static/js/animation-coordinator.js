@@ -2,7 +2,10 @@
  * Global animation coordinator for managing multiple animations on a page.
  * Ensures only one animation is active at a time and handles state transitions.
  */
-const AnimationCoordinator = {
+// Guard against redeclaration: this file is included by more than one shortcode,
+// so a page using several animations loads it multiple times. Defining it once on
+// `window` keeps repeat includes from throwing "already declared" and preserves state.
+window.AnimationCoordinator = window.AnimationCoordinator || {
     /** @type {string|null} Current active animation name */
     activeAnimation: null,
     

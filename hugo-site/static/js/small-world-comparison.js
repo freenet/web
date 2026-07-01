@@ -406,7 +406,7 @@ waitForD3().then(() => {
             isPlaying = false;
             const btn = document.getElementById('comparisonPlayPauseBtn');
             const icon = btn.querySelector('i');
-            icon.className = 'fas fa-play';
+            icon.className = 'fnicon fnicon-play';
             return;
         }
 
@@ -425,7 +425,7 @@ waitForD3().then(() => {
             const btn = document.getElementById('comparisonPlayPauseBtn');
             if (btn) {
                 const icon = btn.querySelector('i');
-                if (icon) icon.className = 'fas fa-play';
+                if (icon) icon.className = 'fnicon fnicon-play';
             }
             if (animationFrame) cancelAnimationFrame(animationFrame);
         }
@@ -435,7 +435,7 @@ waitForD3().then(() => {
         isPlaying = !isPlaying;
         const btn = document.getElementById('comparisonPlayPauseBtn');
         const icon = btn.querySelector('i');
-        icon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+        icon.className = isPlaying ? 'fnicon fnicon-pause' : 'fnicon fnicon-play';
         
         if (isPlaying) {
             AnimationCoordinator.setActive('comparison');
@@ -451,7 +451,7 @@ waitForD3().then(() => {
         isPlaying = false;
         const btn = document.getElementById('comparisonPlayPauseBtn');
         const icon = btn.querySelector('i');
-        icon.className = 'fas fa-play';
+        icon.className = 'fnicon fnicon-play';
         
         if (animationFrame) {
             cancelAnimationFrame(animationFrame);
