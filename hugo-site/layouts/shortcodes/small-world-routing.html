@@ -15,4 +15,8 @@
         <canvas id="networkCanvas2" width="400" height="400" style="max-width: 70%; height: auto;"></canvas>
     </div>
 </div>
+<!-- routing.js calls AnimationCoordinator; load it here so this shortcode is
+     self-contained. The coordinator guards against duplicate declaration, so
+     it is safe even when sibling animation shortcodes also load it. -->
+<script src="/js/animation-coordinator.js"></script>
 <script src="/js/small-world-routing.js"></script>

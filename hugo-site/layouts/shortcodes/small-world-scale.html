@@ -1,4 +1,10 @@
 <div class="visualization-container">
+    <style>
+        /* D3 axis tick text and axis labels default to a black `fill`, which is
+           invisible on the dark canvas in dark mode. `currentColor` inherits the
+           page text color so the chart labels stay readable in both themes. */
+        #scalingChart text { fill: currentColor; }
+    </style>
     <div class="buttons has-addons is-centered" style="margin: 1rem;">
         <button id="scalePlayPauseBtn" class="button is-medium is-primary" aria-label="Play or pause the animation">
             <span class="icon">
