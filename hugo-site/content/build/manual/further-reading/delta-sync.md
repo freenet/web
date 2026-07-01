@@ -6,10 +6,6 @@ title: "Understanding Freenet's Delta-Sync"
 date: 2024-11-30
 draft: false
 tags: ["further-reading"]
-head:
-  - - link
-    - rel: stylesheet
-      href: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css
 ---
 
 ### The Challenge of Consistency in Distributed Systems

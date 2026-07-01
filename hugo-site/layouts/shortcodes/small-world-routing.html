@@ -1,13 +1,13 @@
 <div class="visualization-container">
     <div class="buttons has-addons is-centered" style="margin: 0.25rem;">
-        <button id="routingPlayPauseBtn" class="button is-medium is-primary">
+        <button id="routingPlayPauseBtn" class="button is-medium is-primary" aria-label="Play or pause the animation">
             <span class="icon">
-                <i class="fas fa-play"></i>
+                <i class="fnicon fnicon-play"></i>
             </span>
         </button>
-        <button id="resetRoutingBtn" class="button is-medium">
+        <button id="resetRoutingBtn" class="button is-medium" aria-label="Reset the animation">
             <span class="icon">
-                <i class="fas fa-undo"></i>
+                <i class="fnicon fnicon-reset"></i>
             </span>
         </button>
     </div>
@@ -15,4 +15,8 @@
         <canvas id="networkCanvas2" width="400" height="400" style="max-width: 70%; height: auto;"></canvas>
     </div>
 </div>
+<!-- routing.js calls AnimationCoordinator; load it here so this shortcode is
+     self-contained. The coordinator guards against duplicate declaration, so
+     it is safe even when sibling animation shortcodes also load it. -->
+<script src="/js/animation-coordinator.js"></script>
 <script src="/js/small-world-routing.js"></script>

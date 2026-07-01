@@ -6,10 +6,6 @@ title: "Understanding Small World Networks"
 date: 2024-11-25
 draft: false
 tags: ["further-reading"]
-head:
-  - - link
-    - rel: stylesheet
-      href: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css
 ---
 
 <div style="float: right; margin-left: 20px; margin-bottom: 10px; max-width: 300px; width: 100%;">

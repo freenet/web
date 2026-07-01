@@ -35,6 +35,10 @@
       text-align: center;
       font-weight: bold;
       margin-bottom: 1rem;
+      /* The peer box is a hardcoded light card in both themes; set an explicit
+         dark title color so it stays readable in dark mode (otherwise it
+         inherits the light body text color and nearly disappears). */
+      color: #363636;
     }
     .peer-icons {
       display: flex;
@@ -139,13 +143,13 @@
     <div class="buttons has-addons is-centered" style="margin-bottom: 0.5rem;">
       <button id="syncNextBtn" class="button is-medium is-primary">
         <span class="icon">
-          <i class="fas fa-step-forward"></i>
+          <i class="fnicon fnicon-next"></i>
         </span>
         <span>Next</span>
       </button>
       <button id="resetSyncBtn" class="button is-medium">
         <span class="icon">
-          <i class="fas fa-undo"></i>
+          <i class="fnicon fnicon-reset"></i>
         </span>
         <span>Reset</span>
       </button>
@@ -186,14 +190,14 @@
   <script>
     // Available FontAwesome icons for the visualization
     const availableIcons = [
-      { name: 'dog', class: 'fas fa-dog' },
-      { name: 'cat', class: 'fas fa-cat' },
-      { name: 'fish', class: 'fas fa-fish' },
-      { name: 'dove', class: 'fas fa-dove' },
-      { name: 'dragon', class: 'fas fa-dragon' },
-      { name: 'spider', class: 'fas fa-spider' },
-      { name: 'horse', class: 'fas fa-horse' },
-      { name: 'hippo', class: 'fas fa-hippo' }
+      { name: 'dog', class: 'fnicon fnicon-dog' },
+      { name: 'cat', class: 'fnicon fnicon-cat' },
+      { name: 'fish', class: 'fnicon fnicon-fish' },
+      { name: 'dove', class: 'fnicon fnicon-dove' },
+      { name: 'dragon', class: 'fnicon fnicon-dragon' },
+      { name: 'spider', class: 'fnicon fnicon-spider' },
+      { name: 'horse', class: 'fnicon fnicon-horse' },
+      { name: 'hippo', class: 'fnicon fnicon-hippo' }
     ];
 
     // State for each peer
