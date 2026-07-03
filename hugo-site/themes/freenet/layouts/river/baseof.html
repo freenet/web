@@ -61,7 +61,8 @@
     .rv-mark{ width:52px; height:52px; display:block; }
     .rv-wordmark{ font-family:var(--font-display); font-weight:700; font-size:2.2rem; letter-spacing:-.02em; color:var(--rv-ink); line-height:1; }
     .rv-brand-tag{ font-family:var(--font-display); font-weight:600; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--rv-ink-faint); border:1px solid var(--rv-line); border-radius:999px; padding:.28rem .62rem; margin-left:.25rem; }
-    .rv-sub{ font-size:1.2rem; color:var(--rv-ink-soft); margin:1.1rem 0 1.7rem; max-width:36ch; }
+    .rv-sub{ font-size:1.2rem; color:var(--rv-ink-soft); margin:1.1rem 0 .9rem; max-width:36ch; }
+    .rv-hero-note{ font-size:1rem; color:var(--rv-ink-soft); margin:0 0 1.6rem; max-width:44ch; }
     .rv-cta-row{ display:flex; gap:.8rem; flex-wrap:wrap; align-items:center; }
     .rv-reassure{ list-style:none; padding:0; margin:1.2rem 0 0; display:flex; gap:1.1rem; flex-wrap:wrap; font-size:.92rem; color:var(--rv-ink-faint); }
     .rv-reassure li{ display:inline-flex; gap:.45rem; align-items:center; }
@@ -138,6 +139,19 @@
     .rv-pv span{ color:var(--rv-ink-soft); font-size:.96rem; display:block; margin-top:.1rem; }
     .rv-privacy-note{ margin:1.7rem 0 0; font-size:.95rem; color:var(--rv-ink-soft); max-width:74ch; }
     @media (max-width:700px){ .rv-privacy{ grid-template-columns:1fr; } }
+
+    /* where-river-is-today status box */
+    .rv-status{ display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+    .rv-status-col{ background:var(--rv-card); border:1px solid var(--rv-line); border-radius:14px; padding:1.4rem 1.5rem; box-shadow:var(--rv-shadow); }
+    .rv-status-t{ font-size:1.05rem; font-weight:600; margin:0 0 .8rem; display:flex; align-items:center; gap:.5rem; }
+    .rv-status-t svg{ flex:0 0 auto; }
+    .rv-status-good{ color:#0b6e33; }
+    .rv-status-alpha{ color:#b45309; }
+    @media (prefers-color-scheme: dark){ .rv-status-good{ color:#34d17f; } .rv-status-alpha{ color:#fbbf24; } }
+    .rv-status-col ul{ margin:0; padding-left:1.15rem; }
+    .rv-status-col li{ color:var(--rv-ink-soft); font-size:.96rem; margin:.4rem 0; line-height:1.45; }
+    .rv-status-col li::marker{ color:var(--rv-ink-faint); }
+    @media (max-width:700px){ .rv-status{ grid-template-columns:1fr; } }
 
     /* final */
     .rv-alpha{ text-align:center; max-width:62ch; margin:0 auto 1.6rem; font-size:.95rem; color:var(--rv-ink-faint); }
