@@ -24,7 +24,7 @@ contributor disappears tomorrow. The fastest way to see Freenet in action: the
 
 {{< app-screenshot light="/images/apps/river.png" alt="River decentralized group chat interface" >}}
 
-→ [github.com/freenet/river](https://github.com/freenet/river)
+→ [Visit the River page](/river/) · [github.com/freenet/river](https://github.com/freenet/river)
 
 ### Delta {#delta}
 

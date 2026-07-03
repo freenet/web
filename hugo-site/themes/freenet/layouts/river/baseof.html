@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="{{ or site.Language.LanguageCode site.Language.Lang }}"
+      dir="{{ or site.Language.LanguageDirection `ltr` }}">
+<head>
+    {{ partial "head.html" . }}
+    {{/* Social card for /river */}}
+    <meta property="og:title" content="{{ .Title }}">
+    <meta property="og:description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Summary }}{{ end }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ .Permalink }}">
+    <meta property="og:image" content="{{ "images/river-screenshot-light.png" | absURL }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <style>
+    /* ===== River landing page (scoped to .river-page; loads only on /river) ===== */
+    .river-page{
+      --rv-brand:#0066CC; --rv-brand-deep:#004C99; --rv-brand-bright:#00a6ff;
+      --rv-band:#eef4fb; --rv-card:#ffffff;
+      --rv-ink:#0f1b2d; --rv-ink-soft:#48586b; --rv-ink-faint:#6b7a8d;
+      --rv-line:rgba(15,27,45,.09); --rv-brand-soft:rgba(0,102,204,.09); --rv-dot:#c8d2de;
+      --rv-shadow:0 1px 2px rgba(15,40,80,.05), 0 6px 18px rgba(15,40,80,.06);
+      --rv-shadow-l:0 12px 34px rgba(15,40,80,.12);
+    }
+    @media (prefers-color-scheme: dark){
+      .river-page{
+        --rv-band:#171b22; --rv-card:#1e222b;
+        --rv-ink:#f2f5f8; --rv-ink-soft:#aebccb; --rv-ink-faint:#93a2b3;
+        --rv-line:rgba(255,255,255,.10); --rv-brand:#4da6ff; --rv-brand-bright:#5cc0ff;
+        --rv-brand-soft:rgba(77,166,255,.14); --rv-dot:#3a424e;
+        --rv-shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.4);
+        --rv-shadow-l:0 14px 40px rgba(0,0,0,.55);
+      }
+    }
+
+    .rv-wrap{ max-width:1080px; margin:0 auto; padding:0 22px; }
+    .rv-section{ padding:4rem 0; }
+    .rv-band{ padding:4rem 0; background:var(--rv-band); border-top:1px solid var(--rv-line); border-bottom:1px solid var(--rv-line); }
+    .rv-eyebrow{ font-family:var(--font-display); font-weight:600; font-size:.8rem; letter-spacing:.13em; text-transform:uppercase; color:var(--rv-brand); margin:0 0 .7rem; }
+    .rv-h1{ font-size:clamp(2.4rem,5vw,3.4rem); font-weight:700; line-height:1.06; margin:0; letter-spacing:-.02em; text-wrap:balance; }
+    .rv-grad{ color:var(--rv-brand); }
+    .rv-h2{ font-size:clamp(1.7rem,3.4vw,2.3rem); font-weight:700; margin:0; text-wrap:balance; }
+    .rv-head{ margin-bottom:2.4rem; }
+    .rv-head-sub{ color:var(--rv-ink-soft); margin:.8rem 0 0; max-width:54ch; }
+    .rv-center{ text-align:center; }
+    .rv-center .rv-head-sub{ margin-left:auto; margin-right:auto; }
+
+    .rv-btn{ display:inline-flex; align-items:center; gap:.5rem; font-family:var(--font-display); font-weight:600; font-size:1.02rem; padding:.85rem 1.6rem; border-radius:10px; border:1.5px solid transparent; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease, background .15s ease; text-decoration:none; }
+    .rv-btn:hover{ transform:translateY(-1px); }
+    .rv-btn-primary{ background:#0b6e33; color:#fff!important; box-shadow:0 4px 14px rgba(11,110,51,.28); }
+    .rv-btn-primary:hover{ background:#095a2a; color:#fff!important; }
+    @media (prefers-color-scheme: dark){
+      .rv-btn-primary{ background:#34d17f; color:#06251a!important; box-shadow:0 4px 14px rgba(0,0,0,.4); }
+      .rv-btn-primary:hover{ background:#28b86c; color:#06251a!important; }
+    }
+    .rv-btn-ghost{ border-color:var(--rv-line); color:var(--rv-ink)!important; background:var(--rv-card); }
+
+    /* hero */
+    .rv-hero{ position:relative; overflow:hidden; }
+    .rv-hero::before{ content:""; position:absolute; inset:-30% -10% auto -10%; height:520px; background:radial-gradient(60% 70% at 72% 18%,var(--rv-brand-soft),transparent 70%); z-index:0; pointer-events:none; }
+    .rv-hero-grid{ position:relative; z-index:1; display:grid; grid-template-columns:1.02fr .98fr; gap:3rem; align-items:center; padding-top:3.6rem; padding-bottom:4rem; }
+    .rv-brandmark{ display:flex; align-items:center; gap:.55rem; margin-bottom:1.3rem; }
+    .rv-mark{ width:52px; height:52px; display:block; }
+    .rv-wordmark{ font-family:var(--font-display); font-weight:700; font-size:2.2rem; letter-spacing:-.02em; color:var(--rv-ink); line-height:1; }
+    .rv-brand-tag{ font-family:var(--font-display); font-weight:600; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--rv-ink-faint); border:1px solid var(--rv-line); border-radius:999px; padding:.28rem .62rem; margin-left:.25rem; }
+    .rv-sub{ font-size:1.2rem; color:var(--rv-ink-soft); margin:1.1rem 0 1.7rem; max-width:36ch; }
+    .rv-cta-row{ display:flex; gap:.8rem; flex-wrap:wrap; align-items:center; }
+    .rv-reassure{ list-style:none; padding:0; margin:1.2rem 0 0; display:flex; gap:1.1rem; flex-wrap:wrap; font-size:.92rem; color:var(--rv-ink-faint); }
+    .rv-reassure li{ display:inline-flex; gap:.45rem; align-items:center; }
+    .rv-tick{ color:var(--rv-brand); line-height:0; }
+    .rv-tick svg{ width:15px; height:15px; }
+    @media (max-width:860px){ .rv-hero-grid{ grid-template-columns:1fr; gap:2.2rem; padding-top:2.6rem; } }
+
+    /* browser frame */
+    .rv-browser{ border-radius:14px; overflow:hidden; box-shadow:var(--rv-shadow-l); border:1px solid var(--rv-line); background:var(--rv-card); }
+    .rv-chrome{ display:flex; align-items:center; gap:.5rem; padding:.6rem .85rem; border-bottom:1px solid var(--rv-line); }
+    .rv-chrome i{ width:11px; height:11px; border-radius:50%; background:var(--rv-dot); }
+    .rv-addr{ margin-left:.6rem; font-size:.78rem; color:var(--rv-ink-faint); background:var(--rv-band); border:1px solid var(--rv-line); border-radius:6px; padding:.22rem .7rem; display:inline-flex; align-items:center; gap:.4rem; }
+    .rv-browser picture{ display:block; }
+    .rv-browser img{ display:block; width:100%; height:auto; }
+
+    /* what-is */
+    .rv-whatis{ display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; align-items:center; }
+    .rv-whatis .rv-eyebrow{ margin-bottom:.5rem; }
+    .rv-whatis .rv-h2{ margin-bottom:1rem; }
+    .rv-lede{ font-size:1.25rem; line-height:1.5; color:var(--rv-ink); margin:0; }
+    .rv-lede strong{ color:var(--rv-brand); }
+    .rv-shapes{ display:grid; gap:.9rem; }
+    .rv-shape{ background:var(--rv-card); border:1px solid var(--rv-line); border-radius:12px; padding:1rem 1.15rem; box-shadow:var(--rv-shadow); }
+    .rv-shape-lbl{ font-family:var(--font-display); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--rv-ink-faint); }
+    .rv-flow{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin-top:.45rem; }
+    .rv-chip{ font-family:var(--font-display); background:var(--rv-brand-soft); color:var(--rv-brand); border-radius:7px; padding:.15rem .6rem; font-size:.86rem; font-weight:600; }
+    .rv-chip-gone{ background:transparent; color:var(--rv-ink-soft); border:1px dashed var(--rv-ink-faint); text-decoration:line-through; }
+    .rv-arw{ color:var(--rv-ink-faint); }
+    .rv-shape-note{ color:var(--rv-ink-soft); font-size:.85rem; }
+    @media (max-width:820px){ .rv-whatis{ grid-template-columns:1fr; gap:1.6rem; } }
+
+    /* pillars */
+    .rv-pillars{ display:grid; grid-template-columns:repeat(4,1fr); gap:1.2rem; }
+    .rv-pillar{ background:var(--rv-card); border:1px solid var(--rv-line); border-radius:14px; padding:1.5rem; box-shadow:var(--rv-shadow); }
+    .rv-ic{ color:var(--rv-brand); margin-bottom:.9rem; display:block; }
+    .rv-ic svg{ width:30px; height:30px; }
+    .rv-pillar-t{ font-size:1.12rem; font-weight:600; margin:0 0 .45rem; }
+    .rv-pillar p{ margin:0; font-size:.98rem; color:var(--rv-ink-soft); line-height:1.55; }
+    @media (max-width:900px){ .rv-pillars{ grid-template-columns:1fr 1fr; } }
+    @media (max-width:520px){ .rv-pillars{ grid-template-columns:1fr; } }
+
+    /* steps */
+    .rv-steps{ list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(3,1fr); gap:1.3rem; text-align:left; }
+    .rv-step{ background:var(--rv-card); border:1px solid var(--rv-line); border-radius:14px; padding:1.5rem 1.4rem; box-shadow:var(--rv-shadow); }
+    .rv-step-n{ font-family:var(--font-display); font-weight:700; font-size:1.6rem; color:var(--rv-brand); line-height:1; display:block; margin-bottom:.5rem; }
+    .rv-step-t{ font-size:1.08rem; font-weight:600; margin:0 0 .4rem; }
+    .rv-step p{ margin:0; font-size:.96rem; color:var(--rv-ink-soft); }
+    .rv-join-cta{ margin-top:2rem; }
+    @media (max-width:820px){ .rv-steps{ grid-template-columns:1fr; gap:1rem; } }
+
+    /* features */
+    .rv-features{ display:grid; grid-template-columns:1fr 1fr; gap:1.3rem 2.4rem; }
+    .rv-feat{ display:flex; gap:.85rem; }
+    .rv-fic{ color:var(--rv-brand); flex:0 0 auto; margin-top:.05rem; line-height:0; }
+    .rv-feat b{ font-family:var(--font-display); font-weight:600; }
+    .rv-feat span{ color:var(--rv-ink-soft); font-size:.96rem; display:block; margin-top:.1rem; }
+    @media (max-width:720px){ .rv-features{ grid-template-columns:1fr; } }
+
+    /* compare */
+    .rv-compare{ display:grid; gap:.7rem; }
+    .rv-crow{ display:grid; grid-template-columns:170px 1fr; gap:1.2rem; align-items:baseline; padding:.85rem 1.1rem; background:var(--rv-card); border:1px solid var(--rv-line); border-radius:11px; }
+    .rv-who{ font-family:var(--font-display); font-weight:600; }
+    .rv-what{ color:var(--rv-ink-soft); font-size:.98rem; }
+    .rv-crow-river{ background:var(--rv-brand-soft); border-color:transparent; }
+    .rv-crow-river .rv-who{ color:var(--rv-brand); }
+    .rv-crow-river .rv-what{ color:var(--rv-ink); }
+    @media (max-width:620px){ .rv-crow{ grid-template-columns:1fr; gap:.2rem; } }
+
+    /* privacy */
+    .rv-privacy{ display:grid; grid-template-columns:1fr 1fr; gap:1.1rem 2.4rem; }
+    .rv-pv{ display:flex; gap:.8rem; }
+    .rv-pv-k{ color:var(--rv-brand); flex:0 0 auto; margin-top:.05rem; line-height:0; }
+    .rv-pv b{ font-family:var(--font-display); }
+    .rv-pv span{ color:var(--rv-ink-soft); font-size:.96rem; display:block; margin-top:.1rem; }
+    .rv-privacy-note{ margin:1.7rem 0 0; font-size:.95rem; color:var(--rv-ink-soft); max-width:74ch; }
+    @media (max-width:700px){ .rv-privacy{ grid-template-columns:1fr; } }
+
+    /* final */
+    .rv-alpha{ text-align:center; max-width:62ch; margin:0 auto 1.6rem; font-size:.95rem; color:var(--rv-ink-faint); }
+    .rv-final-box{ background:linear-gradient(135deg,#0066CC,#004C99); color:#fff; border-radius:20px; padding:3.2rem 2rem; box-shadow:var(--rv-shadow-l); text-align:center; }
+    .rv-final-box .rv-h2{ color:#fff; }
+    .rv-final-box p{ color:rgba(255,255,255,.9); max-width:46ch; margin:.9rem auto 1.7rem; }
+    .rv-final-cta{ display:flex; gap:.8rem; justify-content:center; flex-wrap:wrap; }
+    .rv-btn-oncolor{ background:#fff; color:#0066CC!important; }
+    .rv-btn-oncolor:hover{ color:#004C99!important; }
+    .rv-btn-ghost-oncolor{ background:transparent; border-color:rgba(255,255,255,.55); color:#fff!important; }
+
+    @media (prefers-reduced-motion: reduce){ .river-page *{ transition:none!important; } }
+    </style>
+</head>
+{{/*
+  Dedicated base template for the River landing page.
+  Mirrors _default/baseof.html, but lets <main> run full-bleed so the page can
+  use edge-to-edge tinted bands like a product landing page. The site nav and
+  the institutional footer stay inside .container so they match every other
+  page. Keep this in sync with _default/baseof.html when the header/footer
+  wrapper changes.
+*/}}
+<body class="river-page">
+    <div class="container">
+        <header>
+            {{ partial "header.html" . }}
+        </header>
+    </div>
+    <main>
+        {{ block "main" . }}{{ end }}
+    </main>
+    <div class="container">
+        <footer>
+            {{ partial "footer.html" . }}
+            <div class="footer-content" style="text-align: center;">
+                <p>&copy; 2024-{{ now.Year }} Freenet Project Inc. src:
+                    <a href="https://github.com/freenet/web"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 98 96" style="vertical-align: middle;"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362l-.08-9.127c-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6C29.304 70.188 17.196 65.95 17.196 46.94c0-5.867 2.024-10.645 5.42-14.394-.572-1.143-2.347-6.845.486-14.23 0 0 4.447-1.47 14.56 5.54 4.204-1.226 8.733-1.796 13.19-1.796 4.457 0 8.986.57 13.19 1.796 10.112-6.847 14.56-5.54 14.56-5.54 2.833 7.385 1.058 13.087.486 14.23 3.396 3.749 5.42 8.527 5.42 14.394 0 19.01-11.944 23.248-23.403 24.472 1.862 1.633 3.477 4.745 3.477 9.572l-.08 14.232c0 1.303.89 2.852 3.316 2.362 19.412-6.518 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" fill="currentColor"/></svg> <span
+                            style="font-weight: 600;">freenet/web</span></a>.
+        </footer>
+    </div>
+</body>
+</html>
