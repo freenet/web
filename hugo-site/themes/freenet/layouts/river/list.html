@@ -14,8 +14,9 @@
       </div>
       <h1 class="rv-h1">Group chat with <span class="rv-grad">no company in the middle.</span></h1>
       <p class="rv-sub">River is group chat that lives on Freenet, a global peer-to-peer network, instead of anyone's servers. No company, no account, no phone number.</p>
+      <p class="rv-hero-note">Install a Freenet peer once, then join the live official room in your browser, where the developers hang out.</p>
       <div class="rv-cta-row">
-        <a class="rv-btn rv-btn-primary" href="{{ "quickstart/" | relURL }}">Try River
+        <a class="rv-btn rv-btn-primary" href="{{ "quickstart/" | relURL }}">Install Freenet &amp; Join River
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
         <a class="rv-btn rv-btn-ghost" href="#how">How it works</a>
@@ -130,7 +131,7 @@
       <li class="rv-step">
         <span class="rv-step-n">2</span>
         <h3 class="rv-step-t">Click an invite</h3>
-        <p>Get an invite to the official room, or from a friend. Rooms are invite-only, so you always know who let someone in.</p>
+        <p>Grab a free invite to the official room, no friend needed, or use one a friend sent you. Rooms are invite-only, so you always know who let someone in.</p>
       </li>
       <li class="rv-step">
         <span class="rv-step-n">3</span>
@@ -139,7 +140,7 @@
       </li>
     </ol>
     <div class="rv-center rv-join-cta">
-      <a class="rv-btn rv-btn-primary" href="{{ "quickstart/" | relURL }}">Try River
+      <a class="rv-btn rv-btn-primary" href="{{ "quickstart/" | relURL }}">Install Freenet &amp; Join River
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
     </div>
@@ -155,7 +156,8 @@
       <p class="rv-head-sub">Other systems decentralize to different degrees, but each one still puts something between you and the room.</p>
     </div>
     <div class="rv-compare">
-      <div class="rv-crow"><span class="rv-who">Discord, Signal</span><span class="rv-what">Central servers, operated by a company.</span></div>
+      <div class="rv-crow"><span class="rv-who">Discord, Slack</span><span class="rv-what">Central servers a company runs, and can read.</span></div>
+      <div class="rv-crow"><span class="rv-who">Signal</span><span class="rv-what">Excellent end-to-end message encryption, but a company still runs the servers that host and relay, and it wants your phone number.</span></div>
       <div class="rv-crow"><span class="rv-who">Matrix</span><span class="rv-what">Federated homeservers, each one still run by someone.</span></div>
       <div class="rv-crow"><span class="rv-who">Nostr</span><span class="rv-what">Relays, which are servers.</span></div>
       <div class="rv-crow"><span class="rv-who">Briar, Tox</span><span class="rv-what">Serverless, but device-to-device: both people must be online, and there's no shared room the network keeps for you.</span></div>
@@ -169,13 +171,13 @@
   <div class="rv-wrap">
     <div class="rv-head">
       <p class="rv-eyebrow">Features</p>
-      <h2 class="rv-h2">The essentials, working today</h2>
+      <h2 class="rv-h2">The essentials</h2>
     </div>
     <div class="rv-features">
       <div class="rv-feat"><span class="rv-fic">{{ partial "inline/rv-check.html" . }}</span><div><b>Real-time group chat</b><span>Live rooms that sync across every member as messages arrive.</span></div></div>
       <div class="rv-feat"><span class="rv-fic">{{ partial "inline/rv-check.html" . }}</span><div><b>Public &amp; private rooms</b><span>Public rooms anyone can read, or private rooms only members can decrypt.</span></div></div>
       <div class="rv-feat"><span class="rv-fic">{{ partial "inline/rv-check.html" . }}</span><div><b>One-click invite links</b><span>Share a link; it opens River and joins the recipient to the room.</span></div></div>
-      <div class="rv-feat"><span class="rv-fic">{{ partial "inline/rv-check.html" . }}</span><div><b>Invitation-tree moderation</b><span>Manage or ban anyone you invited, or anyone downstream of them.</span></div></div>
+      <div class="rv-feat"><span class="rv-fic">{{ partial "inline/rv-check.html" . }}</span><div><b>Invitation-tree moderation</b><span>If someone you invited causes trouble, ban them and everyone they brought in, in one click.</span></div></div>
       <div class="rv-feat"><span class="rv-fic">{{ partial "inline/rv-check.html" . }}</span><div><b>Command-line client</b><span><code>riverctl</code> drives rooms from a script, bots and agents included.</span></div></div>
     </div>
   </div>
@@ -199,15 +201,53 @@
   </div>
 </section>
 
+<!-- ============ WHERE RIVER IS TODAY (alpha honesty) ============ -->
+<section class="rv-band">
+  <div class="rv-wrap">
+    <div class="rv-head">
+      <p class="rv-eyebrow">Straight talk</p>
+      <h2 class="rv-h2">Where River is today</h2>
+      <p class="rv-head-sub">River and Freenet are alpha. Here's what works now and what to expect, so nothing surprises you after you install.</p>
+    </div>
+    <div class="rv-status">
+      <div class="rv-status-col">
+        <h3 class="rv-status-t rv-status-good">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          Works today
+        </h3>
+        <ul>
+          <li>Join the live official room</li>
+          <li>Create your own rooms</li>
+          <li>Public rooms, and end-to-end encrypted private rooms</li>
+          <li>One-click invite links</li>
+          <li>Command-line client (<code>riverctl</code>)</li>
+        </ul>
+      </div>
+      <div class="rv-status-col">
+        <h3 class="rv-status-t rv-status-alpha">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+          Still alpha
+        </h3>
+        <ul>
+          <li>Rough edges in the UI</li>
+          <li>Your Freenet peer sends diagnostic telemetry (peer activity, general system info) to help debug the network</li>
+          <li>Metadata isn't hidden: whether a room exists, its size, and message timing are observable</li>
+          <li>Not for sensitive communications yet</li>
+          <li>The network changes fast, and peers auto-update</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ===================== FINAL CTA ===================== -->
 <section class="rv-section rv-final">
   <div class="rv-wrap">
-    <p class="rv-alpha">River and Freenet are alpha: early software on an early network. Expect rough edges, and come tell us about them in the room.</p>
     <div class="rv-final-box">
       <h2 class="rv-h2">The developers are in the room right now</h2>
       <p>Join the official room where Freenet's developers and users hang out. It's the fastest way to see peer-to-peer chat working.</p>
       <div class="rv-final-cta">
-        <a class="rv-btn rv-btn-oncolor" href="{{ "quickstart/" | relURL }}">Try River
+        <a class="rv-btn rv-btn-oncolor" href="{{ "quickstart/" | relURL }}">Install Freenet &amp; Join River
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
         <a class="rv-btn rv-btn-ghost-oncolor" href="https://github.com/freenet/river">River on GitHub</a>

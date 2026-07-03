@@ -51,7 +51,8 @@ in just a few hops, scaling efficiently to millions of peers -- no servers requi
 ### For Users
 
 Freenet apps run in your browser and look like normal websites, but they can't be taken down,
-don't track you, and run peer-to-peer, not on the cloud.
+don't track you, and run peer-to-peer, not on the cloud. The easiest place to start is
+[River](/river/), decentralized group chat with no company in the middle.
 
 [Try it now →](/quickstart/)
 
@@ -85,6 +86,7 @@ decentralized internet infrastructure that matters.
 
 <div class="secondary-links">
 
+[River](/river/) ·
 [Apps](/apps/) ·
 [Video Talks](/about/video-talks/) ·
 [Matrix Chat](https://matrix.to/#/#freenet-locutus:matrix.org) ·
