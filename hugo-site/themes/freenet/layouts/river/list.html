@@ -12,8 +12,9 @@
         <span class="rv-wordmark">River</span>
         <span class="rv-brand-tag">built on Freenet</span>
       </div>
-      <h1 class="rv-h1">Group chat with <span class="rv-grad">no company in the middle.</span></h1>
-      <p class="rv-sub">River is group chat that lives on Freenet, a global peer-to-peer network, instead of anyone's servers. No company, no account, no phone number.</p>
+      <h1 class="rv-h1">Group chat you already know.<br><span class="rv-grad rv-h1-2">Without the company in the middle.</span></h1>
+      <p class="rv-sub">River feels familiar, like Signal or WhatsApp. But it runs on Freenet, a global network nobody controls, with no servers behind it.</p>
+      <p class="rv-punch">No account. No phone number. No one in the middle. Just you.</p>
       <p class="rv-hero-note">Install a Freenet peer once, then join the live official room in your browser, where the developers hang out.</p>
       <div class="rv-cta-row">
         <a class="rv-btn rv-btn-primary" href="{{ "quickstart/" | relURL }}">Install Freenet &amp; Join River
@@ -23,7 +24,6 @@
       </div>
       <ul class="rv-reassure">
         <li><span class="rv-tick">{{ partial "inline/rv-check.html" . }}</span> Quick, easy install</li>
-        <li><span class="rv-tick">{{ partial "inline/rv-check.html" . }}</span> No account, no phone number</li>
         <li><span class="rv-tick">{{ partial "inline/rv-check.html" . }}</span> Free and open source</li>
       </ul>
     </div>
@@ -151,17 +151,16 @@
 <section class="rv-section">
   <div class="rv-wrap">
     <div class="rv-head">
-      <p class="rv-eyebrow">Why not Matrix, Discord, or Signal?</p>
-      <h2 class="rv-h2">Everyone else runs a server, or keeps you online</h2>
-      <p class="rv-head-sub">Other systems decentralize to different degrees, but each one still puts something between you and the room.</p>
+      <p class="rv-eyebrow">Why not Signal, WhatsApp, or Matrix?</p>
+      <h2 class="rv-h2">Everyone else runs on servers someone controls</h2>
+      <p class="rv-head-sub">Any single operator can be pressured, subpoenaed, breached, or decide to cut you off. It doesn't take bad intent, just one point everyone has to trust. River has none.</p>
     </div>
     <div class="rv-compare">
-      <div class="rv-crow"><span class="rv-who">Discord, Slack</span><span class="rv-what">Central servers a company runs, and can read.</span></div>
-      <div class="rv-crow"><span class="rv-who">Signal</span><span class="rv-what">Excellent end-to-end message encryption, but a company still runs the servers that host and relay, and it wants your phone number.</span></div>
-      <div class="rv-crow"><span class="rv-who">Matrix</span><span class="rv-what">Federated homeservers, each one still run by someone.</span></div>
-      <div class="rv-crow"><span class="rv-who">Nostr</span><span class="rv-what">Relays, which are servers.</span></div>
-      <div class="rv-crow"><span class="rv-who">Briar, Tox</span><span class="rv-what">Serverless, but device-to-device: both people must be online, and there's no shared room the network keeps for you.</span></div>
-      <div class="rv-crow rv-crow-river"><span class="rv-who">River</span><span class="rv-what">Each room lives on Freenet itself: the network keeps the room for you, with no company server and no homeserver to run.</span></div>
+      <div class="rv-crow"><span class="rv-who">WhatsApp</span><span class="rv-what">Encrypted, but it runs on Meta's servers and identifies you by your phone number.</span></div>
+      <div class="rv-crow"><span class="rv-who">Signal</span><span class="rv-what">Excellent encryption, run by a nonprofit. But it still runs on central servers, and needs a phone number to sign up.</span></div>
+      <div class="rv-crow"><span class="rv-who">Discord, Slack</span><span class="rv-what">A company's servers, which it can read.</span></div>
+      <div class="rv-crow"><span class="rv-who">Matrix</span><span class="rv-what">Homeservers, each with an admin in charge.</span></div>
+      <div class="rv-crow rv-crow-river"><span class="rv-who">River</span><span class="rv-what">Runs on Freenet, a network no one controls.</span></div>
     </div>
   </div>
 </section>
@@ -236,6 +235,16 @@
           <li>The network changes fast, and peers auto-update</li>
         </ul>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== WHO BUILDS RIVER (nonprofit) ===================== -->
+<section class="rv-section">
+  <div class="rv-wrap">
+    <div class="rv-trust">
+      <h2 class="rv-trust-t">Built by a nonprofit, not an ad company</h2>
+      <p class="rv-trust-p">River and Freenet are built by Freenet Project Inc, a 501(c)(3) nonprofit. No ads, no investors, no business that runs on your data. Just open-source software that runs on a network its users own.</p>
     </div>
   </div>
 </section>
