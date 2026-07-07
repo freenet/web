@@ -128,9 +128,8 @@
     font-size: 0.9rem;
 }
 
-/* Hero spacing: group the pitch (headline + paragraph) tightly, then a clear
-   gap to the action group (button + try link + note), which is itself tight.
-   Even gaps made it unclear what grouped with what (the button floated). */
+/* Hero spacing: tight gap under the headline, then the action row (button + try
+   link) sits below with a clear separation. */
 .home > h1.title {
     margin-bottom: 0.9rem;
 }
