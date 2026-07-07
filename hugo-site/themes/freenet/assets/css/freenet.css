@@ -150,6 +150,34 @@
     color: #ffffff !important;
 }
 
+/* Secondary CTA: the hosted-demo "try in your browser" entry. Kept visually
+   subordinate to the primary Install button so the real (self-hosted) path
+   stays front and center. */
+.cta-secondary-wrap {
+    margin: -1rem 0 2rem 0;
+    max-width: 620px;
+}
+
+.cta-secondary {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: #0066CC;
+    text-decoration: none;
+}
+
+.cta-secondary:hover {
+    text-decoration: underline;
+}
+
+.cta-note {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: #64748b;
+}
+
 /* Global HTML and body styling */
 html {
     background-color: #F8FAFC;

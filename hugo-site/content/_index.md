@@ -9,7 +9,12 @@ Freenet is a peer-to-peer platform for decentralized applications: communication
 commerce without reliance on big tech. Your computer becomes part of a global network where apps
 are unstoppable, interoperable, and built on open protocols.
 
-<a href="/quickstart/" class="cta-button">Try Freenet</a>
+<a href="/quickstart/" class="cta-button">Install Freenet</a>
+
+<div class="cta-secondary-wrap">
+  <a href="https://try.freenet.org" class="cta-secondary">Or try it in your browser first →</a>
+  <span class="cta-note">A hosted demo so you can try Freenet without installing. It runs on our server, not the network, so when you're ready, run your own peer and bring your data along in one click.</span>
+</div>
 
 <div class="action-and-news">
 
