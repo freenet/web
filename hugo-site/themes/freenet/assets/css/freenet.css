@@ -128,10 +128,17 @@
     font-size: 0.9rem;
 }
 
+/* Hero spacing: group the pitch (headline + paragraph) tightly, then a clear
+   gap to the action group (button + try link + note), which is itself tight.
+   Even gaps made it unclear what grouped with what (the button floated). */
+.home > h1.title {
+    margin-bottom: 0.9rem;
+}
+
 /* Primary CTA button */
 .cta-button {
     display: inline-block;
-    margin: 1.5rem 0 2rem 0;
+    margin: 1.75rem 0 0 0;
     background: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
     color: #ffffff !important;
     border: none;
@@ -154,7 +161,7 @@
    subordinate to the primary Install button so the real (self-hosted) path
    stays front and center. */
 .cta-secondary-wrap {
-    margin: -1rem 0 2rem 0;
+    margin: 1rem 0 3.5rem 0;
     max-width: 620px;
 }
 
