@@ -135,10 +135,20 @@
     margin-bottom: 0.9rem;
 }
 
+/* Hero action row: the Install button and the secondary "try" link side by side,
+   vertically centered, wrapping to stacked on narrow screens. */
+.cta-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    margin: 1.75rem 0 3.5rem 0;
+}
+
 /* Primary CTA button */
 .cta-button {
     display: inline-block;
-    margin: 1.75rem 0 0 0;
+    margin: 0;
     background: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
     color: #ffffff !important;
     border: none;
@@ -160,11 +170,6 @@
 /* Secondary CTA: the hosted-demo "try in your browser" entry. Kept visually
    subordinate to the primary Install button so the real (self-hosted) path
    stays front and center. */
-.cta-secondary-wrap {
-    margin: 1rem 0 3.5rem 0;
-    max-width: 620px;
-}
-
 .cta-secondary {
     display: inline-block;
     font-family: var(--font-display);
@@ -177,22 +182,11 @@
     text-decoration: underline;
 }
 
-.cta-note {
-    display: block;
-    margin-top: 0.4rem;
-    font-size: 0.9rem;
-    line-height: 1.45;
-    color: #64748b;
-}
-
-/* Dark mode: match the site's existing link (#4da6ff) and muted-text (#94a3b8)
-   dark overrides so the new hero links aren't dim / low-contrast. */
+/* Dark mode: match the site's existing bright link color so the hero "try" link
+   isn't dim / low-contrast. */
 @media (prefers-color-scheme: dark) {
     .cta-secondary {
         color: #4da6ff;
-    }
-    .cta-note {
-        color: #94a3b8;
     }
 }
 
