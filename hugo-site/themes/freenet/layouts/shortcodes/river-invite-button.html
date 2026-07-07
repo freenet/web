@@ -118,7 +118,7 @@
 <div class="invite-container">
     <div id="invite-form">
         <p>Get your invite to <strong>{{ .Get "room" | default "Freenet Chat" }}</strong></p>
-        <button id="get-invite-btn" class="invite-btn invite-btn-primary">
+        <button id="get-invite-btn" class="invite-btn invite-btn-primary" data-river-base="{{ .Get "base" | default "http://localhost:7509/v1/contract/web/raAqMhMG7KUpXBU2SxgCQ3Vh4PYjttxdSWd9ftV7RLv/" }}">
             Get Invite Code
         </button>
     </div>
@@ -140,7 +140,11 @@
             <p class="note" style="margin-top: 0.5rem;">Run: <code>riverctl invite accept &lt;code&gt;</code></p>
         </details>
 
+        {{ if eq (.Get "hosted") "true" }}
+        <p class="note">This is a hosted demo running on our server, no install needed. River may take a moment to load the first time.</p>
+        {{ else }}
         <p class="note">Make sure Freenet is running. Please be patient, River may take a while to load when your peer first starts.</p>
+        {{ end }}
     </div>
 
     <div id="invite-error" style="display: none;">
@@ -160,7 +164,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Windows: the node binds its API on the IPv6 loopback by default, and
     // Windows resolves "localhost" to ::1 (reachable) while the literal IPv4
     // address is refused. localhost is reachable on every platform.
-    const riverBaseUrl = 'http://localhost:7509/v1/contract/web/raAqMhMG7KUpXBU2SxgCQ3Vh4PYjttxdSWd9ftV7RLv/';
+    // Default base is the user's LOCAL peer (post-install, quickstart flow); the
+    // try page passes base="https://try.freenet.org/.../" for the no-install demo.
+    // Read from the button's data attribute (HTML-attr escaping is well-defined;
+    // avoids the JS-context double-escaping Hugo does inside <script>).
+    const riverBaseUrl = document.getElementById('get-invite-btn').getAttribute('data-river-base');
 
     const getInviteBtn = document.getElementById('get-invite-btn');
     const inviteForm = document.getElementById('invite-form');

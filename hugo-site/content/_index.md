@@ -12,7 +12,7 @@ are unstoppable, interoperable, and built on open protocols.
 <a href="/quickstart/" class="cta-button">Install Freenet</a>
 
 <div class="cta-secondary-wrap">
-  <a href="https://try.freenet.org" class="cta-secondary">Or try it in your browser first →</a>
+  <a href="/try/" class="cta-secondary">Or try it in your browser first →</a>
   <span class="cta-note">A hosted demo so you can try Freenet without installing. It runs on our server, not the network, so when you're ready, run your own peer and bring your data along in one click.</span>
 </div>
 
