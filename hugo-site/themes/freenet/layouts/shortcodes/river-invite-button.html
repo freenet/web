@@ -117,9 +117,9 @@
 
 <div class="invite-container">
     <div id="invite-form">
-        <p>Get your invite to <strong>{{ .Get "room" | default "Freenet Chat" }}</strong></p>
-        <button id="get-invite-btn" class="invite-btn invite-btn-primary">
-            Get Invite Code
+        <p>Join <strong>{{ .Get "room" | default "Freenet Chat" }}</strong></p>
+        <button id="get-invite-btn" class="invite-btn invite-btn-primary" data-river-base="{{ .Get "base" | default "http://localhost:7509/v1/contract/web/raAqMhMG7KUpXBU2SxgCQ3Vh4PYjttxdSWd9ftV7RLv/" }}" data-one-click="{{ if eq (.Get "hosted") "true" }}1{{ end }}">
+            {{ .Get "cta" | default "Join the Freenet chat room" }}
         </button>
     </div>
 
@@ -140,7 +140,11 @@
             <p class="note" style="margin-top: 0.5rem;">Run: <code>riverctl invite accept &lt;code&gt;</code></p>
         </details>
 
+        {{ if eq (.Get "hosted") "true" }}
+        <p class="note">This is a hosted demo running on our server, no install needed. River may take a moment to load the first time.</p>
+        {{ else }}
         <p class="note">Make sure Freenet is running. Please be patient, River may take a while to load when your peer first starts.</p>
+        {{ end }}
     </div>
 
     <div id="invite-error" style="display: none;">
@@ -149,7 +153,7 @@
     </div>
 
     <div id="invite-loading" style="display: none;">
-        <p class="loading-text">Generating invite...</p>
+        <p class="loading-text">Joining the chat...</p>
     </div>
 </div>
 
@@ -160,9 +164,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Windows: the node binds its API on the IPv6 loopback by default, and
     // Windows resolves "localhost" to ::1 (reachable) while the literal IPv4
     // address is refused. localhost is reachable on every platform.
-    const riverBaseUrl = 'http://localhost:7509/v1/contract/web/raAqMhMG7KUpXBU2SxgCQ3Vh4PYjttxdSWd9ftV7RLv/';
+    // Default base is the user's LOCAL peer (post-install, quickstart flow); the
+    // try page passes base="https://try.freenet.org/.../" for the no-install demo.
+    // Read from the button's data attribute (HTML-attr escaping is well-defined;
+    // avoids the JS-context double-escaping Hugo does inside <script>).
+    const riverBaseUrl = document.getElementById('get-invite-btn').getAttribute('data-river-base');
 
     const getInviteBtn = document.getElementById('get-invite-btn');
+    // Hosted demo (/try/) joins in one click: mint, then navigate straight into
+    // River. Quickstart stays two-step (opens the LOCAL peer in a new tab and
+    // shows the raw code for riverctl users).
+    const oneClick = getInviteBtn.getAttribute('data-one-click') === '1';
     const inviteForm = document.getElementById('invite-form');
     const inviteResult = document.getElementById('invite-result');
     const inviteError = document.getElementById('invite-error');
@@ -210,13 +222,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const data = await response.json();
             const inviteCode = data.invite_code;
+            const riverUrl = `${riverBaseUrl}?invitation=${encodeURIComponent(inviteCode)}`;
 
-            // Set the invite link URL
-            inviteLink.href = `${riverBaseUrl}?invitation=${encodeURIComponent(inviteCode)}`;
+            if (oneClick) {
+                // Hosted demo: go straight into River, no second click.
+                window.location.href = riverUrl;
+                return;
+            }
 
-            // Show raw invite code for CLI users
+            // Two-step (quickstart): show the open link + the raw code for CLI users.
+            inviteLink.href = riverUrl;
             document.getElementById('invite-code-text').textContent = inviteCode;
-
             inviteLoading.style.display = 'none';
             inviteResult.style.display = 'block';
 

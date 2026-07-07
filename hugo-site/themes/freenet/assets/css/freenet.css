@@ -128,10 +128,17 @@
     font-size: 0.9rem;
 }
 
+/* Hero spacing: group the pitch (headline + paragraph) tightly, then a clear
+   gap to the action group (button + try link + note), which is itself tight.
+   Even gaps made it unclear what grouped with what (the button floated). */
+.home > h1.title {
+    margin-bottom: 0.9rem;
+}
+
 /* Primary CTA button */
 .cta-button {
     display: inline-block;
-    margin: 1.5rem 0 2rem 0;
+    margin: 1.75rem 0 0 0;
     background: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
     color: #ffffff !important;
     border: none;
@@ -148,6 +155,45 @@
     box-shadow: 0 6px 20px rgba(0, 127, 255, 0.35);
     transform: translateY(-1px);
     color: #ffffff !important;
+}
+
+/* Secondary CTA: the hosted-demo "try in your browser" entry. Kept visually
+   subordinate to the primary Install button so the real (self-hosted) path
+   stays front and center. */
+.cta-secondary-wrap {
+    margin: 1rem 0 3.5rem 0;
+    max-width: 620px;
+}
+
+.cta-secondary {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: #0066CC;
+    text-decoration: none;
+}
+
+.cta-secondary:hover {
+    text-decoration: underline;
+}
+
+.cta-note {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: #64748b;
+}
+
+/* Dark mode: match the site's existing link (#4da6ff) and muted-text (#94a3b8)
+   dark overrides so the new hero links aren't dim / low-contrast. */
+@media (prefers-color-scheme: dark) {
+    .cta-secondary {
+        color: #4da6ff;
+    }
+    .cta-note {
+        color: #94a3b8;
+    }
 }
 
 /* Global HTML and body styling */

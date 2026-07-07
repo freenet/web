@@ -27,7 +27,7 @@ browser.
 
 ## Step 2: Join the room
 
-Click below to get an invite to the **Freenet Official** room. Invites are limited to 5 per day.
+Click below to join the **Freenet Official** room. Invites are limited to 20 per day.
 
 {{< river-invite-button room="Freenet Official" >}}
 
