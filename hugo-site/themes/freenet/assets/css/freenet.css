@@ -185,6 +185,17 @@
     color: #64748b;
 }
 
+/* Dark mode: match the site's existing link (#4da6ff) and muted-text (#94a3b8)
+   dark overrides so the new hero links aren't dim / low-contrast. */
+@media (prefers-color-scheme: dark) {
+    .cta-secondary {
+        color: #4da6ff;
+    }
+    .cta-note {
+        color: #94a3b8;
+    }
+}
+
 /* Global HTML and body styling */
 html {
     background-color: #F8FAFC;
