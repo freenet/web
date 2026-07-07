@@ -9,8 +9,8 @@ peer-to-peer Freenet contract, and drops you into the live **Freenet Official** 
 project's developers and users talk. No account, no download.
 
 {{< alert type="warning" >}} **This is a hosted demo.** It runs on our server, so your data lives
-with us, not on your own machine. [Install your own peer](/quickstart/) anytime and export your data
-to it in one click. {{< /alert >}}
+with us. It's encrypted with your access key, so while you're not using it even we can't read it.
+[Install your own peer](/quickstart/) anytime and export your data to it in one click. {{< /alert >}}
 
 {{< river-invite-button room="Freenet Official" base="https://try.freenet.org/v1/contract/web/raAqMhMG7KUpXBU2SxgCQ3Vh4PYjttxdSWd9ftV7RLv/" hosted="true" >}}
 
