@@ -1,0 +1,40 @@
+<section style="display: flex; flex-direction: column; height: 100vh;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Being Honest About What It Protects</h2>
+
+  <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0;">
+    <div class="columns" style="width: 92%; gap: 2em; align-items: stretch;">
+
+      <div class="column" style="background: rgba(67,233,123,0.06); border: 1px solid rgba(67,233,123,0.35); border-radius: 12px; padding: 1.1em 1.3em;">
+        <p style="font-size: 0.95em; font-weight: 700; color: var(--freenet-green); margin-bottom: 0.5em;">&#10003;&nbsp; It protects</p>
+        <ul style="margin: 0;">
+          <li>Message content</li>
+          <li>Content from the peers that host the room</li>
+          <li>Content from removed members, after rotation</li>
+        </ul>
+      </div>
+
+      <div class="column fragment fade-up" style="background: rgba(250,112,154,0.06); border: 1px solid rgba(250,112,154,0.4); border-radius: 12px; padding: 1.1em 1.3em;">
+        <p style="font-size: 0.95em; font-weight: 700; color: var(--freenet-orange); margin-bottom: 0.5em;">&#10007;&nbsp; It does not hide</p>
+        <ul style="margin: 0;">
+          <li>That a room exists</li>
+          <li>Activity, timing, and message sizes</li>
+          <li>Membership and social-graph structure</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="fragment fade-up" style="flex-shrink: 0; text-align: center; font-size: 0.88em; color: rgba(255,255,255,0.65); margin: 0.3em 0 0;">
+    And no Signal-style per-message ratcheting &mdash; this is shared room state with key rotation, a different design
+  </p>
+
+  <aside class="notes">
+    <ul>
+      <li>I want to be precise here, especially with cryptographers in the room. Private rooms protect content. They do not make you anonymous.</li>
+      <li>The fact that a room exists, who is in it, when it's active, and roughly how big messages are -- that metadata is not hidden by this design.</li>
+      <li>And this isn't Signal's double-ratchet. It's a shared per-room key with rotation, which is a deliberately different trade-off, not a weaker version of the same thing.</li>
+      <li>Say plainly: if you want the strongest metadata and forward-secrecy guarantees for one-to-one messaging today, that's not what this is. This is a demonstration that private shared state can live on the network at all.</li>
+    </ul>
+  </aside>
+</section>

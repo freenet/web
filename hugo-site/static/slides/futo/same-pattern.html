@@ -1,0 +1,37 @@
+<section style="display: flex; flex-direction: column; height: 100vh;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">The Same Pattern, Every Time</h2>
+
+  <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; gap: 2.5em;">
+
+    <!-- The stack -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4em;">
+      <div style="background: rgba(52,152,219,0.12); border: 1px solid rgba(52,152,219,0.45); border-radius: 8px; padding: 0.55em 1.6em; text-align: center; font-size: 0.85em;">UI</div>
+      <span style="color: rgba(255,255,255,0.35);">&darr;</span>
+      <div style="background: rgba(67,233,123,0.12); border: 1px solid rgba(67,233,123,0.45); border-radius: 8px; padding: 0.55em 1.6em; text-align: center; font-size: 0.85em;">Freenet contract</div>
+      <span style="color: rgba(255,255,255,0.35);">&darr;</span>
+      <div style="background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.45); border-radius: 8px; padding: 0.55em 1.6em; text-align: center; font-size: 0.85em;">Signed / encrypted state</div>
+      <span style="color: rgba(255,255,255,0.35);">&darr;</span>
+      <div style="background: rgba(79,172,254,0.12); border: 1px solid rgba(79,172,254,0.45); border-radius: 8px; padding: 0.55em 1.2em; text-align: center; font-size: 0.8em;">Routing &bull; storage &bull; subscriptions &bull; updates</div>
+    </div>
+
+    <!-- The mapping -->
+    <div class="fragment fade-up" style="font-size: 0.82em;">
+      <p style="margin: 0.35em 0;"><span class="highlight" style="display:inline-block; width: 6.5em;">River</span> shared chat state</p>
+      <p style="margin: 0.35em 0;"><span class="highlight-green" style="display:inline-block; width: 6.5em;">Delta</span> signed publishing state</p>
+      <p style="margin: 0.35em 0;"><span class="highlight-purple" style="display:inline-block; width: 6.5em;">Atlas</span> a discovery index</p>
+      <p style="margin: 0.35em 0;"><span class="highlight" style="display:inline-block; width: 6.5em;">Mail</span> private inbox state</p>
+      <p style="margin: 0.35em 0;"><span class="highlight-orange" style="display:inline-block; width: 6.5em;">freenet-git</span> a Git repository</p>
+      <p style="margin: 0.35em 0;"><span class="highlight-orange" style="display:inline-block; width: 6.5em;">Raven</span> profiles, threads, feeds</p>
+    </div>
+
+  </div>
+
+  <aside class="notes">
+    <ul>
+      <li>This is the slide that ties the whole talk together. Every app on the ecosystem map is the same shape.</li>
+      <li>A UI on top. Under it a Freenet contract that defines the rules. Under that, signed or encrypted state. Under that, the network doing routing, storage, subscriptions, and update propagation.</li>
+      <li>Swap the top two boxes and you get a different app. The bottom half never changes -- that's the substrate everyone shares.</li>
+      <li>A River room and a Delta site are the same kind of object at the network layer. That's the thing we're actually trying to prove.</li>
+    </ul>
+  </aside>
+</section>

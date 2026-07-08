@@ -1,0 +1,40 @@
+<section style="display: flex; flex-direction: column; height: 100vh;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">AI That Allocates Attention</h2>
+
+  <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; gap: 2.4em;">
+
+    <!-- pipeline -->
+    <div style="display: flex; flex-direction: column; align-items: stretch; gap: 0.25em; font-size: 0.72em; min-width: 16em;">
+      <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15); border-radius: 7px; padding: 0.45em 0.8em; text-align: center;">GitHub issues</div>
+      <span style="text-align: center; color: rgba(255,255,255,0.3); line-height: 1;">&darr;</span>
+      <div style="background: rgba(79,172,254,0.1); border: 1px solid rgba(79,172,254,0.4); border-radius: 7px; padding: 0.45em 0.8em; text-align: center;">Claude assesses <b>value</b> &amp; <b>cost</b> in a real checkout</div>
+      <span style="text-align: center; color: rgba(255,255,255,0.3); line-height: 1;">&darr;</span>
+      <div style="background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.4); border-radius: 7px; padding: 0.45em 0.8em; text-align: center;">Pairwise ranking &rarr; Priority = Value &minus; Cost</div>
+      <span style="text-align: center; color: rgba(255,255,255,0.3); line-height: 1;">&darr;</span>
+      <div style="background: rgba(67,233,123,0.1); border: 1px solid rgba(67,233,123,0.4); border-radius: 7px; padding: 0.45em 0.8em; text-align: center;">Ranked project board</div>
+      <span style="text-align: center; color: rgba(255,255,255,0.3); line-height: 1;">&darr;</span>
+      <div style="background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.4); border-radius: 7px; padding: 0.45em 0.8em; text-align: center;">Agents fix the top-ranked issues</div>
+    </div>
+
+    <!-- why -->
+    <div class="fragment fade-up" style="max-width: 12em; font-size: 0.82em;">
+      <p style="margin: 0.6em 0; color: rgba(255,255,255,0.8);">Pairwise comparisons are steadier than asking an LLM for an absolute score.</p>
+      <p style="margin: 0.6em 0; color: rgba(255,255,255,0.8);">The board becomes an <span class="highlight">AI-readable control surface</span>.</p>
+    </div>
+
+  </div>
+
+  <p class="fragment fade-up" style="flex-shrink: 0; text-align: center; font-size: 0.82em; color: rgba(255,255,255,0.7); margin: 0.15em 0 0;">
+    Not just AI coding &mdash; AI project management with an explicit <span class="highlight-green">utility function</span>
+  </p>
+
+  <aside class="notes">
+    <ul>
+      <li>Short segment, 2-4 minutes, don't let it take over the talk.</li>
+      <li>We use AI not just to write code but to decide what to work on. Every open issue gets a value and a cost assessment, done by Claude reading the actual repo, cached by the issue's content hash so we don't re-run it.</li>
+      <li>Instead of asking an LLM for absolute scores -- which drift -- we do pairwise comparisons, which are far more stable. Priority is value minus cost, in log-odds space.</li>
+      <li>Those rankings get written to a GitHub project board. A triage skill reads the board, and autonomous debug-and-fix agents pick up the top-ranked issues.</li>
+      <li>The framing: the board becomes an AI-readable control surface. This is AI project management with an explicit utility function, not just AI autocomplete.</li>
+    </ul>
+  </aside>
+</section>
