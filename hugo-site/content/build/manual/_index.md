@@ -66,6 +66,8 @@ Resources for building on Freenet:
 - [Tutorial: Create an App](tutorial): Step-by-step guide to creating a decentralized app.
 - [Contract Interfaces](contract-interface): The Rust contract-authoring API (`ContractInterface`).
   Full API on [docs.rs](https://docs.rs/freenet-stdlib).
+- [Upgrading Contracts and Delegates](upgrading-contracts): Ship a new version without stranding
+  users' state and secrets under the old key.
 - [Manifest Format](manifest): Details about the `freenet.toml` configuration format.
 
 ---
