@@ -1,0 +1,41 @@
+<section style="display: flex; flex-direction: column; height: 100vh;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">How Atlas Works Today</h2>
+
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 0; gap: 1.3em;">
+
+    <!-- flow -->
+    <div style="display: flex; align-items: stretch; gap: 0.5em; width: 96%;">
+      <div style="flex: 1; background: rgba(250,112,154,0.1); border: 1px solid rgba(250,112,154,0.45); border-radius: 8px; padding: 0.7em 0.5em; text-align: center; font-size: 0.72em; display: flex; align-items: center; justify-content: center;">Crawler<br><span style="color: rgba(255,255,255,0.5);">(we run it)</span></div>
+      <span style="align-self: center; color: rgba(255,255,255,0.35);">&rarr;</span>
+      <div style="flex: 1; background: rgba(250,112,154,0.1); border: 1px solid rgba(250,112,154,0.45); border-radius: 8px; padding: 0.7em 0.5em; text-align: center; font-size: 0.72em; display: flex; align-items: center; justify-content: center;">An LLM<br>describes the page</div>
+      <span style="align-self: center; color: rgba(255,255,255,0.35);">&rarr;</span>
+      <div style="flex: 1; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.45); border-radius: 8px; padding: 0.7em 0.5em; text-align: center; font-size: 0.72em; display: flex; align-items: center; justify-content: center;">A signed<br>index entry</div>
+      <span style="align-self: center; color: rgba(255,255,255,0.35);">&rarr;</span>
+      <div style="flex: 1; background: rgba(67,233,123,0.12); border: 1px solid rgba(67,233,123,0.5); border-radius: 8px; padding: 0.7em 0.5em; text-align: center; font-size: 0.72em; display: flex; align-items: center; justify-content: center;">Index contract<br>on Freenet</div>
+      <span style="align-self: center; color: rgba(255,255,255,0.35);">&rarr;</span>
+      <div style="flex: 1; background: rgba(79,172,254,0.12); border: 1px solid rgba(79,172,254,0.5); border-radius: 8px; padding: 0.7em 0.5em; text-align: center; font-size: 0.72em; display: flex; align-items: center; justify-content: center;">Your browser<br>searches it</div>
+    </div>
+
+    <!-- honesty callout -->
+    <div class="fragment fade-up" style="display: flex; gap: 1.2em; width: 94%;">
+      <div style="flex: 1; background: rgba(250,112,154,0.06); border: 1px solid rgba(250,112,154,0.35); border-radius: 10px; padding: 0.8em 1em;">
+        <p style="font-size: 0.8em; font-weight: 700; color: var(--freenet-orange); margin: 0 0 0.3em;">Centralized today</p>
+        <p style="font-size: 0.78em; color: rgba(255,255,255,0.7); margin: 0;">One crawler, one describer &mdash; we run them. We decide what gets indexed.</p>
+      </div>
+      <div style="flex: 1; background: rgba(67,233,123,0.06); border: 1px solid rgba(67,233,123,0.35); border-radius: 10px; padding: 0.8em 1em;">
+        <p style="font-size: 0.8em; font-weight: 700; color: var(--freenet-green); margin: 0 0 0.3em;">Already decentralized</p>
+        <p style="font-size: 0.78em; color: rgba(255,255,255,0.7); margin: 0;">Storage, serving, and integrity &mdash; any node hosts, serves, and verifies the index.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <aside class="notes">
+    <ul>
+      <li>Here's the honest pipeline. A crawler we run fetches pages. An LLM writes a short title, summary, and tags for each one. That becomes a signed entry, which goes into an index contract that lives on Freenet. Your browser pulls the index and searches it locally.</li>
+      <li>Say the quiet part out loud: the crawler and the describing LLM, we run those. We currently decide what gets indexed. That's the centralized part, and I'm not going to hide it.</li>
+      <li>What's genuinely decentralized already: the index itself. Any node can host it, serve it, and verify it -- it's signed, so nobody has to trust the server they got it from.</li>
+      <li>The next slide is why this split matters -- it's not an accident, it's the whole design.</li>
+    </ul>
+  </aside>
+</section>
