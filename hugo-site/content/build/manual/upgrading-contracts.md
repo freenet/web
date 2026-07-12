@@ -4,19 +4,63 @@ date: 2026-07-10
 draft: false
 ---
 
-Freenet identifies a contract or delegate by the hash of its compiled WebAssembly. That gives the
-network its integrity guarantees, but it has a consequence every dApp author must plan for **before
-the first release**: when you rebuild, the key can change, and all of the state and secrets stored
-under the old key are left behind. This page explains why that happens, how to stop it happening by
-accident, and how to carry a user's data forward when you upgrade on purpose.
+Upgrading a Freenet contract or delegate is **low-risk and mechanical when you design for it.** A
+routine `freenet-stdlib` bump, a dependency update, or a code change is a one-line diff plus a
+republish; existing users keep their data, and their invites and share links keep working. River
+ships upgrades this way, and its 0.6→0.8 re-key on the live network went through with no room lost
+and no invite reissued. You do **not** recreate instances, rotate keys, or warn users that their
+links are dead. Recreation is only for one thing: deliberately changing the _owner_ identity (a
+compromised key, or a genuinely new instance), which is not what a routine contract or stdlib bump
+is.
+
+That "when you design for it" is one design decision, made **before the first release**: anchor your
+app's identity on a stable user/owner key, never on the contract key. Freenet derives a contract's
+key from its WASM, so a rebuild that changes the bytes changes the key. If your invites and
+addresses point at the _owner key_ instead, that key change is transparent: state migrates itself on
+the next load, and every reference that embeds the owner identity re-derives the new contract key on
+its own. This page shows how to get that property, the one operational step an upgrade requires
+(register the outgoing code hash, then republish), and what goes wrong if you skip the design
+decision.
 
 If you have not yet read [Contracts](/build/manual/components/contracts/) and
 [Delegates](/build/manual/components/delegates/), start there. This page assumes you know what
 contract state and delegate secrets are.
 
-## The hazard: a new WASM binary is a new key
+## What a re-key costs you: almost nothing, if you designed for it
 
-A contract's identity is derived entirely from its code and its parameters:
+When the WASM changes and the contract key moves, a dApp that anchored identity on the owner key
+sees the move as a no-op from the user's side. Concretely, on the next load:
+
+- **State migrates itself.** The updated client re-derives the new contract key from its bundled
+  WASM, reads the previous generation's state from the old key (found via a committed registry of
+  past code hashes — the "backward probe" in Step 3), folds it forward, and re-PUTs it under the new
+  key. This is permissionless: because the new contract's `validate_state` re-checks every byte, any
+  client can carry the state forward, not just the original author. Delegate secrets migrate locally
+  the same way.
+- **References that embed the owner key survive.** Invites, share links, room and membership
+  references, and any external service keyed on the owner identity keep working across the re-key,
+  because they carry the _owner key_, not the contract key — the client re-derives the new contract
+  key (`blake3(new_code_hash ‖ owner_key)`) from the unchanged owner identity. They do **not** die
+  on an upgrade. (River's invitation, for instance, embeds the room owner's verifying key, so a link
+  minted under 0.6 resolves correctly under 0.8.)
+- **The only required step is registration.** Before you ship the WASM change, add the _outgoing_
+  code hash to your legacy-hash registry (Step 3), then republish. No recreation, no key rotation,
+  no "your links are dead" notice.
+
+These are consequences of **designing for them**, not automatic properties of every Freenet app. You
+get them when you build in three things: identity derived from a stable key (not the contract key),
+state that is self-authorizing and backward-compatible (or transformed with a written carry-forward,
+which the [`freenet-migrate`](https://github.com/freenet/freenet-migrate) crate packages), and a
+legacy-hash registry the client can probe. The honest caveats: migration is **per-client, on next
+load** (not an instant network-wide flip), and a **fresh device has no local state to migrate** — it
+just derives the current key and starts clean. The rest of this page is how to build those three
+things in, and the reproducible-build discipline that keeps the key from moving by _accident_.
+
+## Under the hood: a new WASM binary is a new key
+
+The mechanical upgrade above works because of how keys are derived, and the same derivation is what
+strands data in an app that _didn't_ design for it. A contract's identity is derived entirely from
+its code and its parameters:
 
 ```text
 code_hash    = blake3(wasm)
@@ -37,17 +81,20 @@ logic". It includes:
 - building with a newer Rust compiler, or a different `wasm-opt`.
 
 So the key does not only move when you intend to ship a v2. It can move on an ordinary rebuild you
-thought was identical. When it does, the old state and the old delegate's secrets are still on the
-network, but under a key nothing points at anymore. From the user's side the data silently
-disappears: rooms vanish, an inbox comes up empty, saved sites are gone. This has bitten real
-Freenet apps (River repeatedly; Delta lost per-site data in April 2026), which is why it gets its
-own page.
+thought was identical. That is fine when you have designed for it — the migration in the previous
+section carries the state forward and the owner-key references still resolve. It is only a problem
+in an app that skipped that design: one that pinned identity to the contract key, or shipped no
+legacy-hash registry for the client to probe. There, the old state and the old delegate's secrets
+are still on the network, but under a key nothing points at anymore, and from the user's side the
+data silently disappears: rooms vanish, an inbox comes up empty, saved sites are gone. This has
+bitten real Freenet apps that hadn't yet built the machinery in (River early on; Delta lost per-site
+data in April 2026), which is why the design decision matters and gets its own page.
 
 There are two separate jobs here, and you need both:
 
 1. **Make your builds reproducible**, so the key changes _only_ when you decide it should.
-2. **Have a migration plan**, so that when the key _does_ change, existing users' data comes with
-   it.
+2. **Have a migration plan**, so that when the key _does_ change, existing users' data (and their
+   invites and links) comes with it.
 
 ## Step 1: Make builds reproducible
 
