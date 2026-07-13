@@ -1,7 +1,7 @@
 ---
-title: "Freenet Progress Update: Apps Without Platforms"
+title: "Freeing the Internet"
 date: 2026-07-17
-description: "Freenet has crossed from protocol to platform: River private rooms, browser onboarding, and Freenet-native apps whose backend is the network itself. A talk for FUTO."
+description: "A Freenet progress update: group chat, publishing, search, mail, and the other core internet services now running on Freenet, plus a no-install way to try them at try.freenet.org."
 author: "Ian Clarke"
 layout: single
 type: presentations
