@@ -1,21 +1,29 @@
 <section style="display: flex; flex-direction: column; height: 100%;">
   <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Atlas: Discovery Without a Gatekeeper</h2>
 
-  <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 0; gap: 1.3em;">
+  <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 2.2em; min-height: 0; width: 100%;">
 
-    <blockquote style="font-size: 0.95em; width: 86%; margin: 0;">
-      On the web, whoever runs discovery &mdash; Google, the app store, the feed &mdash; decides what you can find.
-      And they answer to advertisers, not to you.
-    </blockquote>
+    <!-- text -->
+    <div style="flex: 1; max-width: 600px; display: flex; flex-direction: column; gap: 1.0em;">
+      <blockquote style="font-size: 0.82em; width: 100%; margin: 0;">
+        On the web, whoever runs discovery &mdash; Google, the app store, the feed &mdash; decides what you can find.
+        And they answer to advertisers, not to you.
+      </blockquote>
+      <p style="font-size: 0.92em; color: rgba(255,255,255,0.88); margin: 0;">
+        Atlas is Freenet's discovery layer: a <span class="highlight-purple">public index anyone can host and verify</span>,
+        with no company between you and what you're looking for.
+      </p>
+      <p style="font-size: 0.8em; color: rgba(255,255,255,0.6); margin: 0;">
+        The aim: rankings <span class="highlight">you</span> choose, not an algorithm you can't see.
+      </p>
+    </div>
 
-    <p class="fragment fade-up" style="font-size: 1.05em; color: rgba(255,255,255,0.88); text-align: center; max-width: 840px;">
-      Atlas is Freenet's discovery layer: a <span class="highlight-purple">public index anyone can host and verify</span>,
-      built so no company sits between you and what you're looking for.
-    </p>
-
-    <p class="fragment fade-up" style="font-size: 0.9em; color: rgba(255,255,255,0.6); text-align: center; max-width: 820px;">
-      The aim: rankings <span class="highlight">you</span> choose, not an algorithm you can't see. A first version runs on Freenet today.
-    </p>
+    <!-- screenshot -->
+    <div style="flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 0.5em;">
+      <img src="/slides/futo/atlas/atlas-screenshot.png" alt="The Atlas discovery UI"
+           style="max-height: 470px; max-width: 520px; width: auto; height: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 12px 44px rgba(0,0,0,0.55);">
+      <p style="font-size: 0.68em; color: rgba(255,255,255,0.5); margin: 0;">The live Atlas UI, running on Freenet today</p>
+    </div>
 
   </div>
 
@@ -23,8 +31,8 @@
     <ul>
       <li>Discovery is the quiet power center of the web. Whoever runs search, the app store, or the feed decides what billions of people can find -- and they optimize for their advertisers, not for you. That's the gatekeeper.</li>
       <li>In a network with no platform, there's no company that can own that position. Atlas is our attempt to make discovery a public good: an index anyone can host and verify, where you decide whose rankings you trust.</li>
+      <li>On the right is the actual, live Atlas UI running on Freenet -- a clean directory of apps and sites, searchable. It's real and it's early.</li>
       <li>Be honest and tee up the next slide: no-gatekeeper is the GOAL. Today there's still a gatekeeper -- and right now it's us. I'll show you exactly how it works, and where it's centralized, in a moment.</li>
-      <li>A first version is live on Freenet today.</li>
     </ul>
   </aside>
 </section>
