@@ -1,17 +1,44 @@
-<section class="title-slide center">
-  <img src="/freenet_logo.svg" alt="Freenet" style="width: 120px; margin-bottom: 0.5em;">
-  <h1>Apps Without Platforms</h1>
-  <p class="subtitle">Freenet progress update: private rooms, browser onboarding, and Freenet-native apps</p>
-  <p class="author">Ian Clarke</p>
-  <p class="date">FUTO &bull; July 17, 2026</p>
+<section class="title-slide" style="display: flex; flex-direction: column; height: 100%;">
+
+  <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 3em; min-height: 0; width: 100%;">
+
+    <!-- title text -->
+    <div style="flex: 1 1 auto; min-width: 320px; max-width: 640px; text-align: left;">
+      <h1 style="margin-bottom: 0.3em;">Apps Without Platforms</h1>
+      <p class="subtitle" style="margin-bottom: 1.3em;">Freenet progress update: private rooms, browser onboarding, and Freenet-native apps</p>
+      <p class="author">Ian Clarke</p>
+      <p class="date">FUTO &bull; July 17, 2026</p>
+    </div>
+
+    <!-- ring animation -->
+    <div style="flex: 0 1 auto; max-width: 44%; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 0.4em;">
+      <div id="network-hero" style="width: 460px; max-width: 100%; aspect-ratio: 1 / 1;"></div>
+      <p style="font-size: 0.62em; color: rgba(255,255,255,0.35); margin: 0; letter-spacing: 0.03em;">a small-world network, no servers</p>
+    </div>
+
+  </div>
+
+  <!-- ring topology + message-particle animation (dark-forced copy of the freenet.org hero) -->
+  <script src="/slides/futo/network-hero-dark.js"></script>
+  <script>
+    // reveal lays the slide out after the hero script's initial sizing runs,
+    // so re-kick the canvas sizing once the deck is ready / on slide change.
+    (function () {
+      function kick() { window.dispatchEvent(new Event('resize')); }
+      if (window.Reveal) {
+        Reveal.on('ready', function () { setTimeout(kick, 60); });
+        Reveal.on('slidechanged', kick);
+      }
+      window.addEventListener('load', function () { setTimeout(kick, 120); });
+    })();
+  </script>
 
   <aside class="notes">
     <ul>
-      <li>Thanks for having me. This is a progress update, not a pitch.</li>
-      <li>Last time I spoke about Freenet it was mostly architecture and promise. That has changed.</li>
+      <li>Thanks for having me. This is a progress update on Freenet, not a pitch.</li>
+      <li>The animation is the shape of the whole thing: peers arranged on a ring by location, messages hopping a few times to find their destination. No servers -- your computer is part of the network.</li>
       <li>The one idea to take away: Freenet is becoming a way for applications to exist without platforms -- the backend is the network itself.</li>
-      <li>I'll show River (our strongest demo), then walk through the other apps now running on Freenet, then the substrate underneath.</li>
-      <li>I'll be careful about what's ready versus experimental, and careful with the Signal comparison later on.</li>
+      <li>I'll show River and private rooms, then the other apps now running on Freenet, then the substrate underneath. I'll be careful about what's ready versus experimental.</li>
     </ul>
   </aside>
 </section>
