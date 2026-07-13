@@ -36,7 +36,11 @@ slides:
   - futo/same-pattern
   # 8. Beyond River
   - futo/delta
-  - futo/atlas
+  # Atlas — reworked as the multi-slide per-app section
+  - futo/atlas/discovery
+  - futo/atlas/today
+  - futo/atlas/the-line
+  - futo/atlas/decentralizes
   - futo/freenet-git
   - futo/whats-next
   # 9. Under the hood
