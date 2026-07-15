@@ -1,0 +1,31 @@
+<section style="display: flex; flex-direction: column; height: 100%;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">freenet-git: Git Without GitHub</h2>
+
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: safe center; min-height: 0; gap: 1.4em;">
+
+    <p style="font-size: 1.15em; color: rgba(255,255,255,0.9); text-align: center; max-width: 780px;">
+      Git remains Git. What changes is <span class="highlight">where the repository lives</span>.
+    </p>
+
+    <pre style="width: 78%;"><code class="language-bash" data-noescape># the repo is a Freenet contract, not a server you log into
+git clone freenet://&lt;repo-key&gt;
+git fetch
+git push</code></pre>
+
+    <ul class="fragment fade-up" style="width: 80%; margin: 0;">
+      <li>Same workflow developers already know</li>
+      <li>No account, no forge company, nothing to take the repo down</li>
+      <li>Working today: clone, fetch, push</li>
+    </ul>
+
+  </div>
+
+  <aside class="notes">
+    <ul>
+      <li>This is the hacker-friendly demo, and this audience will like it.</li>
+      <li>The pitch is deliberately boring: Git stays exactly the same. The only thing that changes is that the repository lives on Freenet instead of on a company's servers.</li>
+      <li>Clone, fetch, push all work today. If the live demo is reliable, show a clone. If not, a short terminal recording.</li>
+      <li>The line to land: "Git remains Git. What changes is where the repository lives."</li>
+    </ul>
+  </aside>
+</section>

@@ -1,0 +1,41 @@
+<section style="display: flex; flex-direction: column; height: 100%;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">What's New: Private Rooms</h2>
+
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: safe center; min-height: 0; gap: 1.0em;">
+
+    <p style="font-size: 0.95em; color: rgba(255,255,255,0.85); text-align: center; max-width: 820px; margin: 0;">
+      Encrypted shared application state, hosted by a network that <span class="highlight">can't read it</span>
+    </p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.7em; width: 94%;">
+      <div class="fragment fade-up" style="background: rgba(67,233,123,0.07); border: 1px solid rgba(67,233,123,0.3); border-radius: 10px; padding: 0.75em; text-align: center;">
+        <p style="font-size: 0.85em; font-weight: 700; color: var(--freenet-green); margin: 0 0 0.25em;">Room secret</p>
+        <p style="font-size: 0.72em; color: rgba(255,255,255,0.65); margin: 0;">AES-256-GCM encrypts every message</p>
+      </div>
+      <div class="fragment fade-up" style="background: rgba(79,172,254,0.07); border: 1px solid rgba(79,172,254,0.3); border-radius: 10px; padding: 0.75em; text-align: center;">
+        <p style="font-size: 0.85em; font-weight: 700; color: var(--freenet-blue); margin: 0 0 0.25em;">Key distribution</p>
+        <p style="font-size: 0.72em; color: rgba(255,255,255,0.65); margin: 0;">ECIES (X25519) gives the secret to members only</p>
+      </div>
+      <div class="fragment fade-up" style="background: rgba(168,85,247,0.07); border: 1px solid rgba(168,85,247,0.3); border-radius: 10px; padding: 0.75em; text-align: center;">
+        <p style="font-size: 0.85em; font-weight: 700; color: var(--freenet-purple); margin: 0 0 0.25em;">Rotation</p>
+        <p style="font-size: 0.72em; color: rgba(255,255,255,0.65); margin: 0;">Weekly, and on every ban</p>
+      </div>
+    </div>
+
+    <p class="fragment fade-up" style="font-size: 0.85em; color: rgba(255,255,255,0.7); text-align: center; max-width: 840px; margin: 0;">
+      Peers host and synchronize the room without ever seeing the plaintext. The network enforces
+      <span class="highlight-green">structure and propagation, not meaning</span>.
+    </p>
+
+  </div>
+
+  <aside class="notes">
+    <ul>
+      <li>This is the headline new capability since the last talk. Private rooms show that shared, encrypted application state can live on a network nobody operates.</li>
+      <li>Every message is encrypted under a per-room AES-256-GCM secret. New members get that secret via ECIES -- X25519 key agreement -- so only members can decrypt.</li>
+      <li>The secret rotates weekly, and immediately whenever someone is banned, so a removed member can't read anything new.</li>
+      <li>Key idea: the peers hosting the room never see plaintext. They enforce the contract's rules and propagate updates. They don't understand the content.</li>
+      <li>The room is still an application object, not a row in someone's database.</li>
+    </ul>
+  </aside>
+</section>

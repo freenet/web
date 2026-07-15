@@ -1,0 +1,44 @@
+<section style="display: flex; flex-direction: column; height: 100%;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">How Atlas Works Today</h2>
+
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: safe center; min-height: 0; gap: 1.3em;">
+
+    <!-- flow -->
+    <div style="display: flex; align-items: stretch; gap: 0.5em; width: 96%;">
+      <div style="flex: 1; background: rgba(250,112,154,0.1); border: 1px solid rgba(250,112,154,0.45); border-radius: 8px; padding: 0.7em 0.5em; text-align: center; font-size: 0.72em; display: flex; align-items: safe center; justify-content: safe center;">Crawler<br><span style="color: rgba(255,255,255,0.5);">(we run it)</span></div>
+      <span style="align-self: center; color: rgba(255,255,255,0.35);">&rarr;</span>
+      <div style="flex: 1; background: rgba(250,112,154,0.1); border: 1px solid rgba(250,112,154,0.45); border-radius: 8px; padding: 0.7em 0.5em; text-align: center; font-size: 0.72em; display: flex; align-items: safe center; justify-content: safe center;">An LLM<br>describes the page</div>
+      <span style="align-self: center; color: rgba(255,255,255,0.35);">&rarr;</span>
+      <div style="flex: 1; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.45); border-radius: 8px; padding: 0.7em 0.5em; text-align: center; font-size: 0.72em; display: flex; align-items: safe center; justify-content: safe center;">A signed<br>index entry</div>
+      <span style="align-self: center; color: rgba(255,255,255,0.35);">&rarr;</span>
+      <div style="flex: 1; background: rgba(67,233,123,0.12); border: 1px solid rgba(67,233,123,0.5); border-radius: 8px; padding: 0.7em 0.5em; text-align: center; font-size: 0.72em; display: flex; align-items: safe center; justify-content: safe center;">Index contract<br>on Freenet</div>
+      <span style="align-self: center; color: rgba(255,255,255,0.35);">&rarr;</span>
+      <div style="flex: 1; background: rgba(79,172,254,0.12); border: 1px solid rgba(79,172,254,0.5); border-radius: 8px; padding: 0.7em 0.5em; text-align: center; font-size: 0.72em; display: flex; align-items: safe center; justify-content: safe center;">Your browser<br>searches it</div>
+    </div>
+
+    <!-- honesty callout -->
+    <div class="fragment fade-up" style="display: flex; gap: 1.2em; width: 94%;">
+      <div style="flex: 1; background: rgba(250,112,154,0.06); border: 1px solid rgba(250,112,154,0.35); border-radius: 10px; padding: 0.8em 1em;">
+        <p style="font-size: 0.8em; font-weight: 700; color: var(--freenet-orange); margin: 0 0 0.3em;">Centralized today</p>
+        <p style="font-size: 0.78em; color: rgba(255,255,255,0.7); margin: 0;">One crawler, one describer &mdash; we run them. We decide what gets indexed.</p>
+      </div>
+      <div style="flex: 1; background: rgba(67,233,123,0.06); border: 1px solid rgba(67,233,123,0.35); border-radius: 10px; padding: 0.8em 1em;">
+        <p style="font-size: 0.8em; font-weight: 700; color: var(--freenet-green); margin: 0 0 0.3em;">Already decentralized</p>
+        <p style="font-size: 0.78em; color: rgba(255,255,255,0.7); margin: 0;">Storage, serving, and integrity &mdash; any node hosts, serves, and verifies the index.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <aside class="notes">
+    <p><strong>SAY (cues):</strong></p>
+    <ul>
+      <li>The honest pipeline: a crawler we run fetches pages.</li>
+      <li>An LLM writes a short title, summary, and tags. That becomes a signed entry.</li>
+      <li>The entry goes into an index contract on Freenet. Your browser pulls it and searches locally.</li>
+      <li>Say the quiet part: we run the crawler and the describing LLM. We decide what gets indexed.</li>
+      <li>Genuinely decentralized already: the index. Any node hosts, serves, and verifies it, it's signed.</li>
+      <li>Next slide: why that split is the whole design, not an accident.</li>
+    </ul>
+  </aside>
+</section>

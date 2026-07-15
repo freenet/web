@@ -1,0 +1,48 @@
+<section style="display: flex; flex-direction: column; height: 100%;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">River: Group Chat With No Backend</h2>
+
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: safe center; min-height: 0; gap: 1.4em;">
+
+    <!-- Conventional -->
+    <div style="width: 92%;">
+      <p style="font-size: 0.75em; letter-spacing: 0.12em; color: rgba(255,255,255,0.45); text-transform: uppercase; margin-bottom: 0.4em;">Conventional app</p>
+      <div style="display: flex; align-items: safe center; gap: 0.6em;">
+        <div style="flex: 1; background: rgba(52,152,219,0.12); border: 1px solid rgba(52,152,219,0.4); border-radius: 8px; padding: 0.6em; text-align: center; font-size: 0.85em;">Browser</div>
+        <span style="color: rgba(255,255,255,0.4); font-size: 1.2em;">&rarr;</span>
+        <div style="flex: 1; background: rgba(250,112,154,0.12); border: 1px solid rgba(250,112,154,0.45); border-radius: 8px; padding: 0.6em; text-align: center; font-size: 0.85em;">Company API</div>
+        <span style="color: rgba(255,255,255,0.4); font-size: 1.2em;">&rarr;</span>
+        <div style="flex: 1; background: rgba(250,112,154,0.12); border: 1px solid rgba(250,112,154,0.45); border-radius: 8px; padding: 0.6em; text-align: center; font-size: 0.85em;">Company database</div>
+      </div>
+    </div>
+
+    <!-- River -->
+    <div class="fragment fade-up" style="width: 92%;">
+      <p style="font-size: 0.75em; letter-spacing: 0.12em; color: var(--freenet-green); text-transform: uppercase; margin-bottom: 0.4em;">River</p>
+      <div style="display: flex; align-items: safe center; gap: 0.6em;">
+        <div style="flex: 1; background: rgba(52,152,219,0.12); border: 1px solid rgba(52,152,219,0.4); border-radius: 8px; padding: 0.6em; text-align: center; font-size: 0.85em;">Browser</div>
+        <span style="color: rgba(255,255,255,0.4); font-size: 1.2em;">&rarr;</span>
+        <div style="flex: 1; background: rgba(67,233,123,0.12); border: 1px solid rgba(67,233,123,0.45); border-radius: 8px; padding: 0.6em; text-align: center; font-size: 0.85em;">Local or hosted Freenet peer</div>
+        <span style="color: rgba(255,255,255,0.4); font-size: 1.2em;">&rarr;</span>
+        <div style="flex: 1; background: rgba(67,233,123,0.12); border: 1px solid rgba(67,233,123,0.45); border-radius: 8px; padding: 0.6em; text-align: center; font-size: 0.85em;">Room contract on Freenet</div>
+      </div>
+    </div>
+
+    <ul class="fragment fade-up" style="width: 88%; margin: 0; columns: 2; column-gap: 2.5em;">
+      <li>No River company server</li>
+      <li>No account or phone number</li>
+      <li>The room lives on the network</li>
+      <li>Popular rooms get more available as more peers serve them</li>
+    </ul>
+
+  </div>
+
+  <aside class="notes">
+    <ul>
+      <li>River isn't interesting because chat is new. It's interesting because the room is network-hosted application state.</li>
+      <li>In a conventional app the company's servers are the room -- the state and the rules both live there.</li>
+      <li>In River the room is a contract on Freenet. Your peer talks to the network, not to a River company that doesn't exist.</li>
+      <li>There's no account and no phone number because there's no service to hold an account against.</li>
+      <li>Last point ties to the hosting slide later: popularity is meant to become capacity, not a server bill.</li>
+    </ul>
+  </aside>
+</section>
