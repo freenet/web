@@ -1,7 +1,7 @@
 <section style="display: flex; flex-direction: column; height: 100%;">
   <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Being Honest About What It Protects</h2>
 
-  <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0;">
+  <div style="flex: 1; display: flex; align-items: safe center; justify-content: safe center; min-height: 0;">
     <div class="columns" style="width: 92%; gap: 2em; align-items: stretch;">
 
       <div class="column" style="background: rgba(67,233,123,0.06); border: 1px solid rgba(67,233,123,0.35); border-radius: 12px; padding: 1.1em 1.3em;">
@@ -30,11 +30,18 @@
   </p>
 
   <aside class="notes">
+    <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>I want to be precise here, especially with cryptographers in the room. Private rooms protect content. They do not make you anonymous.</li>
-      <li>The fact that a room exists, who is in it, when it's active, and roughly how big messages are -- that metadata is not hidden by this design.</li>
-      <li>And this isn't Signal's double-ratchet. It's a shared per-room key with rotation, which is a deliberately different trade-off, not a weaker version of the same thing.</li>
-      <li>Say plainly: if you want the strongest metadata and forward-secrecy guarantees for one-to-one messaging today, that's not what this is. This is a demonstration that private shared state can live on the network at all.</li>
+      <li>Be precise, cryptographers in the room. It protects content, it doesn't make you anonymous.</li>
+      <li>Not hidden: that a room exists, its membership, timing, rough message sizes.</li>
+      <li>Not Signal's double-ratchet. A shared per-room key with rotation, a different trade-off.</li>
+      <li>Want the strongest metadata and forward-secrecy for one-to-one today? Not this.</li>
+      <li>This proves private shared state can live on the network at all.</li>
+    </ul>
+    <p><strong>BACKUP (Q&amp;A / accuracy, not for live):</strong></p>
+    <ul>
+      <li>Frame the key-rotation design as a deliberate trade-off, not a weaker version of Signal.</li>
+      <li>Don't claim anonymity or metadata-hiding.</li>
     </ul>
   </aside>
 </section>

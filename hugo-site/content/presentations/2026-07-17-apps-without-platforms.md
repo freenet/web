@@ -11,14 +11,18 @@ customCss: |
   .reveal h2 { font-size: 1.12em; margin-bottom: 0.25em; line-height: 1.15; }
   /* reveal.js sets inline display:block on the shown slide, killing the flex
      column so content collapses to the top; force it back on the visible slide */
-  .reveal .slides section.present { display: flex !important; flex-direction: column; justify-content: center; }
+  .reveal .slides section.present { display: flex !important; flex-direction: column; justify-content: safe center; }
   .reveal section { padding: 0.4em 1.8em !important; }
   .reveal li { margin-bottom: 0.4em; }
   .reveal blockquote { padding: 0.8em 1.2em; }
 slides:
   # 1. Title
   - futo/title
-  # 2. What changed
+  # 2. Why now (the censorship machinery being mandated)
+  - futo/why-now
+  # 3. What Freenet is (grounding for newcomers)
+  - futo/services-without-servers
+  # 4. What changed
   - futo/since-last-time
   # 3. The on-ramp
   - futo/try-in-browser

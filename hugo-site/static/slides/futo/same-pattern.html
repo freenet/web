@@ -1,10 +1,10 @@
 <section style="display: flex; flex-direction: column; height: 100%;">
   <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">The Same Pattern, Every Time</h2>
 
-  <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; gap: 2.5em;">
+  <div style="flex: 1; display: flex; align-items: safe center; justify-content: safe center; min-height: 0; gap: 2.5em;">
 
     <!-- The stack -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4em;">
+    <div style="display: flex; flex-direction: column; align-items: safe center; gap: 0.4em;">
       <div style="background: rgba(52,152,219,0.12); border: 1px solid rgba(52,152,219,0.45); border-radius: 8px; padding: 0.55em 1.6em; text-align: center; font-size: 0.85em;">UI</div>
       <span style="color: rgba(255,255,255,0.35);">&darr;</span>
       <div style="background: rgba(67,233,123,0.12); border: 1px solid rgba(67,233,123,0.45); border-radius: 8px; padding: 0.55em 1.6em; text-align: center; font-size: 0.85em;">Freenet contract</div>
@@ -27,11 +27,12 @@
   </div>
 
   <aside class="notes">
+    <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>This is the slide that ties the whole talk together. Every app on the ecosystem map is the same shape.</li>
-      <li>A UI on top. Under it a Freenet contract that defines the rules. Under that, signed or encrypted state. Under that, the network doing routing, storage, subscriptions, and update propagation.</li>
-      <li>Swap the top two boxes and you get a different app. The bottom half never changes -- that's the substrate everyone shares.</li>
-      <li>A River room and a Delta site are the same kind of object at the network layer. That's the thing we're actually trying to prove.</li>
+      <li>The slide that ties the whole talk together. Every app is the same shape.</li>
+      <li>Top: a UI. Then a contract with the rules. Then signed or encrypted state. Then the network: routing, storage, subscriptions, updates.</li>
+      <li>Swap the top two boxes, get a different app. The bottom half never changes, that's the shared substrate.</li>
+      <li>A River room and a Delta site are the same object at the network layer. That's what we're proving.</li>
     </ul>
   </aside>
 </section>

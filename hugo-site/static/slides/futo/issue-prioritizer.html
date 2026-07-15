@@ -1,7 +1,7 @@
 <section style="display: flex; flex-direction: column; height: 100%;">
   <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">AI That Allocates Attention</h2>
 
-  <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; gap: 2.4em;">
+  <div style="flex: 1; display: flex; align-items: safe center; justify-content: safe center; min-height: 0; gap: 2.4em;">
 
     <!-- pipeline -->
     <div style="display: flex; flex-direction: column; align-items: stretch; gap: 0.25em; font-size: 0.72em; min-width: 16em;">
@@ -29,12 +29,18 @@
   </p>
 
   <aside class="notes">
+    <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>Short segment, 2-4 minutes, don't let it take over the talk.</li>
-      <li>We use AI not just to write code but to decide what to work on. Every open issue gets a value and a cost assessment, done by Claude reading the actual repo, cached by the issue's content hash so we don't re-run it.</li>
-      <li>Instead of asking an LLM for absolute scores -- which drift -- we do pairwise comparisons, which are far more stable. Priority is value minus cost, in log-odds space.</li>
-      <li>Those rankings get written to a GitHub project board. A triage skill reads the board, and autonomous debug-and-fix agents pick up the top-ranked issues.</li>
-      <li>The framing: the board becomes an AI-readable control surface. This is AI project management with an explicit utility function, not just AI autocomplete.</li>
+      <li>Short segment, 2 to 4 minutes. Don't let it take over the talk.</li>
+      <li>AI not just to write code, but to decide what to work on.</li>
+      <li>Every issue gets a value and a cost, from Claude reading the real repo.</li>
+      <li>Pairwise comparisons instead of absolute scores (which drift). Priority = value minus cost.</li>
+      <li>Rankings go to a GitHub board. A triage skill reads it, debug-and-fix agents pick the top.</li>
+      <li>Framing: the board is an AI-readable control surface. Project management with a utility function, not autocomplete.</li>
+    </ul>
+    <p><strong>BACKUP (Q&amp;A / accuracy, not for live):</strong></p>
+    <ul>
+      <li>Priority computed in log-odds space. Value and cost cached by the issue's content hash so it isn't re-run.</li>
     </ul>
   </aside>
 </section>
