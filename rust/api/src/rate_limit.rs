@@ -15,10 +15,12 @@ use thiserror::Error;
 /// Maximum number of invites allowed per IP within the time window.
 ///
 /// Kept deliberately low as an anti-spam measure for the freenet.org/quickstart
-/// flow, which mints invites into the shared "Freenet Official" room. Raising
-/// this without a matching anti-abuse story re-opens the bulk-account-creation
-/// vector this limit exists to slow. See `test_rate_limiter_enforces_two_per_window`.
-const MAX_INVITES_PER_WINDOW: usize = 2;
+/// flow, which mints invites into the shared "Freenet Official" room. A few
+/// invites per day covers legitimate re-invites while still slowing bulk
+/// account creation. Raising this without a matching anti-abuse story re-opens
+/// the vector this limit exists to slow. See
+/// `test_rate_limiter_enforces_four_per_window`.
+const MAX_INVITES_PER_WINDOW: usize = 4;
 
 /// SHA256 hashes of IPs exempt from rate limiting (for testing)
 const EXEMPT_IP_HASHES: &[&str] = &[
@@ -184,17 +186,17 @@ mod tests {
         assert!(limiter.check_and_record(ip).unwrap());
     }
 
-    /// Pins the deployed anti-spam limit at exactly 2 invites / IP / window.
+    /// Pins the deployed anti-spam limit at exactly 4 invites / IP / window.
     ///
     /// The other tests are parameterized on `MAX_INVITES_PER_WINDOW`, so they
     /// pass at any value and would NOT catch an accidental bump of the
-    /// constant. This one hardcodes the intended value: a 3rd invite from the
+    /// constant. This one hardcodes the intended value: the 5th invite from the
     /// same IP inside the window must be rejected.
     #[test]
-    fn test_rate_limiter_enforces_two_per_window() {
+    fn test_rate_limiter_enforces_four_per_window() {
         assert_eq!(
-            MAX_INVITES_PER_WINDOW, 2,
-            "invite anti-spam limit must stay at 2/IP/window; raising it re-opens bulk account creation"
+            MAX_INVITES_PER_WINDOW, 4,
+            "invite anti-spam limit must stay at 4/IP/window; raising it re-opens bulk account creation"
         );
 
         let dir = tempdir().unwrap();
@@ -202,11 +204,15 @@ mod tests {
         let limiter = RateLimiter::new(path, 24);
 
         let ip = IpAddr::V4(Ipv4Addr::new(203, 0, 113, 7));
-        assert!(limiter.check_and_record(ip).unwrap(), "1st invite allowed");
-        assert!(limiter.check_and_record(ip).unwrap(), "2nd invite allowed");
+        for i in 1..=4 {
+            assert!(
+                limiter.check_and_record(ip).unwrap(),
+                "invite {i} of 4 should be allowed"
+            );
+        }
         assert!(
             !limiter.check_and_record(ip).unwrap(),
-            "3rd invite in window must be rejected"
+            "5th invite in window must be rejected"
         );
     }
 
