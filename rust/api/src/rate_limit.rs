@@ -12,8 +12,15 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 use thiserror::Error;
 
-/// Maximum number of invites allowed per IP within the time window
-const MAX_INVITES_PER_WINDOW: usize = 20;
+/// Maximum number of invites allowed per IP within the time window.
+///
+/// Kept deliberately low as an anti-spam measure for the freenet.org/quickstart
+/// flow, which mints invites into the shared "Freenet Official" room. A few
+/// invites per day covers legitimate re-invites while still slowing bulk
+/// account creation. Raising this without a matching anti-abuse story re-opens
+/// the vector this limit exists to slow. See
+/// `test_rate_limiter_enforces_four_per_window`.
+const MAX_INVITES_PER_WINDOW: usize = 4;
 
 /// SHA256 hashes of IPs exempt from rate limiting (for testing)
 const EXEMPT_IP_HASHES: &[&str] = &[
@@ -177,6 +184,36 @@ mod tests {
 
         let ip = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1));
         assert!(limiter.check_and_record(ip).unwrap());
+    }
+
+    /// Pins the deployed anti-spam limit at exactly 4 invites / IP / window.
+    ///
+    /// The other tests are parameterized on `MAX_INVITES_PER_WINDOW`, so they
+    /// pass at any value and would NOT catch an accidental bump of the
+    /// constant. This one hardcodes the intended value: the 5th invite from the
+    /// same IP inside the window must be rejected.
+    #[test]
+    fn test_rate_limiter_enforces_four_per_window() {
+        assert_eq!(
+            MAX_INVITES_PER_WINDOW, 4,
+            "invite anti-spam limit must stay at 4/IP/window; raising it re-opens bulk account creation"
+        );
+
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("rate_limits.json");
+        let limiter = RateLimiter::new(path, 24);
+
+        let ip = IpAddr::V4(Ipv4Addr::new(203, 0, 113, 7));
+        for i in 1..=4 {
+            assert!(
+                limiter.check_and_record(ip).unwrap(),
+                "invite {i} of 4 should be allowed"
+            );
+        }
+        assert!(
+            !limiter.check_and_record(ip).unwrap(),
+            "5th invite in window must be rejected"
+        );
     }
 
     #[test]

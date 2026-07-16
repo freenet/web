@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use axum::{
     extract::{ConnectInfo, Path, State},
-    http::{HeaderMap, StatusCode},
+    http::StatusCode,
     response::{IntoResponse, Json},
     routing::{get, post},
     Router,
@@ -346,39 +346,28 @@ pub struct InviteErrorResponse {
     pub retry_after_seconds: Option<i64>,
 }
 
-/// Extract client IP from request, handling X-Forwarded-For header for proxies
-fn get_client_ip(headers: &HeaderMap, addr: SocketAddr) -> IpAddr {
-    // Check X-Forwarded-For header (set by reverse proxies)
-    if let Some(xff) = headers.get("x-forwarded-for") {
-        if let Ok(xff_str) = xff.to_str() {
-            // Take the first IP (original client)
-            if let Some(first_ip) = xff_str.split(',').next() {
-                if let Ok(ip) = first_ip.trim().parse::<IpAddr>() {
-                    return ip;
-                }
-            }
-        }
-    }
-
-    // Check X-Real-IP header (alternative proxy header)
-    if let Some(real_ip) = headers.get("x-real-ip") {
-        if let Ok(ip_str) = real_ip.to_str() {
-            if let Ok(ip) = ip_str.trim().parse::<IpAddr>() {
-                return ip;
-            }
-        }
-    }
-
-    // Fall back to connection address
+/// Extract the client IP used to key the invite rate limiter.
+///
+/// We deliberately key on the TCP connection's peer address (`addr.ip()`) and
+/// do NOT trust `X-Forwarded-For` / `X-Real-IP`. gkapi is directly
+/// internet-facing (it binds :80/:443 and terminates its own TLS; there is no
+/// reverse proxy in front), so those headers are fully client-controlled and
+/// trusting them would let a spammer bypass the limit by rotating a spoofed
+/// header. `addr.ip()` returns the bare `IpAddr` (no port), so both IPv4 and
+/// IPv6 peers key correctly.
+///
+/// If a trusted reverse proxy / Cloudflare is ever placed in front of gkapi,
+/// revisit HERE to trust `X-Forwarded-For` ONLY when the peer is that proxy's
+/// IP. Do not re-add blanket `X-Forwarded-For` trust.
+fn get_client_ip(addr: SocketAddr) -> IpAddr {
     addr.ip()
 }
 
 async fn create_room_invite(
     State(state): State<InviteState>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
-    headers: HeaderMap,
 ) -> Result<Json<CreateInviteResponse>, (StatusCode, Json<InviteErrorResponse>)> {
-    let client_ip = get_client_ip(&headers, addr);
+    let client_ip = get_client_ip(addr);
     info!("Received create-invite request from IP: {}", client_ip);
 
     // Check rate limit
@@ -396,7 +385,7 @@ async fn create_room_invite(
             return Err((
                 StatusCode::TOO_MANY_REQUESTS,
                 Json(InviteErrorResponse {
-                    error: "Rate limited. You can request up to 20 invites per 24 hours."
+                    error: "Rate limited. You can request up to 4 invites per 24 hours."
                         .to_string(),
                     retry_after_seconds: retry_after,
                 }),
