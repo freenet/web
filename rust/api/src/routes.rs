@@ -396,7 +396,7 @@ async fn create_room_invite(
             return Err((
                 StatusCode::TOO_MANY_REQUESTS,
                 Json(InviteErrorResponse {
-                    error: "Rate limited. You can request up to 20 invites per 24 hours."
+                    error: "Rate limited. You can request up to 2 invites per 24 hours."
                         .to_string(),
                     retry_after_seconds: retry_after,
                 }),
