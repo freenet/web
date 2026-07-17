@@ -1,48 +1,36 @@
 <section style="display: flex; flex-direction: column; height: 100%;">
-  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Different Question, Different Trade-off</h2>
+  <h2 style="flex-shrink: 0; margin-bottom: 0.3em;">Different Question, Different Trade-off</h2>
 
-  <div style="flex: 1; display: flex; align-items: safe center; justify-content: safe center; min-height: 0;">
-    <table style="width: 94%; border-collapse: collapse; font-size: 0.78em;">
-      <thead>
-        <tr style="border-bottom: 2px solid rgba(79,172,254,0.5);">
-          <th style="text-align: left; padding: 0.4em 0.7em; color: var(--freenet-blue); font-weight: 600; width: 50%;">Signal</th>
-          <th style="text-align: left; padding: 0.4em 0.7em; color: var(--freenet-green); font-weight: 600; width: 50%;">River / Freenet</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-          <td style="padding: 0.35em 0.7em; color: rgba(255,255,255,0.82);">Mature, best-in-class secure messenger</td>
-          <td style="padding: 0.35em 0.7em; color: rgba(255,255,255,0.82);">A demonstration of an app substrate</td>
-        </tr>
-        <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-          <td style="padding: 0.35em 0.7em; color: rgba(255,255,255,0.82);">A service coordinates state</td>
-          <td style="padding: 0.35em 0.7em; color: rgba(255,255,255,0.82);">No app-specific service</td>
-        </tr>
-        <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-          <td style="padding: 0.35em 0.7em; color: rgba(255,255,255,0.82);">Minimizes what the service learns</td>
-          <td style="padding: 0.35em 0.7em; color: rgba(255,255,255,0.82);">Questions if a service is needed</td>
-        </tr>
-        <tr>
-          <td style="padding: 0.35em 0.7em; color: rgba(255,255,255,0.82);">Per-message ratcheting</td>
-          <td style="padding: 0.35em 0.7em; color: rgba(255,255,255,0.82);">Shared encrypted room state</td>
-        </tr>
-      </tbody>
-    </table>
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: safe center; min-height: 0; gap: 1.1em; width: 100%;">
+
+    <!-- beat 1: the different question, plainly -->
+    <div class="fragment fade-up" style="width: 88%; max-width: 44em; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 0.95em 1.4em;">
+      <p style="font-size: 0.9em; color: rgba(255,255,255,0.6); margin: 0;">Signal minimizes what its servers see.</p>
+      <p style="font-size: 1.15em; font-weight: 600; color: rgba(255,255,255,0.92); margin: 0.3em 0 0;">River has no service to trust.</p>
+    </div>
+
+    <!-- beat 2: River's value-prop -->
+    <div class="fragment fade-up" style="width: 88%; max-width: 44em; background: rgba(67,233,123,0.06); border: 1px solid rgba(67,233,123,0.35); border-radius: 12px; padding: 0.95em 1.4em;">
+      <p style="font-size: 1.2em; font-weight: 600; color: var(--freenet-green); margin: 0;">No one runs River.</p>
+      <p style="font-size: 0.8em; color: rgba(255,255,255,0.6); letter-spacing: 0.02em; margin: 0.35em 0 0;">not a company, not a non-profit &bull; no one to compel, subpoena, or shut down</p>
+    </div>
+
+    <!-- beat 3: the honest trade-off -->
+    <div class="fragment fade-up" style="width: 88%; max-width: 44em; background: rgba(254,225,64,0.05); border: 1px solid rgba(254,225,64,0.28); border-radius: 12px; padding: 0.95em 1.4em;">
+      <p style="font-size: 1.1em; font-weight: 600; color: #fee140; margin: 0;">No double-ratchet. Still experimental.</p>
+      <p style="font-size: 0.8em; color: rgba(255,255,255,0.55); margin: 0.3em 0 0;">shared room state, not per-message forward secrecy</p>
+    </div>
+
   </div>
-
-  <blockquote class="fragment fade-up" style="flex-shrink: 0; font-size: 0.76em; width: 92%; margin: 0.2em auto 0;">
-    If you asked me what secure messenger to use today, Signal is the obvious answer. River isn't claiming Signal's
-    maturity &mdash; it shows the shared application state itself can live on a network nobody operates.
-  </blockquote>
 
   <aside class="notes">
     <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>Handle generously. Signal is excellent and mature, I use it. Not "River beats Signal."</li>
-      <li>Different questions: Signal minimizes what the service learns; Freenet asks whether there needs to be a service at all.</li>
-      <li>Freenet: no server, no account database, no company backend.</li>
-      <li>Read the quote roughly verbatim, it's the polite, precise version.</li>
-      <li>Signal folks here? Acknowledge their maturity sincerely. A different point in the design space, not a competitor.</li>
+      <li>Not a competitor pitch. A different question, not a better answer.</li>
+      <li>Signal: mature, hundreds of millions of users, strong per-message crypto, minimizes what its servers see. State it as fact.</li>
+      <li>River's difference: no operator at all. Even a non-profit like Signal is one entity that can be compelled or shut down. River has none.</li>
+      <li>Own the trade-offs: no double-ratchet (shared room state, not per-message), and it's experimental.</li>
+      <li>Signal folks in the room: their strengths as fact, no gushing, no dig.</li>
     </ul>
   </aside>
 </section>

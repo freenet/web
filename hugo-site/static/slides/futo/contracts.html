@@ -1,32 +1,34 @@
 <section style="display: flex; flex-direction: column; height: 100%;">
-  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">State Governed by Code</h2>
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Rules in Code, Not a Company</h2>
 
-  <div style="flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: safe center; min-height: 0; gap: 1.2em;">
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: safe center; min-height: 0; gap: 1.15em;">
 
-    <p style="font-size: 1.05em; color: rgba(255,255,255,0.85); text-align: center; max-width: 820px;">
-      In Freenet, applications aren't just files. They're <span class="highlight">state governed by code</span>.
-    </p>
+    <!-- the thesis payoff, leading -->
+    <div class="fragment fade-up" style="width: 90%; max-width: 47em; background: rgba(79,172,254,0.06); border: 1px solid rgba(79,172,254,0.35); border-radius: 12px; padding: 0.95em 1.4em; text-align: center;">
+      <p style="font-size: 1.12em; font-weight: 600; margin: 0;">Every app needs rules: who can post, what's valid, who owns what. On Freenet those rules live in <span class="highlight">code anyone can verify</span>, not on a company's server.</p>
+    </div>
 
-    <div style="display: flex; flex-direction: column; gap: 0.55em; width: 78%; font-size: 0.9em;">
+    <!-- the mechanism, as support -->
+    <div style="display: flex; flex-direction: column; gap: 0.5em; width: 82%; max-width: 46em; font-size: 0.88em;">
       <div class="fragment fade-up" style="display: flex; align-items: safe center; gap: 0.8em;">
-        <code style="min-width: 9.5em; text-align: center;">contract key</code>
+        <code style="min-width: 10.5em; text-align: center;">contract</code>
         <span style="color: rgba(255,255,255,0.4);">=</span>
-        <span style="color: rgba(255,255,255,0.75);">hash of the WebAssembly contract</span>
+        <span style="color: rgba(255,255,255,0.75);">the rules, as WebAssembly code (its key is a hash of that code)</span>
       </div>
       <div class="fragment fade-up" style="display: flex; align-items: safe center; gap: 0.8em;">
-        <code style="min-width: 9.5em; text-align: center;">state</code>
+        <code style="min-width: 10.5em; text-align: center;">state</code>
         <span style="color: rgba(255,255,255,0.4);">=</span>
-        <span style="color: rgba(255,255,255,0.75);">the current application data</span>
+        <span style="color: rgba(255,255,255,0.75);">the app's data, and every change is signed</span>
       </div>
       <div class="fragment fade-up" style="display: flex; align-items: safe center; gap: 0.8em;">
-        <code style="min-width: 9.5em; text-align: center;">updates</code>
-        <span style="color: rgba(255,255,255,0.4);">=</span>
-        <span style="color: rgba(255,255,255,0.75);">signed changes the contract accepts or rejects</span>
+        <code style="min-width: 10.5em; text-align: center;">the contract decides</code>
+        <span style="color: rgba(255,255,255,0.4);">&rarr;</span>
+        <span style="color: rgba(255,255,255,0.75);">accept or reject each change, with no server in the loop</span>
       </div>
     </div>
 
-    <p class="fragment fade-up" style="font-size: 0.88em; color: rgba(255,255,255,0.65); text-align: center; max-width: 820px;">
-      App-specific rules, without app-specific servers. <span class="highlight-purple">Delegates</span> keep your private keys and data on your own hardware.
+    <p class="fragment fade-up" style="font-size: 0.88em; color: rgba(255,255,255,0.65); text-align: center; max-width: 820px; margin: 0;">
+      And your keys never leave your device: <span class="highlight-purple">delegates</span> hold them locally, so no one else can act as you.
     </p>
 
   </div>
@@ -34,12 +36,11 @@
   <aside class="notes">
     <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>Quick primer on contracts. Keep it conceptual, don't go deep unless asked.</li>
-      <li>A contract is WebAssembly. Its key is the hash of the code, so the governing code is baked into the address you fetch.</li>
-      <li>State is the app data. Updates are signed changes, and the contract decides what's valid.</li>
-      <li>That's app-specific rules without an app-specific server enforcing them.</li>
-      <li>Delegates hold your keys and private data on your own machine, so the network never sees them.</li>
-      <li>Delegates are what make River's private rooms and Mail possible.</li>
+      <li>The "no platform" payoff: every app has rules, and normally a company's server enforces them.</li>
+      <li>On Freenet the rules ARE the contract: WebAssembly code, and the key is a hash of that code, so the rules are baked into the address.</li>
+      <li>State is the app's data. Every change is signed, and the contract code accepts or rejects it. No server in the loop.</li>
+      <li>Delegates keep your keys and private data on your own machine. The network never sees them.</li>
+      <li>That's what makes private rooms and Mail possible, and why there's no company to run.</li>
     </ul>
   </aside>
 </section>

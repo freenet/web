@@ -1,39 +1,44 @@
 <section style="display: flex; flex-direction: column; height: 100%;">
-  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Delta: Publishing Without Hosting</h2>
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Delta: Publishing Without a Hosting Provider</h2>
 
-  <div style="flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: safe center; min-height: 0; gap: 1.2em;">
+  <div style="flex: 1; display: flex; align-items: safe center; justify-content: safe center; gap: 2em; min-height: 0; width: 100%;">
 
-    <p style="font-size: 1.05em; color: rgba(255,255,255,0.85); text-align: center; max-width: 800px;">
-      Proof that Freenet can host real publishing, <span class="highlight-green">not only chat</span>
-    </p>
-
-    <div style="display: flex; gap: 1em; width: 90%; justify-content: safe center;">
-      <div class="fragment fade-up" style="flex: 1; max-width: 240px; background: rgba(67,233,123,0.06); border: 1px solid rgba(67,233,123,0.3); border-radius: 10px; padding: 0.9em; text-align: center;">
-        <p style="font-size: 0.9em; font-weight: 600; color: var(--freenet-green); margin-bottom: 0.3em;">Create &amp; update</p>
-        <p style="font-size: 0.78em; color: rgba(255,255,255,0.65); margin: 0;">A site you edit like any other</p>
-      </div>
-      <div class="fragment fade-up" style="flex: 1; max-width: 240px; background: rgba(79,172,254,0.06); border: 1px solid rgba(79,172,254,0.3); border-radius: 10px; padding: 0.9em; text-align: center;">
-        <p style="font-size: 0.9em; font-weight: 600; color: var(--freenet-blue); margin-bottom: 0.3em;">Lives as state</p>
-        <p style="font-size: 0.78em; color: rgba(255,255,255,0.65); margin: 0;">The content is a Freenet contract</p>
-      </div>
-      <div class="fragment fade-up" style="flex: 1; max-width: 240px; background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.3); border-radius: 10px; padding: 0.9em; text-align: center;">
-        <p style="font-size: 0.9em; font-weight: 600; color: var(--freenet-purple); margin-bottom: 0.3em;">No host</p>
-        <p style="font-size: 0.78em; color: rgba(255,255,255,0.65); margin: 0;">No hosting provider to pay or trust</p>
-      </div>
+    <!-- screenshot -->
+    <div style="flex: 0 1 auto; max-width: 58%; min-width: 0; display: flex; flex-direction: column; align-items: safe center; gap: 0.4em;">
+      <img src="/slides/futo/delta-screenshot.png" alt="A real Delta site published on Freenet"
+           style="max-width: 100%; max-height: 540px; width: auto; height: auto; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.45);">
+      <p style="font-size: 0.66em; color: rgba(255,255,255,0.5); margin: 0;">A real Delta site, published on Freenet today</p>
     </div>
 
-    <p class="fragment fade-up" style="font-size: 0.88em; color: rgba(255,255,255,0.6); text-align: center;">
-      Running on Freenet today &bull; <span style="color: rgba(255,255,255,0.75);">github.com/freenet/delta</span>
-    </p>
+    <!-- text -->
+    <div style="flex: 1 1 auto; min-width: 260px; max-width: 380px; display: flex; flex-direction: column; gap: 0.9em;">
+      <p style="font-size: 1.02em; color: rgba(255,255,255,0.9); margin: 0;">
+        Proof Freenet can host real publishing, <span class="highlight-green">not only chat</span>.
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 0.55em;">
+        <div><span style="font-weight: 600; color: var(--freenet-green);">Create &amp; update</span><br><span style="font-size: 0.82em; color: rgba(255,255,255,0.6);">a site you edit like any other</span></div>
+        <div><span style="font-weight: 600; color: var(--freenet-blue);">Lives as state</span><br><span style="font-size: 0.82em; color: rgba(255,255,255,0.6);">the content is a Freenet contract</span></div>
+        <div><span style="font-weight: 600; color: var(--freenet-purple);">No provider</span><br><span style="font-size: 0.82em; color: rgba(255,255,255,0.6);">nothing to pay, nothing to take down</span></div>
+      </div>
+      <p style="font-size: 0.76em; color: rgba(255,255,255,0.5); margin: 0;">
+        Running on Freenet today &bull; github.com/freenet/delta
+      </p>
+    </div>
 
   </div>
 
   <aside class="notes">
+    <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>Delta is the proof point that this isn't a chat-only story. It's publishing -- websites and content -- running on Freenet today.</li>
-      <li>You create and update content the way you'd expect. But the content lives as Freenet state, not on a hosting provider.</li>
-      <li>There's no host to pay, and no host that can take the content down. That's the whole point.</li>
-      <li>Keep this one short -- it's a proof point, not a deep dive.</li>
+      <li>Delta = proof this isn't chat-only. Publishing, live on Freenet today.</li>
+      <li>On screen: a real Delta site (Ivvor's), served straight off the network.</li>
+      <li>Create/update as you'd expect. But it lives as Freenet state, no hosting provider.</li>
+      <li>No provider to pay, none that can take it down. That's the point.</li>
+    </ul>
+    <p><strong>BACKUP (Q&amp;A / accuracy, not for live):</strong></p>
+    <ul>
+      <li>"What keeps it alive if no one's reading it?" It stays live while anyone subscribes to it, including the publisher's own peer. Abandoned, zero-demand data does evaporate, by design.</li>
+      <li>Persistence follows demand, not payment. To keep a site up, keep a peer subscribed to it.</li>
     </ul>
   </aside>
 </section>

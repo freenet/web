@@ -22,37 +22,34 @@ slides:
   - futo/why-now
   # 3. What Freenet is (grounding for newcomers)
   - futo/services-without-servers
-  # 4. What changed
-  - futo/since-last-time
-  # 3. The on-ramp
+  - futo/stack-comparison
+  # 4. What changed since the last talk
+  - futo/since-last-time-sphere
+  # 5. The on-ramp
   - futo/try-in-browser
-  # 4. The platform
-  - futo/ecosystem-map
+  # 6. How Freenet works (platform, before the apps)
+  - futo/contracts
+  - futo/app-delivery
+  - futo/under-the-hood
+  - futo/renegade
+  # 7. The apps
   - futo/app-status
-  # 5. River demo + private rooms
-  - futo/demo-river
   - futo/river-no-backend
   - futo/private-rooms
   - futo/private-rooms-limits
-  # 6. The Signal question
-  - futo/signal-contrast
-  # 7. The shared pattern
-  - futo/same-pattern
-  # 8. Beyond River
   - futo/delta
-  # Atlas — reworked as the multi-slide per-app section
   - futo/atlas/discovery
-  - futo/atlas/today
-  - futo/atlas/the-line
-  - futo/atlas/decentralizes
   - futo/freenet-git
   - futo/whats-next
-  # 9. Under the hood
-  - futo/contracts
-  - futo/renegade
-  - futo/demand-hosting
-  - futo/issue-prioritizer
-  # 10. Close
+  - futo/composable
+  # 8. Close
   - futo/closing
-  - common/questions
+  - futo/questions
+  # CUT for time (files kept, restore by re-adding):
+  #   futo/ecosystem-map        (overlapped app-status)
+  #   futo/atlas/today          (Atlas 4 slides -> 2)
+  #   futo/atlas/decentralizes  (Atlas 4 slides -> 2)
+  #   futo/demand-hosting       (partly-done redesign, needs hedging)
+  #   futo/issue-prioritizer    (about running the project, not the thesis)
+  #   futo/signal-contrast      (folded into private-rooms-limits; value-prop redundant with slides 3 and 8)
 ---

@@ -1,0 +1,60 @@
+<section class="composable-slide" style="display: flex; flex-direction: column; height: 100%;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.3em;">Combine Them Like LEGO</h2>
+
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: safe center; min-height: 0; gap: 1.15em; width: 100%;">
+
+    <!-- the principle -->
+    <div style="width: 90%; max-width: 48em; background: rgba(79,172,254,0.06); border: 1px solid rgba(79,172,254,0.35); border-radius: 12px; padding: 0.9em 1.4em; text-align: center;">
+      <p style="font-size: 1.06em; font-weight: 600; margin: 0;">Every app's state is an open contract on the same network. Any app can build on any other, <span class="highlight">no silos, no permission</span>. Interoperability is the default.</p>
+    </div>
+
+    <!-- combinations -->
+    <div style="display: flex; flex-direction: column; gap: 0.7em; width: 92%; max-width: 50em;">
+
+      <div class="combo fragment fade-up">
+        <span class="chip" style="color: var(--freenet-cyan);">freenet-git</span>
+        <span class="op">+</span>
+        <span class="chip" style="color: var(--freenet-blue);">River</span>
+        <span class="op arr">&rarr;</span>
+        <span class="cap">Discuss code right where it lives</span>
+      </div>
+
+      <div class="combo fragment fade-up">
+        <span class="chip" style="color: var(--freenet-green);">Delta</span>
+        <span class="op">+</span>
+        <span class="chip" style="color: var(--freenet-blue);">River</span>
+        <span class="op arr">&rarr;</span>
+        <span class="cap">A published post with a real comment thread</span>
+      </div>
+
+      <div class="combo fragment fade-up">
+        <span class="chip" style="color: #e9cf8f;">Ghost Keys</span>
+        <span class="op">+</span>
+        <span class="chip" style="color: #f1c40f;">Harvest</span>
+        <span class="op arr">&rarr;</span>
+        <span class="cap">Reputation that's yours, across every app</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <aside class="notes">
+    <p><strong>SAY (cues):</strong></p>
+    <ul>
+      <li>The multiplier: on Freenet, apps interoperate by default. No silos.</li>
+      <li>Every app's state is an open contract on the shared network, so any app can build on any other's data. No API, no permission, no business deal.</li>
+      <li>Combine them like LEGO. Git plus River: discuss code in context. Delta plus River: a blog with real comments. Ghost Keys plus Harvest: portable reputation.</li>
+      <li>On the web this needs OAuth, APIs, deals, and the platform can cut you off. Here it's free.</li>
+      <li>Land: interoperability isn't a feature we added. It's what you get when there are no platforms.</li>
+    </ul>
+  </aside>
+
+  <style>
+    .composable-slide .combo { display: flex; align-items: center; gap: 0.55em; font-size: 0.9em; flex-wrap: wrap; }
+    .composable-slide .chip { padding: 0.16em 0.62em; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.04); font-weight: 700; white-space: nowrap; }
+    .composable-slide .op { color: rgba(255,255,255,0.4); font-weight: 600; }
+    .composable-slide .op.arr { color: rgba(255,255,255,0.55); font-size: 1.1em; margin: 0 0.15em; }
+    .composable-slide .cap { color: rgba(255,255,255,0.82); }
+  </style>
+</section>

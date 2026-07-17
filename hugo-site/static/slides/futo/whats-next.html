@@ -5,28 +5,31 @@
 
     <div style="display: flex; gap: 1em; width: 94%; justify-content: safe center; align-items: stretch;">
 
-      <div class="fragment fade-up" style="flex: 1; background: rgba(79,172,254,0.06); border: 1px solid rgba(79,172,254,0.35); border-radius: 12px; padding: 1em 1.1em;">
-        <p style="font-size: 1.05em; font-weight: 700; color: var(--freenet-blue); margin-bottom: 0.15em;">Mail</p>
-        <p style="font-size: 0.72em; color: var(--freenet-orange); margin-bottom: 0.5em;">pre-alpha, deployed</p>
+      <div class="fragment fade-up" style="flex: 1; background: rgba(79,172,254,0.06); border: 1px solid rgba(79,172,254,0.35); border-radius: 12px; padding: 1em 1.1em; text-align: center; display: flex; flex-direction: column; align-items: center;">
+        <img src="/slides/futo/freenet-logo.svg" alt="Mail" style="height: 42px; width: auto; margin-bottom: 0.5em;">
+        <p style="font-size: 1.05em; font-weight: 700; color: var(--freenet-blue); margin: 0 0 0.15em;">Mail</p>
+        <p style="font-size: 0.72em; color: var(--freenet-orange); margin: 0 0 0.5em;">pre-alpha, deployed</p>
         <p style="font-size: 0.8em; color: rgba(255,255,255,0.7); margin: 0;">Private asynchronous messaging. Post-quantum crypto. Extends Freenet from chat to email-shaped communication.</p>
       </div>
 
-      <div class="fragment fade-up" style="flex: 1; background: rgba(250,112,154,0.06); border: 1px solid rgba(250,112,154,0.35); border-radius: 12px; padding: 1em 1.1em;">
-        <p style="font-size: 1.05em; font-weight: 700; color: var(--freenet-orange); margin-bottom: 0.15em;">Raven</p>
-        <p style="font-size: 0.72em; color: var(--freenet-orange); margin-bottom: 0.5em;">prototype</p>
+      <div class="fragment fade-up" style="flex: 1; background: rgba(250,112,154,0.06); border: 1px solid rgba(250,112,154,0.35); border-radius: 12px; padding: 1em 1.1em; text-align: center; display: flex; flex-direction: column; align-items: center;">
+        <img src="/slides/futo/raven-logo.svg" alt="Raven" style="height: 50px; width: auto; margin-bottom: 0.5em;">
+        <p style="font-size: 1.05em; font-weight: 700; color: var(--freenet-orange); margin: 0 0 0.15em;">Raven</p>
+        <p style="font-size: 0.72em; color: var(--freenet-orange); margin: 0 0 0.5em;">prototype</p>
         <p style="font-size: 0.8em; color: rgba(255,255,255,0.7); margin: 0;">A social feed. Interesting because it stress-tests high-churn social state on Freenet.</p>
       </div>
 
-      <div class="fragment fade-up" style="flex: 1; background: rgba(241,196,15,0.06); border: 1px solid rgba(241,196,15,0.35); border-radius: 12px; padding: 1em 1.1em;">
-        <p style="font-size: 1.05em; font-weight: 700; color: #f1c40f; margin-bottom: 0.15em;">Harvest</p>
-        <p style="font-size: 0.72em; color: rgba(255,255,255,0.5); margin-bottom: 0.5em;">early design</p>
-        <p style="font-size: 0.8em; color: rgba(255,255,255,0.7); margin: 0;">A marketplace direction. Still design and scaffolding, not working software yet.</p>
+      <div class="fragment fade-up" style="flex: 1; background: rgba(241,196,15,0.06); border: 1px solid rgba(241,196,15,0.35); border-radius: 12px; padding: 1em 1.1em; text-align: center; display: flex; flex-direction: column; align-items: center;">
+        <img src="/slides/futo/harvest-logo.svg" alt="Harvest" style="height: 50px; width: auto; margin-bottom: 0.5em;">
+        <p style="font-size: 1.05em; font-weight: 700; color: #f1c40f; margin: 0 0 0.15em;">Harvest</p>
+        <p style="font-size: 0.72em; color: rgba(255,255,255,0.5); margin: 0 0 0.5em;">early design</p>
+        <p style="font-size: 0.8em; color: rgba(255,255,255,0.7); margin: 0;">A decentralized marketplace, like Etsy without the platform. Still design, not working software yet.</p>
       </div>
 
     </div>
 
     <p class="fragment fade-up" style="font-size: 0.92em; color: rgba(255,255,255,0.7); text-align: center; max-width: 820px;">
-      Not launch-ready &mdash; the point is that the <span class="highlight-green">same substrate</span> is already taking on this many application shapes
+      Not launch-ready. The point is that the <span class="highlight-green">same substrate</span> is already taking on this many application shapes
     </p>
 
   </div>
@@ -34,15 +37,16 @@
   <aside class="notes">
     <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>Roadmap. Be candid, in decreasing order of readiness.</li>
-      <li>Mail: pre-alpha, deployed, post-quantum. Takes Freenet from chat to email-shaped messaging.</li>
-      <li>Raven: a prototype social feed. Valuable as a stress test, social state is high-churn.</li>
-      <li>Harvest: early design. Say "a direction," not "nearly ready."</li>
-      <li>Closing line: not all ready, and that's fine. One substrate, this many shapes at once.</li>
+      <li>These are next, in decreasing order of readiness.</li>
+      <li>Mail: pre-alpha, deployed, post-quantum. Chat to email-shaped messaging.</li>
+      <li>Raven: prototype social feed. Stress test, social state is high-churn.</li>
+      <li>Harvest: think a decentralized Etsy. Early design, not built yet, don't oversell.</li>
+      <li>Not all of these are ready, and that's fine. One substrate, this many shapes.</li>
     </ul>
     <p><strong>BACKUP (Q&amp;A / accuracy, not for live):</strong></p>
     <ul>
       <li>Mail repo says don't store anything you'd mind losing.</li>
+      <li>Why not post-quantum everywhere? Keys are much bigger. X25519 public key: 32 bytes. ML-KEM-768 (lattice): 1184 bytes, ~37x. Signatures worse: Ed25519 64 B vs Dilithium ~3300 B. Bigger keys = bigger state everywhere, so PQ where it's worth it.</li>
       <li>Harvest: don't spin into a trust-and-safety tangent for a marketplace that isn't built.</li>
     </ul>
   </aside>

@@ -1,31 +1,39 @@
 <section style="display: flex; flex-direction: column; height: 100%;">
   <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">freenet-git: Git Without GitHub</h2>
 
-  <div style="flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: safe center; min-height: 0; gap: 1.4em;">
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: safe center; min-height: 0; gap: 0.75em;">
 
-    <p style="font-size: 1.15em; color: rgba(255,255,255,0.9); text-align: center; max-width: 780px;">
+    <p style="font-size: 1.0em; color: rgba(255,255,255,0.9); text-align: center; max-width: 780px; margin: 0;">
       Git remains Git. What changes is <span class="highlight">where the repository lives</span>.
     </p>
 
-    <pre style="width: 78%;"><code class="language-bash" data-noescape># the repo is a Freenet contract, not a server you log into
-git clone freenet://&lt;repo-key&gt;
-git fetch
-git push</code></pre>
+    <pre style="width: 86%; font-size: 0.58em; margin: 0;"><code class="language-bash" data-noescape># the repo is a Freenet contract, not a server you log into
+$ git clone freenet::96rknpy1GYhZ/freenet-stdlib
+Cloning into 'freenet-stdlib'...
+==&gt; reading repo state from Freenet
+    [legacy bundle 1/4] downloading pack (31.0 KiB)
+    [bundle 6]  downloading pack (734.2 KiB)
+    [bundle 15] downloading pack (743.3 KiB)
+    ...
+==&gt; downloaded 18 bundle(s)
+==&gt; done</code></pre>
 
-    <ul class="fragment fade-up" style="width: 80%; margin: 0;">
-      <li>Same workflow developers already know</li>
-      <li>No account, no forge company, nothing to take the repo down</li>
-      <li>Working today: clone, fetch, push</li>
+    <ul class="fragment fade-up" style="width: 80%; margin: 0; font-size: 0.9em; line-height: 1.3;">
+      <li style="margin-bottom: 0.25em;">Same workflow developers already know</li>
+      <li style="margin-bottom: 0.25em;">No account, no forge company, nothing to take the repo down</li>
+      <li style="margin-bottom: 0.25em;">Working today: clone, fetch, push</li>
+      <li style="margin-bottom: 0;">A first building block for replacing GitHub: issues, reviews, CI can each be their own composable Freenet app</li>
     </ul>
 
   </div>
 
   <aside class="notes">
+    <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>This is the hacker-friendly demo, and this audience will like it.</li>
-      <li>The pitch is deliberately boring: Git stays exactly the same. The only thing that changes is that the repository lives on Freenet instead of on a company's servers.</li>
-      <li>Clone, fetch, push all work today. If the live demo is reliable, show a clone. If not, a short terminal recording.</li>
-      <li>The line to land: "Git remains Git. What changes is where the repository lives."</li>
+      <li>Pitch is deliberately boring. Git stays Git. Only the repo's location changes: Freenet, not a company.</li>
+      <li>Clone, fetch, push all work today. The terminal on the slide is a real clone, walk them through it.</li>
+      <li>Bigger picture: first building block of a GitHub replacement. Issues, reviews, CI can each be their own Freenet app. Composable by design.</li>
+      <li>Land: "Git remains Git. What changes is where the repository lives."</li>
     </ul>
   </aside>
 </section>
