@@ -23,19 +23,20 @@
     </div>
 
     <p class="fragment fade-up" style="font-size: 0.85em; color: rgba(255,255,255,0.7); text-align: center; max-width: 840px; margin: 0;">
-      Peers host and synchronize the room without ever seeing the plaintext. The network enforces
-      <span class="highlight-green">structure and propagation, not meaning</span>.
+      Peers host and sync the room and enforce its rules, <span class="highlight-green">without ever reading what's inside</span>.
     </p>
 
   </div>
 
   <aside class="notes">
+    <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>This is the headline new capability since the last talk. Private rooms show that shared, encrypted application state can live on a network nobody operates.</li>
-      <li>Every message is encrypted under a per-room AES-256-GCM secret. New members get that secret via ECIES -- X25519 key agreement -- so only members can decrypt.</li>
-      <li>The secret rotates weekly, and immediately whenever someone is banned, so a removed member can't read anything new.</li>
-      <li>Key idea: the peers hosting the room never see plaintext. They enforce the contract's rules and propagate updates. They don't understand the content.</li>
-      <li>The room is still an application object, not a row in someone's database.</li>
+      <li>Shared encrypted app state, on a network nobody operates. The new thing since last talk.</li>
+      <li>Every message encrypted: per-room AES-256-GCM secret.</li>
+      <li>Members get the secret via ECIES (X25519). Only members decrypt.</li>
+      <li>Rotates weekly + on every ban. Removed member can't read anything new.</li>
+      <li>Peers enforce rules + sync updates, never read content.</li>
+      <li>Room is an application object, not a row in a database.</li>
     </ul>
   </aside>
 </section>

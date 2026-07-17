@@ -1,0 +1,312 @@
+<section class="sphere-slide" style="display: flex; flex-direction: column; height: 100%;">
+  <h2 style="flex-shrink: 0; margin-bottom: 0.1em;">A Growing Ecosystem</h2>
+
+  <div style="flex: 1; display: flex; flex-direction: column; align-items: safe center; justify-content: safe center; min-height: 0; gap: 0.5em; width: 100%;">
+
+    <!-- concentric-shell diagram -->
+    <div class="sphere-diagram">
+
+      <!-- BASE (static): core + substrate shell -->
+      <svg class="sphere-base" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="sphCore" cx="50%" cy="43%" r="62%">
+            <stop offset="0%"  stop-color="#ccfff1"/>
+            <stop offset="46%" stop-color="#5fe6c4"/>
+            <stop offset="100%" stop-color="#1f9e83"/>
+          </radialGradient>
+          <radialGradient id="sphCoreGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"  stop-color="rgba(85,240,205,0.50)"/>
+            <stop offset="58%" stop-color="rgba(60,220,180,0.16)"/>
+            <stop offset="100%" stop-color="rgba(60,220,180,0)"/>
+          </radialGradient>
+          <radialGradient id="sphInner" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"  stop-color="rgba(60,230,190,0.09)"/>
+            <stop offset="72%" stop-color="rgba(60,230,190,0.04)"/>
+            <stop offset="100%" stop-color="rgba(60,230,190,0.015)"/>
+          </radialGradient>
+        </defs>
+
+        <!-- substrate shell -->
+        <circle cx="200" cy="200" r="100" fill="url(#sphInner)"
+                stroke="rgba(130,235,210,0.26)" stroke-width="1.2"/>
+
+        <!-- core glow (continuous breathing) -->
+        <circle class="core-glow" cx="200" cy="200" r="80" fill="url(#sphCoreGlow)"/>
+
+        <!-- core (the Freenet network) -->
+        <circle cx="200" cy="200" r="40" fill="url(#sphCore)"
+                stroke="rgba(205,255,242,0.45)" stroke-width="1"/>
+      </svg>
+
+      <!-- SUBSTRATE NODE MARKERS (orbit clockwise around the core) -->
+      <svg class="sphere-nodes orbit-cw" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- Contracts (plain primitive) -->
+        <circle cx="157" cy="110" r="9" fill="rgba(120,230,205,0.14)"/>
+        <circle cx="157" cy="110" r="4" fill="rgba(150,240,215,0.92)"/>
+        <!-- Delegates (plain primitive) -->
+        <circle cx="243" cy="110" r="9" fill="rgba(120,230,205,0.14)"/>
+        <circle cx="243" cy="110" r="4" fill="rgba(150,240,215,0.92)"/>
+
+        <!-- Ghost Keys (reputation): a small rating star -->
+        <circle cx="122" cy="262" r="13" fill="rgba(232,205,140,0.12)"/>
+        <path d="M122,254 L123.9,259.4 L129.6,259.5 L125.0,263.0 L126.7,268.5 L122,265.2 L117.3,268.5 L119.0,263.0 L114.4,259.5 L120.1,259.4 Z"
+              fill="rgba(233,207,143,0.95)" stroke="rgba(255,236,190,0.55)" stroke-width="0.5"/>
+
+        <!-- Renegade (adaptive routing): a learned route threading scattered nodes -->
+        <circle cx="278" cy="262" r="13" fill="rgba(150,190,225,0.12)"/>
+        <path d="M268,266 Q274,253 278,262 Q282,271 288,262"
+              fill="none" stroke="rgba(160,198,232,0.9)" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="268" cy="266" r="1.9" fill="rgba(185,214,242,0.95)"/>
+        <circle cx="278" cy="262" r="1.9" fill="rgba(185,214,242,0.95)"/>
+        <circle cx="288" cy="262" r="1.9" fill="rgba(185,214,242,0.95)"/>
+      </svg>
+
+      <!-- SUBSTRATE LABELS (orbit clockwise WITH the nodes, but each stays upright) -->
+      <div class="orbit orbit-cw">
+        <div class="oslot" style="left: 35.45%; top: 19.53%;">
+          <div class="ocounter octr-ccw"><div class="sub-label">Contracts</div></div>
+        </div>
+        <div class="oslot" style="left: 64.55%; top: 19.53%;">
+          <div class="ocounter octr-ccw"><div class="sub-label">Delegates</div></div>
+        </div>
+        <div class="oslot" style="left: 23.58%; top: 71%;">
+          <div class="ocounter octr-ccw"><div class="sub-label sub-special">Ghost Keys<span>reputation</span></div></div>
+        </div>
+        <div class="oslot" style="left: 76.43%; top: 71%;">
+          <div class="ocounter octr-ccw"><div class="sub-label sub-special">Renegade<span>adaptive routing</span></div></div>
+        </div>
+      </div>
+
+      <div class="core-label">Freenet<span>network</span></div>
+
+      <!-- BLOOM: revealed on click (the apps grown outward, orbiting the OTHER way) -->
+      <div class="sphere-bloom fragment" data-fragment-index="1">
+
+        <!-- outer shell rim (static, rotationally symmetric) -->
+        <svg class="sphere-outer-ring" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <radialGradient id="sphOuter" cx="50%" cy="50%" r="50%">
+              <stop offset="0%"  stop-color="rgba(255,255,255,0)"/>
+              <stop offset="76%" stop-color="rgba(255,255,255,0)"/>
+              <stop offset="100%" stop-color="rgba(150,190,255,0.045)"/>
+            </radialGradient>
+            <filter id="sphSoft" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="3"/>
+            </filter>
+          </defs>
+          <circle cx="200" cy="200" r="158" fill="url(#sphOuter)"
+                  stroke="rgba(140,180,255,0.15)" stroke-width="4" filter="url(#sphSoft)"/>
+          <circle cx="200" cy="200" r="158" fill="none"
+                  stroke="rgba(255,255,255,0.15)" stroke-width="1.1"/>
+        </svg>
+
+        <!-- APP NODE MARKERS + spokes (orbit counter-clockwise) -->
+        <svg class="sphere-outer-nodes orbit-ccw" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- spokes: running apps (solid faint) -->
+          <g stroke="rgba(200,225,255,0.09)" stroke-width="1">
+            <line x1="200" y1="200" x2="76"  y2="101"/>
+            <line x1="200" y1="200" x2="323" y2="101"/>
+            <line x1="200" y1="200" x2="269" y2="342"/>
+            <line x1="200" y1="200" x2="131" y2="342"/>
+          </g>
+          <!-- spokes: emerging apps (dashed, fainter) -->
+          <g stroke="rgba(200,225,255,0.05)" stroke-width="1" stroke-dasharray="2 5">
+            <line x1="200" y1="200" x2="200" y2="42"/>
+            <line x1="200" y1="200" x2="354" y2="235"/>
+            <line x1="200" y1="200" x2="46"  y2="235"/>
+          </g>
+
+          <!-- running apps: bright halo + filled dot -->
+          <circle cx="76"  cy="101" r="12" style="fill: var(--freenet-blue)"   opacity="0.16"/>
+          <circle cx="76"  cy="101" r="5.5" style="fill: var(--freenet-blue)"/>
+          <circle cx="323" cy="101" r="12" style="fill: var(--freenet-green)"  opacity="0.16"/>
+          <circle cx="323" cy="101" r="5.5" style="fill: var(--freenet-green)"/>
+          <circle cx="269" cy="342" r="12" style="fill: var(--freenet-purple)" opacity="0.16"/>
+          <circle cx="269" cy="342" r="5.5" style="fill: var(--freenet-purple)"/>
+          <circle cx="131" cy="342" r="12" style="fill: var(--freenet-cyan)"   opacity="0.16"/>
+          <circle cx="131" cy="342" r="5.5" style="fill: var(--freenet-cyan)"/>
+
+          <!-- emerging apps: dim hollow ring (real, earlier-stage) -->
+          <circle cx="200" cy="42"  r="6" fill="none" stroke="rgba(165,185,205,0.55)" stroke-width="1.4"/>
+          <circle cx="200" cy="42"  r="1.6" fill="rgba(165,185,205,0.7)"/>
+          <circle cx="354" cy="235" r="6" fill="none" stroke="rgba(165,185,205,0.55)" stroke-width="1.4"/>
+          <circle cx="354" cy="235" r="1.6" fill="rgba(165,185,205,0.7)"/>
+          <circle cx="46"  cy="235" r="6" fill="none" stroke="rgba(165,185,205,0.55)" stroke-width="1.4"/>
+          <circle cx="46"  cy="235" r="1.6" fill="rgba(165,185,205,0.7)"/>
+        </svg>
+
+        <!-- APP LABELS (orbit counter-clockwise WITH the nodes, but each stays upright) -->
+        <div class="orbit orbit-ccw">
+          <div class="oslot" style="left: 12.5%; top: 20.1%;">
+            <div class="ocounter octr-cw"><div class="app-label" style="color: var(--freenet-blue);">River</div></div>
+          </div>
+          <div class="oslot" style="left: 87.5%; top: 20.1%;">
+            <div class="ocounter octr-cw"><div class="app-label" style="color: var(--freenet-green);">Delta</div></div>
+          </div>
+          <div class="oslot" style="left: 70.75%; top: 93.25%;">
+            <div class="ocounter octr-cw"><div class="app-label" style="color: var(--freenet-purple);">Atlas</div></div>
+          </div>
+          <div class="oslot" style="left: 29.25%; top: 93.25%;">
+            <div class="ocounter octr-cw"><div class="app-label" style="color: var(--freenet-cyan);">freenet-git</div></div>
+          </div>
+          <div class="oslot" style="left: 50%; top: 2%;">
+            <div class="ocounter octr-cw"><div class="app-label app-emerging">Mail</div></div>
+          </div>
+          <div class="oslot" style="left: 96.75%; top: 60.7%;">
+            <div class="ocounter octr-cw"><div class="app-label app-emerging">Raven</div></div>
+          </div>
+          <div class="oslot" style="left: 3.25%; top: 60.7%;">
+            <div class="ocounter octr-cw"><div class="app-label app-emerging">Harvest</div></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- caption: foundation (always) -> now (fragment); em-dash-free -->
+    <div class="sphere-captions">
+      <div class="cap">
+        <span class="tag tag-last">Foundation</span>
+        <span>what it <em>can</em> do</span>
+      </div>
+      <div class="cap-lives">search YouTube for &ldquo;Freenet Lives&rdquo;</div>
+      <div class="cap cap-now fragment" data-fragment-index="1">
+        <span class="tag tag-now">Now</span>
+        <span>what it <em>does</em></span>
+      </div>
+    </div>
+
+  </div>
+
+  <aside class="notes">
+    <p><strong>SAY (cues):</strong></p>
+    <ul>
+      <li>Start at the core: the network itself.</li>
+      <li>Around it, the substrate we've built. Contracts and delegates, plus Ghost Keys for reputation and Renegade for smarter routing.</li>
+      <li>That's the foundation. What it <em>can</em> do.</li>
+      <li>Now the apps have grown outward on top of it. What it <em>does</em>.</li>
+      <li>Four you can use today: River, Delta, Atlas, freenet-git. Same core, no app backend.</li>
+      <li>The dimmer ones (Mail, Raven, Harvest) are real but earlier stage.</li>
+      <li>The old demo's on YouTube: search "Freenet Lives."</li>
+    </ul>
+  </aside>
+
+  <style>
+    .sphere-slide .sphere-diagram {
+      position: relative;
+      --d: min(58vh, 62vw, 640px);
+      width: var(--d);
+      height: var(--d);
+      flex-shrink: 0;
+    }
+    .sphere-slide .sphere-diagram svg,
+    .sphere-slide .sphere-bloom,
+    .sphere-slide .orbit {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+    /* orbit rings + node svgs rotate about the diagram (= core) centre */
+    .sphere-slide .sphere-nodes,
+    .sphere-slide .sphere-outer-nodes,
+    .sphere-slide .orbit { transform-origin: 50% 50%; }
+
+    /* core label (static, at centre) */
+    .sphere-slide .core-label {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      text-align: center; color: #063229; font-weight: 800;
+      font-size: 0.5em; line-height: 1.02; letter-spacing: -0.01em; pointer-events: none;
+    }
+    .sphere-slide .core-label span {
+      display: block; font-weight: 600; font-size: 0.8em; opacity: 0.78;
+    }
+
+    /* orbiting label plumbing: .oslot positions, .ocounter keeps text upright */
+    .sphere-slide .oslot { position: absolute; transform: translate(-50%, -50%); }
+    .sphere-slide .ocounter { transform-origin: 50% 50%; }
+
+    /* substrate labels */
+    .sphere-slide .sub-label {
+      white-space: nowrap; text-align: center; pointer-events: none;
+      font-size: 0.5em; font-weight: 500; letter-spacing: 0.01em;
+      color: rgba(200,240,230,0.9);
+      text-shadow: 0 0 12px rgba(0,0,0,0.7);
+    }
+    .sphere-slide .sub-special span {
+      display: block; font-size: 0.76em; font-weight: 400;
+      color: rgba(200,240,230,0.5); letter-spacing: 0.02em; margin-top: 0.1em;
+    }
+
+    /* app labels on the outer shell */
+    .sphere-slide .app-label {
+      white-space: nowrap; text-align: center; pointer-events: none;
+      font-size: 0.62em; font-weight: 600; letter-spacing: 0.01em;
+      text-shadow: 0 0 16px rgba(0,0,0,0.75), 0 1px 3px rgba(0,0,0,0.9);
+    }
+    .sphere-slide .app-emerging {
+      font-size: 0.57em; font-weight: 500; letter-spacing: 0.05em;
+      color: rgba(214,224,234,0.72);
+    }
+
+    /* the foundation -> now build: bloom grows outward from the core */
+    .sphere-slide .sphere-bloom.fragment {
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.55s ease-out;
+      transform-origin: 50% 50%; will-change: transform, opacity;
+    }
+    .sphere-slide .sphere-bloom.fragment:not(.visible) { opacity: 0; transform: scale(0.82); }
+    .sphere-slide .sphere-bloom.fragment.visible       { opacity: 1; transform: scale(1); }
+
+    /* captions */
+    .sphere-slide .sphere-captions {
+      flex-shrink: 0; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 0.3em;
+    }
+    .sphere-slide .cap { font-size: 0.72em; color: rgba(255,255,255,0.72); }
+    .sphere-slide .cap em { font-style: normal; font-weight: 600; color: rgba(255,255,255,0.96); }
+    .sphere-slide .cap-lives { font-size: 0.58em; color: rgba(255,255,255,0.36); }
+    .sphere-slide .tag {
+      display: inline-block; text-transform: uppercase; letter-spacing: 0.15em;
+      font-size: 0.62em; font-weight: 600; padding: 0.18em 0.62em;
+      border-radius: 999px; margin-right: 0.6em; vertical-align: 0.12em;
+    }
+    .sphere-slide .tag-last {
+      color: rgba(125,235,205,0.92); border: 1px solid rgba(125,235,205,0.32);
+      background: rgba(125,235,205,0.07);
+    }
+    .sphere-slide .tag-now {
+      color: var(--freenet-blue); border: 1px solid rgba(79,172,254,0.42);
+      background: rgba(79,172,254,0.09);
+    }
+
+    /* --- slow counter-rotating orbits (~30s/rev), core stays put --- */
+    .sphere-slide .orbit-cw   { animation: sphOrbitCW  30s linear infinite; }
+    .sphere-slide .orbit-ccw  { animation: sphOrbitCCW 30s linear infinite; }
+    .sphere-slide .octr-cw    { animation: sphOrbitCW  30s linear infinite; }  /* counters an CCW ring */
+    .sphere-slide .octr-ccw   { animation: sphOrbitCCW 30s linear infinite; }  /* counters a  CW  ring */
+    @keyframes sphOrbitCW  { to { transform: rotate(360deg); } }
+    @keyframes sphOrbitCCW { to { transform: rotate(-360deg); } }
+
+    /* ambient: core breathing */
+    .sphere-slide .core-glow {
+      transform-box: fill-box; transform-origin: center;
+      animation: sphBreath 5.5s ease-in-out infinite;
+    }
+    @keyframes sphBreath {
+      0%, 100% { opacity: 0.5;  transform: scale(1); }
+      50%      { opacity: 0.85; transform: scale(1.08); }
+    }
+
+    /* accessibility: no orbiting / breathing; everything rests upright in place */
+    @media (prefers-reduced-motion: reduce) {
+      .sphere-slide .orbit-cw,
+      .sphere-slide .orbit-ccw,
+      .sphere-slide .octr-cw,
+      .sphere-slide .octr-ccw,
+      .sphere-slide .core-glow { animation: none !important; }
+    }
+  </style>
+</section>

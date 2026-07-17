@@ -5,24 +5,20 @@
 
     <div class="columns" style="width: 92%; gap: 2em; align-items: stretch;">
       <div class="column" style="background: rgba(67,233,123,0.06); border: 1px solid rgba(67,233,123,0.4); border-radius: 12px; padding: 1.1em 1.3em;">
-        <p style="font-size: 0.78em; letter-spacing: 0.12em; color: var(--freenet-green); text-transform: uppercase; margin: 0 0 0.5em;">The network guarantees</p>
-        <p style="font-size: 1.1em; font-weight: 600; color: rgba(255,255,255,0.9); margin: 0 0 0.4em;">Integrity</p>
-        <p style="font-size: 0.82em; color: rgba(255,255,255,0.7); margin: 0;">Every entry is signed and verifiable. Any node can host and serve the index; nobody has to trust the server.</p>
+        <p style="font-size: 0.78em; letter-spacing: 0.12em; color: var(--freenet-green); text-transform: uppercase; margin: 0 0 0.5em;">The network checks one thing</p>
+        <p style="font-size: 1.1em; font-weight: 600; color: rgba(255,255,255,0.9); margin: 0 0 0.4em;">Signed and well-formed</p>
+        <p style="font-size: 0.82em; color: rgba(255,255,255,0.7); margin: 0;">That's all the index enforces. It never ranks and has no opinion on quality.</p>
       </div>
 
       <div class="column fragment fade-up" style="background: rgba(79,172,254,0.06); border: 1px solid rgba(79,172,254,0.4); border-radius: 12px; padding: 1.1em 1.3em;">
-        <p style="font-size: 0.78em; letter-spacing: 0.12em; color: var(--freenet-blue); text-transform: uppercase; margin: 0 0 0.5em;">The edge owns</p>
-        <p style="font-size: 1.1em; font-weight: 600; color: rgba(255,255,255,0.9); margin: 0 0 0.4em;">Judgment</p>
-        <p style="font-size: 0.82em; color: rgba(255,255,255,0.7); margin: 0;">Describing, ranking, deciding what to trust &mdash; all of it lives outside the contract, in programs anyone can rewrite.</p>
+        <p style="font-size: 0.78em; letter-spacing: 0.12em; color: var(--freenet-blue); text-transform: uppercase; margin: 0 0 0.5em;">You choose the rest</p>
+        <p style="font-size: 1.1em; font-weight: 600; color: rgba(255,255,255,0.9); margin: 0 0 0.4em;">Ranking, descriptions, trust</p>
+        <p style="font-size: 0.82em; color: rgba(255,255,255,0.7); margin: 0;">Separate programs, run by anyone, swapped by you. Swap the ranker, change what you see.</p>
       </div>
     </div>
 
-    <p class="fragment fade-up" style="font-size: 1.05em; color: rgba(255,255,255,0.9); text-align: center; max-width: 840px; margin: 0;">
-      The network <span class="highlight-green">proves what's real</span>. It never <span class="highlight">decides what's good</span>.
-    </p>
-
-    <p class="fragment fade-up" style="font-size: 0.85em; color: rgba(255,255,255,0.6); text-align: center;">
-      That deliberate split is why discovery here needs no gatekeeper.
+    <p class="fragment fade-up" style="font-size: 1.05em; font-weight: 600; color: rgba(255,255,255,0.92); text-align: center; max-width: 840px; margin: 0;">
+      No algorithm decides what you find. <span class="highlight-green">You pick the one that does.</span>
     </p>
 
   </div>
@@ -30,12 +26,11 @@
   <aside class="notes">
     <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>The heart of the section. Generalizes to every app.</li>
-      <li>The contract's whole job is integrity: signed by an authorized key, well-formed? No opinion on meaning or quality.</li>
-      <li>Everything subjective (describing, ranking, whom to trust) lives at the edge, in programs anyone can swap out.</li>
-      <li>One-liner: the network proves what's real, it never decides what's good.</li>
-      <li>Why it matters: judgment was never on the network, so pluralizing it later is just more programs at the edge.</li>
-      <li>That's the next slide.</li>
+      <li>This is how there's no gatekeeper.</li>
+      <li>The index enforces one thing: valid signature, well-formed. It never ranks.</li>
+      <li>Ranking, descriptions, whom to trust: separate programs, anyone runs them, you swap them.</li>
+      <li>Land: "No algorithm decides what you find. You pick the one that does."</li>
+      <li>Judgment was never on the network, so opening it up later is just more edge programs.</li>
     </ul>
   </aside>
 </section>

@@ -1,5 +1,5 @@
 <section style="display: flex; flex-direction: column; height: 100%;">
-  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">Being Honest About What It Protects</h2>
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">What It Protects, and What It Doesn't</h2>
 
   <div style="flex: 1; display: flex; align-items: safe center; justify-content: safe center; min-height: 0;">
     <div class="columns" style="width: 92%; gap: 2em; align-items: stretch;">
@@ -26,17 +26,20 @@
   </div>
 
   <p class="fragment fade-up" style="flex-shrink: 0; text-align: center; font-size: 0.88em; color: rgba(255,255,255,0.65); margin: 0.3em 0 0;">
-    And no Signal-style per-message ratcheting &mdash; this is shared room state with key rotation, a different design
+    And no Signal-style per-message ratcheting. This is shared room state with key rotation, a different design
   </p>
 
   <aside class="notes">
     <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>Be precise, cryptographers in the room. It protects content, it doesn't make you anonymous.</li>
-      <li>Not hidden: that a room exists, its membership, timing, rough message sizes.</li>
-      <li>Not Signal's double-ratchet. A shared per-room key with rotation, a different trade-off.</li>
-      <li>Want the strongest metadata and forward-secrecy for one-to-one today? Not this.</li>
-      <li>This proves private shared state can live on the network at all.</li>
+      <li>Different question from Signal, not a better answer.</li>
+      <li>Be precise, cryptographers in the room. Protects content, not anonymity.</li>
+      <li>Not hidden: room exists, membership, timing, rough message sizes.</li>
+      <li>Not Signal's double-ratchet. Shared per-room key + rotation: a different trade-off, not a weaker Signal.</li>
+      <li>Double-ratchet, if useful (skip for experts): Signal re-keys every message, so a leaked key opens nothing before or after it. River: one room key that rotates, so not yet.</li>
+      <li>Strongest metadata + forward-secrecy for 1:1 today? Not this.</li>
+      <li>Signal folks here: strengths as fact. No gushing, no dig.</li>
+      <li>Still experimental. Proves private shared state can live on the network at all.</li>
     </ul>
     <p><strong>BACKUP (Q&amp;A / accuracy, not for live):</strong></p>
     <ul>

@@ -1,48 +1,35 @@
 <section style="display: flex; flex-direction: column; height: 100%;">
-  <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">River: Group Chat With No Backend</h2>
+  <h2 style="flex-shrink: 0; margin-bottom: 0.2em; display: flex; align-items: center; gap: 0.4em;"><img src="/slides/futo/river-logo.svg" alt="" style="height: 0.95em; width: auto;">River: Group Chat With No Backend</h2>
 
-  <div style="flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: safe center; min-height: 0; gap: 1.4em;">
+  <div style="flex: 1; display: flex; align-items: safe center; justify-content: safe center; gap: 1.8em; min-height: 0; width: 100%;">
 
-    <!-- Conventional -->
-    <div style="width: 92%;">
-      <p style="font-size: 0.75em; letter-spacing: 0.12em; color: rgba(255,255,255,0.45); text-transform: uppercase; margin-bottom: 0.4em;">Conventional app</p>
-      <div style="display: flex; align-items: safe center; gap: 0.6em;">
-        <div style="flex: 1; background: rgba(52,152,219,0.12); border: 1px solid rgba(52,152,219,0.4); border-radius: 8px; padding: 0.6em; text-align: center; font-size: 0.85em;">Browser</div>
-        <span style="color: rgba(255,255,255,0.4); font-size: 1.2em;">&rarr;</span>
-        <div style="flex: 1; background: rgba(250,112,154,0.12); border: 1px solid rgba(250,112,154,0.45); border-radius: 8px; padding: 0.6em; text-align: center; font-size: 0.85em;">Company API</div>
-        <span style="color: rgba(255,255,255,0.4); font-size: 1.2em;">&rarr;</span>
-        <div style="flex: 1; background: rgba(250,112,154,0.12); border: 1px solid rgba(250,112,154,0.45); border-radius: 8px; padding: 0.6em; text-align: center; font-size: 0.85em;">Company database</div>
-      </div>
+    <!-- the real app -->
+    <div style="flex: 1 1 auto; min-width: 0; height: 100%; display: flex; flex-direction: column; align-items: safe center; justify-content: safe center; gap: 0.35em;">
+      <img src="/slides/futo/river-screenshot.png" alt="A live River room running on Freenet"
+           style="max-width: 100%; max-height: 90%; width: auto; height: auto; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.45);">
+      <p style="flex-shrink: 0; font-size: 0.62em; color: rgba(255,255,255,0.5); margin: 0;">A live River room, running on Freenet today</p>
     </div>
 
-    <!-- River -->
-    <div class="fragment fade-up" style="width: 92%;">
-      <p style="font-size: 0.75em; letter-spacing: 0.12em; color: var(--freenet-green); text-transform: uppercase; margin-bottom: 0.4em;">River</p>
-      <div style="display: flex; align-items: safe center; gap: 0.6em;">
-        <div style="flex: 1; background: rgba(52,152,219,0.12); border: 1px solid rgba(52,152,219,0.4); border-radius: 8px; padding: 0.6em; text-align: center; font-size: 0.85em;">Browser</div>
-        <span style="color: rgba(255,255,255,0.4); font-size: 1.2em;">&rarr;</span>
-        <div style="flex: 1; background: rgba(67,233,123,0.12); border: 1px solid rgba(67,233,123,0.45); border-radius: 8px; padding: 0.6em; text-align: center; font-size: 0.85em;">Local or hosted Freenet peer</div>
-        <span style="color: rgba(255,255,255,0.4); font-size: 1.2em;">&rarr;</span>
-        <div style="flex: 1; background: rgba(67,233,123,0.12); border: 1px solid rgba(67,233,123,0.45); border-radius: 8px; padding: 0.6em; text-align: center; font-size: 0.85em;">Room contract on Freenet</div>
-      </div>
+    <!-- the differentiator -->
+    <div style="flex: 0 1 300px; min-width: 210px; display: flex; flex-direction: column; gap: 0.8em;">
+      <p style="font-size: 0.98em; color: rgba(255,255,255,0.9); margin: 0;">A normal group chat. The difference is what's <span class="highlight-green">not</span> behind it.</p>
+      <ul style="margin: 0; font-size: 0.86em; line-height: 1.5; padding-left: 1.1em;">
+        <li>No River company server</li>
+        <li>No account or phone number</li>
+        <li>The room is a contract on Freenet</li>
+        <li>Popularity adds capacity, not a server bill</li>
+      </ul>
     </div>
-
-    <ul class="fragment fade-up" style="width: 88%; margin: 0; columns: 2; column-gap: 2.5em;">
-      <li>No River company server</li>
-      <li>No account or phone number</li>
-      <li>The room lives on the network</li>
-      <li>Popular rooms get more available as more peers serve them</li>
-    </ul>
 
   </div>
 
   <aside class="notes">
+    <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>River isn't interesting because chat is new. It's interesting because the room is network-hosted application state.</li>
-      <li>In a conventional app the company's servers are the room -- the state and the rules both live there.</li>
-      <li>In River the room is a contract on Freenet. Your peer talks to the network, not to a River company that doesn't exist.</li>
-      <li>There's no account and no phone number because there's no service to hold an account against.</li>
-      <li>Last point ties to the hosting slide later: popularity is meant to become capacity, not a server bill.</li>
+      <li>This is a real, active River room. Real people, real conversation, on Freenet right now.</li>
+      <li>The difference is the backend: there isn't one. The room is a contract on Freenet, not a company's server.</li>
+      <li>No account, no phone number. Nothing to hold against you.</li>
+      <li>Popularity becomes capacity, not a server bill.</li>
     </ul>
   </aside>
 </section>

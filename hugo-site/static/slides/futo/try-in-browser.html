@@ -5,21 +5,28 @@
 
     <!-- primary action: the participation moment -->
     <div class="fragment fade-up" style="width: 90%; max-width: 44em; background: rgba(67,233,123,0.06); border: 1px solid rgba(67,233,123,0.35); border-radius: 12px; padding: 1em 1.4em; text-align: center;">
-      <p style="font-size: 1.3em; font-weight: 600; margin: 0;">Open <span class="highlight-green">freenet.org/try</span>, and you're in a live room.</p>
+      <p style="font-size: 1.3em; font-weight: 600; margin: 0;">Open <span class="highlight-green">freenet.org/try</span>, and you're one click from a live room.</p>
       <p style="font-size: 0.82em; color: rgba(255,255,255,0.5); letter-spacing: 0.02em; margin: 0.4em 0 0;">no install &bull; no account &bull; no download</p>
     </div>
 
-    <!-- two substance cards: the interesting part -->
-    <div class="columns" style="width: 90%; max-width: 44em; gap: 1.1em; align-items: stretch;">
+    <!-- the two points, shown next to the real UI that does exactly this -->
+    <div style="width: 92%; max-width: 52em; display: flex; align-items: safe center; justify-content: safe center; gap: 1.6em; min-height: 0;">
 
-      <div class="column fragment fade-up" style="background: rgba(79,172,254,0.06); border: 1px solid rgba(79,172,254,0.3); border-radius: 12px; padding: 0.9em 1.2em;">
-        <p style="font-size: 1.02em; font-weight: 600; color: var(--freenet-blue); margin: 0;">Private, even hosted</p>
-        <p style="font-size: 0.8em; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0.35em 0 0;">encrypted at rest with a key only your browser holds</p>
+      <div style="flex: 0 1 320px; display: flex; flex-direction: column; gap: 0.7em;">
+        <div class="fragment fade-up" style="background: rgba(79,172,254,0.06); border: 1px solid rgba(79,172,254,0.3); border-radius: 12px; padding: 0.8em 1.1em;">
+          <p style="font-size: 1.02em; font-weight: 600; color: var(--freenet-blue); margin: 0;">Private, even hosted</p>
+          <p style="font-size: 0.8em; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0.3em 0 0;">encrypted at rest with a key only your browser holds</p>
+        </div>
+        <div class="fragment fade-up" style="background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.3); border-radius: 12px; padding: 0.8em 1.1em;">
+          <p style="font-size: 1.02em; font-weight: 600; color: var(--freenet-purple); margin: 0;">Yours to take</p>
+          <p style="font-size: 0.8em; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0.3em 0 0;">one click to move your data to your own peer</p>
+        </div>
       </div>
 
-      <div class="column fragment fade-up" style="background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.3); border-radius: 12px; padding: 0.9em 1.2em;">
-        <p style="font-size: 1.02em; font-weight: 600; color: var(--freenet-purple); margin: 0;">Yours to take</p>
-        <p style="font-size: 0.8em; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0.35em 0 0;">one-click export to your own peer</p>
+      <div class="fragment fade-up" style="flex: 0 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: safe center; gap: 0.3em;">
+        <img src="/slides/futo/try-export.png" alt="The try.freenet.org account panel: keep your access key, or move your data to your own peer"
+             style="max-width: 100%; max-height: 320px; width: auto; height: auto; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.45);">
+        <p style="font-size: 0.62em; color: rgba(255,255,255,0.5); margin: 0;">The real control, on try.freenet.org</p>
       </div>
 
     </div>
@@ -29,13 +36,20 @@
   <aside class="notes">
     <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>Old barrier was install-first: install a node, configure, find an app, find people.</li>
+      <li>Old barrier: install-first. Node, config, find an app, find people.</li>
       <li>Now the first experience is participation, not installation.</li>
-      <li>Open the page, River loads, you're in the Official room. No install, no account, no download.</li>
-      <li>Yes, this one is hosted on our server. But it's encrypted at rest with a key only your browser holds, even we can't read it.</li>
-      <li>Grab that key for your password manager if you want.</li>
-      <li>Install your own peer, export your data in about one click. It leaves with you.</li>
-      <li>Line to land: the first experience can be participation, not installation.</li>
+      <li>Do it with me: pull out your phone, open freenet.org/try, hit "Join the Freenet chat room."</li>
+      <li>That's a real Freenet app loading on your phone. No install, no account, no download.</li>
+      <li>Hands up if it loaded. That's the demo, and it's in your pocket, not on my laptop.</li>
+      <li>Yes, hosted on our server for now. Encrypted at rest, key stays in your browser. But you're trusting the code we serve, which is exactly why the export-to-your-own-peer path matters.</li>
+      <li>Grab the key for your password manager if you want.</li>
+      <li>Own peer: export in about one click. Your data leaves with you.</li>
+      <li>Land: "The first experience can be participation, not installation."</li>
+    </ul>
+    <p><strong>BACKUP (Q&amp;A / accuracy, not for live):</strong></p>
+    <ul>
+      <li>Served-code trust: the hosted /try runs JS we serve, so a compelled operator could ship key-stealing code. That's true of all in-browser crypto. The real answer is running your own peer, which is why export is one click.</li>
+      <li>If the room gets spammed live: that's the point, no one can delete it centrally. Moderation is room-level bans by the owner. Don't fight it on stage.</li>
     </ul>
   </aside>
 </section>

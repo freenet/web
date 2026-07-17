@@ -1,27 +1,26 @@
 <section style="display: flex; flex-direction: column; height: 100%;">
   <h2 style="flex-shrink: 0; margin-bottom: 0.2em;">The Same Pattern, Every Time</h2>
 
-  <div style="flex: 1; display: flex; align-items: safe center; justify-content: safe center; min-height: 0; gap: 2.5em;">
+  <div style="flex: 1; display: flex; align-items: safe center; justify-content: safe center; min-height: 0; gap: 3em;">
 
     <!-- The stack -->
-    <div style="display: flex; flex-direction: column; align-items: safe center; gap: 0.4em;">
-      <div style="background: rgba(52,152,219,0.12); border: 1px solid rgba(52,152,219,0.45); border-radius: 8px; padding: 0.55em 1.6em; text-align: center; font-size: 0.85em;">UI</div>
+    <div style="display: flex; flex-direction: column; align-items: safe center; gap: 0.35em;">
+      <p style="font-size: 0.64em; letter-spacing: 0.12em; color: var(--freenet-blue); text-transform: uppercase; margin: 0 0 0.1em;">The app</p>
+      <div style="background: rgba(52,152,219,0.12); border: 1px solid rgba(52,152,219,0.45); border-radius: 8px; padding: 0.5em 1.8em; text-align: center; font-size: 0.85em;">UI</div>
       <span style="color: rgba(255,255,255,0.35);">&darr;</span>
-      <div style="background: rgba(67,233,123,0.12); border: 1px solid rgba(67,233,123,0.45); border-radius: 8px; padding: 0.55em 1.6em; text-align: center; font-size: 0.85em;">Freenet contract</div>
+      <div style="background: rgba(67,233,123,0.12); border: 1px solid rgba(67,233,123,0.45); border-radius: 8px; padding: 0.5em 1.8em; text-align: center; font-size: 0.85em;">Contracts <span style="color: rgba(255,255,255,0.5);">(the rules)</span></div>
       <span style="color: rgba(255,255,255,0.35);">&darr;</span>
-      <div style="background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.45); border-radius: 8px; padding: 0.55em 1.6em; text-align: center; font-size: 0.85em;">Signed / encrypted state</div>
+      <div style="background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.45); border-radius: 8px; padding: 0.5em 1.8em; text-align: center; font-size: 0.85em;">Signed / encrypted state</div>
       <span style="color: rgba(255,255,255,0.35);">&darr;</span>
-      <div style="background: rgba(79,172,254,0.12); border: 1px solid rgba(79,172,254,0.45); border-radius: 8px; padding: 0.55em 1.2em; text-align: center; font-size: 0.8em;">Routing &bull; storage &bull; subscriptions &bull; updates</div>
+      <p style="font-size: 0.64em; letter-spacing: 0.12em; color: var(--freenet-green); text-transform: uppercase; margin: 0.15em 0 0.1em;">Shared by every app</p>
+      <div style="background: rgba(79,172,254,0.12); border: 1px solid rgba(79,172,254,0.45); border-radius: 8px; padding: 0.5em 1.2em; text-align: center; font-size: 0.8em;">The Freenet network<br><span style="color: rgba(255,255,255,0.7);">routing &bull; storage &bull; subscriptions &bull; updates</span></div>
     </div>
 
-    <!-- The mapping -->
-    <div class="fragment fade-up" style="font-size: 0.82em;">
-      <p style="margin: 0.35em 0;"><span class="highlight" style="display:inline-block; width: 6.5em;">River</span> shared chat state</p>
-      <p style="margin: 0.35em 0;"><span class="highlight-green" style="display:inline-block; width: 6.5em;">Delta</span> signed publishing state</p>
-      <p style="margin: 0.35em 0;"><span class="highlight-purple" style="display:inline-block; width: 6.5em;">Atlas</span> a discovery index</p>
-      <p style="margin: 0.35em 0;"><span class="highlight" style="display:inline-block; width: 6.5em;">Mail</span> private inbox state</p>
-      <p style="margin: 0.35em 0;"><span class="highlight-orange" style="display:inline-block; width: 6.5em;">freenet-git</span> a Git repository</p>
-      <p style="margin: 0.35em 0;"><span class="highlight-orange" style="display:inline-block; width: 6.5em;">Raven</span> profiles, threads, feeds</p>
+    <!-- The takeaway -->
+    <div class="fragment fade-up" style="max-width: 20em;">
+      <p style="font-size: 1.05em; font-weight: 600; color: rgba(255,255,255,0.92); margin: 0 0 0.6em;">Swap the top, get a different app.</p>
+      <p style="font-size: 0.88em; color: rgba(255,255,255,0.72); margin: 0 0 0.6em;">The bottom never changes. Every app in this talk is this same shape.</p>
+      <p style="font-size: 0.78em; color: rgba(255,255,255,0.5); margin: 0;">A contract is roughly a database table with its own rules baked in. A real app uses several.</p>
     </div>
 
   </div>
@@ -29,10 +28,11 @@
   <aside class="notes">
     <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>The slide that ties the whole talk together. Every app is the same shape.</li>
-      <li>Top: a UI. Then a contract with the rules. Then signed or encrypted state. Then the network: routing, storage, subscriptions, updates.</li>
-      <li>Swap the top two boxes, get a different app. The bottom half never changes, that's the shared substrate.</li>
-      <li>A River room and a Delta site are the same object at the network layer. That's what we're proving.</li>
+      <li>Every Freenet app is the same shape.</li>
+      <li>The top is the app: a UI, contracts that hold the rules, its signed or encrypted state.</li>
+      <li>The bottom is the network everyone shares: routing, storage, subscriptions, updates.</li>
+      <li>Swap the top, you get a different app. The bottom never changes.</li>
+      <li>A contract is roughly a database table with its own rules baked in, and a real app uses several.</li>
     </ul>
   </aside>
 </section>

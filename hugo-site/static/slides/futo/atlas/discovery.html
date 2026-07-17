@@ -4,24 +4,23 @@
   <div style="flex: 1; display: flex; align-items: safe center; justify-content: safe center; gap: 2em; min-height: 0; width: 100%;">
 
     <!-- text -->
-    <div style="flex: 1 1 auto; min-width: 300px; max-width: 600px; display: flex; flex-direction: column; gap: 1.0em;">
+    <div style="flex: 1 1 auto; min-width: 280px; max-width: 440px; display: flex; flex-direction: column; gap: 1.0em;">
       <blockquote style="font-size: 0.82em; width: 100%; margin: 0;">
-        On the web, whoever runs discovery &mdash; Google, the app store, the feed &mdash; decides what you can find.
-        And they answer to advertisers, not to you.
+        On the web, whoever runs discovery (Google, the app store, the feed) decides what you can find.
+        And they answer to advertisers and engagement metrics, not to you.
       </blockquote>
       <p style="font-size: 0.92em; color: rgba(255,255,255,0.88); margin: 0;">
-        Atlas is Freenet's discovery layer: a <span class="highlight-purple">public index anyone can host and verify</span>,
-        with no company between you and what you're looking for.
+        Atlas is Freenet's discovery layer: an <span class="highlight-purple">open, transparent index</span> hosted across the network, with no company in the middle.
       </p>
-      <p style="font-size: 0.8em; color: rgba(255,255,255,0.6); margin: 0;">
-        The aim: rankings <span class="highlight">you</span> choose, not an algorithm you can't see.
+      <p style="font-size: 0.9em; color: rgba(255,255,255,0.88); font-weight: 600; margin: 0;">
+        You pick which index you trust and how it's ranked. <span class="highlight-green">Good defaults, and you're never locked in.</span>
       </p>
     </div>
 
     <!-- screenshot -->
-    <div style="flex: 0 1 auto; max-width: 40%; min-width: 0; display: flex; flex-direction: column; align-items: safe center; gap: 0.5em;">
+    <div style="flex: 0 1 auto; max-width: 54%; min-width: 0; display: flex; flex-direction: column; align-items: safe center; gap: 0.5em;">
       <img src="/slides/futo/atlas/atlas-screenshot-dark.png" alt="The Atlas discovery UI"
-           style="max-width: 100%; max-height: 460px; width: auto; height: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.45);">
+           style="max-width: 100%; max-height: 540px; width: auto; height: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.45);">
       <p style="font-size: 0.68em; color: rgba(255,255,255,0.5); margin: 0;">The live Atlas UI, running on Freenet today</p>
     </div>
 
@@ -30,16 +29,18 @@
   <aside class="notes">
     <p><strong>SAY (cues):</strong></p>
     <ul>
-      <li>Discovery is the quiet power center of the web.</li>
-      <li>Whoever runs search, the app store, or the feed decides what billions can find, for their advertisers not you.</li>
-      <li>No platform means no company can own that position.</li>
-      <li>Atlas: discovery as a public good. An index anyone can host and verify, you pick whose rankings you trust.</li>
-      <li>On the right: the actual live Atlas UI on Freenet. Real and early.</li>
-      <li>Tee up the next slide: no-gatekeeper is the goal. Today the gatekeeper is still us.</li>
+      <li>Discovery = the quiet power center of the web.</li>
+      <li>Whoever runs search / the store / the feed decides what billions find. For advertisers and engagement, not you.</li>
+      <li>Atlas: discovery hosted across the network, no company owning that position. Transparent, not a black box.</li>
+      <li>The real point: you choose which index you trust and which algorithm ranks it. We ship good defaults, you're never locked in.</li>
+      <li>How it's built: a crawler indexes content, and a separate step writes neutral descriptions, today with an LLM. None of it is fixed, swap any part.</li>
+      <li>On the right: live Atlas UI on Freenet. Real and early.</li>
+      <li>No-gatekeeper is the goal. Today the default index and ranking are still run by us.</li>
     </ul>
     <p><strong>BACKUP (Q&amp;A / accuracy, not for live):</strong></p>
     <ul>
-      <li>Be honest: no-gatekeeper is the GOAL, not today's reality. Next slide shows exactly where it's still centralized.</li>
+      <li>Scale: don't say "anyone hosts the whole index", it won't stay small. It's hosted decentralized on the network; users pick which index(es) they trust.</li>
+      <li>No-gatekeeper is the GOAL, not today's reality. The default index and ranking are still run by us, with good defaults.</li>
     </ul>
   </aside>
 </section>
