@@ -283,10 +283,10 @@
     }
 
     /* --- slow counter-rotating orbits (~30s/rev), core stays put --- */
-    .sphere-slide .orbit-cw   { animation: sphOrbitCW  30s linear infinite; }
-    .sphere-slide .orbit-ccw  { animation: sphOrbitCCW 30s linear infinite; }
-    .sphere-slide .octr-cw    { animation: sphOrbitCW  30s linear infinite; }  /* counters an CCW ring */
-    .sphere-slide .octr-ccw   { animation: sphOrbitCCW 30s linear infinite; }  /* counters a  CW  ring */
+    .sphere-slide .orbit-cw   { animation: sphOrbitCW  60s linear infinite; }
+    .sphere-slide .orbit-ccw  { animation: sphOrbitCCW 60s linear infinite; }
+    .sphere-slide .octr-cw    { animation: sphOrbitCW  60s linear infinite; }  /* counters an CCW ring */
+    .sphere-slide .octr-ccw   { animation: sphOrbitCCW 60s linear infinite; }  /* counters a  CW  ring */
     @keyframes sphOrbitCW  { to { transform: rotate(360deg); } }
     @keyframes sphOrbitCCW { to { transform: rotate(-360deg); } }
 
