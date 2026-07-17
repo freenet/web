@@ -4,8 +4,8 @@
   <div style="flex: 1; display: flex; align-items: safe center; justify-content: safe center; gap: 1.8em; min-height: 0; width: 100%;">
 
     <!-- text (side column) -->
-    <div style="flex: 0 1 360px; min-width: 220px; display: flex; flex-direction: column; gap: 0.8em;">
-      <p style="font-size: 0.95em; color: rgba(255,255,255,0.9); margin: 0;">
+    <div style="flex: 0 1 360px; min-width: 220px; display: flex; flex-direction: column; gap: 0.5em;">
+      <p style="font-size: 0.86em; color: rgba(255,255,255,0.9); margin: 0;">
         Renegade is an <span class="highlight-green">open-source predictive model</span>: k-nearest neighbors with a learned metric, built for flexibility and good predictions from little data, no tuning.
       </p>
       <p style="font-size: 0.85em; color: rgba(255,255,255,0.8); margin: 0;">
@@ -17,6 +17,7 @@
       <div style="background: rgba(79,172,254,0.06); border-left: 2px solid rgba(79,172,254,0.45); border-radius: 4px; padding: 0.5em 0.75em;">
         <p style="font-size: 0.8em; color: rgba(255,255,255,0.82); margin: 0;">Like a CPU's <span class="highlight">branch predictor</span>: learn the likely path, don't stall.</p>
       </div>
+      <p style="font-size: 0.72em; color: rgba(255,255,255,0.45); margin: 0.1em 0 0;">Open source: <span style="color: rgba(255,255,255,0.62);">github.com/sanity/renegade</span></p>
     </div>
 
     <!-- graph (dominant) -->
@@ -40,7 +41,7 @@
     </ul>
     <p><strong>BACKUP (Q&amp;A / accuracy, not for live):</strong></p>
     <ul>
-      <li>Live in Freenet's routing since March 2026. Library is renegade-ml, open source.</li>
+      <li>Live in Freenet's routing since March 2026. Open source at github.com/sanity/renegade.</li>
       <li>Blended conservatively with the existing router, not trusted blindly, so a bad prediction can't tank routing.</li>
       <li>Privacy: each peer learns only from requests it already routes. No new data is collected, and nothing is shared between peers.</li>
     </ul>
