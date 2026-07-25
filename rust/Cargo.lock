@@ -1085,6 +1085,7 @@ dependencies = [
  "rand_core 0.6.4",
  "reqwest",
  "rmp-serde",
+ "rustls",
  "serde",
  "serde_json",
  "sha2 0.10.8",
@@ -2319,6 +2320,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c58f8c84392efc0a126acce10fa59ff7b3d2ac06ab451a33f2741989b806b044"
 dependencies = [
  "aws-lc-rs",
+ "log",
  "once_cell",
  "ring",
  "rustls-pki-types",

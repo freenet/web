@@ -10,6 +10,7 @@ use std::fs;
 use std::net::IpAddr;
 use std::path::PathBuf;
 use std::sync::Mutex;
+use std::time::{Duration as StdDuration, Instant};
 use thiserror::Error;
 
 /// Maximum number of invites allowed per IP within the time window.
@@ -26,17 +27,34 @@ use thiserror::Error;
 /// [`TOR_INVITES_PER_HOUR`].
 pub const MAX_INVITES_PER_WINDOW: usize = 4;
 
-/// Shared hourly invite ceiling across the ENTIRE Tor exit set.
+/// Default shared hourly invite ceiling across the ENTIRE Tor exit set.
 ///
-/// Sizing (measured 2026-07-24/25 from `invite_rate_limits.json`): organic Tor
-/// traffic peaked at **11 invites/hour** (mean 6.8) across 6 non-burst hours,
-/// while the abuse burst hit **158/hour**. 25 leaves 2.3x headroom over the
-/// worst observed organic hour, so ordinary Tor users are unaffected, while
-/// capping a rotation burst at ~16% of what it achieved. See
-/// `tor_bucket_admits_organic_peak_but_caps_burst`.
-pub const TOR_INVITES_PER_HOUR: usize = 25;
+/// # Sizing, and why this number is uncomfortable
+///
+/// From `invite_rate_limits.json` (1728 invites, 2026-07-24T06:23Z..
+/// 2026-07-25T05:54Z), classified against the official bulk exit list:
+///
+/// | Tor invites/hour | |
+/// |---|---|
+/// | organic hours (burst window excluded BY TIME, n=7) | mean 11.9, **max 33** |
+/// | burst hour 02:00Z | **208** |
+///
+/// An earlier revision used 25, derived from a smaller sample filtered by
+/// MAGNITUDE (hours above a threshold were excluded as "burst", then the
+/// remaining max was called the organic peak). That is circular, and it
+/// understated the peak by 3x. 25 would have refused real users.
+///
+/// 60 sits above the observed organic max (33) with ~1.8x headroom and still
+/// cuts the observed burst hour by ~71%. It is a judgement call on ambiguous
+/// data, not a derived constant: hours 04Z (28 invites / 25 exits) and 05Z
+/// (33 / 33) are ~1.0 invites per exit, which looks like many distinct real
+/// users -- but a one-request-per-exit attacker is indistinguishable from that
+/// by volume alone. Treat this as a starting value to tune from telemetry,
+/// which is why it is overridable at runtime (`--tor-invites-per-hour` /
+/// `TOR_INVITES_PER_HOUR`, `0` disables the ceiling entirely).
+pub const DEFAULT_TOR_INVITES_PER_HOUR: usize = 60;
 
-/// Window for [`TOR_INVITES_PER_HOUR`], in minutes.
+/// Window for the Tor ceiling, in minutes.
 pub const TOR_WINDOW_MINUTES: i64 = 60;
 
 /// SHA256 hashes of IPs exempt from rate limiting (for testing)
@@ -193,32 +211,60 @@ impl RateLimiter {
 /// Per-IP limiting assumes an IP approximates a person. For Tor that assumption
 /// is false in the attacker's favour: exits are a public, rotatable pool, so N
 /// exits multiply any per-IP limit by N. Metering the whole pool through ONE
-/// bucket removes the multiplier entirely — rotating costs the attacker nothing
-/// and gains them nothing.
+/// bucket removes the multiplier.
+///
+/// # The cost, stated plainly
+///
+/// Sharing a budget across an anonymity set means the loudest member can
+/// consume the whole allowance. An attacker who sustains the ceiling denies
+/// invites to EVERY Tor user for as long as they keep it up, and refused
+/// requests cost them nothing, so an automated poller wins each freed slot
+/// against a human. This is inherent to any aggregate cap over an unlinkable
+/// pool, not an implementation defect -- fixing it needs a per-request cost
+/// signal (proof-of-work / CAPTCHA), tracked in freenet/web#81. Do not describe
+/// this bucket as leaving ordinary Tor users unaffected: that is only true
+/// while nobody is attacking.
 ///
 /// Deliberately in-memory (not persisted like [`RateLimiter`]): a restart
-/// forgives at most [`TOR_INVITES_PER_HOUR`] requests, gkapi restarts only on
-/// deploy, and this keeps the hot path free of the read-modify-write file IO
-/// the per-IP limiter does.
+/// forgives at most one window's worth, gkapi restarts only on deploy, and this
+/// keeps the hot path free of the read-modify-write file IO the per-IP limiter
+/// does.
+///
+/// Uses a MONOTONIC clock ([`Instant`]) rather than wall time: an NTP step
+/// backwards would otherwise stall pruning and pin the bucket at full, denying
+/// every Tor user until the clock caught up. [`RateLimiter`] genuinely needs
+/// wall time because it persists; this does not.
 pub struct AggregateBucket {
     limit: usize,
-    window: Duration,
-    hits: Mutex<VecDeque<DateTime<Utc>>>,
+    window: StdDuration,
+    hits: Mutex<VecDeque<Instant>>,
 }
 
 impl AggregateBucket {
     pub fn new(limit: usize, window_minutes: i64) -> Self {
         Self {
             limit,
-            window: Duration::minutes(window_minutes),
+            window: StdDuration::from_secs((window_minutes.max(0) as u64) * 60),
             hits: Mutex::new(VecDeque::new()),
         }
     }
 
+    /// A limit of 0 disables the ceiling entirely (runtime off-switch).
+    pub fn is_disabled(&self) -> bool {
+        self.limit == 0
+    }
+
+    pub fn limit(&self) -> usize {
+        self.limit
+    }
+
     /// Drop hits that have aged out of the window.
-    fn prune(&self, hits: &mut VecDeque<DateTime<Utc>>, now: DateTime<Utc>) {
+    ///
+    /// `hits` is append-only with the clock sampled UNDER the lock, so it is
+    /// sorted ascending and the front is always the oldest.
+    fn prune(&self, hits: &mut VecDeque<Instant>, now: Instant) {
         while let Some(front) = hits.front() {
-            if now - *front >= self.window {
+            if now.duration_since(*front) >= self.window {
                 hits.pop_front();
             } else {
                 break;
@@ -226,49 +272,87 @@ impl AggregateBucket {
         }
     }
 
-    /// Is there room in the window right now?
+    /// Atomically take a slot if one is free.
     ///
-    /// Checked separately from [`Self::record`] so a caller can reject a request
-    /// BEFORE spending the requester's per-IP allowance on it (see the ordering
-    /// note in `routes::create_room_invite`). The gap between the two admits a
-    /// small overshoot under concurrent load, bounded by the number of requests
-    /// in flight; for an anti-abuse ceiling that is not worth a global lock.
-    pub fn has_capacity(&self) -> bool {
-        let now = Utc::now();
+    /// This is the ADMISSION AUTHORITY -- check and record happen under a
+    /// single lock acquisition, so the ceiling holds no matter how many
+    /// requests race, and stays correct if an `.await` is ever introduced
+    /// between the pre-check and here. Returns false when the window is full.
+    pub fn try_acquire(&self) -> bool {
+        if self.is_disabled() {
+            return true;
+        }
+        let now = Instant::now();
         match self.hits.lock() {
             Ok(mut hits) => {
                 self.prune(&mut hits, now);
-                hits.len() < self.limit
+                if hits.len() < self.limit {
+                    hits.push_back(now);
+                    true
+                } else {
+                    false
+                }
             }
             // Fail open: a poisoned lock must not block legitimate users.
             Err(_) => true,
         }
     }
 
-    /// Record one hit against the window.
-    pub fn record(&self) {
-        let now = Utc::now();
+    /// Give back a slot taken by [`Self::try_acquire`] for a request that was
+    /// not ultimately served.
+    ///
+    /// Removes the newest entry rather than the specific one acquired. Since
+    /// every entry in flight is within microseconds of the others and only the
+    /// COUNT is meaningful, that is equivalent, and it avoids handing out
+    /// tokens just to identify which entry to drop.
+    pub fn release(&self) {
+        if self.is_disabled() {
+            return;
+        }
         if let Ok(mut hits) = self.hits.lock() {
-            self.prune(&mut hits, now);
-            hits.push_back(now);
+            hits.pop_back();
+        }
+    }
+
+    /// Cheap non-consuming pre-check.
+    ///
+    /// Used only to reject early WITHOUT spending the requester's per-IP
+    /// allowance. It is advisory: [`Self::try_acquire`] is what actually
+    /// enforces the ceiling.
+    pub fn has_capacity(&self) -> bool {
+        if self.is_disabled() {
+            return true;
+        }
+        let now = Instant::now();
+        match self.hits.lock() {
+            Ok(mut hits) => {
+                self.prune(&mut hits, now);
+                hits.len() < self.limit
+            }
+            Err(_) => true,
         }
     }
 
     /// Seconds until the window has room again, or `None` if it has room now.
     pub fn retry_after_seconds(&self) -> Option<i64> {
-        let now = Utc::now();
+        if self.is_disabled() {
+            return None;
+        }
+        let now = Instant::now();
         let mut hits = self.hits.lock().ok()?;
         self.prune(&mut hits, now);
         if hits.len() < self.limit {
             return None;
         }
-        hits.front()
-            .map(|oldest| (*oldest + self.window - now).num_seconds().max(0))
+        hits.front().map(|oldest| {
+            let elapsed = now.duration_since(*oldest);
+            self.window.saturating_sub(elapsed).as_secs() as i64
+        })
     }
 
     /// Current occupancy (for logging / diagnostics).
     pub fn current(&self) -> usize {
-        let now = Utc::now();
+        let now = Instant::now();
         match self.hits.lock() {
             Ok(mut hits) => {
                 self.prune(&mut hits, now);
@@ -289,81 +373,135 @@ mod tests {
     fn aggregate_bucket_admits_up_to_limit_then_refuses() {
         let bucket = AggregateBucket::new(3, 60);
         for i in 1..=3 {
-            assert!(bucket.has_capacity(), "hit {i} should have capacity");
-            bucket.record();
+            assert!(bucket.try_acquire(), "hit {i} should be admitted");
         }
-        assert!(!bucket.has_capacity(), "4th hit must be refused");
+        assert!(!bucket.try_acquire(), "4th hit must be refused");
         assert_eq!(bucket.current(), 3);
         assert!(bucket.retry_after_seconds().is_some());
     }
 
     /// The whole point: many distinct identities share ONE budget, so rotating
-    /// between them gains nothing.
+    /// between them gains nothing. (Identity-blindness is what makes this true;
+    /// the end-to-end proof across real rotating IPs lives in the handler tests
+    /// in `routes.rs`, since the bucket itself has no concept of an IP.)
     #[test]
     fn aggregate_bucket_is_not_per_identity() {
         let bucket = AggregateBucket::new(2, 60);
-        // Simulate three different "IPs" all funnelling through one bucket.
-        bucket.record(); // exit A
-        bucket.record(); // exit B
+        assert!(bucket.try_acquire()); // exit A
+        assert!(bucket.try_acquire()); // exit B
         assert!(
-            !bucket.has_capacity(),
+            !bucket.try_acquire(),
             "a third distinct exit must NOT get its own allowance"
         );
     }
 
-    /// Sizing regression: the deployed ceiling must stay above the measured
-    /// organic Tor peak (11/hour) and far below the observed burst (158/hour).
+    /// `try_acquire` must be the atomic admission authority: N threads racing
+    /// must never admit more than `limit` in total.
     #[test]
-    fn tor_bucket_admits_organic_peak_but_caps_burst() {
-        const OBSERVED_ORGANIC_PEAK: usize = 11;
-        const OBSERVED_BURST: usize = 158;
+    fn aggregate_bucket_try_acquire_is_atomic_under_contention() {
+        use std::sync::Arc;
+        const LIMIT: usize = 25;
+        const THREADS: usize = 16;
+        const PER_THREAD: usize = 20;
 
-        assert!(
-            TOR_INVITES_PER_HOUR > OBSERVED_ORGANIC_PEAK,
-            "ceiling {TOR_INVITES_PER_HOUR} must exceed the organic peak \
-             {OBSERVED_ORGANIC_PEAK}/h or real Tor users get blocked"
-        );
-        assert!(
-            TOR_INVITES_PER_HOUR < OBSERVED_BURST / 2,
-            "ceiling {TOR_INVITES_PER_HOUR} must be well under the observed \
-             burst {OBSERVED_BURST}/h or it does not actually bound abuse"
-        );
-
-        let bucket = AggregateBucket::new(TOR_INVITES_PER_HOUR, TOR_WINDOW_MINUTES);
-        for _ in 0..OBSERVED_ORGANIC_PEAK {
-            assert!(
-                bucket.has_capacity(),
-                "organic traffic must never be refused"
-            );
-            bucket.record();
+        let bucket = Arc::new(AggregateBucket::new(LIMIT, 60));
+        let mut handles = Vec::new();
+        for _ in 0..THREADS {
+            let b = Arc::clone(&bucket);
+            handles.push(std::thread::spawn(move || {
+                (0..PER_THREAD).filter(|_| b.try_acquire()).count()
+            }));
         }
-        // Now replay the burst; it must be cut off at the ceiling.
-        let mut admitted = OBSERVED_ORGANIC_PEAK;
-        for _ in 0..OBSERVED_BURST {
-            if bucket.has_capacity() {
-                bucket.record();
-                admitted += 1;
-            }
-        }
+        let admitted: usize = handles.into_iter().map(|h| h.join().unwrap()).sum();
         assert_eq!(
-            admitted, TOR_INVITES_PER_HOUR,
-            "burst must be capped at the ceiling, not merely slowed"
+            admitted,
+            LIMIT,
+            "exactly {LIMIT} of {} racing attempts may be admitted",
+            THREADS * PER_THREAD
+        );
+        assert_eq!(bucket.current(), LIMIT);
+    }
+
+    #[test]
+    fn aggregate_bucket_release_returns_a_slot() {
+        let bucket = AggregateBucket::new(1, 60);
+        assert!(bucket.try_acquire());
+        assert!(!bucket.try_acquire(), "bucket is full");
+        bucket.release();
+        assert_eq!(bucket.current(), 0);
+        assert!(bucket.try_acquire(), "released slot must be reusable");
+    }
+
+    /// A limit of 0 is the runtime off-switch: nothing is ever refused.
+    #[test]
+    fn aggregate_bucket_zero_limit_disables_the_ceiling() {
+        let bucket = AggregateBucket::new(0, 60);
+        assert!(bucket.is_disabled());
+        for _ in 0..1000 {
+            assert!(bucket.try_acquire(), "a disabled ceiling never refuses");
+        }
+        assert!(bucket.has_capacity());
+        assert!(bucket.retry_after_seconds().is_none());
+    }
+
+    /// Sizing pin. Bounds are tied to the MEASURED organic peak, so raising the
+    /// ceiling far above real traffic (or dropping it below it) fails here.
+    ///
+    /// Accepted collateral, deliberately NOT claimed away by this test: while
+    /// an attacker holds the ceiling, ordinary Tor users are refused too. See
+    /// `AggregateBucket` docs and freenet/web#81.
+    #[test]
+    #[allow(clippy::assertions_on_constants)] // deliberate: this pins the constants
+    fn tor_ceiling_is_sized_between_organic_peak_and_burst() {
+        // Measured 2026-07-24/25 against the official bulk exit list.
+        const OBSERVED_ORGANIC_PEAK: usize = 33;
+        const OBSERVED_BURST_HOUR: usize = 208;
+
+        assert!(
+            DEFAULT_TOR_INVITES_PER_HOUR > OBSERVED_ORGANIC_PEAK,
+            "ceiling {DEFAULT_TOR_INVITES_PER_HOUR} must exceed the measured organic \
+             peak {OBSERVED_ORGANIC_PEAK}/h or it refuses real users"
+        );
+        assert!(
+            DEFAULT_TOR_INVITES_PER_HOUR <= 2 * OBSERVED_ORGANIC_PEAK,
+            "ceiling {DEFAULT_TOR_INVITES_PER_HOUR} must stay within 2x the organic \
+             peak {OBSERVED_ORGANIC_PEAK}/h or it barely constrains a burst"
+        );
+        assert!(
+            DEFAULT_TOR_INVITES_PER_HOUR < OBSERVED_BURST_HOUR / 2,
+            "ceiling must be well under the observed burst {OBSERVED_BURST_HOUR}/h"
         );
     }
 
     #[test]
-    fn aggregate_bucket_expires_old_hits() {
+    fn aggregate_bucket_expires_old_hits_individually() {
         let bucket = AggregateBucket::new(2, 60);
-        // Backdate both hits beyond the window.
         {
             let mut hits = bucket.hits.lock().unwrap();
-            let old = Utc::now() - Duration::minutes(61);
-            hits.push_back(old);
-            hits.push_back(old);
+            // One aged out, one still inside the window.
+            hits.push_back(Instant::now() - StdDuration::from_secs(61 * 60));
+            hits.push_back(Instant::now() - StdDuration::from_secs(30 * 60));
         }
-        assert_eq!(bucket.current(), 0, "expired hits must be pruned");
-        assert!(bucket.has_capacity());
-        assert!(bucket.retry_after_seconds().is_none());
+        assert_eq!(bucket.current(), 1, "only the expired hit is pruned");
+        assert!(bucket.try_acquire(), "the freed slot is reusable");
+        assert!(!bucket.try_acquire(), "and only one slot freed");
+    }
+
+    /// `retry_after_seconds` must reflect the OLDEST hit's expiry, not the
+    /// newest. Reading `back()` instead of `front()` passes a naive test.
+    #[test]
+    fn retry_after_reflects_oldest_hit() {
+        let bucket = AggregateBucket::new(2, 60);
+        {
+            let mut hits = bucket.hits.lock().unwrap();
+            hits.push_back(Instant::now() - StdDuration::from_secs(59 * 60)); // frees in ~60s
+            hits.push_back(Instant::now() - StdDuration::from_secs(60)); // frees in ~59min
+        }
+        let retry = bucket.retry_after_seconds().expect("bucket is full");
+        assert!(
+            (30..=120).contains(&retry),
+            "expected ~60s from the OLDEST hit, got {retry}s (reading back() not front()?)"
+        );
     }
 
     #[test]

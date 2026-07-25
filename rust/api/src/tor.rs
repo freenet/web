@@ -4,27 +4,36 @@
 //!
 //! gkapi's per-IP invite limit ([`crate::rate_limit::MAX_INVITES_PER_WINDOW`])
 //! is structurally defeated by Tor circuit rotation: every new exit node
-//! presents a fresh IP, and therefore a fresh bucket. Measured on 2026-07-25,
-//! a single actor pulled **152 invites in ~20 minutes across 113 distinct exit
-//! IPs**, and not one of those IPs came close to the per-IP limit. Tightening
-//! the per-IP number does nothing about this — rotation simply routes around
-//! it, whatever the number is.
+//! presents a fresh IP, and therefore a fresh bucket.
+//!
+//! Measured from `invite_rate_limits.json` (1728 invites,
+//! 2026-07-24T06:23Z..2026-07-25T05:54Z), classified against the official bulk
+//! exit list: the 02:35-03:05Z burst was **246 invites from 202 distinct IPs,
+//! 200 of them via 159 Tor exits**, with no single IP near the per-IP limit.
+//! Tightening the per-IP number does nothing about this -- rotation routes
+//! around it at any value.
 //!
 //! Because the Tor exit set is *enumerable*, the fix is to stop treating exits
 //! as independent identities and meter them as one shared bucket (see
-//! [`crate::rate_limit::AggregateBucket`]). Rotation then buys the attacker
-//! nothing at all. This module supplies the membership test that makes that
-//! possible.
+//! [`crate::rate_limit::AggregateBucket`]).
 //!
-//! # Why not simply block Tor
+//! # Why not simply block Tor, and what the bucket costs instead
 //!
-//! Measured over the same 23-hour window, Tor accounts for ~4.8% of invite
-//! traffic *outside* the attack burst — 69 requests from 56 distinct exits,
-//! nearly all of them 1-2 requests each, i.e. ordinary usage. Freenet is a
-//! privacy project and the quickstart is the main onboarding path, so blocking
-//! that traffic outright costs real users. A shared bucket sized above the
-//! observed organic peak (11/hour) leaves those users untouched while capping
-//! a rotation burst hard.
+//! Tor is ~7% of non-burst invite traffic (106 requests from 90 distinct exits
+//! over the same window), nearly all 1-2 requests each -- ordinary usage.
+//! Freenet is a privacy project and the quickstart is the main onboarding path,
+//! so blocking that traffic outright denies real users in ALL states.
+//!
+//! The bucket is better than a block, but it is NOT free, and the earlier
+//! version of this comment was wrong to claim ordinary Tor users are
+//! unaffected. Sharing one budget across an anonymity set means the loudest
+//! member can take all of it: an attacker who sustains the ceiling denies
+//! invites to every Tor user for as long as they keep it up, and because a
+//! refused request costs them nothing, an automated poller wins each freed slot
+//! against a human. That is inherent to any aggregate cap over an unlinkable
+//! pool. Closing it needs a per-request cost signal (proof-of-work / CAPTCHA),
+//! tracked in freenet/web#81. Treat this module as rate-shaping that buys time,
+//! not as a fix.
 //!
 //! # Failure policy: FAIL OPEN
 //!
@@ -62,6 +71,10 @@ const MAX_RESPONSE_BYTES: usize = 4 * 1024 * 1024;
 /// The real list is ~2000 exits, so this is ~50x headroom.
 const MAX_EXITS: usize = 100_000;
 
+/// A real bulk exit list holds ~1000-2000 entries. Anything far below this is a
+/// truncated or wrong response, not a genuinely tiny Tor network.
+const MIN_PLAUSIBLE_EXITS: usize = 200;
+
 /// Beyond this age the cached list is still USED (stale data beats no data for
 /// a rate-limit hint) but is logged as stale, because decommissioned exits can
 /// be reassigned to ordinary users and would then be metered as Tor.
@@ -78,10 +91,26 @@ pub enum TorListError {
     Io(#[from] std::io::Error),
     #[error("response too large: {0} bytes exceeds cap of {MAX_RESPONSE_BYTES}")]
     TooLarge(usize),
-    #[error("response contained no parseable exit addresses")]
-    Empty,
+    #[error("implausibly small exit list: {got} entries (minimum {min}); refusing to replace a good list")]
+    Implausible { got: usize, min: usize },
+    #[error(
+        "exit list shrank implausibly: {got} entries vs {previous} previously; refusing to replace"
+    )]
+    Shrank { got: usize, previous: usize },
     #[error("lock poisoned")]
     Lock,
+}
+
+/// Map an IPv4-mapped IPv6 address (`::ffff:a.b.c.d`) to its IPv4 form so both
+/// spellings compare equal. Other addresses pass through unchanged.
+fn canonicalize(ip: &IpAddr) -> IpAddr {
+    match ip {
+        IpAddr::V6(v6) => match v6.to_ipv4_mapped() {
+            Some(v4) => IpAddr::V4(v4),
+            None => *ip,
+        },
+        _ => *ip,
+    }
 }
 
 #[derive(Default)]
@@ -151,8 +180,14 @@ impl TorExitList {
     /// Returns `false` when the list is empty or unavailable — see the
     /// fail-open policy in the module docs.
     pub fn is_exit(&self, ip: &IpAddr) -> bool {
+        // Canonicalize first. gkapi binds 0.0.0.0 today so peers are always
+        // IpAddr::V4, but changing the bind to `::` for dual-stack (a one-line,
+        // plausible change) makes Linux deliver IPv4 peers as ::ffff:a.b.c.d,
+        // which would never match the V4 entries parsed from the list -- every
+        // exit would silently escape metering with nothing in the logs.
+        let ip = canonicalize(ip);
         match self.inner.read() {
-            Ok(snap) => snap.exits.contains(ip),
+            Ok(snap) => snap.exits.contains(&ip),
             Err(_) => {
                 warn!("Tor exit list lock poisoned; treating as non-Tor (fail open)");
                 false
@@ -194,21 +229,43 @@ impl TorExitList {
 
         // Reject an oversized body up front when the server declares a length.
         if let Some(len) = response.content_length() {
-            if len as usize > MAX_RESPONSE_BYTES {
-                return Err(TorListError::TooLarge(len as usize));
+            if len > MAX_RESPONSE_BYTES as u64 {
+                return Err(TorListError::TooLarge(len.min(usize::MAX as u64) as usize));
             }
         }
 
-        let body = response.text().await?;
-        // ...and again after the fact, since content-length is advisory.
-        if body.len() > MAX_RESPONSE_BYTES {
-            return Err(TorListError::TooLarge(body.len()));
+        // Stream with a running total. `response.text()` would buffer the whole
+        // body BEFORE any size check, so a chunked response (no content-length)
+        // could allocate without bound until FETCH_TIMEOUT -- an OOM on a small
+        // VM. The cap has to be enforced while reading, not after.
+        let mut response = response;
+        let mut buf: Vec<u8> = Vec::new();
+        while let Some(chunk) = response.chunk().await? {
+            if buf.len() + chunk.len() > MAX_RESPONSE_BYTES {
+                return Err(TorListError::TooLarge(buf.len() + chunk.len()));
+            }
+            buf.extend_from_slice(&chunk);
         }
+        let body = String::from_utf8_lossy(&buf).into_owned();
 
         let exits = Self::parse(&body);
-        if exits.is_empty() {
-            // Never let a garbage 200 wipe a good list.
-            return Err(TorListError::Empty);
+        // "Non-empty" is NOT enough validation. A truncated 200, or an HTML
+        // error page that happens to contain one IP-shaped string, would
+        // otherwise replace a good ~1400-entry list with a handful of entries
+        // and silently switch off nearly all Tor metering -- the worst kind of
+        // failure, because everything keeps "working".
+        if exits.len() < MIN_PLAUSIBLE_EXITS {
+            return Err(TorListError::Implausible {
+                got: exits.len(),
+                min: MIN_PLAUSIBLE_EXITS,
+            });
+        }
+        let previous = self.len();
+        if previous > 0 && exits.len() * 2 < previous {
+            return Err(TorListError::Shrank {
+                got: exits.len(),
+                previous,
+            });
         }
 
         let now = Utc::now();
@@ -244,7 +301,7 @@ impl TorExitList {
                 continue;
             }
             if let Ok(ip) = line.parse::<IpAddr>() {
-                out.insert(ip);
+                out.insert(canonicalize(&ip));
                 if out.len() >= MAX_EXITS {
                     warn!("Tor exit list hit the {MAX_EXITS} entry cap; truncating");
                     break;
@@ -300,21 +357,62 @@ pub fn spawn_refresher(list: Arc<TorExitList>) {
         );
     }
 
-    tokio::spawn(async move {
+    let handle = tokio::spawn(async move {
+        // Backoff schedule used ONLY while we have no usable list at all. With
+        // an empty list the ceiling does not exist, so waiting a full hour after
+        // one transient failure would leave it off for an hour; with a good
+        // cached list an hourly retry is fine.
+        const EMPTY_RETRY_SECS: &[u64] = &[30, 60, 300, 900];
+        let mut empty_attempt = 0usize;
+
         loop {
             match list.refresh().await {
-                Ok(n) => info!("Refreshed Tor exit list: {n} exit addresses"),
-                Err(e) => warn!(
-                    "Tor exit list refresh failed: {e} (using {} cached entries, last updated {}{}; \
-                     Tor traffic is metered per-IP only until this succeeds)",
-                    list.len(),
-                    list.last_updated()
-                        .map(|t| t.to_rfc3339())
-                        .unwrap_or_else(|| "never".to_string()),
-                    if list.is_stale() { ", STALE" } else { "" }
-                ),
+                Ok(n) => {
+                    info!("Refreshed Tor exit list: {n} exit addresses");
+                    empty_attempt = 0;
+                }
+                Err(e) => {
+                    let cached = list.len();
+                    if cached == 0 {
+                        warn!(
+                            "Tor exit list refresh failed with NO cached list: {e}. \
+                             Tor traffic is metered per-IP only (ceiling inactive)."
+                        );
+                    } else {
+                        warn!(
+                            "Tor exit list refresh failed: {e} (still enforcing {cached} cached \
+                             entries, last updated {}{})",
+                            list.last_updated()
+                                .map(|t| t.to_rfc3339())
+                                .unwrap_or_else(|| "never".to_string()),
+                            if list.is_stale() { ", STALE" } else { "" }
+                        );
+                    }
+                }
             }
-            tokio::time::sleep(REFRESH_INTERVAL).await;
+
+            let delay = if list.is_empty() {
+                let d = EMPTY_RETRY_SECS[empty_attempt.min(EMPTY_RETRY_SECS.len() - 1)];
+                empty_attempt = empty_attempt.saturating_add(1);
+                Duration::from_secs(d)
+            } else {
+                REFRESH_INTERVAL
+            };
+            tokio::time::sleep(delay).await;
+        }
+    });
+
+    // The loop above is infinite, so the ONLY way this task ends is a panic --
+    // which would silently freeze the exit list forever with nothing in the
+    // logs. Watch the handle so that failure is at least loud.
+    tokio::spawn(async move {
+        match handle.await {
+            Ok(()) => log::error!(
+                "Tor exit list refresher exited unexpectedly; the exit list is now frozen"
+            ),
+            Err(e) => {
+                log::error!("Tor exit list refresher panicked: {e}; the exit list is now frozen")
+            }
         }
     });
 }

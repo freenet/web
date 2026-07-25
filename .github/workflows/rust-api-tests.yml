@@ -1,0 +1,65 @@
+# Compile and test the Rust API crate.
+#
+# Why this exists: before it, CI never built `rust/api` at all. `deploy.yml`
+# runs `cargo make build-site` (wasm + hugo only), and `integration-test.yml`
+# is `workflow_dispatch:` only. So a compile error in `rust/api` -- or any
+# failing unit test in it -- would merge green and only surface when someone
+# ran the deploy script on vega.
+#
+# That gap let a real bug through: adding `reqwest` with `rustls-tls` enabled a
+# second rustls provider feature alongside axum-server's, which made gkapi panic
+# at startup in HTTPS mode ("no process-level CryptoProvider available"). Unit
+# tests could not catch it because none of them construct a TLS config, hence
+# the https_startup integration test, which this job runs.
+name: Rust API Tests
+
+on:
+  pull_request:
+    paths:
+      - "rust/**"
+      - ".github/workflows/rust-api-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "rust/**"
+      - ".github/workflows/rust-api-tests.yml"
+
+concurrency:
+  group: rust-api-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      - name: Formatting
+        working-directory: rust
+        run: cargo fmt -p ghostkey-api -- --check
+
+      - name: Build
+        working-directory: rust
+        run: cargo build -p ghostkey-api
+
+      # Unit tests plus the HTTPS startup smoke test. The latter spawns the real
+      # binary with a self-signed cert and makes a real HTTPS request, because
+      # the TLS provider failure mode is invisible to any in-process test.
+      #
+      # Network-dependent tests are #[ignore]d and deliberately NOT run here --
+      # the live Tor Project fetch would make this job flaky. Run them manually:
+      #   cargo test --bins -- --ignored
+      - name: Test
+        working-directory: rust
+        run: cargo test -p ghostkey-api

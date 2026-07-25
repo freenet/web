@@ -32,9 +32,18 @@ serde = { version = "1.0", features = ["derive"] }
 blind-rsa-signatures = "0.15.1"
 ciborium = "0.2"
 bs58 = "0.5"
-# Tor exit-list fetch. rustls (not native-tls) to match axum-server's TLS stack
-# and avoid pulling in openssl.
+# Tor exit-list fetch.
+#
+# NOTE: `rustls-tls` enables `rustls/ring`, while axum-server's `tls-rustls`
+# enables `rustls/aws-lc-rs`. With BOTH provider features on, rustls 0.23's
+# `CryptoProvider::from_crate_features()` returns None and TLS startup panics
+# with "no process-level CryptoProvider available". main() therefore installs
+# the aws-lc-rs provider explicitly before any TLS is constructed -- see
+# `install_crypto_provider()` and `https_mode_starts_without_crypto_provider_panic`.
+# Do NOT remove that call, and do NOT assume unit tests cover it: only an
+# actual HTTPS-mode start exercises this path.
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+rustls = { version = "0.23", features = ["aws-lc-rs"] }
 
 [dev-dependencies]
 tempfile = "3"
