@@ -38,10 +38,10 @@ in just a few hops, scaling efficiently to millions of peers, no servers require
 ## Watch
 
 {{< talk-card
-    id="3SxNBz1VTE0"
-    title="Freenet Lives! Real-Time Decentralized Apps at Scale"
-    href="/about/news/freenet-lives-video-talk/"
-    caption="30-min talk at FUTO" >}}
+    id="3RBNboYUlVI"
+    title="Freenet: Services Without Servers"
+    href="/about/news/services-without-servers-video-talk/"
+    caption="July 2026 talk at FUTO" >}}
 
 </div>
 
