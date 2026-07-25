@@ -19,6 +19,7 @@ mod handle_sign_cert;
 mod invite;
 mod rate_limit;
 mod routes;
+mod tor;
 
 /// Canonical env var for the notary key directory. The legacy name
 /// `DELEGATE_DIR` is also read (in `delegates::notary_dir`) for backward
@@ -78,6 +79,12 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
             .map(|s| s.as_str())
             .unwrap_or("/var/lib/gkapi/invite_rate_limits.json"),
     );
+    let tor_exit_cache = Some(PathBuf::from(
+        matches
+            .get_one::<String>("tor-exit-cache")
+            .map(|s| s.as_str())
+            .unwrap_or("/var/lib/gkapi/tor_exit_list.txt"),
+    ));
 
     // Load signing key from file (32 bytes raw)
     let signing_key_bytes = match fs::read(signing_key_path) {
@@ -135,6 +142,7 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
 
     Some(InviteState::new(
         rate_limit_file,
+        tor_exit_cache,
         room_owner_vk,
         inviter_signing_key,
         room_name,
@@ -241,6 +249,14 @@ async fn main() {
                 .default_value("/var/lib/gkapi/invite_rate_limits.json")
                 .help("Path to rate limit JSON file"),
         )
+        .arg(
+            Arg::new("tor-exit-cache")
+                .long("tor-exit-cache")
+                .value_name("FILE")
+                .env("TOR_EXIT_CACHE")
+                .default_value("/var/lib/gkapi/tor_exit_list.txt")
+                .help("Path to the cached Tor exit-node list (refreshed hourly)"),
+        )
         .get_matches();
 
     let notary_dir = matches.get_one::<String>("notary-dir").unwrap();
@@ -284,6 +300,10 @@ async fn main() {
             "River room invite endpoint enabled for room: {}",
             state.room_name
         );
+        // Keep the Tor exit list current so the shared Tor ceiling can be
+        // applied. If this never succeeds the list stays empty and invite
+        // limiting silently degrades to per-IP only (fail open).
+        tor::spawn_refresher(Arc::clone(&state.tor_exits));
         app = app.merge(routes::get_invite_routes(state));
     } else {
         warn!("River room invite endpoint not configured. Set ROOM_SIGNING_KEY_FILE and ROOM_OWNER_VK to enable.");

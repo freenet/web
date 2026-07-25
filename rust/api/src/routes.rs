@@ -22,12 +22,17 @@ use crate::handle_sign_cert::{
     sign_certificate, CertificateError, SignCertificateRequest, SignCertificateResponse,
 };
 use crate::invite;
-use crate::rate_limit::RateLimiter;
+use crate::rate_limit::{AggregateBucket, RateLimiter, TOR_INVITES_PER_HOUR, TOR_WINDOW_MINUTES};
+use crate::tor::TorExitList;
 
 /// Shared application state for invite generation
 #[derive(Clone)]
 pub struct InviteState {
     pub rate_limiter: Arc<RateLimiter>,
+    /// Shared ceiling across the whole Tor exit set (see `AggregateBucket`).
+    pub tor_bucket: Arc<AggregateBucket>,
+    /// Membership test for "is this IP a Tor exit". Empty => nothing is Tor.
+    pub tor_exits: Arc<TorExitList>,
     pub room_owner_vk: VerifyingKey,
     pub inviter_signing_key: SigningKey,
     pub room_name: String,
@@ -36,12 +41,18 @@ pub struct InviteState {
 impl InviteState {
     pub fn new(
         rate_limit_file: PathBuf,
+        tor_exit_cache: Option<PathBuf>,
         room_owner_vk: VerifyingKey,
         inviter_signing_key: SigningKey,
         room_name: String,
     ) -> Self {
         Self {
             rate_limiter: Arc::new(RateLimiter::new(rate_limit_file, 24)),
+            tor_bucket: Arc::new(AggregateBucket::new(
+                TOR_INVITES_PER_HOUR,
+                TOR_WINDOW_MINUTES,
+            )),
+            tor_exits: Arc::new(TorExitList::new(tor_exit_cache)),
             room_owner_vk,
             inviter_signing_key,
             room_name,
@@ -368,7 +379,43 @@ async fn create_room_invite(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
 ) -> Result<Json<CreateInviteResponse>, (StatusCode, Json<InviteErrorResponse>)> {
     let client_ip = get_client_ip(addr);
-    info!("Received create-invite request from IP: {}", client_ip);
+    let via_tor = state.tor_exits.is_exit(&client_ip);
+    info!(
+        "Received create-invite request from IP: {} (tor_exit={})",
+        client_ip, via_tor
+    );
+
+    // Tor exits share ONE hourly ceiling, because per-IP limiting cannot bound
+    // an actor who rotates exit nodes (2026-07-25: 152 invites via 113 exits,
+    // none near the per-IP limit).
+    //
+    // Ordering matters. This capacity check runs BEFORE `check_and_record` so a
+    // request refused here does not also burn the requester's per-IP allowance
+    // -- otherwise a burst would silently consume the quota of the ordinary Tor
+    // users it is sharing the bucket with. The matching `record()` happens only
+    // AFTER the per-IP check passes, so a request rejected for per-IP reasons
+    // never consumes shared Tor capacity either.
+    if via_tor && !state.tor_bucket.has_capacity() {
+        let retry_after = state.tor_bucket.retry_after_seconds();
+        info!(
+            "Tor exit {} refused: shared Tor ceiling reached ({}/{} per hour), retry_after: {:?}",
+            client_ip,
+            state.tor_bucket.current(),
+            TOR_INVITES_PER_HOUR,
+            retry_after
+        );
+        return Err((
+            StatusCode::TOO_MANY_REQUESTS,
+            Json(InviteErrorResponse {
+                error: format!(
+                    "Invite requests from Tor are limited to {} per hour in total. \
+                     Please try again shortly, or request an invite without Tor.",
+                    TOR_INVITES_PER_HOUR
+                ),
+                retry_after_seconds: retry_after,
+            }),
+        ));
+    }
 
     // Check rate limit
     match state.rate_limiter.check_and_record(client_ip) {
@@ -401,6 +448,14 @@ async fn create_room_invite(
                 }),
             ));
         }
+    }
+
+    // The per-IP check passed, so this request is being served -- charge it to
+    // the shared Tor ceiling. Done here rather than alongside `has_capacity()`
+    // so that a request rejected by the per-IP limiter never consumes shared
+    // capacity that ordinary Tor users are relying on.
+    if via_tor {
+        state.tor_bucket.record();
     }
 
     // Generate invite

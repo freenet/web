@@ -166,18 +166,19 @@ mod tests {
         let owner_vk_bytes = bs58::decode("93XNNwmRLQ6nwUwi4dDmp3kpjMb5ekMRc2e22x5TAnUY")
             .into_vec()
             .expect("Failed to decode owner VK");
-        let owner_vk = VerifyingKey::from_bytes(&owner_vk_bytes.try_into().expect("Invalid VK length"))
-            .expect("Invalid VK");
+        let owner_vk =
+            VerifyingKey::from_bytes(&owner_vk_bytes.try_into().expect("Invalid VK length"))
+                .expect("Invalid VK");
 
         // Signing key from rooms.json for freenet-chat
         let signing_key_bytes: [u8; 32] = [
-            1, 3, 163, 211, 4, 113, 25, 236, 171, 57, 117, 76, 11, 233, 182, 31,
-            111, 137, 94, 202, 149, 4, 41, 59, 145, 54, 18, 82, 243, 194, 71, 224
+            1, 3, 163, 211, 4, 113, 25, 236, 171, 57, 117, 76, 11, 233, 182, 31, 111, 137, 94, 202,
+            149, 4, 41, 59, 145, 54, 18, 82, 243, 194, 71, 224,
         ];
         let signing_key = SigningKey::from_bytes(&signing_key_bytes);
 
-        let invite = create_invitation(&owner_vk, &signing_key)
-            .expect("Failed to create invitation");
+        let invite =
+            create_invitation(&owner_vk, &signing_key).expect("Failed to create invitation");
 
         println!("\n=== Generated Invite for freenet-chat ===");
         println!("{}", invite);
