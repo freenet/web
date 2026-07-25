@@ -1,5 +1,5 @@
-use serde::de::StdError;
 use ghostkey_lib::errors::GhostkeyError;
+use serde::de::StdError;
 
 #[derive(Debug)]
 pub enum CertificateError {

@@ -19,6 +19,7 @@ mod handle_sign_cert;
 mod invite;
 mod rate_limit;
 mod routes;
+mod tor;
 
 /// Canonical env var for the notary key directory. The legacy name
 /// `DELEGATE_DIR` is also read (in `delegates::notary_dir`) for backward
@@ -78,6 +79,24 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
             .map(|s| s.as_str())
             .unwrap_or("/var/lib/gkapi/invite_rate_limits.json"),
     );
+    let tor_exit_cache = Some(PathBuf::from(
+        matches
+            .get_one::<String>("tor-exit-cache")
+            .map(|s| s.as_str())
+            .unwrap_or("/var/lib/gkapi/tor_exit_list.txt"),
+    ));
+    // Runtime off-switch / tuning knob for the shared Tor ceiling. `0` disables
+    // it entirely, so an operator can turn this off (or resize it) without a
+    // rebuild if it turns out to refuse legitimate users.
+    let tor_invites_per_hour = matches
+        .get_one::<String>("tor-invites-per-hour")
+        .and_then(|s| match s.parse::<usize>() {
+            Ok(v) => Some(v),
+            Err(e) => {
+                error!("Invalid --tor-invites-per-hour {s:?}: {e}; using default");
+                None
+            }
+        });
 
     // Load signing key from file (32 bytes raw)
     let signing_key_bytes = match fs::read(signing_key_path) {
@@ -135,14 +154,50 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
 
     Some(InviteState::new(
         rate_limit_file,
+        tor_exit_cache,
+        tor_invites_per_hour,
         room_owner_vk,
         inviter_signing_key,
         room_name,
     ))
 }
 
+/// Install the process-wide rustls crypto provider.
+///
+/// REQUIRED, and load-bearing: this crate ends up with BOTH `rustls/aws-lc-rs`
+/// (via axum-server's `tls-rustls`) and `rustls/ring` (via reqwest's
+/// `rustls-tls`) enabled. When both provider features are on, rustls 0.23's
+/// `CryptoProvider::from_crate_features()` returns `None` on purpose, and the
+/// first TLS construction panics with:
+///
+///   no process-level CryptoProvider available -- call
+///   CryptoProvider::install_default() before this point
+///
+/// That panic is on the main task, so gkapi dies at startup in HTTPS mode and
+/// takes the donation and cert-signing endpoints down with it -- not just
+/// invites. It is invisible to `cargo test`: nothing in the test suite builds
+/// an `axum-server` `RustlsConfig`, and `cargo run` without `--tls-cert`
+/// takes the plain-HTTP branch. Only an actual HTTPS start reaches it.
+///
+/// aws-lc-rs is chosen to preserve the provider axum-server used before
+/// reqwest was introduced. Pinned by
+/// `https_mode_starts_without_crypto_provider_panic` in tests/https_startup.rs.
+fn install_crypto_provider() {
+    if rustls::crypto::aws_lc_rs::default_provider()
+        .install_default()
+        .is_err()
+    {
+        // Already installed (e.g. a second call in a test process). Not fatal:
+        // the invariant we need is "a provider exists", not "we installed it".
+        warn!("rustls crypto provider was already installed");
+    }
+}
+
 #[tokio::main]
 async fn main() {
+    // MUST run before anything constructs a TLS config. See the function docs.
+    install_crypto_provider();
+
     // Pre-scan argv for the legacy --delegate-dir spelling so we can emit a
     // deprecation warning before clap normalizes it to the canonical name.
     // (See the same pattern in rust/cli/src/bin/ghostkey.rs.)
@@ -241,6 +296,24 @@ async fn main() {
                 .default_value("/var/lib/gkapi/invite_rate_limits.json")
                 .help("Path to rate limit JSON file"),
         )
+        .arg(
+            Arg::new("tor-exit-cache")
+                .long("tor-exit-cache")
+                .value_name("FILE")
+                .env("TOR_EXIT_CACHE")
+                .default_value("/var/lib/gkapi/tor_exit_list.txt")
+                .help("Path to the cached Tor exit-node list (refreshed hourly)"),
+        )
+        .arg(
+            Arg::new("tor-invites-per-hour")
+                .long("tor-invites-per-hour")
+                .value_name("N")
+                .env("TOR_INVITES_PER_HOUR")
+                .help(
+                    "Shared hourly invite ceiling across ALL Tor exits (0 disables). \
+                     Defaults to DEFAULT_TOR_INVITES_PER_HOUR.",
+                ),
+        )
         .get_matches();
 
     let notary_dir = matches.get_one::<String>("notary-dir").unwrap();
@@ -284,6 +357,10 @@ async fn main() {
             "River room invite endpoint enabled for room: {}",
             state.room_name
         );
+        // Keep the Tor exit list current so the shared Tor ceiling can be
+        // applied. If this never succeeds the list stays empty and invite
+        // limiting silently degrades to per-IP only (fail open).
+        tor::spawn_refresher(Arc::clone(&state.tor_exits));
         app = app.merge(routes::get_invite_routes(state));
     } else {
         warn!("River room invite endpoint not configured. Set ROOM_SIGNING_KEY_FILE and ROOM_OWNER_VK to enable.");

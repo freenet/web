@@ -209,9 +209,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 inviteLoading.style.display = 'none';
                 inviteError.style.display = 'block';
                 errorMessage.textContent = data.error;
-                if (data.retry_after_seconds) {
-                    const hours = Math.ceil(data.retry_after_seconds / 3600);
-                    retryMessage.textContent = `You can try again in approximately ${hours} hour(s).`;
+                // Retry hints can now be sub-hour: the shared Tor ceiling uses a
+                // 60-minute window, so values arrive anywhere in 0..3600s.
+                // Rounding everything up to hours told a user waiting 90 seconds
+                // to come back in "approximately 1 hour(s)".
+                // Note `!= null` rather than truthiness, so a legitimate 0 is
+                // rendered instead of leaving a stale message from a prior try.
+                if (data.retry_after_seconds != null) {
+                    const secs = Math.max(0, Math.round(data.retry_after_seconds));
+                    let when;
+                    if (secs < 60) {
+                        when = `${Math.max(1, secs)} second(s)`;
+                    } else if (secs < 3600) {
+                        when = `${Math.ceil(secs / 60)} minute(s)`;
+                    } else {
+                        when = `${Math.ceil(secs / 3600)} hour(s)`;
+                    }
+                    retryMessage.textContent = `You can try again in approximately ${when}.`;
+                } else {
+                    retryMessage.textContent = '';
                 }
                 return;
             }

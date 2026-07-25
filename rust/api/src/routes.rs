@@ -13,7 +13,7 @@ use axum::{
 };
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use ghostkey_lib::armorable::Armorable;
-use log::{error, info};
+use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
 
@@ -22,12 +22,20 @@ use crate::handle_sign_cert::{
     sign_certificate, CertificateError, SignCertificateRequest, SignCertificateResponse,
 };
 use crate::invite;
-use crate::rate_limit::RateLimiter;
+use crate::rate_limit::{
+    AggregateBucket, RateLimiter, DEFAULT_TOR_INVITES_PER_HOUR, MAX_INVITES_PER_WINDOW,
+    TOR_WINDOW_MINUTES,
+};
+use crate::tor::TorExitList;
 
 /// Shared application state for invite generation
 #[derive(Clone)]
 pub struct InviteState {
     pub rate_limiter: Arc<RateLimiter>,
+    /// Shared ceiling across the whole Tor exit set (see `AggregateBucket`).
+    pub tor_bucket: Arc<AggregateBucket>,
+    /// Membership test for "is this IP a Tor exit". Empty => nothing is Tor.
+    pub tor_exits: Arc<TorExitList>,
     pub room_owner_vk: VerifyingKey,
     pub inviter_signing_key: SigningKey,
     pub room_name: String,
@@ -36,12 +44,19 @@ pub struct InviteState {
 impl InviteState {
     pub fn new(
         rate_limit_file: PathBuf,
+        tor_exit_cache: Option<PathBuf>,
+        tor_invites_per_hour: Option<usize>,
         room_owner_vk: VerifyingKey,
         inviter_signing_key: SigningKey,
         room_name: String,
     ) -> Self {
         Self {
             rate_limiter: Arc::new(RateLimiter::new(rate_limit_file, 24)),
+            tor_bucket: Arc::new(AggregateBucket::new(
+                tor_invites_per_hour.unwrap_or(DEFAULT_TOR_INVITES_PER_HOUR),
+                TOR_WINDOW_MINUTES,
+            )),
+            tor_exits: Arc::new(TorExitList::new(tor_exit_cache)),
             room_owner_vk,
             inviter_signing_key,
             room_name,
@@ -368,7 +383,44 @@ async fn create_room_invite(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
 ) -> Result<Json<CreateInviteResponse>, (StatusCode, Json<InviteErrorResponse>)> {
     let client_ip = get_client_ip(addr);
-    info!("Received create-invite request from IP: {}", client_ip);
+    let via_tor = state.tor_exits.is_exit(&client_ip);
+    info!(
+        "Received create-invite request from IP: {} (tor_exit={})",
+        client_ip, via_tor
+    );
+
+    // Tor exits share ONE hourly ceiling, because per-IP limiting cannot bound
+    // an actor who rotates exit nodes (2026-07-25: 152 invites via 113 exits,
+    // none near the per-IP limit).
+    //
+    // Ordering matters. This capacity check runs BEFORE `check_and_record` so a
+    // request refused here does not also burn the requester's per-IP allowance
+    // -- otherwise a burst would silently consume the quota of the ordinary Tor
+    // users it is sharing the bucket with. The matching `record()` happens only
+    // AFTER the per-IP check passes, so a request rejected for per-IP reasons
+    // never consumes shared Tor capacity either.
+    if via_tor && !state.tor_bucket.has_capacity() {
+        let retry_after = state.tor_bucket.retry_after_seconds();
+        // warn!, not info!: sustained exhaustion means legitimate Tor users are
+        // being refused and an operator should see it.
+        warn!(
+            "Tor exit {} refused: shared Tor ceiling reached ({}/{}), retry_after: {:?}",
+            client_ip,
+            state.tor_bucket.current(),
+            state.tor_bucket.limit(),
+            retry_after
+        );
+        return Err((
+            StatusCode::TOO_MANY_REQUESTS,
+            Json(InviteErrorResponse {
+                // Deliberately does NOT tell a privacy-tool user to stop using
+                // it, and does NOT state the exact ceiling (which would tell an
+                // attacker precisely what budget to drain).
+                error: "Too many invite requests right now. Please try again shortly.".to_string(),
+                retry_after_seconds: retry_after,
+            }),
+        ));
+    }
 
     // Check rate limit
     match state.rate_limiter.check_and_record(client_ip) {
@@ -385,8 +437,9 @@ async fn create_room_invite(
             return Err((
                 StatusCode::TOO_MANY_REQUESTS,
                 Json(InviteErrorResponse {
-                    error: "Rate limited. You can request up to 4 invites per 24 hours."
-                        .to_string(),
+                    error: format!(
+                        "Rate limited. You can request up to {MAX_INVITES_PER_WINDOW} invites per 24 hours."
+                    ),
                     retry_after_seconds: retry_after,
                 }),
             ));
@@ -403,6 +456,32 @@ async fn create_room_invite(
         }
     }
 
+    // The per-IP check passed, so charge the shared Tor ceiling. `try_acquire`
+    // (not the earlier `has_capacity`) is the admission AUTHORITY: it prunes,
+    // checks and records under one lock, so the ceiling holds however many
+    // requests race, and stays correct if an `.await` is ever introduced
+    // between the pre-check and here.
+    //
+    // Placed after the per-IP check so a per-IP rejection never consumes shared
+    // capacity that ordinary Tor users depend on.
+    if via_tor && !state.tor_bucket.try_acquire() {
+        // Lost the race against a concurrent request since the pre-check.
+        let retry_after = state.tor_bucket.retry_after_seconds();
+        warn!(
+            "Tor exit {} refused at acquire: shared ceiling reached ({}/{})",
+            client_ip,
+            state.tor_bucket.current(),
+            state.tor_bucket.limit()
+        );
+        return Err((
+            StatusCode::TOO_MANY_REQUESTS,
+            Json(InviteErrorResponse {
+                error: "Too many invite requests right now. Please try again shortly.".to_string(),
+                retry_after_seconds: retry_after,
+            }),
+        ));
+    }
+
     // Generate invite
     match invite::create_invitation(&state.room_owner_vk, &state.inviter_signing_key) {
         Ok(invite_code) => {
@@ -414,6 +493,12 @@ async fn create_room_invite(
         }
         Err(e) => {
             error!("Failed to generate invite: {:?}", e);
+            // No invite was issued, so give the Tor slot back. Otherwise a
+            // burst of generation failures would lock out every Tor user for a
+            // full window on top of the outage itself.
+            if via_tor {
+                state.tor_bucket.release();
+            }
             Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(InviteErrorResponse {
@@ -443,4 +528,208 @@ pub fn get_invite_routes(state: InviteState) -> Router {
     Router::new()
         .route("/create-invite", post(create_room_invite))
         .with_state(state)
+}
+
+#[cfg(test)]
+mod invite_handler_tests {
+    //! End-to-end tests for the invite handler's rate-limit wiring.
+    //!
+    //! Every unit below this is correct in isolation; the VALUE of the change
+    //! lives in how they compose in `create_room_invite`. Three one-line
+    //! regressions -- dropping `try_acquire`, inverting `via_tor`, or moving the
+    //! acquire above the per-IP check -- each leave the unit tests fully green
+    //! and the limiter fully defeated. These tests are what fail instead.
+
+    use super::*;
+    use crate::rate_limit::AggregateBucket;
+    use crate::tor::TorExitList;
+    use std::net::SocketAddr;
+    use tempfile::TempDir;
+
+    /// Build state with an injected exit list and a small ceiling.
+    fn state_with(dir: &TempDir, exits: &[String], ceiling: usize) -> InviteState {
+        let cache = dir.path().join("exits.txt");
+        std::fs::write(&cache, exits.join("\n")).unwrap();
+        let mut seed = [0u8; 32];
+        seed[0] = 7;
+        let signing_key = SigningKey::from_bytes(&seed);
+        let owner = signing_key.verifying_key();
+        InviteState {
+            rate_limiter: Arc::new(RateLimiter::new(dir.path().join("rl.json"), 24)),
+            tor_bucket: Arc::new(AggregateBucket::new(ceiling, 60)),
+            tor_exits: Arc::new(TorExitList::new(Some(cache))),
+            room_owner_vk: owner,
+            inviter_signing_key: signing_key,
+            room_name: "Test Room".to_string(),
+        }
+    }
+
+    fn addr(ip: &str) -> SocketAddr {
+        SocketAddr::new(ip.parse::<IpAddr>().unwrap(), 12345)
+    }
+
+    async fn request(state: &InviteState, ip: &str) -> StatusCode {
+        match create_room_invite(State(state.clone()), ConnectInfo(addr(ip))).await {
+            Ok(_) => StatusCode::OK,
+            Err((code, _)) => code,
+        }
+    }
+
+    /// THE regression test for the incident this change exists to fix: an actor
+    /// rotating many distinct Tor exits must be capped in TOTAL, not per-IP.
+    ///
+    /// Fails if `try_acquire` is dropped, or if `via_tor` is inverted.
+    #[tokio::test]
+    async fn tor_exits_share_one_ceiling_across_rotating_ips() {
+        const CEILING: usize = 5;
+        let dir = tempfile::tempdir().unwrap();
+        // 40 distinct exits, each used once -- exactly the burst's shape.
+        let exits: Vec<String> = (1..=40).map(|i| format!("185.220.101.{i}")).collect();
+        let state = state_with(&dir, &exits, CEILING);
+
+        let mut ok = 0;
+        let mut refused = 0;
+        for i in 1..=40 {
+            match request(&state, &format!("185.220.101.{i}")).await {
+                StatusCode::OK => ok += 1,
+                StatusCode::TOO_MANY_REQUESTS => refused += 1,
+                other => panic!("unexpected status {other}"),
+            }
+        }
+        assert_eq!(
+            ok, CEILING,
+            "rotation across 40 exits must yield exactly {CEILING} invites, got {ok}"
+        );
+        assert_eq!(refused, 40 - CEILING);
+    }
+
+    /// A non-Tor IP must be unaffected by a saturated Tor ceiling.
+    ///
+    /// Fails if `via_tor` is inverted or ignored.
+    #[tokio::test]
+    async fn non_tor_ip_unaffected_by_full_tor_bucket() {
+        let dir = tempfile::tempdir().unwrap();
+        let exits: Vec<String> = (1..=10).map(|i| format!("185.220.101.{i}")).collect();
+        let state = state_with(&dir, &exits, 2);
+
+        // Saturate via Tor.
+        assert_eq!(request(&state, "185.220.101.1").await, StatusCode::OK);
+        assert_eq!(request(&state, "185.220.101.2").await, StatusCode::OK);
+        assert_eq!(
+            request(&state, "185.220.101.3").await,
+            StatusCode::TOO_MANY_REQUESTS
+        );
+
+        let before = state.tor_bucket.current();
+        assert_eq!(
+            request(&state, "203.0.113.9").await,
+            StatusCode::OK,
+            "a non-Tor IP must still be served"
+        );
+        assert_eq!(
+            state.tor_bucket.current(),
+            before,
+            "a non-Tor request must not consume shared Tor capacity"
+        );
+    }
+
+    /// Pins the second half of the ordering rationale: a request refused by the
+    /// PER-IP limiter must not consume shared Tor capacity.
+    ///
+    /// Fails if `try_acquire` is moved above `check_and_record`.
+    #[tokio::test]
+    async fn per_ip_rejection_does_not_consume_tor_capacity() {
+        let dir = tempfile::tempdir().unwrap();
+        let state = state_with(&dir, &["185.220.101.1".to_string()], 100);
+
+        // Exhaust this single exit's per-IP allowance.
+        for _ in 0..MAX_INVITES_PER_WINDOW {
+            assert_eq!(request(&state, "185.220.101.1").await, StatusCode::OK);
+        }
+        let consumed = state.tor_bucket.current();
+        assert_eq!(consumed, MAX_INVITES_PER_WINDOW);
+
+        // Further requests are per-IP rejections; they must NOT take Tor slots.
+        for _ in 0..5 {
+            assert_eq!(
+                request(&state, "185.220.101.1").await,
+                StatusCode::TOO_MANY_REQUESTS
+            );
+        }
+        assert_eq!(
+            state.tor_bucket.current(),
+            consumed,
+            "per-IP rejections must not consume shared Tor capacity"
+        );
+    }
+
+    /// Pins the first half of the ordering rationale: a request refused by the
+    /// TOR ceiling must not burn the requester's per-IP allowance, so an
+    /// ordinary Tor user still has their full quota once capacity frees.
+    #[tokio::test]
+    async fn tor_ceiling_refusal_does_not_burn_per_ip_allowance() {
+        let dir = tempfile::tempdir().unwrap();
+        let exits: Vec<String> = (1..=10).map(|i| format!("185.220.101.{i}")).collect();
+        let state = state_with(&dir, &exits, 1);
+
+        assert_eq!(request(&state, "185.220.101.1").await, StatusCode::OK);
+        // Victim is refused purely by the ceiling.
+        for _ in 0..3 {
+            assert_eq!(
+                request(&state, "185.220.101.5").await,
+                StatusCode::TOO_MANY_REQUESTS
+            );
+        }
+        // Free the ceiling; the victim must still have all 4 per-IP invites.
+        state.tor_bucket.release();
+        let mut served = 0;
+        for _ in 0..MAX_INVITES_PER_WINDOW {
+            if request(&state, "185.220.101.5").await == StatusCode::OK {
+                served += 1;
+                state.tor_bucket.release(); // keep ceiling free for this probe
+            }
+        }
+        assert_eq!(
+            served, MAX_INVITES_PER_WINDOW,
+            "ceiling refusals must not have consumed the victim's per-IP quota"
+        );
+    }
+
+    /// The fail-open claim that actually matters: with no exit list, the
+    /// endpoint behaves exactly as it did before this feature existed.
+    #[tokio::test]
+    async fn empty_exit_list_is_a_handler_no_op() {
+        let dir = tempfile::tempdir().unwrap();
+        let state = state_with(&dir, &[], 1); // ceiling of 1, but nothing is Tor
+
+        for _ in 0..MAX_INVITES_PER_WINDOW {
+            assert_eq!(request(&state, "185.220.101.1").await, StatusCode::OK);
+        }
+        assert_eq!(
+            request(&state, "185.220.101.1").await,
+            StatusCode::TOO_MANY_REQUESTS,
+            "per-IP limit still applies"
+        );
+        assert_eq!(
+            state.tor_bucket.current(),
+            0,
+            "an empty exit list must never consume Tor capacity"
+        );
+    }
+
+    /// The runtime off-switch must fully disable the ceiling.
+    #[tokio::test]
+    async fn zero_ceiling_disables_tor_metering() {
+        let dir = tempfile::tempdir().unwrap();
+        let exits: Vec<String> = (1..=20).map(|i| format!("185.220.101.{i}")).collect();
+        let state = state_with(&dir, &exits, 0);
+
+        for i in 1..=20 {
+            assert_eq!(
+                request(&state, &format!("185.220.101.{i}")).await,
+                StatusCode::OK,
+                "ceiling 0 must never refuse"
+            );
+        }
+    }
 }
