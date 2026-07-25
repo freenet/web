@@ -77,6 +77,6 @@ of the top 100 innovators in the world under the age of 35.
 ## External Links
 
 - [Freenet Project](https://freenet.org)
-- [Google Scholar](https://scholar.google.com/citations?user=KMfLvOoAAAAJ)
+- [Google Scholar](https://scholar.google.com/citations?user=fUhPeqUAAAAJ)
 - [GitHub](https://github.com/sanity)
 - [LinkedIn](https://www.linkedin.com/in/iancjclarke)
