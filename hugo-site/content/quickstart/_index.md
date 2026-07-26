@@ -57,7 +57,7 @@ Need to remove Freenet? See the [uninstall guide](/uninstall/).
 
 ## What's Next?
 
-- [Live Network Dashboard](http://nova.locut.us:3133/) - Watch real-time activity on the network
+- [Live Network Dashboard](https://telemetry.freenet.org/) - Watch real-time activity on the network
 - [User Manual](/build/manual/) - Learn how Freenet works
 - [Video Talks](/about/video-talks/) - Watch presentations about Freenet
 - [FAQ](/about/faq/) - Common questions and answers
