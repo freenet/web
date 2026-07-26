@@ -8,15 +8,16 @@ use dotenv::dotenv;
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use log::{error, info, warn, LevelFilter};
 use tokio::sync::Mutex;
-use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 
+use crate::invite_pow::DEFAULT_POW_DIFFICULTY;
 use crate::routes::InviteState;
 
 mod delegates;
 mod errors;
 mod handle_sign_cert;
 mod invite;
+mod invite_pow;
 mod rate_limit;
 mod routes;
 mod tor;
@@ -85,18 +86,11 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
             .map(|s| s.as_str())
             .unwrap_or("/var/lib/gkapi/tor_exit_list.txt"),
     ));
-    // Runtime off-switch / tuning knob for the shared Tor ceiling. `0` disables
-    // it entirely, so an operator can turn this off (or resize it) without a
-    // rebuild if it turns out to refuse legitimate users.
-    let tor_invites_per_hour = matches
-        .get_one::<String>("tor-invites-per-hour")
-        .and_then(|s| match s.parse::<usize>() {
-            Ok(v) => Some(v),
-            Err(e) => {
-                error!("Invalid --tor-invites-per-hour {s:?}: {e}; using default");
-                None
-            }
-        });
+    let global_invites_per_hour = matches.get_one::<usize>("global-invites-per-hour").copied();
+    let pow_base_difficulty = matches
+        .get_one::<u8>("invite-pow-difficulty")
+        .copied()
+        .unwrap_or(DEFAULT_POW_DIFFICULTY);
 
     // Load signing key from file (32 bytes raw)
     let signing_key_bytes = match fs::read(signing_key_path) {
@@ -155,7 +149,8 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
     Some(InviteState::new(
         rate_limit_file,
         tor_exit_cache,
-        tor_invites_per_hour,
+        global_invites_per_hour,
+        pow_base_difficulty,
         room_owner_vk,
         inviter_signing_key,
         room_name,
@@ -305,14 +300,21 @@ async fn main() {
                 .help("Path to the cached Tor exit-node list (refreshed hourly)"),
         )
         .arg(
-            Arg::new("tor-invites-per-hour")
-                .long("tor-invites-per-hour")
+            Arg::new("global-invites-per-hour")
+                .long("global-invites-per-hour")
                 .value_name("N")
-                .env("TOR_INVITES_PER_HOUR")
-                .help(
-                    "Shared hourly invite ceiling across ALL Tor exits (0 disables). \
-                     Defaults to DEFAULT_TOR_INVITES_PER_HOUR.",
-                ),
+                .env("GLOBAL_INVITES_PER_HOUR")
+                .value_parser(value_parser!(usize))
+                .help("Emergency hourly ceiling across all issued invitations (0 disables)."),
+        )
+        .arg(
+            Arg::new("invite-pow-difficulty")
+                .long("invite-pow-difficulty")
+                .value_name("BITS")
+                .env("INVITE_POW_DIFFICULTY")
+                .value_parser(value_parser!(u8).range(1..=30))
+                .default_value("16")
+                .help("Base leading-zero-bit difficulty for invite proof of work"),
         )
         .get_matches();
 
@@ -357,19 +359,15 @@ async fn main() {
             "River room invite endpoint enabled for room: {}",
             state.room_name
         );
-        // Keep the Tor exit list current so the shared Tor ceiling can be
-        // applied. If this never succeeds the list stays empty and invite
-        // limiting silently degrades to per-IP only (fail open).
+        // Keep the Tor exit list current. Invite issuance fails closed while
+        // the list is unavailable so Tor blocking cannot silently degrade.
         tor::spawn_refresher(Arc::clone(&state.tor_exits));
         app = app.merge(routes::get_invite_routes(state));
     } else {
         warn!("River room invite endpoint not configured. Set ROOM_SIGNING_KEY_FILE and ROOM_OWNER_VK to enable.");
     }
 
-    let app = app
-        .layer(TraceLayer::new_for_http())
-        .layer(CorsLayer::permissive())
-        .fallback(not_found);
+    let app = app.layer(TraceLayer::new_for_http()).fallback(not_found);
 
     let challenge_dir_clone = challenge_dir.clone();
     let challenge_app =

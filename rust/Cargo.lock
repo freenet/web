@@ -693,6 +693,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "data-encoding"
+version = "2.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4ae5f15dda3c708c0ade84bfee31ccab44a3da4f88015ed22f63732abe300c8"
+
+[[package]]
 name = "der"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1074,12 +1080,14 @@ dependencies = [
  "ciborium",
  "clap",
  "curve25519-dalek",
+ "data-encoding",
  "dotenv",
  "ed25519-dalek",
  "env_logger",
  "fantoccini",
  "ghostkey_lib",
  "hex",
+ "hmac",
  "log",
  "rand 0.8.5",
  "rand_core 0.6.4",
