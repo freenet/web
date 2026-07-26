@@ -153,7 +153,7 @@
     </div>
 
     <div id="invite-loading" style="display: none;">
-        <p class="loading-text">Joining the chat...</p>
+        <p id="invite-loading-message" class="loading-text">Preparing your invitation...</p>
     </div>
 </div>
 
@@ -182,6 +182,148 @@ document.addEventListener('DOMContentLoaded', function() {
     const inviteLink = document.getElementById('invite-link');
     const errorMessage = document.getElementById('error-message');
     const retryMessage = document.getElementById('retry-message');
+    const loadingMessage = document.getElementById('invite-loading-message');
+
+    const powDomain = new TextEncoder().encode('freenet-river-invite-pow-v1');
+
+    function hexToBytes(hex) {
+        if (typeof hex !== 'string' || hex.length % 2 !== 0) {
+            throw new Error('The invite server returned an invalid challenge');
+        }
+        const bytes = new Uint8Array(hex.length / 2);
+        for (let i = 0; i < bytes.length; i++) {
+            bytes[i] = Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+        }
+        return bytes;
+    }
+
+    function hasLeadingZeroBits(hash, difficulty) {
+        const bytes = new Uint8Array(hash);
+        const fullBytes = Math.floor(difficulty / 8);
+        for (let i = 0; i < fullBytes; i++) {
+            if (bytes[i] !== 0) return false;
+        }
+        const remaining = difficulty % 8;
+        return remaining === 0 || (bytes[fullBytes] >> (8 - remaining)) === 0;
+    }
+
+    async function solveChallenge(challenge) {
+        if (!window.crypto || !window.crypto.subtle) {
+            throw new Error('This browser cannot perform invite verification');
+        }
+        const id = hexToBytes(challenge.challenge);
+        if (id.length !== 16 || !Number.isInteger(challenge.difficulty)) {
+            throw new Error('The invite server returned an invalid challenge');
+        }
+
+        const prefix = new Uint8Array(powDomain.length + id.length + 8);
+        prefix.set(powDomain, 0);
+        prefix.set(id, powDomain.length);
+        const nonceOffset = powDomain.length + id.length;
+        const batchSize = 128;
+        let nonce = 0;
+        const started = performance.now();
+
+        while (nonce < Number.MAX_SAFE_INTEGER - batchSize) {
+            const attempts = [];
+            for (let i = 0; i < batchSize; i++) {
+                const candidate = nonce + i;
+                const input = prefix.slice();
+                new DataView(input.buffer).setBigUint64(nonceOffset, BigInt(candidate), false);
+                attempts.push(crypto.subtle.digest('SHA-256', input));
+            }
+            const hashes = await Promise.all(attempts);
+            for (let i = 0; i < hashes.length; i++) {
+                if (hasLeadingZeroBits(hashes[i], challenge.difficulty)) {
+                    return nonce + i;
+                }
+            }
+            nonce += batchSize;
+            if (nonce % 4096 === 0) {
+                const elapsed = Math.max(1, Math.round((performance.now() - started) / 1000));
+                loadingMessage.textContent = `Preparing a spam-resistant invitation… ${elapsed}s`;
+                await new Promise(resolve => requestAnimationFrame(resolve));
+            }
+        }
+        throw new Error('Invite verification took too long');
+    }
+
+    async function readApiResponse(response) {
+        let data = {};
+        try {
+            data = await response.json();
+        } catch (_) {
+            // Preserve the HTTP status below when an upstream error is not JSON.
+        }
+        if (!response.ok) {
+            const error = new Error(data.error || `Invite server error (${response.status})`);
+            error.status = response.status;
+            error.retryAfter = data.retry_after_seconds;
+            throw error;
+        }
+        return data;
+    }
+
+    async function requestInvite() {
+        // A challenge is short-lived and single-use. Retry once if it expires or
+        // races with a duplicate submission, without bothering the user.
+        for (let attempt = 0; attempt < 2; attempt++) {
+            const challengeResponse = await fetch(`${apiUrl}/invite-challenge`);
+            // Deployment compatibility: publish this page first, then update
+            // gkapi. The old API has no challenge route, so it remains usable
+            // during that short rollout window. The new API never accepts this
+            // legacy request, so it cannot bypass proof of work afterward.
+            if (challengeResponse.status === 404) {
+                const legacyResponse = await fetch(`${apiUrl}/create-invite`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                return readApiResponse(legacyResponse);
+            }
+            const challenge = await readApiResponse(challengeResponse);
+            loadingMessage.textContent = 'Preparing a spam-resistant invitation…';
+            const nonce = await solveChallenge(challenge);
+            loadingMessage.textContent = 'Joining the chat…';
+
+            const response = await fetch(`${apiUrl}/create-invite`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    challenge: challenge.challenge,
+                    issued_at: challenge.issued_at,
+                    difficulty: challenge.difficulty,
+                    signature: challenge.signature,
+                    nonce
+                })
+            });
+            if ([400, 409, 410].includes(response.status) && attempt === 0) {
+                continue;
+            }
+            return readApiResponse(response);
+        }
+        throw new Error('Invite verification could not be completed');
+    }
+
+    function showInviteError(error) {
+        inviteLoading.style.display = 'none';
+        inviteError.style.display = 'block';
+        errorMessage.textContent = error.message || 'Unable to create an invitation. Please try again.';
+        if (error.retryAfter != null) {
+            const secs = Math.max(0, Math.round(error.retryAfter));
+            let when;
+            if (secs < 60) {
+                when = `${Math.max(1, secs)} second(s)`;
+            } else if (secs < 3600) {
+                when = `${Math.ceil(secs / 60)} minute(s)`;
+            } else {
+                when = `${Math.ceil(secs / 3600)} hour(s)`;
+            }
+            retryMessage.textContent = `You can try again in approximately ${when}.`;
+        } else {
+            retryMessage.textContent = '';
+        }
+    }
 
     document.getElementById('copy-invite-btn').addEventListener('click', function() {
         const code = document.getElementById('invite-code-text').textContent;
@@ -196,47 +338,10 @@ document.addEventListener('DOMContentLoaded', function() {
         inviteLoading.style.display = 'block';
         inviteError.style.display = 'none';
         inviteResult.style.display = 'none';
+        loadingMessage.textContent = 'Preparing your invitation…';
 
         try {
-            const response = await fetch(`${apiUrl}/create-invite`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
-            });
-
-            if (response.status === 429) {
-                const data = await response.json();
-                inviteLoading.style.display = 'none';
-                inviteError.style.display = 'block';
-                errorMessage.textContent = data.error;
-                // Retry hints can now be sub-hour: the shared Tor ceiling uses a
-                // 60-minute window, so values arrive anywhere in 0..3600s.
-                // Rounding everything up to hours told a user waiting 90 seconds
-                // to come back in "approximately 1 hour(s)".
-                // Note `!= null` rather than truthiness, so a legitimate 0 is
-                // rendered instead of leaving a stale message from a prior try.
-                if (data.retry_after_seconds != null) {
-                    const secs = Math.max(0, Math.round(data.retry_after_seconds));
-                    let when;
-                    if (secs < 60) {
-                        when = `${Math.max(1, secs)} second(s)`;
-                    } else if (secs < 3600) {
-                        when = `${Math.ceil(secs / 60)} minute(s)`;
-                    } else {
-                        when = `${Math.ceil(secs / 3600)} hour(s)`;
-                    }
-                    retryMessage.textContent = `You can try again in approximately ${when}.`;
-                } else {
-                    retryMessage.textContent = '';
-                }
-                return;
-            }
-
-            if (!response.ok) {
-                throw new Error(`Server error: ${response.status}`);
-            }
-
-            const data = await response.json();
+            const data = await requestInvite();
             const inviteCode = data.invite_code;
             const riverUrl = `${riverBaseUrl}?invitation=${encodeURIComponent(inviteCode)}`;
 
@@ -253,10 +358,7 @@ document.addEventListener('DOMContentLoaded', function() {
             inviteResult.style.display = 'block';
 
         } catch (error) {
-            inviteLoading.style.display = 'none';
-            inviteError.style.display = 'block';
-            errorMessage.textContent = `Error: ${error.message}. Please try again later.`;
-            retryMessage.textContent = '';
+            showInviteError(error);
         }
     });
 });

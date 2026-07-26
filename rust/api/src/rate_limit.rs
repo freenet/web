@@ -23,39 +23,16 @@ use thiserror::Error;
 /// `test_rate_limiter_enforces_four_per_window`.
 ///
 /// NOTE: this limit is per-IP and therefore cannot bound an actor who rotates
-/// IPs. For the Tor exit set specifically, see [`AggregateBucket`] and
-/// [`TOR_INVITES_PER_HOUR`].
+/// IPs. The global emergency ceiling and proof of work provide that bound.
 pub const MAX_INVITES_PER_WINDOW: usize = 4;
 
-/// Default shared hourly invite ceiling across the ENTIRE Tor exit set.
-///
-/// # Sizing, and why this number is uncomfortable
-///
-/// From `invite_rate_limits.json` (1728 invites, 2026-07-24T06:23Z..
-/// 2026-07-25T05:54Z), classified against the official bulk exit list:
-///
-/// | Tor invites/hour | |
-/// |---|---|
-/// | organic hours (burst window excluded BY TIME, n=7) | mean 11.9, **max 33** |
-/// | burst hour 02:00Z | **208** |
-///
-/// An earlier revision used 25, derived from a smaller sample filtered by
-/// MAGNITUDE (hours above a threshold were excluded as "burst", then the
-/// remaining max was called the organic peak). That is circular, and it
-/// understated the peak by 3x. 25 would have refused real users.
-///
-/// 60 sits above the observed organic max (33) with ~1.8x headroom and still
-/// cuts the observed burst hour by ~71%. It is a judgement call on ambiguous
-/// data, not a derived constant: hours 04Z (28 invites / 25 exits) and 05Z
-/// (33 / 33) are ~1.0 invites per exit, which looks like many distinct real
-/// users -- but a one-request-per-exit attacker is indistinguishable from that
-/// by volume alone. Treat this as a starting value to tune from telemetry,
-/// which is why it is overridable at runtime (`--tor-invites-per-hour` /
-/// `TOR_INVITES_PER_HOUR`, `0` disables the ceiling entirely).
-pub const DEFAULT_TOR_INVITES_PER_HOUR: usize = 60;
+/// Emergency ceiling across all invitation issuance. Normal traffic has been
+/// observed at 30-60 users/hour; 200 leaves substantial headroom while bounding
+/// the 200+/hour automated waves that overloaded the room and Freenet network.
+/// Runtime-configurable via `GLOBAL_INVITES_PER_HOUR`; 0 disables it.
+pub const DEFAULT_GLOBAL_INVITES_PER_HOUR: usize = 200;
 
-/// Window for the Tor ceiling, in minutes.
-pub const TOR_WINDOW_MINUTES: i64 = 60;
+pub const GLOBAL_WINDOW_MINUTES: i64 = 60;
 
 /// SHA256 hashes of IPs exempt from rate limiting (for testing)
 const EXEMPT_IP_HASHES: &[&str] =
@@ -184,6 +161,37 @@ impl RateLimiter {
         Ok(None)
     }
 
+    /// IPs and ages of recorded invitations still inside `window_minutes`.
+    ///
+    /// Used once at startup to seed the in-memory global ceiling from the
+    /// persistent per-IP store. A deploy therefore cannot reset the emergency
+    /// allowance and grant an attacker a fresh burst.
+    pub fn recent_events(
+        &self,
+        window_minutes: i64,
+    ) -> Result<Vec<(IpAddr, StdDuration)>, RateLimitError> {
+        let _guard = self.lock.lock().map_err(|_| RateLimitError::Lock)?;
+        let data = self.load()?;
+        let now = Utc::now();
+        let window = Duration::minutes(window_minutes);
+        Ok(data
+            .invites
+            .iter()
+            .filter_map(|(ip, timestamps)| ip.parse::<IpAddr>().ok().map(|ip| (ip, timestamps)))
+            .flat_map(|(ip, timestamps)| {
+                timestamps.iter().filter_map(move |ts| {
+                    let t: DateTime<Utc> = DateTime::parse_from_rfc3339(ts).ok()?.into();
+                    let age = now.signed_duration_since(t);
+                    if age >= Duration::zero() && age < window {
+                        age.to_std().ok().map(|age| (ip, age))
+                    } else {
+                        None
+                    }
+                })
+            })
+            .collect())
+    }
+
     fn load(&self) -> Result<RateLimitData, RateLimitError> {
         if self.data_path.exists() {
             let content = fs::read_to_string(&self.data_path)?;
@@ -204,31 +212,13 @@ impl RateLimiter {
     }
 }
 
-/// A single sliding-window counter shared by many identities.
+/// A single sliding-window counter shared by all invitation requests.
 ///
-/// # Why a shared bucket
-///
-/// Per-IP limiting assumes an IP approximates a person. For Tor that assumption
-/// is false in the attacker's favour: exits are a public, rotatable pool, so N
-/// exits multiply any per-IP limit by N. Metering the whole pool through ONE
-/// bucket removes the multiplier.
-///
-/// # The cost, stated plainly
-///
-/// Sharing a budget across an anonymity set means the loudest member can
-/// consume the whole allowance. An attacker who sustains the ceiling denies
-/// invites to EVERY Tor user for as long as they keep it up, and refused
-/// requests cost them nothing, so an automated poller wins each freed slot
-/// against a human. This is inherent to any aggregate cap over an unlinkable
-/// pool, not an implementation defect -- fixing it needs a per-request cost
-/// signal (proof-of-work / CAPTCHA), tracked in freenet/web#81. Do not describe
-/// this bucket as leaving ordinary Tor users unaffected: that is only true
-/// while nobody is attacking.
-///
-/// Deliberately in-memory (not persisted like [`RateLimiter`]): a restart
-/// forgives at most one window's worth, gkapi restarts only on deploy, and this
-/// keeps the hot path free of the read-modify-write file IO the per-IP limiter
-/// does.
+/// This is an emergency safety valve rather than the primary anti-abuse
+/// mechanism. Proof of work adds per-request cost; the bucket places an absolute
+/// upper bound on room/network churn if that cost is bypassed. At startup it is
+/// seeded from [`RateLimiter`]'s persistent timestamps so a deploy does not
+/// reset the allowance.
 ///
 /// Uses a MONOTONIC clock ([`Instant`]) rather than wall time: an NTP step
 /// backwards would otherwise stall pruning and pin the bucket at full, denying
@@ -241,11 +231,32 @@ pub struct AggregateBucket {
 }
 
 impl AggregateBucket {
+    #[cfg(test)]
     pub fn new(limit: usize, window_minutes: i64) -> Self {
         Self {
             limit,
             window: StdDuration::from_secs((window_minutes.max(0) as u64) * 60),
             hits: Mutex::new(VecDeque::new()),
+        }
+    }
+
+    pub fn new_seeded(
+        limit: usize,
+        window_minutes: i64,
+        ages: impl IntoIterator<Item = StdDuration>,
+    ) -> Self {
+        let window = StdDuration::from_secs((window_minutes.max(0) as u64) * 60);
+        let now = Instant::now();
+        let mut hits: Vec<_> = ages
+            .into_iter()
+            .filter(|age| *age < window)
+            .map(|age| now.checked_sub(age).unwrap_or(now))
+            .collect();
+        hits.sort_unstable();
+        Self {
+            limit,
+            window,
+            hits: Mutex::new(hits.into()),
         }
     }
 
@@ -293,8 +304,9 @@ impl AggregateBucket {
                     false
                 }
             }
-            // Fail open: a poisoned lock must not block legitimate users.
-            Err(_) => true,
+            // This is the final safety valve; fail closed if its state becomes
+            // unreliable rather than silently allowing unlimited issuance.
+            Err(_) => false,
         }
     }
 
@@ -329,7 +341,7 @@ impl AggregateBucket {
                 self.prune(&mut hits, now);
                 hits.len() < self.limit
             }
-            Err(_) => true,
+            Err(_) => false,
         }
     }
 
@@ -444,33 +456,35 @@ mod tests {
         assert!(bucket.retry_after_seconds().is_none());
     }
 
-    /// Sizing pin. Bounds are tied to the MEASURED organic peak, so raising the
-    /// ceiling far above real traffic (or dropping it below it) fails here.
-    ///
-    /// Accepted collateral, deliberately NOT claimed away by this test: while
-    /// an attacker holds the ceiling, ordinary Tor users are refused too. See
-    /// `AggregateBucket` docs and freenet/web#81.
+    /// Sizing pin: the user-reported organic rate is 30-60/hour. The emergency
+    /// ceiling must leave several times that much headroom while still placing
+    /// a finite bound on a bypass of the primary controls.
     #[test]
     #[allow(clippy::assertions_on_constants)] // deliberate: this pins the constants
-    fn tor_ceiling_is_sized_between_organic_peak_and_burst() {
-        // Measured 2026-07-24/25 against the official bulk exit list.
-        const OBSERVED_ORGANIC_PEAK: usize = 33;
-        const OBSERVED_BURST_HOUR: usize = 208;
+    fn global_ceiling_leaves_headroom_for_organic_traffic() {
+        const REPORTED_ORGANIC_HIGH: usize = 60;
+        assert!(
+            DEFAULT_GLOBAL_INVITES_PER_HOUR >= 3 * REPORTED_ORGANIC_HIGH,
+            "ceiling {DEFAULT_GLOBAL_INVITES_PER_HOUR} needs at least 3x headroom over \
+             the reported organic high of {REPORTED_ORGANIC_HIGH}/h"
+        );
+        assert!(
+            DEFAULT_GLOBAL_INVITES_PER_HOUR <= 250,
+            "ceiling {DEFAULT_GLOBAL_INVITES_PER_HOUR} is too high to be a useful safety valve"
+        );
+    }
 
-        assert!(
-            DEFAULT_TOR_INVITES_PER_HOUR > OBSERVED_ORGANIC_PEAK,
-            "ceiling {DEFAULT_TOR_INVITES_PER_HOUR} must exceed the measured organic \
-             peak {OBSERVED_ORGANIC_PEAK}/h or it refuses real users"
+    #[test]
+    fn seeded_bucket_preserves_recent_usage() {
+        let bucket = AggregateBucket::new_seeded(
+            3,
+            60,
+            [StdDuration::from_secs(60), StdDuration::from_secs(61 * 60)],
         );
-        assert!(
-            DEFAULT_TOR_INVITES_PER_HOUR <= 2 * OBSERVED_ORGANIC_PEAK,
-            "ceiling {DEFAULT_TOR_INVITES_PER_HOUR} must stay within 2x the organic \
-             peak {OBSERVED_ORGANIC_PEAK}/h or it barely constrains a burst"
-        );
-        assert!(
-            DEFAULT_TOR_INVITES_PER_HOUR < OBSERVED_BURST_HOUR / 2,
-            "ceiling must be well under the observed burst {OBSERVED_BURST_HOUR}/h"
-        );
+        assert_eq!(bucket.current(), 1, "expired seed must be discarded");
+        assert!(bucket.try_acquire());
+        assert!(bucket.try_acquire());
+        assert!(!bucket.try_acquire());
     }
 
     #[test]

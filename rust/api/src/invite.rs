@@ -3,6 +3,7 @@
 //! This module replicates the necessary types from river-core to generate
 //! room invitations without depending on the full river-core crate.
 
+use data_encoding::BASE32;
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -25,6 +26,17 @@ pub struct FastHash(pub i64);
 /// Matches river_core::room_state::member::MemberId
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct MemberId(pub FastHash);
+
+impl MemberId {
+    /// The same 8-character id shown by River and `riverctl member list`.
+    pub fn short(&self) -> String {
+        BASE32
+            .encode(&self.0 .0.to_le_bytes())
+            .chars()
+            .take(8)
+            .collect()
+    }
+}
 
 impl From<&VerifyingKey> for MemberId {
     fn from(vk: &VerifyingKey) -> Self {
@@ -70,6 +82,11 @@ pub enum InviteError {
     Serialization(String),
 }
 
+pub struct CreatedInvitation {
+    pub code: String,
+    pub member_id: String,
+}
+
 /// Sign a serializable struct using CBOR encoding
 /// Matches river_core::util::sign_struct
 fn sign_struct<T: Serialize>(message: &T, signing_key: &SigningKey) -> Signature {
@@ -89,7 +106,7 @@ fn sign_struct<T: Serialize>(message: &T, signing_key: &SigningKey) -> Signature
 pub fn create_invitation(
     room_owner_vk: &VerifyingKey,
     inviter_signing_key: &SigningKey,
-) -> Result<String, InviteError> {
+) -> Result<CreatedInvitation, InviteError> {
     // Generate a new signing key for the invitee
     let invitee_signing_key = SigningKey::generate(&mut rand::thread_rng());
     let invitee_vk = invitee_signing_key.verifying_key();
@@ -117,7 +134,10 @@ pub fn create_invitation(
     ciborium::ser::into_writer(&invitation, &mut data)
         .map_err(|e| InviteError::Serialization(e.to_string()))?;
 
-    Ok(bs58::encode(data).into_string())
+    Ok(CreatedInvitation {
+        code: bs58::encode(data).into_string(),
+        member_id: MemberId::from(invitee_vk).short(),
+    })
 }
 
 #[cfg(test)]
@@ -148,11 +168,12 @@ mod tests {
         let owner_vk = owner_signing_key.verifying_key();
 
         // Create invitation
-        let invite_code = create_invitation(&owner_vk, &owner_signing_key).unwrap();
+        let invite = create_invitation(&owner_vk, &owner_signing_key).unwrap();
 
         // Verify it's valid base58
-        assert!(!invite_code.is_empty());
-        let decoded = bs58::decode(&invite_code).into_vec().unwrap();
+        assert!(!invite.code.is_empty());
+        assert_eq!(invite.member_id.len(), 8);
+        let decoded = bs58::decode(&invite.code).into_vec().unwrap();
         assert!(!decoded.is_empty());
 
         // Verify we can deserialize it
@@ -181,12 +202,12 @@ mod tests {
             create_invitation(&owner_vk, &signing_key).expect("Failed to create invitation");
 
         println!("\n=== Generated Invite for freenet-chat ===");
-        println!("{}", invite);
-        println!("Length: {} chars\n", invite.len());
+        println!("{}", invite.code);
+        println!("Length: {} chars\n", invite.code.len());
 
         // Verify format
-        assert!(!invite.is_empty());
-        let decoded = bs58::decode(&invite).into_vec().unwrap();
+        assert!(!invite.code.is_empty());
+        let decoded = bs58::decode(&invite.code).into_vec().unwrap();
         let invitation: Invitation = ciborium::de::from_reader(&decoded[..]).unwrap();
         assert_eq!(invitation.room, owner_vk);
     }
