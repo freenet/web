@@ -58,8 +58,6 @@ pub enum BlocklistError {
     Io(#[from] std::io::Error),
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
-    #[error("Lock error")]
-    Lock,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
