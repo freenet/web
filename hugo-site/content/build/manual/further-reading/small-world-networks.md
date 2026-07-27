@@ -98,3 +98,7 @@ decentralized and scalable method for sharing information.
 This article just scratches the surface, for much more detail on how Freenet uses small world
 networks please watch Ian's video talk [How
 Freenet Works]({{< ref "/about/news/how-freenet-works-video-talk.md" >}}).
+
+For the underlying mathematics, see the small-world routing papers on our
+[historic papers](/about/papers/#small-world-routing) page. They describe the original Freenet rather
+than the current design, but the routing results carry over.
