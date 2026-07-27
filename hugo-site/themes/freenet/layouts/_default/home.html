@@ -1,6 +1,8 @@
 {{ define "main" }}
+{{/* The homepage headline lives inside the hero grid in content/_index.md so it
+     sits in the same column as the copy and CTAs, beside the River screenshot.
+     Every other layout still renders .Title itself. */}}
 <div class="container home">
-  <h1 class="title">{{ .Title }}</h1>
   <div class="content">
     {{ .Content }}
   </div>

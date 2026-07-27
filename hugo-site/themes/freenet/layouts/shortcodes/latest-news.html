@@ -15,7 +15,7 @@
     {{ $newsItems = $newsItems | append (dict "date" (.Date.Format "2006-01-02T15:04:05Z") "title" .Title "url" .Permalink "tags" $tags "type" "news") }}
   {{ end }}
 
-  <div id="latest-news-container" data-news-items='{{ $newsItems | jsonify }}'>
+  <div id="latest-news-container" data-news-items='{{ $newsItems | jsonify }}' data-limit="{{ $limit }}">
     <p><em>Loading news...</em></p>
   </div>
 
@@ -23,6 +23,10 @@
   (function() {
     const container = document.getElementById('latest-news-container');
     const staticNews = JSON.parse(container.dataset.newsItems);
+    // Match the Hugo branch above: a positive limit caps the list, 0 means show
+    // everything. Bare `|| 5` would silently turn limit="0" into 5.
+    const rawLimit = parseInt(container.dataset.limit, 10);
+    const limit = Number.isNaN(rawLimit) ? 5 : (rawLimit > 0 ? rawLimit : Infinity);
 
     function formatDate(dateStr) {
       const date = new Date(dateStr);
@@ -32,11 +36,10 @@
     function renderNews(items) {
       // Sort by date descending
       items.sort((a, b) => new Date(b.date) - new Date(a.date));
-      // Take first 5
-      const top5 = items.slice(0, 5);
+      const shown = items.slice(0, limit);
 
       let html = '<ul>';
-      for (const item of top5) {
+      for (const item of shown) {
         html += `<li><strong>${formatDate(item.date)}</strong> - <a href="${item.url}">${item.title}</a></li>`;
       }
       html += '</ul>';

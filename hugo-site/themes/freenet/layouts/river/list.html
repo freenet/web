@@ -41,8 +41,11 @@
           </span>
         </div>
         <picture>
-          <source srcset="{{ $dark }}" media="(prefers-color-scheme: dark)">
-          <img src="{{ $light }}" alt="A live River chat room, the Freenet Official room, with a member list and messages" width="1379" height="1269" loading="eager">
+          {{/* The dark screenshot is 1290x867, a different aspect ratio from the
+               light one, so it needs its own dimensions or the reserved box is
+               the wrong shape in dark mode. */}}
+          <source srcset="{{ $dark }}" media="(prefers-color-scheme: dark)" width="1290" height="867">
+          <img src="{{ $light }}" alt="A live River chat room, the Freenet Official room, with a member list and messages" width="1379" height="1269" fetchpriority="high">
         </picture>
       </div>
     </div>
