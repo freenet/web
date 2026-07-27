@@ -307,19 +307,20 @@
     display: block;
 }
 
-/* Crop from the top rather than letterbox. The light and dark screenshots have
-   different aspect ratios (1379x1269 and 1290x867), and the interesting part of
-   a chat window is the top of the message list, so a fixed-height window keeps
-   both schemes the same height and keeps the hero columns comparable. */
+/* Natural aspect ratio, no cropping. A fixed height with object-fit: cover was
+   tried and reverted: the light and dark screenshots have different aspect
+   ratios (1379x1269 against 1290x867), so any height tall enough to suit the
+   light one crops the DARK one horizontally, which removed the member list
+   entirely and sliced message text mid-word. The two schemes therefore have
+   slightly different hero heights, which nobody sees, and both show the whole
+   screenshot, which everybody does.
+
+   The width/height attributes on each <source> reserve the correct box before
+   the image lands, so this costs no layout shift. */
 .home-browser img {
     display: block;
     width: 100%;
-    height: 26rem;
-    object-fit: cover;
-    /* Anchor left so a narrow column keeps the room list and the messages and
-       lets the member list run off the right edge, rather than slicing it down
-       the middle. */
-    object-position: top left;
+    height: auto;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -344,23 +345,18 @@
     }
 }
 
-/* The hero stacks below 1024px, matching Bulma's container breakpoint rather
-   than a bespoke 900px. Between 901 and 1023 the container is still narrow
-   while the grid was already two columns, which squeezed the screenshot to
-   ~360px, its smallest rendering anywhere. Stacking through that band instead.
-   The screenshot goes under the copy so the headline, both CTAs and the caveat
-   are reachable without scrolling past a tall image. */
-@media screen and (max-width: 1023px) {
+/* The hero stacks below 1216px, which is where Bulma widens its container to
+   1152px. Two columns any earlier means a 960px container split in two, which
+   rendered the screenshot around 365px wide: a portrait sliver of a landscape
+   chat window, next to a copy column nearly twice its height. Stacking through
+   that band gives a full-width screenshot instead. The screenshot sits under
+   the copy so the headline, both CTAs and the caveat are all reachable without
+   scrolling past a tall image. */
+@media screen and (max-width: 1215px) {
     .hero-grid {
         grid-template-columns: minmax(0, 1fr);
         gap: 2rem;
         align-items: start;
-    }
-
-    .home-browser img {
-        height: auto;
-        max-height: 26rem;
-        object-fit: cover;
     }
 
     .cta-note {

@@ -36,9 +36,9 @@ thing.</p>
     </span>
     <picture>
       <source type="image/webp" srcset="/images/river-hero-dark.webp"
-              media="(prefers-color-scheme: dark)" width="1104" height="742">
+              media="(prefers-color-scheme: dark)" width="1290" height="867">
       <source type="image/webp" srcset="/images/river-hero-light.webp"
-              width="1104" height="1016">
+              width="1379" height="1269">
       <source srcset="/images/river-screenshot-dark.png"
               media="(prefers-color-scheme: dark)" width="1290" height="867">
       <img src="/images/river-screenshot-light.png"
