@@ -23,7 +23,10 @@
   (function() {
     const container = document.getElementById('latest-news-container');
     const staticNews = JSON.parse(container.dataset.newsItems);
-    const limit = parseInt(container.dataset.limit, 10) || 5;
+    // Match the Hugo branch above: a positive limit caps the list, 0 means show
+    // everything. Bare `|| 5` would silently turn limit="0" into 5.
+    const rawLimit = parseInt(container.dataset.limit, 10);
+    const limit = Number.isNaN(rawLimit) ? 5 : (rawLimit > 0 ? rawLimit : Infinity);
 
     function formatDate(dateStr) {
       const date = new Date(dateStr);

@@ -22,22 +22,28 @@ in the middle.
   <a href="/try/" class="cta-secondary-btn">Open River in your&nbsp;browser&nbsp;→</a>
 </div>
 
-<p class="cta-note">The browser version is a hosted demo that runs on our server. Installing a peer
-takes a couple of minutes and gives you the real, serverless thing.</p>
+<p class="cta-note">The browser version is a centralized demo running on our server. Installing your
+own peer takes a couple of minutes on Windows, macOS or Linux, and gives you the real, serverless
+thing.</p>
 
 </div>
 
 <div class="hero-shot">
-  <a href="/river/" class="home-browser" aria-label="More about River">
-    <span class="home-chrome">
+  <a href="/river/" class="home-browser">
+    <span class="home-chrome" aria-hidden="true">
       <i></i><i></i><i></i>
       <span class="home-addr">River — running on your Freenet peer</span>
     </span>
     <picture>
-      <source srcset="/images/river-screenshot-dark.png" media="(prefers-color-scheme: dark)">
+      <source type="image/webp" srcset="/images/river-hero-dark.webp"
+              media="(prefers-color-scheme: dark)" width="1104" height="742">
+      <source type="image/webp" srcset="/images/river-hero-light.webp"
+              width="1104" height="1016">
+      <source srcset="/images/river-screenshot-dark.png"
+              media="(prefers-color-scheme: dark)" width="1290" height="867">
       <img src="/images/river-screenshot-light.png"
            alt="A live River chat room, the Freenet Official room, showing messages and a member list"
-           width="1379" height="1269" loading="eager" decoding="async">
+           width="1379" height="1269" fetchpriority="high" decoding="async">
     </picture>
   </a>
 </div>
@@ -48,19 +54,21 @@ takes a couple of minutes and gives you the real, serverless thing.</p>
 
 <div class="home-section">
 
-### For Users
+## For Users
 
 Freenet apps run in your browser and look like normal websites, but they can't be taken down, don't
 track you, and run peer-to-peer, not on the cloud. The easiest place to start is [River](/river/),
 decentralized group chat with no company in the middle.
 
-[Try River now →](/river/)
+[Try River in your browser →](/try/)
+
+[What River is →](/river/)
 
 </div>
 
 <div class="home-section">
 
-### For Developers
+## For Developers
 
 Build apps with familiar tools (Rust, TypeScript) that deploy to a global network. No servers to
 maintain, no cloud bills, no terms of service.
@@ -73,7 +81,7 @@ maintain, no cloud bills, no terms of service.
 
 <div class="home-section">
 
-### For Supporters
+## For Supporters
 
 Freenet is built by a small team, funded through grants and donations. Your support helps build
 decentralized internet infrastructure that matters.

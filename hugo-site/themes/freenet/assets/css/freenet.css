@@ -167,33 +167,15 @@
     color: #ffffff !important;
 }
 
-/* Secondary CTA: the hosted-demo "try in your browser" entry. Kept visually
-   subordinate to the primary Install button so the real (self-hosted) path
-   stays front and center. */
-.cta-secondary {
-    display: inline-block;
-    font-family: var(--font-display);
-    font-weight: 600;
-    color: #0066CC;
-    text-decoration: none;
-}
-
-.cta-secondary:hover {
-    text-decoration: underline;
-}
-
-/* Dark mode: match the site's existing bright link color so the hero "try" link
-   isn't dim / low-contrast. */
-@media (prefers-color-scheme: dark) {
-    .cta-secondary {
-        color: #4da6ff;
-    }
-}
-
 /* Outlined secondary CTA. Same size and hit target as .cta-button so the River
    entry point reads as a real choice rather than a footnote, but hollow rather
    than filled so Install stays the primary action. The hosted-demo caveat lives
-   in .cta-note directly beneath, not in the button label. */
+   in .cta-note directly beneath, not in the button label.
+
+   This supersedes an earlier bare-text-link .cta-secondary, which was kept
+   deliberately subordinate so the self-hosted path stayed front and center.
+   Install is still the filled primary for that reason; the change is that the
+   demo is now findable, and now says what it is. */
 .cta-secondary-btn {
     display: inline-block;
     margin: 0;
@@ -201,7 +183,11 @@
     font-weight: 600;
     color: #0066CC !important;
     background: transparent;
-    border: 2px solid rgba(0, 102, 204, 0.35);
+    /* Alpha is chosen against the COMPOSITED colour, not the solid one: 0.35
+       composites to 1.70:1 on this background, well under the 3:1 that WCAG
+       1.4.11 asks of a control boundary. 0.7 composites to ~3.1:1 and still
+       reads as hollow rather than filled. */
+    border: 2px solid rgba(0, 102, 204, 0.7);
     padding: calc(0.875rem - 2px) calc(1.75rem - 2px);
     border-radius: 8px;
     text-decoration: none;
@@ -228,7 +214,7 @@
 @media (prefers-color-scheme: dark) {
     .cta-secondary-btn {
         color: #4da6ff !important;
-        border-color: rgba(77, 166, 255, 0.4);
+        border-color: rgba(77, 166, 255, 0.65);
     }
 
     .cta-secondary-btn:hover {
@@ -248,9 +234,13 @@
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
     gap: 3rem;
-    /* The screenshot is close to square, so it is much taller than the copy.
-       Centering avoids a tall well of empty space beside it. */
-    align-items: center;
+    /* Deliberately start, not center. The webfonts load with display=swap, so
+       the copy column reflows when they arrive; centering turned that reflow
+       into a vertical translation of the screenshot and everything below it,
+       measuring CLS 0.12 at 1280px. Anchoring to the top keeps the shift local
+       to the copy. Capping the screenshot height (below) is what keeps the two
+       columns close enough in height for start-alignment to look balanced. */
+    align-items: start;
     margin-bottom: 1rem;
 }
 
@@ -301,7 +291,9 @@
     min-width: 0;
     flex: 0 1 auto;
     font-size: 0.78rem;
-    color: #64748b;
+    /* #64748b measured 4.34:1 on this background, under the 4.5:1 AA bar for
+       text this size. It is chrome, but it is still rendered text. */
+    color: #556070;
     background: #f1f5f9;
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 6px;
@@ -315,10 +307,19 @@
     display: block;
 }
 
+/* Crop from the top rather than letterbox. The light and dark screenshots have
+   different aspect ratios (1379x1269 and 1290x867), and the interesting part of
+   a chat window is the top of the message list, so a fixed-height window keeps
+   both schemes the same height and keeps the hero columns comparable. */
 .home-browser img {
     display: block;
     width: 100%;
-    height: auto;
+    height: 26rem;
+    object-fit: cover;
+    /* Anchor left so a narrow column keeps the room list and the messages and
+       lets the member list run off the right edge, rather than slicing it down
+       the middle. */
+    object-position: top left;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -343,14 +344,23 @@
     }
 }
 
-/* Below 900px the hero stacks. The screenshot moves under the copy so the
-   headline, the two CTAs and the caveat are all reachable without scrolling
-   past a tall image first. */
-@media screen and (max-width: 900px) {
+/* The hero stacks below 1024px, matching Bulma's container breakpoint rather
+   than a bespoke 900px. Between 901 and 1023 the container is still narrow
+   while the grid was already two columns, which squeezed the screenshot to
+   ~360px, its smallest rendering anywhere. Stacking through that band instead.
+   The screenshot goes under the copy so the headline, both CTAs and the caveat
+   are reachable without scrolling past a tall image. */
+@media screen and (max-width: 1023px) {
     .hero-grid {
         grid-template-columns: minmax(0, 1fr);
         gap: 2rem;
         align-items: start;
+    }
+
+    .home-browser img {
+        height: auto;
+        max-height: 26rem;
+        object-fit: cover;
     }
 
     .cta-note {
@@ -568,16 +578,14 @@ p.page-end-spacer {
 
 /* At 320px the logo, the Donate button and the burger together are wider than
    the bar, which pushed the burger off the right edge and scrolled the whole
-   page sideways. Tighten the Donate button so the burger stays on screen. */
+   page sideways. Tightening the Donate button alone brings the burger back on
+   screen. (A logo max-height rule here would be dead code: the .logo-img rule
+   above sets it with !important.) */
 @media screen and (max-width: 360px) {
     .navbar-item.donate-nav-button-mobile {
         margin-right: 0.25rem;
         padding: 0.25rem 0.6rem;
         font-size: 0.8rem;
-    }
-
-    .navbar-item.logo-container img.logo-img {
-        max-height: 2rem;
     }
 }
 
@@ -1027,7 +1035,7 @@ picture.app-screenshot img {
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.home-section h3 {
+.home-section h2 {
   margin-top: 0;
   font-size: 1.25rem;
   color: var(--color-primary);
@@ -1049,7 +1057,7 @@ picture.app-screenshot img {
     border-color: rgba(255, 255, 255, 0.08);
   }
 
-  .home-section h3 {
+  .home-section h2 {
     color: #4da6ff;
   }
 
@@ -1129,15 +1137,16 @@ picture.app-screenshot img {
   }
 }
 
-/* Home page intro paragraph */
-.home > .content > p:first-of-type {
+/* Home page intro paragraph. Targets .hero-copy because the hero is wrapped in
+   a grid, so no <p> is a direct child of .content any more. */
+.hero-copy > p:first-of-type {
   font-size: 1.15rem;
   line-height: 1.7;
   color: #374151;
 }
 
 @media (prefers-color-scheme: dark) {
-  .home > .content > p:first-of-type {
+  .hero-copy > p:first-of-type {
     color: #d1d5db;
   }
 }
