@@ -9,28 +9,22 @@ aliases:
   - /papers/
 ---
 
-These papers describe the **original** Freenet, the design Ian Clarke started in 1999 at the
-University of Edinburgh. In March 2023 that original version was spun off as an independent project
-called [Hyphanet](https://www.hyphanet.org/), and the ground-up redesign that had been developed
-internally as "Locutus" took the Freenet name. See [Freenet's History](/about/history/) and the
-[FAQ](/about/faq/#why-was-freenet-rearchitected-and-rebranded) for how that happened and why.
+Papers on the original Freenet, from Ian Clarke's 1999 project report at the University of Edinburgh
+through an independent measurement study of the deployed network in 2014.
 
-None of the papers below describe the software you install from this site today. For the current
-architecture, read the [Freenet whitepaper](/whitepaper/). The version numbers you will see in these
-papers, Freenet 0.5 and 0.7, belong to the original series and have nothing to do with the version
-you are running now.
+The original Freenet was spun off in March 2023 as [Hyphanet](https://www.hyphanet.org/), when the
+ground-up redesign developed internally as "Locutus" took the Freenet name. These papers describe
+the original design. The [Freenet whitepaper](/whitepaper/) covers what ships from this site today,
+and the version numbers here, Freenet 0.5 and 0.7, belong to the original series.
+[Freenet's History](/about/history/) and the
+[FAQ](/about/faq/#why-was-freenet-rearchitected-and-rebranded) go into the split.
 
-They are still worth reading. The problems they work on, routing without global knowledge, building
-a searchable network out of connections you do not get to choose, and measuring what a deployed
-anonymous network actually does, did not go away. Small-world routing is the clearest line of
-continuity: today's Freenet uses an adaptive small-world algorithm of its own, described in the
-whitepaper. And [Distributed Routing in Small-World Networks](#small-world-routing) generalizes past
-Freenet entirely, to any network whose topology you inherit rather than choose, a wireless mesh as
-much as a social graph.
+The routing work has aged best. Small-world routing survived the redesign in a new form, and
+[Distributed Routing in Small-World Networks](#small-world-routing) reaches past Freenet entirely,
+to any network whose topology is inherited rather than chosen, a wireless mesh as readily as the
+social graph it was written for.
 
-We host copies of the project's own papers here because they are part of its record and we would
-rather they stay available than depend on any one site.
-[Hyphanet's about page](https://www.hyphanet.org/pages/about.html) links these along with further
+[Hyphanet's about page](https://www.hyphanet.org/pages/about.html) links these along with
 third-party work on the same algorithms.
 
 ## The original Freenet
@@ -67,7 +61,7 @@ that takes only the graph as input, assigns positions to nodes, and recovers eff
 routing, with no global coordination and no knowledge of node positions given in advance. It is the
 theoretical basis for the "darknet" routing used in the original Freenet 0.7.
 
-The reason this one is still interesting has little to do with anonymity. Ian Clarke, on this paper:
+The result is not really about anonymity. Ian Clarke, on this paper:
 
 > It shows how Freenet's small-world network can be adapted to situations where the network topology
 > is predetermined. In this paper, that's because the connections correspond to human relationships,
@@ -94,9 +88,8 @@ above.
 hosted externally) Nathan S. Evans, Chris GauthierDickey, Christian Grothoff, University of
 Denver, 2007.
 
-Attacks on the location swapping algorithm from the papers above. A reading list carrying only the
-papers that argue a design works would be incomplete. Hyphanet's own notes record that a clean
-mitigation was deployed in build 1492.
+Attacks on the location swapping algorithm from the papers above. Hyphanet's own notes record that a
+clean mitigation was deployed in build 1492.
 
 ## The darknet
 
