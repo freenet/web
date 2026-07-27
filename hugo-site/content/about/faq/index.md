@@ -67,7 +67,8 @@ retrieve information anonymously. The 2001 paper,
 ([PDF](/pdf/ADAISARS.pdf)), which describes the foundational work led by Ian Clarke and
 contributions from a team of volunteers, has been cited over 3,700 times. This places it among the
 most frequently cited computer science papers of its year, reflecting its broad influence on the
-fields of distributed computing, peer-to-peer networking, and online anonymity.
+fields of distributed computing, peer-to-peer networking, and online anonymity. That paper and the
+others published on the original design are archived on our [research papers](/about/papers/) page.
 
 In 2019, Ian began work on a successor to the original Freenet, which was internally known as
 "Locutus." This project, a redesign from the ground up, incorporated lessons learned from the

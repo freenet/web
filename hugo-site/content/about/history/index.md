@@ -11,7 +11,8 @@ aliases:
 ## Introduction
 
 Freenet has a long and somewhat complicated 25-year history. This page aims to clarify the timeline
-and the relationship between various projects that have evolved from the original Freenet.
+and the relationship between various projects that have evolved from the original Freenet. The
+[research papers](/about/papers/) published along the way are archived here as well.
 
 ## Timeline and Evolution
 
