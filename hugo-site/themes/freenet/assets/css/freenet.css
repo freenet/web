@@ -130,8 +130,9 @@
 
 /* Hero spacing: tight gap under the headline, then the action row (button + try
    link) sits below with a clear separation. */
-.home > h1.title {
-    margin-bottom: 0.9rem;
+.hero-copy > h1.title {
+    margin-top: 0;
+    margin-bottom: 1.25rem;
 }
 
 /* Hero action row: the Install button and the secondary "try" link side by side,
@@ -186,6 +187,189 @@
 @media (prefers-color-scheme: dark) {
     .cta-secondary {
         color: #4da6ff;
+    }
+}
+
+/* Outlined secondary CTA. Same size and hit target as .cta-button so the River
+   entry point reads as a real choice rather than a footnote, but hollow rather
+   than filled so Install stays the primary action. The hosted-demo caveat lives
+   in .cta-note directly beneath, not in the button label. */
+.cta-secondary-btn {
+    display: inline-block;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: #0066CC !important;
+    background: transparent;
+    border: 2px solid rgba(0, 102, 204, 0.35);
+    padding: calc(0.875rem - 2px) calc(1.75rem - 2px);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.cta-secondary-btn:hover {
+    border-color: #0066CC;
+    background: rgba(0, 102, 204, 0.06);
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+/* Caveat under the CTA row: the browser option is a hosted demo. Quiet, but
+   present, so the homepage never implies the demo is decentralized. */
+.cta-note {
+    margin: -2.25rem 0 3.25rem 0;
+    max-width: 34rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #64748b;
+}
+
+@media (prefers-color-scheme: dark) {
+    .cta-secondary-btn {
+        color: #4da6ff !important;
+        border-color: rgba(77, 166, 255, 0.4);
+    }
+
+    .cta-secondary-btn:hover {
+        border-color: #4da6ff;
+        background: rgba(77, 166, 255, 0.1);
+    }
+
+    .cta-note {
+        color: #94a3b8;
+    }
+}
+
+/* ---- Hero: copy on the left, a real screenshot of River on the right ----
+   The homepage previously showed no product imagery at all, so a visitor could
+   read the whole page without ever seeing what a Freenet app looks like. */
+.hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 3rem;
+    /* The screenshot is close to square, so it is much taller than the copy.
+       Centering avoids a tall well of empty space beside it. */
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.hero-copy > :first-child {
+    margin-top: 0;
+}
+
+/* Screenshot framed in a browser chrome so it reads as a running app rather
+   than a decorative image. Mirrors the framing on the River page. */
+.home-browser {
+    display: block;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16);
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.home-browser:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 22px 60px rgba(15, 23, 42, 0.22);
+}
+
+.home-chrome {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    min-width: 0;
+}
+
+.home-chrome i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.16);
+    flex: none;
+}
+
+/* min-width:0 and flex-shrink are load-bearing: without them the nowrap address
+   text sets a min-content width on the flex item, which propagates up through
+   the grid column and scrolls the whole page sideways on a 320px phone. */
+.home-addr {
+    margin-left: 0.6rem;
+    min-width: 0;
+    flex: 0 1 auto;
+    font-size: 0.78rem;
+    color: #64748b;
+    background: #f1f5f9;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+    padding: 0.22rem 0.7rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.home-browser picture {
+    display: block;
+}
+
+.home-browser img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+    .home-browser {
+        background: #1a1a1a;
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .home-chrome {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .home-chrome i {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    .home-addr {
+        color: #94a3b8;
+        background: #111827;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Below 900px the hero stacks. The screenshot moves under the copy so the
+   headline, the two CTAs and the caveat are all reachable without scrolling
+   past a tall image first. */
+@media screen and (max-width: 900px) {
+    .hero-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .cta-note {
+        margin-bottom: 0;
+    }
+}
+
+/* On a 320px phone the two CTAs cannot sit side by side, so let each fill the
+   row rather than letting the longer label force a sideways scroll. */
+@media screen and (max-width: 360px) {
+    .cta-row {
+        gap: 0.75rem;
+    }
+
+    .cta-button,
+    .cta-secondary-btn {
+        display: block;
+        width: 100%;
+        text-align: center;
     }
 }
 
@@ -379,6 +563,21 @@ p.page-end-spacer {
         margin-right: 0.5rem;
         padding: 0.3rem 0.95rem;
         font-size: 0.9rem;
+    }
+}
+
+/* At 320px the logo, the Donate button and the burger together are wider than
+   the bar, which pushed the burger off the right edge and scrolled the whole
+   page sideways. Tighten the Donate button so the burger stays on screen. */
+@media screen and (max-width: 360px) {
+    .navbar-item.donate-nav-button-mobile {
+        margin-right: 0.25rem;
+        padding: 0.25rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .navbar-item.logo-container img.logo-img {
+        max-height: 2rem;
     }
 }
 
