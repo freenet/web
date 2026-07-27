@@ -28,7 +28,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::net::IpAddr;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use thiserror::Error;
 
 /// How long a source address stays blocked after one of its members is banned.
@@ -103,6 +103,21 @@ pub struct InviteBlocklist {
 }
 
 impl InviteBlocklist {
+    /// Take the lock, recovering it if a previous holder panicked.
+    ///
+    /// Poisoning is sticky, so treating it as a hard failure would disable the
+    /// blocklist for the rest of the process lifetime after a single panic,
+    /// with only a log line as evidence. Recovering the guard keeps the control
+    /// enforcing instead of silently switching it off, and still cannot take
+    /// invite issuance down. The data behind it is a plain map that is rewritten
+    /// whole on every mutation, so a panic cannot leave it half-updated in a way
+    /// that matters.
+    fn guard(&self) -> MutexGuard<'_, BlocklistData> {
+        self.data.lock().unwrap_or_else(|poisoned| {
+            warn!("Invite blocklist lock was poisoned; recovering and continuing to enforce");
+            poisoned.into_inner()
+        })
+    }
     pub fn new(path: PathBuf) -> Self {
         let data = match Self::load(&path) {
             Ok(data) => data,
@@ -164,7 +179,7 @@ impl InviteBlocklist {
     /// Record which address minted an invite. Called after issuance succeeds.
     pub fn record_source(&self, member_id: &str, ip: IpAddr) -> Result<(), BlocklistError> {
         let now = Utc::now();
-        let mut data = self.data.lock().map_err(|_| BlocklistError::Lock)?;
+        let mut data = self.guard();
         data.sources
             .insert(member_id.to_string(), SourceRecord { ip, issued_at: now });
         Self::prune(&mut data, now);
@@ -174,12 +189,7 @@ impl InviteBlocklist {
     /// Whether invite issuance from this address is currently refused.
     pub fn is_blocked(&self, ip: IpAddr) -> bool {
         let now = Utc::now();
-        let Ok(data) = self.data.lock() else {
-            // Fail open. A poisoned lock must not take invites down for
-            // everyone; the rate limiter and proof of work still apply.
-            warn!("Invite blocklist lock poisoned; allowing request");
-            return false;
-        };
+        let data = self.guard();
         data.blocks
             .get(&ip.to_string())
             .is_some_and(|block| block.blocked_until > now)
@@ -189,7 +199,7 @@ impl InviteBlocklist {
     pub fn report_ban(&self, member_id: &str) -> Result<BanReport, BlocklistError> {
         let now = Utc::now();
         let until = now + Duration::days(BLOCK_DURATION_DAYS);
-        let mut data = self.data.lock().map_err(|_| BlocklistError::Lock)?;
+        let mut data = self.guard();
         let Some(source) = data.sources.get(member_id).cloned() else {
             return Ok(BanReport::UnknownMember);
         };
@@ -224,9 +234,7 @@ impl InviteBlocklist {
     /// Member ids with a recorded source address.
     #[cfg(test)]
     pub fn recorded_members(&self) -> Vec<String> {
-        let Ok(data) = self.data.lock() else {
-            return Vec::new();
-        };
+        let data = self.guard();
         let mut members: Vec<String> = data.sources.keys().cloned().collect();
         members.sort();
         members
@@ -239,7 +247,7 @@ impl InviteBlocklist {
     pub fn block_ip(&self, ip: IpAddr, reason: &str) -> Result<DateTime<Utc>, BlocklistError> {
         let now = Utc::now();
         let until = now + Duration::days(BLOCK_DURATION_DAYS);
-        let mut data = self.data.lock().map_err(|_| BlocklistError::Lock)?;
+        let mut data = self.guard();
         data.blocks.insert(
             ip.to_string(),
             BlockRecord {
@@ -256,9 +264,7 @@ impl InviteBlocklist {
     /// Active blocks, for operator inspection.
     pub fn active_blocks(&self) -> Vec<ActiveBlock> {
         let now = Utc::now();
-        let Ok(data) = self.data.lock() else {
-            return Vec::new();
-        };
+        let data = self.guard();
         let mut blocks: Vec<ActiveBlock> = data
             .blocks
             .iter()
@@ -276,7 +282,7 @@ impl InviteBlocklist {
     /// Lift a block early. For an operator who decides a block caught the wrong
     /// people, which matters because these addresses can be shared VPN exits.
     pub fn unblock(&self, ip: IpAddr) -> Result<bool, BlocklistError> {
-        let mut data = self.data.lock().map_err(|_| BlocklistError::Lock)?;
+        let mut data = self.guard();
         let removed = data.blocks.remove(&ip.to_string()).is_some();
         if removed {
             Self::persist(&self.path, &data)?;

@@ -13,6 +13,7 @@ axum = { version = "0.7.5", features = ["json"] }
 axum-server = { version = "0.7.1", features = ["tls-rustls"] }
 tokio = { version = "1.0", features = ["full"] }
 tower-http = { version = "0.5.2", features = ["trace", "cors"] }
+subtle = "2.6"
 serde_json = "1.0"
 rmp-serde = "1.1"
 stripe = { version = "0.38.0", package = "async-stripe", features = ["runtime-tokio-hyper"] }

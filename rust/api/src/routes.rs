@@ -29,6 +29,8 @@ use crate::rate_limit::{
     MAX_INVITES_PER_WINDOW,
 };
 use crate::tor::TorExitList;
+use sha2::{Digest, Sha256};
+use subtle::ConstantTimeEq;
 use tower_http::cors::CorsLayer;
 
 /// Shared application state for invite generation
@@ -677,14 +679,13 @@ fn authorize_operator(
         .get("x-ban-report-token")
         .and_then(|value| value.to_str().ok())
         .unwrap_or_default();
-    // Constant-time compare so the token cannot be recovered byte by byte.
-    let authorized = presented.len() == expected.len()
-        && presented
-            .as_bytes()
-            .iter()
-            .zip(expected.as_bytes())
-            .fold(0u8, |acc, (a, b)| acc | (a ^ b))
-            == 0;
+    // Compare digests rather than the raw tokens: equal-length inputs regardless
+    // of the presented value, so the length is not leaked by an early exit, and
+    // `ConstantTimeEq` is not something the optimiser is free to short-circuit
+    // the way a hand-rolled fold is.
+    let presented_digest = Sha256::digest(presented.as_bytes());
+    let expected_digest = Sha256::digest(expected.as_bytes());
+    let authorized: bool = presented_digest.ct_eq(&expected_digest).into();
     if !authorized {
         warn!("Operator request refused: bad token");
         return Err(invite_error(
