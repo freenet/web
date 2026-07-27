@@ -41,7 +41,7 @@ theme = "freenet"
     parent = "About"
 
   [[menu.main]]
-    name = "Papers"
+    name = "Historic Papers"
     url = "/about/papers/"
     weight = 3
     parent = "About"

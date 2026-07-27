@@ -202,7 +202,7 @@ right tool for either identification or discovery.
 # Who is behind Freenet? {#who-is-behind-freenet}
 
 Freenet was started by Ian Clarke in 1999 and grew out of his undergraduate [paper](/pdf/DDISRS.pdf)
-"A Distributed Decentralized Information Storage and Retrieval System."
+"A Distributed Decentralised Information Storage and Retrieval System."
 
 To further the goals of the project, Ian Clarke and Steven Starr co-founded The Freenet Project, a
 501c3 non-profit in 2001.
