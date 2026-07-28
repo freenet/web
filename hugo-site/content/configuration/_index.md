@@ -47,9 +47,10 @@ Restart the peer after editing:
 - **Linux, or a macOS install via `install.sh`:** `freenet service restart`
 - **Windows:** restart Freenet from the tray icon.
 
-Every setting below also works as a command-line flag (`--max-hosting-storage`) or an environment
-variable (`MAX_HOSTING_STORAGE`) if you run `freenet network` yourself, but the background service
-started by the installer reads only `config.toml`.
+The settings below also work as command-line flags (`--max-hosting-storage`) if you run
+`freenet network` yourself, and most have an environment variable too. Run `freenet network --help`
+for the exact flag and variable names. The background service started by the installer takes no
+flags, so `config.toml` is the only way to configure it.
 
 ## Resource limits
 
