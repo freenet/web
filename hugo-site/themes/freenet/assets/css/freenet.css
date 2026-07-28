@@ -84,8 +84,52 @@
 :root {
     --font-display: 'Outfit', system-ui, sans-serif;
     --font-body: 'Source Sans 3', system-ui, sans-serif;
+    --font-code: 'Inconsolata', 'Hack', 'SF Mono', 'Roboto Mono', 'Source Code Pro', 'Ubuntu Mono', monospace;
     --color-primary: #0066CC;
     --color-primary-hover: #004C99;
+
+    /* Surface and text roles. These carry everything base.css paints; Bulma
+       derived the same values from its own scheme variables. Declaring both
+       schemes here keeps the two files from disagreeing about what a heading
+       or a border looks like. */
+    --text-strong: #2e333d;   /* headings, .title, strong, table headers */
+    --text: #404654;          /* .subtitle, navbar items, .box */
+    --border: #d6d9e0;
+    --surface: #ffffff;       /* dropdown and box backgrounds */
+    --surface-soft: #f3f4f6;  /* blockquote, tag, hr */
+    --navbar-item-hover: #f1f2f4;
+
+    /* Inline and block code. Bulma defaulted these to its danger hue, which
+       read as an error; these are the neutral values that replaced it. */
+    --code-color: #24292f;
+    --code-background: #f3f4f6;
+
+    /* Reading measure. Body text was running the full container width, which
+       is ~175 characters on a 1600px screen; comfortable reading is 45-75.
+
+       --measure-container sizes the article column on prose pages, so the
+       heading and body move together. --measure is the per-block fallback for
+       prose inside a full-width layout (the homepage), where the container has
+       to stay wide for the hero and the card grid. --breakout is how far
+       tables, code blocks and figures may extend past the column. */
+    --measure-container: 36rem;
+    --measure-content: calc(var(--measure-container) - 2rem); /* less .container padding */
+    --breakout: 52rem;
+    --measure: 66ch;
+}
+
+/* Dark scheme for the roles above. Values match what Bulma derived for
+   prefers-color-scheme: dark, so headings and borders keep their contrast. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-strong: #ebecf0;
+    --text: #abb1bf;
+    --border: #353a46;
+    --surface: #14161a;
+    --surface-soft: #1f2229;
+    --code-color: #e7e9ee;
+    --code-background: #1e2430;
+  }
 }
 
 /* Hero section styling for homepage */
@@ -345,14 +389,17 @@
     }
 }
 
-/* The hero stacks below 1216px, which is where Bulma widens its container to
-   1152px. Two columns any earlier means a 960px container split in two, which
-   rendered the screenshot around 365px wide: a portrait sliver of a landscape
-   chat window, next to a copy column nearly twice its height. Stacking through
-   that band gives a full-width screenshot instead. The screenshot sits under
-   the copy so the headline, both CTAs and the caveat are all reachable without
-   scrolling past a tall image. */
-@media screen and (max-width: 1215px) {
+/* Two columns need enough width that the screenshot still reads as a landscape
+   chat window rather than a portrait sliver. That used to mean stacking below
+   1216px, because Bulma froze the container at 960px through the whole
+   1024-1215px band. The container is fluid now (see .container below), so the
+   width available to the hero tracks the window and the stack point can follow
+   the content instead of the framework: at 1024px the container is ~992px and
+   the screenshot column ~460px, the same width it renders at on a 1280px
+   window today. Below that it stacks, and the screenshot sits under the copy so
+   the headline, both CTAs and the caveat are all reachable without scrolling
+   past a tall image. */
+@media screen and (max-width: 1023px) {
     .hero-grid {
         grid-template-columns: minmax(0, 1fr);
         gap: 2rem;
@@ -397,18 +444,6 @@ a {
 
 a:hover {
     color: #0052cc;
-}
-
-/* Container padding adjustments */
-.container {
-    padding: 0 16px;
-}
-
-/* Responsive padding for mobile */
-@media screen and (max-width: 768px) {
-    .container {
-        padding: 0 4px;
-    }
 }
 
 /* Heading colors and typography */
@@ -506,25 +541,6 @@ p.page-end-spacer {
     cursor: pointer;
 }
 
-/* Pure CSS menu toggle - when checkbox is checked, show menu */
-@media screen and (max-width: 1023px) {
-    .navbar-toggle-checkbox:checked ~ .navbar-menu {
-        display: block;
-    }
-
-    .navbar-toggle-checkbox:checked ~ .navbar-brand .navbar-burger span:nth-child(1) {
-        transform: translateY(5px) rotate(45deg);
-    }
-
-    .navbar-toggle-checkbox:checked ~ .navbar-brand .navbar-burger span:nth-child(2) {
-        opacity: 0;
-    }
-
-    .navbar-toggle-checkbox:checked ~ .navbar-brand .navbar-burger span:nth-child(3) {
-        transform: translateY(-5px) rotate(-45deg);
-    }
-}
-
 /* Navbar brand with border */
 .navbar-brand-with-border {
     border-bottom: 1px solid #dbdbdb; /* Adjust the color and thickness as needed */
@@ -557,11 +573,13 @@ p.page-end-spacer {
     display: none;
 }
 
-@media screen and (max-width: 1023px) {
+@media screen and (max-width: 768px) {
     .navbar-end .navbar-item.donate-nav-button {
         display: none;
     }
 
+    /* margin-left: auto collects the free space here, so this button and the
+       burger that follows it sit together at the right. See base.css. */
     .navbar-item.donate-nav-button-mobile {
         display: inline-flex;
         align-items: center;
@@ -596,10 +614,6 @@ p.page-end-spacer {
     border-color: #0066CC;
 }
 
-/* X color when burger is active */
-.navbar-burger.is-active span {
-    background-color: #0066CC;
-}
 
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
@@ -723,7 +737,9 @@ p.page-end-spacer {
         background-color: #e0e0e0;
     }
 
-    .navbar-burger.is-active span {
+    /* Open state. Keyed off the checkbox rather than .is-active, which used to
+       be applied by a JS handler that has been removed. */
+    .navbar-toggle-checkbox:checked ~ .navbar-brand .navbar-burger span {
         background-color: #4da6ff;
     }
 
@@ -1437,20 +1453,6 @@ picture.app-screenshot img {
     --gk-accent-soft: rgba(77, 166, 255, 0.16);
     --gk-border:      #2a2a2a;
     --gk-shadow:      0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.4);
-  }
-}
-
-/* Neutralize Bulma's red/pink inline <code> default.
-   Bulma sets --bulma-code to the danger hue; override to something
-   that doesn't read as an error. */
-:root {
-  --bulma-code: #24292f;
-  --bulma-code-background: #f3f4f6;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bulma-code: #e7e9ee;
-    --bulma-code-background: #1e2430;
   }
 }
 

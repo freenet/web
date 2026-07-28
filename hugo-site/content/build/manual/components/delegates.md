@@ -40,7 +40,7 @@ Traditional encapsulation is mostly a convention. If code runs in the same proce
 
 A common use case is message signing. A UI wants to send an authenticated message, but instead of retrieving the user's private key, it asks the delegate: "Please sign this payload." The delegate checks who is asking and whether the request is allowed. If allowed, it produces a signature and returns it to the UI. The private key never leaves the delegate.
 
-<img src="/delegate-signing.svg" alt="Delegate signing flow" style="max-width: 480px; display: block; margin: 1.5rem auto;">
+<img src="/delegate-signing.svg" alt="Delegate signing flow" style="max-width: min(480px, 100%); display: block; margin: 1.5rem auto;">
 
 ## Requesting user consent
 
@@ -50,7 +50,7 @@ Freenet Core routes the prompt to the shell page that hosts Freenet applications
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="/img/delegate-permission-prompt-dark.png">
-  <img src="/img/delegate-permission-prompt-light.png" alt="A Permission Request overlay. The card shows the delegate's message ('A Freenet application (DLog47hE...) is requesting access to your ghostkey identity (oiQaxxSwKF8)'), three buttons (Allow Once, Always Allow, Deny), the attested delegate identity, and an auto-deny countdown." style="max-width: 520px; display: block; margin: 1.5rem auto;">
+  <img src="/img/delegate-permission-prompt-light.png" alt="A Permission Request overlay. The card shows the delegate's message ('A Freenet application (DLog47hE...) is requesting access to your ghostkey identity (oiQaxxSwKF8)'), three buttons (Allow Once, Always Allow, Deny), the attested delegate identity, and an auto-deny countdown." style="max-width: min(520px, 100%); display: block; margin: 1.5rem auto;">
 </picture>
 
 The screenshot above shows a ghostkey delegate prompting the user. The card is drawn by the shell page on top of the application iframe; the delegate's own message appears in a quoted block, the caller and delegate identities are supplied by Freenet Core, and an auto-deny countdown ensures the request cannot hang indefinitely.
