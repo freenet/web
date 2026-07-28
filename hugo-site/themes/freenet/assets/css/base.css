@@ -1,0 +1,924 @@
+/* ==========================================================================
+   base.css
+
+   The styles this site used to get from Bulma.
+
+   Bulma was 648KB raw / 67KB gzipped, 88% of the CSS payload, and the site used
+   28 of the 4422 classes it defines (181 of 6067 selector parts matched
+   anything across all 92 pages that loaded it). Everything it was actually
+   doing is reproduced below, at roughly a fortieth of the size.
+
+   The reason to own this rather than configure it: Bulma's breakpoints are Sass
+   variables, and we shipped the prebuilt CSS, so $navbar-breakpoint and the
+   container steps could not be changed. Both were set from the framework's
+   defaults rather than from what this site's content needs, which is what made
+   the page drop to a phone layout on a 1200px window.
+
+   Load order matters: this file is concatenated ahead of freenet.css, so
+   freenet.css continues to win on anything it also declares.
+
+   ---- Breakpoints ---------------------------------------------------------
+   Two thresholds are used here, both chosen by measuring the content:
+
+     769px   the navbar has room to stay horizontal. The bar is a wordmark and
+             four links; it measures 571px and still has ~180px of slack at
+             769px. Below this it collapses to the burger.
+     1024px  wide enough for the section's roomier desktop padding and for the
+             homepage hero to sit two-up (see freenet.css).
+
+   Container width is continuous rather than stepped: it grows with the window
+   up to a 1344px ceiling, so there is no band where enlarging the window fails
+   to widen the page, and no point where it makes the page narrower.
+
+   freenet.css carries some older component-specific breakpoints (600px, 800px,
+   900px) that predate this file. They are left alone deliberately: they gate
+   individual components whose layout was tuned at those widths, and moving them
+   would change layouts nobody has complained about.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. Reset
+
+   Bulma bundles minireset.css. Reproduced here because the rest of the site is
+   written assuming it: block elements carry no default margins, and `.content`
+   is what puts prose spacing back. Without this every heading and paragraph
+   outside `.content` would pick up UA margins.
+   ========================================================================== */
+
+html,
+body,
+p,
+ol,
+ul,
+li,
+dl,
+dt,
+dd,
+blockquote,
+figure,
+fieldset,
+legend,
+textarea,
+pre,
+iframe,
+hr,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+    padding: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-size: 100%;
+    font-weight: normal;
+}
+
+ul {
+    list-style: none;
+}
+
+button,
+input,
+select,
+textarea {
+    margin: 0;
+}
+
+html {
+    box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+img,
+video {
+    height: auto;
+    max-width: 100%;
+}
+
+iframe {
+    border: 0;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+td,
+th {
+    padding: 0;
+}
+
+td:not([align]),
+th:not([align]) {
+    text-align: inherit;
+}
+
+
+/* ==========================================================================
+   2. Document
+   ========================================================================== */
+
+html {
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    font-size: 16px;
+    min-width: 300px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    text-rendering: optimizeLegibility;
+    text-size-adjust: 100%;
+}
+
+body {
+    font-size: 1em;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+body,
+button,
+input,
+optgroup,
+select,
+textarea {
+    font-family: var(--font-body);
+}
+
+a {
+    cursor: pointer;
+    text-decoration: none;
+}
+
+strong {
+    color: var(--text-strong);
+    font-weight: 700;
+}
+
+small {
+    font-size: 0.875em;
+}
+
+span {
+    font-style: inherit;
+    font-weight: inherit;
+}
+
+fieldset {
+    border: none;
+}
+
+hr {
+    background-color: var(--surface-soft);
+    border: none;
+    display: block;
+    height: 2px;
+    margin: 1.5rem 0;
+}
+
+code,
+pre {
+    -moz-osx-font-smoothing: auto;
+    -webkit-font-smoothing: auto;
+    font-family: var(--font-code);
+}
+
+code {
+    background-color: var(--code-background);
+    border-radius: 0.5em;
+    color: var(--code-color);
+    font-size: 0.875em;
+    font-weight: normal;
+    padding: 0.25em 0.5em 0.25em;
+}
+
+pre {
+    -webkit-overflow-scrolling: touch;
+    background-color: var(--surface-soft);
+    color: var(--text);
+    font-size: 0.875em;
+    overflow-x: auto;
+    padding: 1.25rem 1.5rem;
+    white-space: pre;
+    word-wrap: normal;
+}
+
+pre code {
+    background-color: transparent;
+    color: currentColor;
+    font-size: 1em;
+    padding: 0;
+}
+
+
+/* ==========================================================================
+   3. Layout
+   ========================================================================== */
+
+/* Bulma sized this in steps: full-bleed below 1024px, then frozen at 960px to
+   1215px, 1152px to 1407px, 1344px above. Between the steps the page width did
+   not grow with the window, so a 1200px window rendered 960px of content
+   between two 120px gutters, and widening from 1023px to 1024px made the
+   content 63px narrower than it had just been. Grow continuously to the same
+   1344px ceiling instead. */
+.container {
+    flex-grow: 1;
+    margin-inline: auto;
+    max-width: 1344px;
+    padding: 0 16px;
+    position: relative;
+    width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 0 4px;
+    }
+}
+
+.container.is-fluid {
+    max-width: none;
+}
+
+/* Article pages: heading, body and everything else share one readable column.
+   Capping the paragraphs alone inside a full-width container would leave the
+   text stranded against a wide empty right margin, which reads as a broken
+   layout rather than a deliberate measure. Narrowing the column instead keeps
+   the page balanced at every width and puts the line length where it should
+   be. Wide children (code blocks, tables) still scroll within it. */
+.container.is-prose {
+    max-width: var(--measure-container);
+    /* The column itself is now the measure, so switch off the per-block cap
+       below. Leaving both on would cap the text a second time inside an
+       already-narrow column and strand it again, just less obviously. */
+    --measure: none;
+}
+
+/* Tables, code blocks and figures are read by scanning rather than line by
+   line, and a text-width column squeezes them: function signatures wrap
+   mid-argument, columns collapse. Let them extend symmetrically past the
+   column once the window has room to give. Below 1024px they stay in the
+   column and scroll, because breaking out would push them off-screen. */
+@media screen and (min-width: 1024px) {
+    .container.is-prose .content > table,
+    .container.is-prose .content > pre,
+    .container.is-prose .content > figure {
+        margin-inline: calc((var(--measure-content) - var(--breakout)) / 2);
+        width: var(--breakout);
+    }
+}
+
+.section {
+    padding: 3rem 1.5rem;
+}
+
+@media screen and (min-width: 1024px) {
+    .section {
+        padding: 3rem 3rem;
+    }
+}
+
+/* A minimal flex grid. Only four call sites remain (the donation-success
+   partial and the ghost key success page), so this covers the modifiers those
+   use and nothing else. */
+.columns {
+    margin-inline: -0.75rem;
+    margin-top: -0.75rem;
+}
+
+.columns:last-child {
+    margin-bottom: -0.75rem;
+}
+
+.columns:not(:last-child) {
+    margin-bottom: 0.75rem;
+}
+
+.columns.is-centered {
+    justify-content: center;
+}
+
+.column {
+    display: block;
+    flex: 1 1 0;
+    padding: 0.75rem;
+}
+
+@media screen and (min-width: 769px) {
+    .columns {
+        display: flex;
+    }
+
+    .column.is-three-quarters-tablet {
+        flex: none;
+        width: 75%;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .column.is-two-thirds-desktop {
+        flex: none;
+        width: 66.6666%;
+    }
+}
+
+
+/* ==========================================================================
+   4. Navbar
+
+   Collapses to the burger below 769px. Bulma's own threshold was 1024px, which
+   put a phone menu on a 1000px window while the bar still had 400px of room to
+   spare.
+   ========================================================================== */
+
+.navbar {
+    align-items: stretch;
+    display: flex;
+    min-height: 3.25rem;
+    position: relative;
+    z-index: 30;
+}
+
+.navbar-brand {
+    align-items: stretch;
+    display: flex;
+    flex-shrink: 0;
+    min-height: 3.25rem;
+}
+
+.navbar-item,
+.navbar-link {
+    color: var(--text);
+    display: block;
+    line-height: 1.5;
+    padding: 0.5rem 0.75rem;
+    position: relative;
+}
+
+.navbar-item {
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.navbar-item.has-dropdown {
+    padding: 0;
+}
+
+.navbar-link,
+a.navbar-item {
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.navbar-link:not(.is-arrowless) {
+    padding-inline-end: 2.5em;
+}
+
+/* The dropdown affordance: a small chevron rotated out of a bordered box. */
+.navbar-link:not(.is-arrowless)::after {
+    border: 0.125em solid currentColor;
+    border-right: 0;
+    border-top: 0;
+    content: " ";
+    display: block;
+    height: 0.625em;
+    inset-inline-end: 1.125em;
+    margin-top: -0.375em;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: rotate(-45deg);
+    transform-origin: center;
+    width: 0.625em;
+}
+
+.navbar-divider {
+    background-color: var(--surface-soft);
+    border: none;
+    display: none;
+    height: 2px;
+    margin: 0.5rem 0;
+}
+
+/* ---- Burger -------------------------------------------------------------
+   Three evenly spaced bars. Bulma 1.0 positions burger bars for four spans
+   (two stacked at the centre for the X, plus one above and one below), but
+   this navbar's markup has three, so under Bulma the first two overlapped in
+   the middle and the icon rendered as two bars closed and a single diagonal
+   stroke open, rather than three bars and an X. Positioning the three spans
+   directly fixes both states. */
+.navbar-burger {
+    align-items: center;
+    align-self: center;
+    appearance: none;
+    background: none;
+    border: none;
+    border-radius: 0.5em;
+    color: currentColor;
+    cursor: pointer;
+    display: none;
+    flex-direction: column;
+    flex-shrink: 0;
+    height: 2.5rem;
+    justify-content: center;
+    margin-inline-end: 0.375rem;
+    position: relative;
+    vertical-align: top;
+    width: 2.5rem;
+}
+
+.navbar-burger span {
+    background-color: currentColor;
+    display: block;
+    height: 2px;
+    left: calc(50% - 10px);
+    position: absolute;
+    transform-origin: center;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    width: 20px;
+}
+
+.navbar-burger span:nth-child(1) {
+    top: calc(50% - 6px);
+}
+
+.navbar-burger span:nth-child(2) {
+    top: calc(50% - 1px);
+}
+
+.navbar-burger span:nth-child(3) {
+    top: calc(50% + 4px);
+}
+
+.navbar-burger:hover {
+    background-color: rgba(0, 102, 204, 0.08);
+}
+
+/* ---- Collapsed (burger) mode -------------------------------------------- */
+@media screen and (max-width: 768px) {
+    /* .navbar-menu is hidden here, so .navbar-brand has to claim the width for
+       itself. Without this it shrink-wraps its contents, leaving no free space
+       for the Donate button's auto margin to collect, and the logo, Donate and
+       burger bunch up against the left edge. */
+    .navbar-brand {
+        flex-grow: 1;
+    }
+
+    /* No auto margin here on purpose. The Donate button that precedes it in
+       .navbar-brand carries margin-inline-start: auto, which collects the free
+       space before the pair so the two sit together at the right. Bulma put an
+       auto margin on the burger as well, and the two split the space between
+       them, stranding Donate in the middle of the bar. */
+    .navbar-burger {
+        display: inline-flex;
+    }
+
+    .navbar-menu {
+        display: none;
+    }
+
+    .navbar-toggle-checkbox:checked ~ .navbar-menu {
+        background-color: var(--surface);
+        box-shadow: 0 0.5em 1em rgba(10, 11, 13, 0.1);
+        display: block;
+        padding: 0.5rem 0;
+    }
+
+    /* Burger to X. Spans 1 and 3 travel to the centre line and cross there. */
+    .navbar-toggle-checkbox:checked ~ .navbar-brand .navbar-burger span:nth-child(1) {
+        transform: translateY(5px) rotate(45deg);
+    }
+
+    .navbar-toggle-checkbox:checked ~ .navbar-brand .navbar-burger span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .navbar-toggle-checkbox:checked ~ .navbar-brand .navbar-burger span:nth-child(3) {
+        transform: translateY(-5px) rotate(-45deg);
+    }
+
+    /* Stacked menu: dropdowns open inline rather than as an overlay. */
+    .navbar-link::after {
+        display: none;
+    }
+
+    .navbar-dropdown {
+        display: none;
+    }
+
+    .navbar-item.has-dropdown.is-active .navbar-dropdown {
+        display: block;
+    }
+
+    .navbar-dropdown .navbar-item {
+        padding-inline-start: 1.5rem;
+    }
+}
+
+/* ---- Horizontal mode ---------------------------------------------------- */
+@media screen and (min-width: 769px) {
+    .navbar-menu,
+    .navbar-start,
+    .navbar-end {
+        align-items: stretch;
+        display: flex;
+    }
+
+    .navbar-menu {
+        flex-grow: 1;
+        flex-shrink: 0;
+    }
+
+    .navbar-start {
+        justify-content: flex-start;
+        margin-inline-end: auto;
+    }
+
+    .navbar-end {
+        justify-content: flex-end;
+        margin-inline-start: auto;
+    }
+
+    .navbar-item,
+    .navbar-link {
+        align-items: center;
+        display: flex;
+    }
+
+    .navbar-item.has-dropdown {
+        align-items: stretch;
+    }
+
+    .navbar-dropdown {
+        background-color: var(--surface);
+        border-bottom-left-radius: 0.75rem;
+        border-bottom-right-radius: 0.75rem;
+        border-top: 1px solid var(--border);
+        box-shadow: 0 7px 7px rgba(9, 10, 12, 0.1);
+        display: none;
+        font-size: 0.875rem;
+        inset-inline-start: 0;
+        min-width: 100%;
+        padding-bottom: 0.75rem;
+        padding-top: 0.5rem;
+        position: absolute;
+        top: 100%;
+        z-index: 20;
+    }
+
+    .navbar-item.has-dropdown.is-active .navbar-dropdown {
+        display: block;
+    }
+
+    .navbar-dropdown .navbar-item {
+        padding: 0.375rem 1rem;
+        white-space: nowrap;
+    }
+}
+
+
+/* ==========================================================================
+   5. Typography
+   ========================================================================== */
+
+.title,
+.subtitle {
+    word-break: break-word;
+}
+
+.title {
+    color: var(--text-strong);
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.125;
+}
+
+.subtitle {
+    color: var(--text);
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+.title:not(:last-child),
+.subtitle:not(:last-child) {
+    margin-bottom: 1.5rem;
+}
+
+.title.is-4 { font-size: 1.5rem; }
+.title.is-5 { font-size: 1.25rem; }
+.title.is-6 { font-size: 1rem; }
+
+.subtitle.is-4 { font-size: 1.5rem; }
+.subtitle.is-5 { font-size: 1.25rem; }
+.subtitle.is-6 { font-size: 1rem; }
+
+
+/* ---- Prose --------------------------------------------------------------
+   `.content` is what puts markdown spacing back after the reset above. */
+
+.content li + li {
+    margin-top: 0.25em;
+}
+
+.content blockquote:not(:last-child),
+.content dl:not(:last-child),
+.content ol:not(:last-child),
+.content p:not(:last-child),
+.content pre:not(:last-child),
+.content table:not(:last-child),
+.content ul:not(:last-child) {
+    margin-bottom: 1em;
+}
+
+.content h1,
+.content h2,
+.content h3,
+.content h4,
+.content h5,
+.content h6 {
+    color: var(--text-strong);
+    font-weight: 800;
+    line-height: 1.125;
+}
+
+.content h1 { font-size: 2em; margin-bottom: 0.5em; }
+.content h2 { font-size: 1.75em; margin-bottom: 0.5714em; }
+.content h3 { font-size: 1.5em; margin-bottom: 0.6666em; }
+.content h4 { font-size: 1.25em; margin-bottom: 0.8em; }
+.content h5 { font-size: 1.125em; margin-bottom: 0.8888em; }
+.content h6 { font-size: 1em; margin-bottom: 1em; }
+
+.content h1:not(:first-child) { margin-top: 1em; }
+.content h2:not(:first-child) { margin-top: 1.1428em; }
+.content h3:not(:first-child) { margin-top: 1.3333em; }
+
+.content blockquote {
+    background-color: var(--surface-soft);
+    border-inline-start: 5px solid var(--border);
+    padding: 1.25em 1.5em;
+}
+
+.content ol {
+    list-style-position: outside;
+    margin-inline-start: 2em;
+    margin-top: 1em;
+}
+
+.content ol:not([type]) {
+    list-style-type: decimal;
+}
+
+.content ul {
+    list-style: disc outside;
+    margin-inline-start: 2em;
+    margin-top: 1em;
+}
+
+.content ul ul {
+    list-style-type: circle;
+    margin-bottom: 0.25em;
+    margin-top: 0.25em;
+}
+
+.content ul ul ul {
+    list-style-type: square;
+}
+
+.content dd {
+    margin-inline-start: 2em;
+}
+
+.content figure:not([class]) {
+    margin-left: 2em;
+    margin-right: 2em;
+    text-align: center;
+}
+
+.content figure:not([class]):not(:first-child) { margin-top: 2em; }
+.content figure:not([class]):not(:last-child) { margin-bottom: 2em; }
+.content figure:not([class]) img { display: inline-block; }
+.content figure:not([class]) figcaption { font-style: italic; }
+
+.content pre {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+    padding: 1.25em 1.5em;
+    white-space: pre;
+    word-wrap: normal;
+}
+
+.content sub,
+.content sup {
+    font-size: 75%;
+}
+
+/* Contract keys, URLs and long identifiers appear inline all through the
+   manual, and they offer no break opportunity, so in a text-width column they
+   push the whole page sideways instead of wrapping. */
+.content code {
+    overflow-wrap: break-word;
+}
+
+/* A table wider than its column has to scroll on its own rather than widening
+   the page. width: max-content keeps the natural column sizing that display:
+   block would otherwise collapse. */
+.content table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    width: max-content;
+}
+
+/* The youtube shortcode emits width="560" height="315", which is wider than a
+   phone. Scale it down and keep the 16:9 box rather than squashing the frame. */
+.content iframe[src*="youtube"] {
+    aspect-ratio: 16 / 9;
+    height: auto;
+    max-width: 100%;
+}
+
+.content table td,
+.content table th {
+    border: 1px solid var(--border);
+    border-width: 0 0 1px;
+    padding: 0.5em 0.75em;
+    vertical-align: top;
+}
+
+.content table th {
+    color: var(--text-strong);
+}
+
+.content table th:not([align]) {
+    text-align: inherit;
+}
+
+.content table thead td,
+.content table thead th {
+    border-width: 0 0 2px;
+    color: var(--text-strong);
+}
+
+.content table tfoot td,
+.content table tfoot th {
+    border-width: 2px 0 0;
+    color: var(--text-strong);
+}
+
+.content table tbody tr:last-child td,
+.content table tbody tr:last-child th {
+    border-bottom-width: 0;
+}
+
+
+/* ---- Reading measure ----------------------------------------------------
+   Body text was running the full container width, which is about 140
+   characters on a 1600px screen. Comfortable reading is 45-75, and past about
+   90 the eye loses its place on the return sweep.
+
+   Only the blocks that are read line by line are capped. Tables, code blocks,
+   figures, media and anything the page lays out itself (grids, cards, the
+   homepage hero) keep the full width, because their structure carries the
+   reader rather than the line length. The cap only ever shrinks a block, so
+   narrow columns and small screens are unaffected. */
+.content > p,
+.content > ul,
+.content > ol,
+.content > dl,
+.content > blockquote,
+.content > h1,
+.content > h2,
+.content > h3,
+.content > h4,
+.content > h5,
+.content > h6 {
+    max-width: var(--measure);
+}
+
+
+/* ==========================================================================
+   6. Components
+   ========================================================================== */
+
+.button {
+    align-items: center;
+    appearance: none;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    box-shadow: 0 0.0625em 0.125em rgba(51, 51, 51, 0.05),
+                0 0.125em 0.25em rgba(51, 51, 51, 0.05);
+    color: var(--text-strong);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 1rem;
+    font-weight: 500;
+    height: auto;
+    justify-content: center;
+    line-height: 1.5;
+    padding: calc(0.5em - 1px) calc(1em - 1px);
+    position: relative;
+    text-align: center;
+    user-select: none;
+    vertical-align: top;
+    white-space: nowrap;
+}
+
+.button.is-small { border-radius: 0.25rem; font-size: 0.75rem; }
+.button.is-medium { font-size: 1.25rem; }
+.button.is-large { font-size: 1.5rem; }
+
+.button.is-primary {
+    background-color: #00d1b2;
+    border-color: transparent;
+    color: #00231c;
+}
+
+.button.is-success {
+    background-color: #48c78e;
+    border-color: transparent;
+    color: #0a1f15;
+}
+
+.buttons {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-start;
+}
+
+.buttons.is-centered {
+    justify-content: center;
+}
+
+.buttons.are-small .button {
+    font-size: 0.75rem;
+}
+
+/* Addons join the buttons into one control, so the gap goes and the touching
+   corners are squared off. */
+.buttons.has-addons {
+    gap: 0;
+}
+
+.buttons.has-addons .button:not(:first-child) {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+}
+
+.buttons.has-addons .button:not(:last-child) {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+    margin-inline-end: -1px;
+}
+
+.box {
+    background-color: var(--surface);
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5em 1em -0.125em rgba(10, 11, 13, 0.1),
+                0 0 0 1px rgba(10, 11, 13, 0.02);
+    color: var(--text);
+    display: block;
+    padding: 1.25rem;
+}
+
+.tag {
+    align-items: center;
+    background-color: var(--surface-soft);
+    border-radius: 0.375rem;
+    color: var(--text);
+    display: inline-flex;
+    font-size: 0.75rem;
+    height: 2em;
+    justify-content: center;
+    line-height: 1.5;
+    padding-left: 0.75em;
+    padding-right: 0.75em;
+    white-space: nowrap;
+}
+
+
+/* ==========================================================================
+   7. Utilities
+   ========================================================================== */
+
+.has-text-centered { text-align: center; }
+.is-size-5 { font-size: 1.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }

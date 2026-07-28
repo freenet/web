@@ -1,10 +1,23 @@
-{{/* FontAwesome removed -- icons replaced with inline SVGs to reduce site size */}}
-<link rel="stylesheet" href="{{ "bulma.min.css" | relURL }}">
-{{ $freenetCSS := resources.Get "css/freenet.css" | toCSS }}
-{{ if hugo.IsProduction }}
-  {{ $freenetCSS = $freenetCSS | resources.Minify | resources.Fingerprint }}
-{{ else }}
-  {{ $freenetCSS = $freenetCSS | resources.Fingerprint }}
-{{ end }}
-<link rel="stylesheet" href="{{ $freenetCSS.RelPermalink }}">
+{{/* One stylesheet, concatenated in cascade order.
 
+     base.css carries what this site used to take from Bulma: the reset,
+     container, section, navbar, prose typography, buttons and the handful of
+     utilities that are actually used. freenet.css follows it and wins on
+     anything it also declares, which is how the two have always related.
+
+     Bulma itself was removed in favour of base.css. It was 648KB raw / 67KB
+     gzipped for 28 of the 4422 classes it defines, and its breakpoints are Sass
+     variables that cannot be configured from a prebuilt stylesheet, which is
+     what drove the navbar and container layout problems.
+
+     toCSS is gone with it: neither file is Sass, so the site no longer needs
+     the extended Hugo binary to build. */}}
+{{ $base := resources.Get "css/base.css" }}
+{{ $theme := resources.Get "css/freenet.css" }}
+{{ $css := slice $base $theme | resources.Concat "css/freenet.css" }}
+{{ if hugo.IsProduction }}
+  {{ $css = $css | resources.Minify | resources.Fingerprint }}
+{{ else }}
+  {{ $css = $css | resources.Fingerprint }}
+{{ end }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}">

@@ -80,7 +80,7 @@ must handle this correctly.
 Contract state must form a **commutative monoid**: updates can be applied in any order and still
 produce the same final state.
 
-<img src="/images/tutorial/commutative-sync.svg" alt="Commutative synchronization between peers" style="max-width: 560px;">
+<img src="/images/tutorial/commutative-sync.svg" alt="Commutative synchronization between peers" style="max-width: min(560px, 100%);">
 
 Both peers end up with the same state regardless of which update they received first.
 

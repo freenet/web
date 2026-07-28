@@ -84,8 +84,51 @@
 :root {
     --font-display: 'Outfit', system-ui, sans-serif;
     --font-body: 'Source Sans 3', system-ui, sans-serif;
+    --font-code: 'Inconsolata', 'Hack', 'SF Mono', 'Roboto Mono', 'Source Code Pro', 'Ubuntu Mono', monospace;
     --color-primary: #0066CC;
     --color-primary-hover: #004C99;
+
+    /* Surface and text roles. These carry everything base.css paints; Bulma
+       derived the same values from its own scheme variables. Declaring both
+       schemes here keeps the two files from disagreeing about what a heading
+       or a border looks like. */
+    --text-strong: #2e333d;   /* headings, .title, strong, table headers */
+    --text: #404654;          /* .subtitle, navbar items, .box */
+    --border: #d6d9e0;
+    --surface: #ffffff;       /* dropdown and box backgrounds */
+    --surface-soft: #f3f4f6;  /* blockquote, tag, hr */
+
+    /* Inline and block code. Bulma defaulted these to its danger hue, which
+       read as an error; these are the neutral values that replaced it. */
+    --code-color: #24292f;
+    --code-background: #f3f4f6;
+
+    /* Reading measure. Body text was running the full container width, which
+       is ~175 characters on a 1600px screen; comfortable reading is 45-75.
+
+       --measure-container sizes the article column on prose pages, so the
+       heading and body move together. --measure is the per-block fallback for
+       prose inside a full-width layout (the homepage), where the container has
+       to stay wide for the hero and the card grid. --breakout is how far
+       tables, code blocks and figures may extend past the column. */
+    --measure-container: 36rem;
+    --measure-content: calc(var(--measure-container) - 2rem); /* less .container padding */
+    --breakout: 52rem;
+    --measure: 66ch;
+}
+
+/* Dark scheme for the roles above. Values match what Bulma derived for
+   prefers-color-scheme: dark, so headings and borders keep their contrast. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-strong: #ebecf0;
+    --text: #abb1bf;
+    --border: #353a46;
+    --surface: #14161a;
+    --surface-soft: #1f2229;
+    --code-color: #e7e9ee;
+    --code-background: #1e2430;
+  }
 }
 
 /* Hero section styling for homepage */
@@ -402,37 +445,6 @@ a:hover {
     color: #0052cc;
 }
 
-/* Bulma sizes .container in steps: full-bleed below 1024px, then a fixed 960px
-   from 1024px, 1152px from 1216px and 1344px from 1408px. Between the steps the
-   page width is frozen while the window grows, so a 1200px window rendered a
-   960px page with 120px of dead gutter either side, and widening from 1023px to
-   1024px made the content 63px NARROWER than it had just been. That frozen band
-   is what made the page feel like it had switched to a phone layout on a wide
-   window, and it is why the hero had to stack below 1216px. Grow the container
-   continuously instead. The 1344px ceiling is Bulma's own, so line length at
-   full width is unchanged; only the jumps go away. */
-.container {
-    width: 100%;
-    margin-inline: auto;
-    padding: 0 16px;
-}
-
-/* Bulma raises its own steps with .container:not(.is-max-desktop) and
-   .container:not(.is-max-desktop):not(.is-max-widescreen), so a bare .container
-   selector loses to them above 1216px however late it is loaded. Match the
-   shape to outrank both, which also leaves the .is-max-* and .is-fluid opt-outs
-   working for anything that wants a narrower or unbounded container. */
-.container:not(.is-max-desktop):not(.is-max-widescreen):not(.is-fluid) {
-    max-width: 1344px;
-}
-
-/* Responsive padding for mobile */
-@media screen and (max-width: 768px) {
-    .container {
-        padding: 0 4px;
-    }
-}
-
 /* Heading colors and typography */
 h1, h2, h3, h4, h5, h6 {
     color: #000000;
@@ -528,104 +540,6 @@ p.page-end-spacer {
     cursor: pointer;
 }
 
-/* ---- Navbar collapse point ----
-   Bulma collapses the navbar to a burger below $navbar-breakpoint, which
-   defaults to 1024px. This navbar is four links and a wordmark: it measures
-   571px and still has 180px of slack at 769px, so the default threw away over
-   400px of usable width and put a phone menu on a 1000px window. $navbar-
-   breakpoint is a Sass variable and we ship Bulma as prebuilt CSS, so it cannot
-   be overridden at build time; instead restore Bulma's own desktop navbar rules
-   across the 769-1023px band. Keep this in sync with the two max-width: 768px
-   navbar queries below - together they are the collapse point. */
-@media screen and (min-width: 769px) and (max-width: 1023px) {
-    .navbar,
-    .navbar-menu,
-    .navbar-start,
-    .navbar-end {
-        display: flex;
-        align-items: stretch;
-    }
-
-    .navbar-menu {
-        flex-grow: 1;
-        flex-shrink: 0;
-        background-color: transparent;
-        box-shadow: none;
-        padding: 0;
-    }
-
-    .navbar-start {
-        justify-content: flex-start;
-        margin-inline-end: auto;
-    }
-
-    .navbar-end {
-        justify-content: flex-end;
-        margin-inline-start: auto;
-    }
-
-    .navbar-item,
-    .navbar-link {
-        display: flex;
-        align-items: center;
-    }
-
-    .navbar-item.has-dropdown {
-        align-items: stretch;
-    }
-
-    .navbar-link:not(.is-arrowless)::after {
-        display: block;
-    }
-
-    .navbar-dropdown {
-        display: none;
-        position: absolute;
-        top: 100%;
-        inset-inline-start: 0;
-        min-width: 100%;
-        z-index: var(--bulma-navbar-dropdown-z);
-        font-size: 0.875rem;
-        background-color: var(--bulma-navbar-dropdown-background-color);
-        border-top: var(--bulma-navbar-dropdown-border-width) var(--bulma-navbar-dropdown-border-style) var(--bulma-navbar-dropdown-border-color);
-        border-bottom-left-radius: var(--bulma-navbar-dropdown-radius);
-        border-bottom-right-radius: var(--bulma-navbar-dropdown-radius);
-        box-shadow: 0 0.5em 0.5em hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-scheme-invert-l), 0.1);
-    }
-
-    .navbar-item.has-dropdown.is-active .navbar-dropdown {
-        display: block;
-    }
-
-    .navbar-dropdown .navbar-item {
-        padding: 0.375rem 1rem;
-        white-space: nowrap;
-    }
-
-    .navbar-burger {
-        display: none;
-    }
-}
-
-/* Pure CSS menu toggle - when checkbox is checked, show menu */
-@media screen and (max-width: 768px) {
-    .navbar-toggle-checkbox:checked ~ .navbar-menu {
-        display: block;
-    }
-
-    .navbar-toggle-checkbox:checked ~ .navbar-brand .navbar-burger span:nth-child(1) {
-        transform: translateY(5px) rotate(45deg);
-    }
-
-    .navbar-toggle-checkbox:checked ~ .navbar-brand .navbar-burger span:nth-child(2) {
-        opacity: 0;
-    }
-
-    .navbar-toggle-checkbox:checked ~ .navbar-brand .navbar-burger span:nth-child(3) {
-        transform: translateY(-5px) rotate(-45deg);
-    }
-}
-
 /* Navbar brand with border */
 .navbar-brand-with-border {
     border-bottom: 1px solid #dbdbdb; /* Adjust the color and thickness as needed */
@@ -663,11 +577,8 @@ p.page-end-spacer {
         display: none;
     }
 
-    /* Bulma already gives .navbar-burger margin-inline-start: auto. A second
-       auto margin here would split the free space between the two instead of
-       collecting it before them, stranding Donate in the middle of the bar
-       rather than pairing it with the burger. Push with this one and zero
-       Bulma's so the pair sits together at the right. */
+    /* margin-left: auto collects the free space here, so this button and the
+       burger that follows it sit together at the right. See base.css. */
     .navbar-item.donate-nav-button-mobile {
         display: inline-flex;
         align-items: center;
@@ -675,10 +586,6 @@ p.page-end-spacer {
         margin-right: 0.5rem;
         padding: 0.3rem 0.95rem;
         font-size: 0.9rem;
-    }
-
-    .navbar-burger {
-        margin-inline-start: 0;
     }
 }
 
@@ -1547,20 +1454,6 @@ picture.app-screenshot img {
     --gk-accent-soft: rgba(77, 166, 255, 0.16);
     --gk-border:      #2a2a2a;
     --gk-shadow:      0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.4);
-  }
-}
-
-/* Neutralize Bulma's red/pink inline <code> default.
-   Bulma sets --bulma-code to the danger hue; override to something
-   that doesn't read as an error. */
-:root {
-  --bulma-code: #24292f;
-  --bulma-code-background: #f3f4f6;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bulma-code: #e7e9ee;
-    --bulma-code-background: #1e2430;
   }
 }
 
