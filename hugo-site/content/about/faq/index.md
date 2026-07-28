@@ -12,6 +12,7 @@ aliases:
 - [How does Freenet work?](#how-does-freenet-work)
 - [What is the project's history?](#what-is-the-projects-history)
 - [How do the previous and current versions of Freenet differ?](#how-do-the-previous-and-current-versions-of-freenet-differ)
+- [Does Freenet provide anonymity like Tor or I2P?](#does-freenet-provide-anonymity-like-tor-or-i2p)
 - [Will the new Freenet be backwards compatible with the old Freenet?](#will-the-new-freenet-be-backwards-compatible-with-the-old-freenet)
 - [Why was Freenet rearchitected and rebranded?](#why-was-freenet-rearchitected-and-rebranded)
 - [How does Freenet compare to other decentralized systems?](#how-does-freenet-compare-to-other-decentralized-systems)
@@ -95,8 +96,28 @@ The previous and current versions of Freenet have several key differences:
   easy to use.
 
 - Anonymity: While the previous version was designed with a focus on anonymity, the current version
-  does not offer built-in anonymity but allows for a choice of anonymizing systems to be layered on
-  top.
+  does not offer built-in anonymity. Instead, anonymity systems can be implemented as services on
+  Freenet, so each application can choose the approach that suits it. See
+  [Does Freenet provide anonymity like Tor or I2P?](#does-freenet-provide-anonymity-like-tor-or-i2p)
+  below.
+
+# Does Freenet provide anonymity like Tor or I2P? {#does-freenet-provide-anonymity-like-tor-or-i2p}
+
+Freenet, I2P, and Tor all use request chains where no single peer sees the entire path. This is the
+basic mechanism that provides anonymity.
+
+The difference is in what each system is trying to achieve. Tor and I2P are designed to provide
+anonymous access to services that are ultimately centralized. Freenet is designed to provide
+decentralized services. Its architecture naturally provides some anonymity, but anonymity is not the
+primary design goal of the network itself.
+
+Instead, Freenet provides a platform on which people can build services that offer much stronger
+anonymity than the underlying network provides.
+
+This separation has important advantages. Strong anonymity inevitably comes with tradeoffs in
+latency, bandwidth, and complexity. By treating anonymity as a service rather than baking a single
+approach into the network itself, Freenet allows different applications and users to choose the
+anonymity system that best fits their needs, instead of forcing the same tradeoff on everyone.
 
 # Will the new Freenet be backwards compatible with the old Freenet? {#will-the-new-freenet-be-backwards-compatible-with-the-old-freenet}
 
