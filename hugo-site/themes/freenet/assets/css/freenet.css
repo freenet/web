@@ -345,14 +345,17 @@
     }
 }
 
-/* The hero stacks below 1216px, which is where Bulma widens its container to
-   1152px. Two columns any earlier means a 960px container split in two, which
-   rendered the screenshot around 365px wide: a portrait sliver of a landscape
-   chat window, next to a copy column nearly twice its height. Stacking through
-   that band gives a full-width screenshot instead. The screenshot sits under
-   the copy so the headline, both CTAs and the caveat are all reachable without
-   scrolling past a tall image. */
-@media screen and (max-width: 1215px) {
+/* Two columns need enough width that the screenshot still reads as a landscape
+   chat window rather than a portrait sliver. That used to mean stacking below
+   1216px, because Bulma froze the container at 960px through the whole
+   1024-1215px band. The container is fluid now (see .container below), so the
+   width available to the hero tracks the window and the stack point can follow
+   the content instead of the framework: at 1024px the container is ~992px and
+   the screenshot column ~460px, the same width it renders at on a 1280px
+   window today. Below that it stacks, and the screenshot sits under the copy so
+   the headline, both CTAs and the caveat are all reachable without scrolling
+   past a tall image. */
+@media screen and (max-width: 1023px) {
     .hero-grid {
         grid-template-columns: minmax(0, 1fr);
         gap: 2rem;
@@ -399,9 +402,28 @@ a:hover {
     color: #0052cc;
 }
 
-/* Container padding adjustments */
+/* Bulma sizes .container in steps: full-bleed below 1024px, then a fixed 960px
+   from 1024px, 1152px from 1216px and 1344px from 1408px. Between the steps the
+   page width is frozen while the window grows, so a 1200px window rendered a
+   960px page with 120px of dead gutter either side, and widening from 1023px to
+   1024px made the content 63px NARROWER than it had just been. That frozen band
+   is what made the page feel like it had switched to a phone layout on a wide
+   window, and it is why the hero had to stack below 1216px. Grow the container
+   continuously instead. The 1344px ceiling is Bulma's own, so line length at
+   full width is unchanged; only the jumps go away. */
 .container {
+    width: 100%;
+    margin-inline: auto;
     padding: 0 16px;
+}
+
+/* Bulma raises its own steps with .container:not(.is-max-desktop) and
+   .container:not(.is-max-desktop):not(.is-max-widescreen), so a bare .container
+   selector loses to them above 1216px however late it is loaded. Match the
+   shape to outrank both, which also leaves the .is-max-* and .is-fluid opt-outs
+   working for anything that wants a narrower or unbounded container. */
+.container:not(.is-max-desktop):not(.is-max-widescreen):not(.is-fluid) {
+    max-width: 1344px;
 }
 
 /* Responsive padding for mobile */
@@ -506,8 +528,87 @@ p.page-end-spacer {
     cursor: pointer;
 }
 
+/* ---- Navbar collapse point ----
+   Bulma collapses the navbar to a burger below $navbar-breakpoint, which
+   defaults to 1024px. This navbar is four links and a wordmark: it measures
+   571px and still has 180px of slack at 769px, so the default threw away over
+   400px of usable width and put a phone menu on a 1000px window. $navbar-
+   breakpoint is a Sass variable and we ship Bulma as prebuilt CSS, so it cannot
+   be overridden at build time; instead restore Bulma's own desktop navbar rules
+   across the 769-1023px band. Keep this in sync with the two max-width: 768px
+   navbar queries below - together they are the collapse point. */
+@media screen and (min-width: 769px) and (max-width: 1023px) {
+    .navbar,
+    .navbar-menu,
+    .navbar-start,
+    .navbar-end {
+        display: flex;
+        align-items: stretch;
+    }
+
+    .navbar-menu {
+        flex-grow: 1;
+        flex-shrink: 0;
+        background-color: transparent;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .navbar-start {
+        justify-content: flex-start;
+        margin-inline-end: auto;
+    }
+
+    .navbar-end {
+        justify-content: flex-end;
+        margin-inline-start: auto;
+    }
+
+    .navbar-item,
+    .navbar-link {
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar-item.has-dropdown {
+        align-items: stretch;
+    }
+
+    .navbar-link:not(.is-arrowless)::after {
+        display: block;
+    }
+
+    .navbar-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        inset-inline-start: 0;
+        min-width: 100%;
+        z-index: var(--bulma-navbar-dropdown-z);
+        font-size: 0.875rem;
+        background-color: var(--bulma-navbar-dropdown-background-color);
+        border-top: var(--bulma-navbar-dropdown-border-width) var(--bulma-navbar-dropdown-border-style) var(--bulma-navbar-dropdown-border-color);
+        border-bottom-left-radius: var(--bulma-navbar-dropdown-radius);
+        border-bottom-right-radius: var(--bulma-navbar-dropdown-radius);
+        box-shadow: 0 0.5em 0.5em hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-scheme-invert-l), 0.1);
+    }
+
+    .navbar-item.has-dropdown.is-active .navbar-dropdown {
+        display: block;
+    }
+
+    .navbar-dropdown .navbar-item {
+        padding: 0.375rem 1rem;
+        white-space: nowrap;
+    }
+
+    .navbar-burger {
+        display: none;
+    }
+}
+
 /* Pure CSS menu toggle - when checkbox is checked, show menu */
-@media screen and (max-width: 1023px) {
+@media screen and (max-width: 768px) {
     .navbar-toggle-checkbox:checked ~ .navbar-menu {
         display: block;
     }
@@ -557,11 +658,16 @@ p.page-end-spacer {
     display: none;
 }
 
-@media screen and (max-width: 1023px) {
+@media screen and (max-width: 768px) {
     .navbar-end .navbar-item.donate-nav-button {
         display: none;
     }
 
+    /* Bulma already gives .navbar-burger margin-inline-start: auto. A second
+       auto margin here would split the free space between the two instead of
+       collecting it before them, stranding Donate in the middle of the bar
+       rather than pairing it with the burger. Push with this one and zero
+       Bulma's so the pair sits together at the right. */
     .navbar-item.donate-nav-button-mobile {
         display: inline-flex;
         align-items: center;
@@ -569,6 +675,10 @@ p.page-end-spacer {
         margin-right: 0.5rem;
         padding: 0.3rem 0.95rem;
         font-size: 0.9rem;
+    }
+
+    .navbar-burger {
+        margin-inline-start: 0;
     }
 }
 
