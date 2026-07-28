@@ -362,9 +362,13 @@ pre code {
    spare.
    ========================================================================== */
 
+/* Deliberately NOT display: flex here. In burger mode the opened .navbar-menu
+   has to stack underneath .navbar-brand, and a flex .navbar makes it a second
+   item in the same row instead: it lands beside the logo at the full height of
+   the bar, shrunk to its content width and mostly past the right edge, so the
+   page scrolls sideways. The row layout belongs to the horizontal navbar only,
+   and is set in the min-width: 769px block below. */
 .navbar {
-    align-items: stretch;
-    display: flex;
     min-height: 3.25rem;
     position: relative;
     z-index: 30;
@@ -497,13 +501,11 @@ a.navbar-item:focus {
 
 /* ---- Collapsed (burger) mode -------------------------------------------- */
 @media screen and (max-width: 768px) {
-    /* .navbar-menu is hidden here, so .navbar-brand has to claim the width for
-       itself. Without this it shrink-wraps its contents, leaving no free space
-       for the Donate button's auto margin to collect, and the logo, Donate and
-       burger bunch up against the left edge. */
-    .navbar-brand {
-        flex-grow: 1;
-    }
+    /* .navbar is a block here, so .navbar-brand is a block-level flex container
+       and already spans the bar. That full width is what gives the Donate
+       button's auto margin something to collect; if .navbar-brand ever
+       shrink-wrapped instead, the logo, Donate and burger would bunch up
+       against the left edge. */
 
     /* No auto margin here on purpose. The Donate button that precedes it in
        .navbar-brand carries margin-inline-start: auto, which collects the free
@@ -538,17 +540,20 @@ a.navbar-item:focus {
         transform: translateY(-5px) rotate(-45deg);
     }
 
-    /* Stacked menu: dropdowns open inline rather than as an overlay. */
-    .navbar-link::after {
-        display: none;
-    }
+    /* Stacked menu: every section is already open, so the whole nav is one
+       scrollable list and each destination is a single tap from the burger.
+       This is what Bulma did, and it matters beyond the extra tap: the
+       top-level "About" / "Build" / "Apps" items are toggles with no href, so
+       collapsing them by default put every sub-page behind a JS handler and
+       made the menu a dead end with scripting disabled. The whole navbar is
+       otherwise pure CSS, driven by the #navbar-toggle checkbox.
 
-    .navbar-dropdown {
+       No arrow on the section headings either, since there is nothing left to
+       expand. The :not(.is-arrowless) has to be repeated here to outrank the
+       base rule that draws the chevron; a plain .navbar-link::after loses to
+       it, and the arrow survives promising an expand that does not exist. */
+    .navbar-link:not(.is-arrowless)::after {
         display: none;
-    }
-
-    .navbar-item.has-dropdown.is-active .navbar-dropdown {
-        display: block;
     }
 
     .navbar-dropdown .navbar-item {
@@ -558,6 +563,7 @@ a.navbar-item:focus {
 
 /* ---- Horizontal mode ---------------------------------------------------- */
 @media screen and (min-width: 769px) {
+    .navbar,
     .navbar-menu,
     .navbar-start,
     .navbar-end {
