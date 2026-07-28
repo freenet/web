@@ -1,18 +1,20 @@
 ---
-title: "Contract ABI (Non-Rust Contracts)"
+title: "Contract and Delegate ABI (Non-Rust Implementations)"
 date: 2026-07-27
 draft: false
 ---
 
-Contracts are WebAssembly, so any language that compiles to `wasm32` can implement one. Rust is the
-only language with a ready-made binding today, and the [`freenet-stdlib`][stdlib] macro hides the
-whole boundary, so nothing states the raw ABI in one place. This page does that.
+Contracts and delegates are both WebAssembly, so any language that compiles to `wasm32` can
+implement one. Rust is the only language with a ready-made binding today, and the
+[`freenet-stdlib`][stdlib] macros hide the whole boundary, so nothing states the raw ABI in one
+place. This page does that. Contracts are covered first, then [delegates](#delegates), which use a
+related but distinct ABI.
 
-If you are writing a contract in Rust, you do not need any of this. Use
+If you are writing in Rust, you do not need any of this. Use
 [Contract Interfaces](/build/manual/contract-interface/) instead.
 
-{{< alert type="warning" >}} **No non-Rust contract has been written yet**, so most of this boundary
-has only ever had one caller. Expect rough edges, and please
+{{< alert type="warning" >}} **No non-Rust contract or delegate has been written yet**, so most of
+this boundary has only ever had one caller. Expect rough edges, and please
 [report anything that does not match](https://github.com/freenet/freenet-core/issues).
 {{< /alert >}}
 
@@ -149,6 +151,123 @@ to converge on the same state. The network deprioritizes contracts that violate 
 correctness requirement rather than a style note. See
 [Delta-Sync](/build/manual/further-reading/delta-sync/) for the reasoning.
 
+## Delegates
+
+Delegates run in the same WebAssembly runtime and reuse the `BufferBuilder` layout, the pointer
+convention and the bincode encoding described above. Three things differ, and all three simplify the
+job:
+
+1. There is one entry point instead of four.
+2. There is no streaming protocol. Delegate buffers are always one-shot.
+3. The result struct has no `kind` field.
+
+Delegates are stateful in a way contracts are not: they own persistent secrets and a per-batch
+context, both reached through host imports rather than through the entry point arguments.
+
+### Exports
+
+| Export                    | Signature                | Required                     |
+| ------------------------- | ------------------------ | ---------------------------- |
+| `memory`                  | linear memory            | yes, under exactly this name |
+| `__frnt__initiate_buffer` | `(i32) -> i64`           | yes                          |
+| `process`                 | `(i64, i64, i64) -> i64` | yes                          |
+| `__frnt_set_id`           | `(i64) -> ()`            | see below                    |
+
+The arguments are `process(parameters, origin, inbound)`.
+
+The delegate host imports below do not take an instance id, because the host tracks the current
+delegate instance itself. You only need `__frnt_set_id` if you also use the contract-side
+`freenet_log`, `freenet_rand` or `freenet_time` imports, which do take one.
+
+### Arguments
+
+All three arguments are pointers to a `BufferBuilder`. The host allocates each one at exactly the
+payload length and writes the payload in a single shot, so read `bytes_written` bytes starting at
+`start`. Note that this reads the write position rather than `capacity`, which matters for `origin`.
+
+- `parameters` is raw bytes with no bincode framing, the same as for contracts.
+- `origin` is **either empty or a bincode `MessageOrigin`**. The host writes a zero-length buffer
+  when there is no origin, so a `bytes_written` of `0` means "no origin" rather than an error. For a
+  message from a web application this is `MessageOrigin::WebApp(contract_id)`.
+- `inbound` is a bincode `InboundDelegateMsg`. Its variants are `ApplicationMessage`,
+  `UserResponse`, `GetContractResponse`, `PutContractResponse`, `UpdateContractResponse`,
+  `SubscribeContractResponse`, `ContractNotification` and `DelegateMessage`. It is marked
+  non-exhaustive upstream, so treat an unrecognized variant index as a message to ignore rather than
+  a fatal error.
+
+### Return value
+
+`process` returns a pointer to a `DelegateInterfaceResult`, which is 16 bytes with alignment 8:
+
+| Offset | Field     | Type                                    |
+| ------ | --------- | --------------------------------------- |
+| 0      | `ptr`     | `i64`, pointer to the serialized result |
+| 8      | `size`    | `u32`, byte length of the result        |
+| 12     | (padding) | 4 bytes                                 |
+
+There is no `kind` field, since there is only one entry point to disambiguate.
+
+The serialized result is a bincode `Result` wrapping a list of `OutboundDelegateMsg` on success and
+a `DelegateError` on failure. Outbound variants are `ApplicationMessage`, `RequestUserInput`,
+`ContextUpdated`, `GetContractRequest`, `PutContractRequest`, `UpdateContractRequest`,
+`SubscribeContractRequest` and `SendDelegateMessage`. `DelegateError` is non-exhaustive and today
+carries `Deser` and `Other`, both wrapping a string.
+
+The same leak-on-return rule applies. Do not free the result before the host reads it.
+
+### API version selection
+
+The host runs a delegate in one of two modes, chosen by inspecting the module's imports. If it
+imports anything from `freenet_delegate_contracts` or `freenet_delegate_management`, it is treated
+as V2 and invoked through the async host-call path. Otherwise it is V1 and invoked synchronously.
+
+This is automatic, but it means importing a contract-access or management function changes how your
+delegate is executed. Import only what you use.
+
+### Host imports
+
+Context and secrets are always available. Both namespaces signal failure by returning a **negative**
+value, so check the sign before treating a result as a length.
+
+| Namespace                  | Function                             | Signature                     |
+| -------------------------- | ------------------------------------ | ----------------------------- |
+| `freenet_delegate_ctx`     | `__frnt__delegate__ctx_len`          | `() -> i32`                   |
+| `freenet_delegate_ctx`     | `__frnt__delegate__ctx_read`         | `(i64, i32) -> i32`           |
+| `freenet_delegate_ctx`     | `__frnt__delegate__ctx_write`        | `(i64, i32) -> i32`           |
+| `freenet_delegate_secrets` | `__frnt__delegate__get_secret`       | `(i64, i32, i64, i32) -> i32` |
+| `freenet_delegate_secrets` | `__frnt__delegate__get_secret_len`   | `(i64, i32) -> i32`           |
+| `freenet_delegate_secrets` | `__frnt__delegate__set_secret`       | `(i64, i32, i64, i32) -> i32` |
+| `freenet_delegate_secrets` | `__frnt__delegate__has_secret`       | `(i64, i32) -> i32`           |
+| `freenet_delegate_secrets` | `__frnt__delegate__remove_secret`    | `(i64, i32) -> i32`           |
+| `freenet_delegate_secrets` | `__frnt__delegate__list_secrets_len` | `(i64, i32) -> i32`           |
+| `freenet_delegate_secrets` | `__frnt__delegate__list_secrets`     | `(i64, i32, i64, i32) -> i32` |
+
+Context is temporary state that lives across a batch of messages; `ctx_write` replaces the whole
+contents rather than appending. Secrets are persistent. `has_secret` returns `1` for yes and `0` for
+no. The two-call pattern is the norm: ask for the length, allocate, then fetch.
+
+`list_secrets` takes a raw key prefix, where an empty prefix matches everything. It writes a packed
+list to your output buffer in which each record is a 4-byte little-endian length followed by that
+many key bytes, and returns the total bytes written.
+
+Importing either namespace below opts you into V2 execution.
+
+| Namespace                     | Function                                   | Signature                                         |
+| ----------------------------- | ------------------------------------------ | ------------------------------------------------- |
+| `freenet_delegate_contracts`  | `__frnt__delegate__get_contract_state_len` | `(i64, i32) -> i64`                               |
+| `freenet_delegate_contracts`  | `__frnt__delegate__get_contract_state`     | `(i64, i32, i64, i64) -> i64`                     |
+| `freenet_delegate_contracts`  | `__frnt__delegate__put_contract_state`     | `(i64, i32, i64, i64) -> i64`                     |
+| `freenet_delegate_contracts`  | `__frnt__delegate__update_contract_state`  | `(i64, i32, i64, i64) -> i64`                     |
+| `freenet_delegate_contracts`  | `__frnt__delegate__subscribe_contract`     | `(i64, i32) -> i64`                               |
+| `freenet_delegate_management` | `__frnt__delegate__create_delegate`        | `(i64, i64, i64, i64, i64, i64, i64, i64) -> i32` |
+
+The contract functions return `i64` rather than `i32`, and again a negative value is an error.
+`update_contract_state` requires state to already exist, whereas `put_contract_state` does not.
+
+`create_delegate` takes a WASM pointer and length, a parameters pointer and length, a cipher
+pointer, a nonce pointer, and two output pointers. On success it writes 32 bytes of delegate key to
+the first output pointer and 32 bytes of code hash to the second, and returns `0`.
+
 ## Reading the source
 
 The authoritative definition is the host code that loads and calls the module.
@@ -170,6 +289,15 @@ In [freenet-stdlib](https://github.com/freenet/freenet-stdlib):
 - [`contract_interface/update.rs`][stdlib-update], [`state.rs`][stdlib-state] and
   [`error.rs`][stdlib-error] define the encoded types.
 
+For delegates specifically:
+
+- [`wasm_runtime/delegate/execution.rs`][core-delegate] is the host call path, including how the
+  three argument buffers are filled and how V1 and V2 dispatch differ.
+- [`delegate_interface.rs`][stdlib-delegate] defines `DelegateInterfaceResult`, the inbound and
+  outbound message enums and `DelegateError`.
+- [`delegate_host.rs`][stdlib-delegate-host] declares every host import with its exact signature and
+  documents the error-code conventions.
+
 [stdlib]: https://github.com/freenet/freenet-stdlib
 [core-contract]:
   https://github.com/freenet/freenet-core/blob/main/crates/core/src/wasm_runtime/contract.rs
@@ -186,3 +314,9 @@ In [freenet-stdlib](https://github.com/freenet/freenet-stdlib):
   https://github.com/freenet/freenet-stdlib/blob/main/rust/src/contract_interface/state.rs
 [stdlib-error]:
   https://github.com/freenet/freenet-stdlib/blob/main/rust/src/contract_interface/error.rs
+[core-delegate]:
+  https://github.com/freenet/freenet-core/blob/main/crates/core/src/wasm_runtime/delegate/execution.rs
+[stdlib-delegate]:
+  https://github.com/freenet/freenet-stdlib/blob/main/rust/src/delegate_interface.rs
+[stdlib-delegate-host]:
+  https://github.com/freenet/freenet-stdlib/blob/main/rust/src/delegate_host.rs
