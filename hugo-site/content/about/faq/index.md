@@ -23,6 +23,7 @@ aliases:
 - [Can I follow Freenet on social media?](#can-i-follow-freenet-on-social-media)
 - [How can I financially support Freenet development?](#how-can-i-financially-support-freenet-development)
 - [How do I uninstall Freenet?](#how-do-i-uninstall-freenet)
+- [Where does Freenet store data, and how do I limit what it uses?](#where-does-freenet-store-data)
 - [Why does the Freenet project use and mention AI tools?](#why-does-the-freenet-project-use-and-mention-ai-tools)
 
 Freenet is a fully decentralized, peer-to-peer network and a drop-in replacement for the world wide
@@ -288,6 +289,12 @@ If you installed with `cargo install freenet`, the binary is in `~/.cargo/bin/fr
 On Windows, `freenet uninstall` has a known gap and may leave the config folder behind; after running it, also manually remove `%LOCALAPPDATA%\Freenet\bin`, `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`, and `%APPDATA%\The Freenet Project Inc\Freenet`.
 
 The [Uninstall guide](/uninstall/) has the full per-platform manual-fallback snippets (Linux systemd, macOS launchd, Windows PowerShell) for when the binary is missing or broken.
+
+# Where does Freenet store data, and how do I limit what it uses? {#where-does-freenet-store-data}
+
+On macOS everything lives in `~/Library/Application Support/The-Freenet-Project-Inc.Freenet`, with logs in `~/Library/Logs/freenet`. On Linux it's `~/.local/share/freenet` for data and `~/.config/freenet` for configuration. On Windows it's under `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`.
+
+How much disk, memory, and bandwidth the peer uses is set in `config.toml` in the configuration directory. Edit it and restart the peer. The [data locations and resource limits](/configuration/) page lists the settings, their defaults, and an example configuration for a peer that should stay out of your way.
 
 # Why does the Freenet project use and mention AI tools? {#why-does-the-freenet-project-use-and-mention-ai-tools}
 
