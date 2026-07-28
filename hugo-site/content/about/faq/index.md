@@ -108,11 +108,12 @@ basic mechanism that provides anonymity.
 
 The difference is in what each system is trying to achieve. Tor and I2P are designed to provide
 anonymous access to services that are ultimately centralized. Freenet is designed to provide
-decentralized services. Its architecture naturally provides some anonymity, but anonymity is not the
-primary design goal of the network itself.
+decentralized services. The same request-chain structure exists in Freenet, but it falls out of how
+routing works rather than being a guarantee the network sets out to make. Freenet does not claim to
+be an anonymity system and should not be relied on as one.
 
 Instead, Freenet provides a platform on which people can build services that offer much stronger
-anonymity than the underlying network provides.
+anonymity than the network offers on its own.
 
 This separation has important advantages. Strong anonymity inevitably comes with tradeoffs in
 latency, bandwidth, and complexity. By treating anonymity as a service rather than baking a single
