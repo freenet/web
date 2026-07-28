@@ -15,26 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Get all "navbar-burger" elements
-    const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
-  
-    // Check if there are any navbar burgers
-    if ($navbarBurgers.length > 0) {
-  
-      // Add a click event on each of them
-      $navbarBurgers.forEach(el => {
-        el.addEventListener('click', () => {
-  
-          // Get the target from the "data-target" attribute
-          const target = el.dataset.target;
-          const $target = document.getElementById(target);
-  
-          // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
-          el.classList.toggle('is-active');
-          $target.classList.toggle('is-active');
-  
-        });
-      });
-    }
-  });
-  
+    // No burger handler here on purpose. The mobile menu is driven entirely by
+    // the #navbar-toggle checkbox and its <label class="navbar-burger">, with
+    // the open and closed states in base.css.
+    //
+    // There used to be a Bulma-style handler that toggled .is-active and read
+    // el.dataset.target. This markup has never set data-target, so the lookup
+    // returned null and every burger tap threw a TypeError. The menu still
+    // opened, because the label had already flipped the checkbox, which is why
+    // it went unnoticed.
+});

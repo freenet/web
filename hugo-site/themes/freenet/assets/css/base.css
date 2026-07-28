@@ -165,6 +165,22 @@ a {
     text-decoration: none;
 }
 
+/* A deliberate focus ring rather than the browser's 1px default. Bulma drew a
+   2px one in its link hue; this uses the site's own blue. Keyboard users only:
+   :focus-visible leaves mouse clicks alone. */
+a:focus-visible,
+button:focus-visible,
+label:focus-visible,
+summary:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+}
+
+a:focus-visible:active,
+button:focus-visible:active {
+    outline-width: 1px;
+}
+
 strong {
     color: var(--text-strong);
     font-weight: 700;
@@ -383,6 +399,16 @@ pre code {
 a.navbar-item {
     background-color: transparent;
     cursor: pointer;
+}
+
+/* Hover and keyboard feedback on the bar and inside the dropdown. freenet.css
+   sets its own (louder) colours for the dark scheme with !important, so this
+   only takes effect in light. */
+.navbar-link:hover,
+.navbar-link:focus-within,
+a.navbar-item:hover,
+a.navbar-item:focus {
+    background-color: var(--navbar-item-hover);
 }
 
 .navbar-link:not(.is-arrowless) {

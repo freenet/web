@@ -97,6 +97,7 @@
     --border: #d6d9e0;
     --surface: #ffffff;       /* dropdown and box backgrounds */
     --surface-soft: #f3f4f6;  /* blockquote, tag, hr */
+    --navbar-item-hover: #f1f2f4;
 
     /* Inline and block code. Bulma defaulted these to its danger hue, which
        read as an error; these are the neutral values that replaced it. */
@@ -613,10 +614,6 @@ p.page-end-spacer {
     border-color: #0066CC;
 }
 
-/* X color when burger is active */
-.navbar-burger.is-active span {
-    background-color: #0066CC;
-}
 
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
@@ -740,7 +737,9 @@ p.page-end-spacer {
         background-color: #e0e0e0;
     }
 
-    .navbar-burger.is-active span {
+    /* Open state. Keyed off the checkbox rather than .is-active, which used to
+       be applied by a JS handler that has been removed. */
+    .navbar-toggle-checkbox:checked ~ .navbar-brand .navbar-burger span {
         background-color: #4da6ff;
     }
 
