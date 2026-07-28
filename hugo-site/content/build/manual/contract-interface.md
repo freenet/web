@@ -7,18 +7,20 @@ aliases:
 ---
 
 This page documents the Rust contract-authoring API. To connect a user interface to a node, see
-[Client SDKs](/build/manual/#client-sdks).
+[Client SDKs](/build/manual/#client-sdks). To write a contract in a language other than Rust, see
+[Contract ABI](/build/manual/contract-abi/), which documents the raw WebAssembly boundary that this
+API wraps.
 
 ## Terms
 
-- [Contract State](/build/manual/glossary#contract-state) - data associated with a contract that can be
-  retrieved by Applications and Delegates.
+- [Contract State](/build/manual/glossary#contract-state) - data associated with a contract that can
+  be retrieved by Applications and Delegates.
 - [Delta](/build/manual/glossary#delta) - Represents a modification to some state - similar to a
   [diff](https://en.wikipedia.org/wiki/Diff) in source code
-- [Parameters](/build/manual/glossary#parameters) - Data that forms part of a contract along with the
-  WebAssembly code
-- [State Summary](/build/manual/glossary#state-summary) - A compact summary of a contract's state that can
-  be used to create a delta
+- [Parameters](/build/manual/glossary#parameters) - Data that forms part of a contract along with
+  the WebAssembly code
+- [State Summary](/build/manual/glossary#state-summary) - A compact summary of a contract's state
+  that can be used to create a delta
 
 ## Interface
 
