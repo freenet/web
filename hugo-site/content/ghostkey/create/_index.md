@@ -10,6 +10,11 @@ your donation and signs a key it cannot read. Your browser then unblinds that si
 your [Ghost Key](/ghostkey/) certificate. The result is an identity we can verify but cannot connect
 to your payment.
 
+What it protects is that link. It is not a fresh disguise for everything you later do with it: a
+Ghost Key is a persistent pseudonym, and two messages signed with the same one can be tied to the
+same holder. We set out the limits in
+[what Ghost Keys don't hide](/ghostkey/#what-ghost-keys-dont-hide).
+
 > **Before you pay:** after donating you'll download your certificate and signing key, and that
 > download is the authoritative copy. Keep it somewhere safe, such as a secure note in a password
 > manager. The Ghostkey Vault you can import it into is still experimental and can currently lose
