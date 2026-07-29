@@ -18,6 +18,7 @@ mod errors;
 mod handle_sign_cert;
 mod invite;
 mod invite_pow;
+mod payment_claim;
 mod rate_limit;
 mod routes;
 mod tor;
