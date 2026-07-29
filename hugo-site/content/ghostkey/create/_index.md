@@ -28,13 +28,16 @@ is a 501(c)(3) nonprofit, and contributions are tax-deductible in the United Sta
 ## Who sees what
 
 - **Stripe**, our payment processor: your card details and the amount. Stripe never sees your Ghost
-  Key.
-- **Freenet's donation server**: that a donation happened, the amount, and a blinded key it is
-  mathematically unable to read.
+  Key, blinded or otherwise.
+- **Freenet's donation server**: your payment record from Stripe, which it has to read in order to
+  confirm the payment succeeded, and separately a blinded key that it is mathematically unable to
+  read.
 - **Anyone verifying your key later**: that a valid Ghost Key was issued at a given donation tier.
   Not your name, not your payment.
 
-Nobody, including us, ever holds both halves.
+The unblinding happens in your browser, on a key our server never sees in unblinded form. So while
+our server does handle your payment, the link between that payment and the Ghost Key you end up
+holding is never created anywhere, including on our own machines.
 
 ## Why the amounts are fixed
 

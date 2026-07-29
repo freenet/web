@@ -1,5 +1,17 @@
 <div id="stripe-donation-form" style="max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
     <form id="payment-form">
+    <!-- These tiers are NOT free to change. Each one needs a matching per-amount
+         notary keypair on the API host (notary_certificate_{amount}.pem and
+         notary_signing_key_{amount}.pem — see rust/api/src/delegates.rs). An
+         amount with no keypair fails certificate signing AFTER the card has been
+         charged, leaving the donor paid up with no key.
+
+         Fixed tiers are also load-bearing for anonymity: the amount is written
+         into the certificate and is visible to anyone who verifies it, so a
+         free-form amount would be near-unique. Do not add a custom-amount field.
+
+         If you change this list, update the prose that names the tiers in
+         hugo-site/content/ghostkey/_index.md ("Why the amounts are fixed"). -->
     <div id="amount-options" style="margin-bottom: 20px;">
         <label class="donation-amount-label"><input type="radio" name="amount" value="1" required> $1</label>
         <label class="donation-amount-label"><input type="radio" name="amount" value="5" checked> $5</label>
