@@ -1274,6 +1274,42 @@ picture.app-screenshot img {
   color: #ffffff !important;
 }
 
+/* Ghost Key call to action, used on /ghostkey/ at the top, after the
+   limitations section, and at the end.
+
+   Deliberately NOT reusing the homepage .cta-row/.cta-note pair: those carry a
+   negative top margin tuned to sit under the homepage hero, which collapses
+   badly in the middle of a prose page. Same visual language, no positional
+   assumptions.
+
+   The note under the button carries the price and the nonprofit status. Both
+   belong here rather than in the button label: the reader should know what the
+   click costs before making it, not after. */
+.gk-cta {
+  margin: 2.5rem 0;
+  text-align: center;
+}
+
+.gk-cta-note {
+  margin: 0.75rem auto 0 auto;
+  max-width: 34rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+/* The hero CTA sits directly under the opening definition, so it needs less
+   space above it than the in-body instances. */
+.gk-cta-hero {
+  margin-top: 1.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .gk-cta-note {
+    color: #94a3b8;
+  }
+}
+
 /* Ghost keys — understated */
 .funding-ghost-keys {
   padding-top: 1.5rem;

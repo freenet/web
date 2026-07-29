@@ -75,11 +75,22 @@
         loader: 'auto',
       });
 
+      // Suppress Stripe Link. Its inline signup asks for email, phone number,
+      // and full name at the moment of payment, which directly contradicts what
+      // a Ghost Key is for: a donor who came here for an unlinkable identity
+      // should not be asked to hand over contact details to complete the
+      // donation. `wallets.link` is the documented lever for this.
+      //
+      // This replaces a `linkAuthenticationElement` option that was silently
+      // doing nothing. It is not a valid key for elements.create('payment'),
+      // whose options are layout, defaultValues, business, paymentMethodOrder,
+      // fields, readOnly, terms, wallets and applePay. Unknown keys are ignored
+      // rather than rejected, so the Link prompt had been showing in production
+      // despite the apparent intent to disable it.
       const paymentElementOptions = {
         layout: "tabs",
-        linkAuthenticationElement: {
-          type: "auto",
-          visibility: "never",
+        wallets: {
+          link: "never",
         },
       };
 

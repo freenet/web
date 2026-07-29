@@ -10,6 +10,25 @@ You hold your Ghost Keys in the **Ghostkey Vault**, a Freenet delegate running i
 your Freenet node, and any Freenet app can ask the vault to sign with one to prove you
 hold a scarce, donation-backed identity, without ever learning who you are.
 
+<div class="gk-cta gk-cta-hero">
+<a href="/ghostkey/create/" class="funding-donate-button">Get a Ghost Key</a>
+<p class="gk-cta-note">$1 minimum. Freenet Project Inc is a 501(c)(3) nonprofit.</p>
+</div>
+
+## The short version
+
+- **What you get.** An identity that any Freenet app can verify, and that no one can
+  trace back to your payment.
+- **What it costs.** $1 or more, once. There is no subscription and nothing renews.
+- **Why a donation.** Identities that are free to create are free to farm. Paying for
+  one makes spam and Sybil attacks expensive, and it funds Freenet's development.
+- **How the anonymity works.** Your browser blinds the key before the donation server
+  ever sees it, so the server signs a key it cannot read.
+  [Details below](#how-it-works-blind-signing).
+- **What it does not do.** It does not make everything you sign unlinkable. Two messages
+  signed with the same Ghost Key can be tied to the same holder.
+  [We are specific about this](#what-ghost-keys-dont-hide).
+
 You can also read the [introductory article](/about/news/introducing-ghost-keys/) or
 [watch the interview](/about/news/ghost-keys-ian-interview/).
 
@@ -109,6 +128,11 @@ zero-knowledge proof over the certificate. It would require redesigning the sign
 format and the verifier, and is a substantial piece of work, but it is the direction
 we expect Ghost Keys to move in.
 
+<div class="gk-cta">
+<a href="/ghostkey/create/" class="funding-donate-button">Get a Ghost Key</a>
+<p class="gk-cta-note">$1 minimum. You now know both what it protects and what it doesn't.</p>
+</div>
+
 ## Using Ghost Keys from a Freenet app
 
 Once imported, your Ghost Key doesn't just sit in a file. It lives inside the
@@ -175,6 +199,18 @@ The minimum is **$1**. Donate as much as you can; the amount is recorded in your
 certificate, so apps that want to grant additional privileges to larger donors can do
 so.
 
-<p style="text-align: center; margin: 2.5rem 0;">
-<a href="/ghostkey/create/" class="funding-donate-button">Donate to Get Your Ghost Key</a>
-</p>
+### Why the amounts are fixed
+
+You choose from $1, $5, $20, $50, or $100 rather than typing your own figure, and that
+is a privacy decision rather than a limitation we haven't got around to lifting.
+
+The donation amount is written into your certificate, so anyone who verifies it can read
+it. Fixed tiers mean your certificate is indistinguishable from every other certificate
+issued at the same amount: the amount tells an observer which of five groups you are in
+and nothing more. A free-form amount like $37.42 would be close to unique, and would
+give away much of what blind signing is there to protect.
+
+<div class="gk-cta">
+<a href="/ghostkey/create/" class="funding-donate-button">Get a Ghost Key</a>
+<p class="gk-cta-note">$1 minimum. Freenet Project Inc is a 501(c)(3) nonprofit.</p>
+</div>
