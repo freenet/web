@@ -23,8 +23,8 @@ in the middle.
 </div>
 
 <p class="cta-note">The browser version is a centralized demo running on our server. Installing your
-own peer takes a couple of minutes on Windows, macOS or Linux, and gives you the real, serverless
-thing.</p>
+own peer takes a couple of minutes on Windows, macOS or Linux, and gives you the real thing, with no
+server in the middle.</p>
 
 </div>
 
