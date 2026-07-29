@@ -67,3 +67,13 @@ If you are interested in supporting Freenet at a significant level, we would be 
 <a href="https://www.paypal.com/donate?hosted_button_id=EQ9E7DPHB6ETY" class="funding-donate-button">Donate via PayPal</a>
 
 </div>
+
+<div class="funding-section funding-ghost-keys">
+
+## Donating by card
+
+If you would rather give by card, you can donate through [Ghost Keys](/ghostkey/). A Ghost Key is an
+anonymous cryptographic identity, issued with your donation, that works across Freenet apps and
+cannot be linked back to your payment. The minimum is $1.
+
+</div>

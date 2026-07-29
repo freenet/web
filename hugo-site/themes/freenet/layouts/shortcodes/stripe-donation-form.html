@@ -1,5 +1,20 @@
 <div id="stripe-donation-form" style="max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
     <form id="payment-form">
+    {{/* These tiers are NOT free to change. Each one needs a matching per-amount
+         notary keypair on the API host (notary_certificate_{amount}.pem and
+         notary_signing_key_{amount}.pem, see rust/api/src/delegates.rs). An
+         amount with no keypair fails certificate signing AFTER the card has been
+         charged, leaving the donor paid up with no key.
+
+         Fixed tiers are also load-bearing for anonymity: the amount is written
+         into the certificate and is visible to anyone who verifies it, so a
+         free-form amount would be near-unique. Do not add a custom-amount field.
+
+         If you change this list, update the prose that names the tiers in
+         hugo-site/content/ghostkey/_index.md ("Why the amounts are fixed").
+
+         Go-template comment rather than an HTML one so this stays in source
+         without shipping to every visitor. */}}
     <div id="amount-options" style="margin-bottom: 20px;">
         <label class="donation-amount-label"><input type="radio" name="amount" value="1" required> $1</label>
         <label class="donation-amount-label"><input type="radio" name="amount" value="5" checked> $5</label>
@@ -75,11 +90,22 @@
         loader: 'auto',
       });
 
+      // Suppress Stripe Link. Its inline signup asks for email, phone number,
+      // and full name at the moment of payment, which directly contradicts what
+      // a Ghost Key is for: a donor who came here for an unlinkable identity
+      // should not be asked to hand over contact details to complete the
+      // donation. `wallets.link` is the documented lever for this.
+      //
+      // This replaces a `linkAuthenticationElement` option that was silently
+      // doing nothing. It is not a valid key for elements.create('payment'),
+      // whose options are layout, defaultValues, business, paymentMethodOrder,
+      // fields, readOnly, terms, wallets and applePay. Unknown keys are ignored
+      // rather than rejected, so the Link prompt had been showing in production
+      // despite the apparent intent to disable it.
       const paymentElementOptions = {
         layout: "tabs",
-        linkAuthenticationElement: {
-          type: "auto",
-          visibility: "never",
+        wallets: {
+          link: "never",
         },
       };
 
