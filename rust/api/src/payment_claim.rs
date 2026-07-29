@@ -85,9 +85,18 @@ pub(crate) async fn claim(payment_intent_id: &str) -> ClaimGuard {
     }
 }
 
+/// Whether a specific PaymentIntent currently has a live entry.
+///
+/// Tests assert on individual keys rather than on the size of the map:
+/// `CLAIM_LOCKS` is process-global and the test harness runs tests in parallel
+/// threads, so any assertion about the total count is really an assertion about
+/// what every other test in this module happens to be doing at that instant.
 #[cfg(test)]
-fn tracked_keys() -> usize {
-    CLAIM_LOCKS.lock().unwrap_or_else(|e| e.into_inner()).len()
+fn is_tracked(payment_intent_id: &str) -> bool {
+    CLAIM_LOCKS
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .contains_key(payment_intent_id)
 }
 
 #[cfg(test)]
@@ -166,17 +175,19 @@ mod tests {
     /// map without bound.
     #[tokio::test]
     async fn released_claims_are_reclaimed() {
-        let before = tracked_keys();
+        let keys: Vec<String> = (0..64).map(|i| format!("pi_garbage_{i}")).collect();
 
-        for i in 0..64 {
-            let _claim = claim(&format!("pi_garbage_{i}")).await;
+        for key in &keys {
+            let _claim = claim(key).await;
         }
 
-        assert_eq!(
-            tracked_keys(),
-            before,
-            "claim map grew after every guard was dropped, so a caller posting \
-             unknown PaymentIntent ids can exhaust memory"
+        let leaked: Vec<&String> = keys.iter().filter(|k| is_tracked(k)).collect();
+        assert!(
+            leaked.is_empty(),
+            "{} claim entries survived their guards, so a caller posting unknown \
+             PaymentIntent ids can exhaust memory: {:?}",
+            leaked.len(),
+            leaked
         );
     }
 
@@ -189,17 +200,24 @@ mod tests {
 
         let waiter = tokio::spawn(async move {
             let _claim = claim("pi_handoff").await;
-            tracked_keys()
+            // Still tracked while this second guard holds it.
+            is_tracked("pi_handoff")
         });
 
         // Give the waiter time to queue behind the held claim.
         tokio::time::sleep(std::time::Duration::from_millis(50)).await;
         assert!(
-            tracked_keys() >= 1,
-            "entry vanished while a waiter was queued"
+            is_tracked("pi_handoff"),
+            "entry vanished while a waiter was queued, so the waiter is now \
+             contending on a different mutex than the holder and the exclusion \
+             has silently stopped working"
         );
 
         drop(held);
-        assert!(waiter.await.unwrap() >= 1);
+        assert!(waiter.await.unwrap());
+        assert!(
+            !is_tracked("pi_handoff"),
+            "entry outlived the last guard for this key"
+        );
     }
 }
