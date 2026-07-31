@@ -105,14 +105,15 @@
     --code-background: #f3f4f6;
 
     /* Reading measure. Body text was running the full container width, which
-       is ~175 characters on a 1600px screen; comfortable reading is 45-75.
+       is ~175 characters on a 1600px screen; comfortable reading is roughly
+       45-90, with long-form copy best kept near the middle of that range.
 
        --measure-container sizes the article column on prose pages, so the
        heading and body move together. --measure is the per-block fallback for
        prose inside a full-width layout (the homepage), where the container has
        to stay wide for the hero and the card grid. --breakout is how far
        tables, code blocks and figures may extend past the column. */
-    --measure-container: 36rem;
+    --measure-container: 42rem;
     --measure-content: calc(var(--measure-container) - 2rem); /* less .container padding */
     --breakout: 52rem;
     --measure: 66ch;

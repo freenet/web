@@ -1,36 +1,34 @@
 {{ define "main" }}
-  <section class="section">
-    <div class="container is-prose">
-      <h1 class="title">{{ .Title }}</h1>
-      {{ if .IsSection }}
-        <div class="content">
-          {{ .Content }}
-        </div>
-        <div>
-          {{ range .Pages }}
-              <section class="child-entry">
-                <h2 class="title is-5">
-                  <a href="{{ .RelPermalink }}" style="color: #444444;">{{ .LinkTitle }}</a>
-                </h2>
-                {{ if eq .Section "news" }}
-                  <p class="date">{{ .Date.Format "2 January, 2006" }}</p>
-                {{ end }}
-                <div class="content">
-                  {{ .Summary }}
-                </div>
-              </section>
-          {{ end }}
-        </div>
-      {{ else }}
-        {{ if eq .Section "news" }}
-          {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
-          {{ $dateHuman := .Date | time.Format ":date_long" }}
-          <p class="date">{{ $dateHuman }}</p>
+  <div class="container{{ if .IsSection }} is-section-page{{ else }} is-prose{{ end }}">
+    <h1 class="title">{{ .Title }}</h1>
+    {{ if .IsSection }}
+      <div class="content page-intro">
+        {{ .Content }}
+      </div>
+      <div class="page-list{{ if not .Params.list_child_pages }} is-grid{{ end }}">
+        {{ range .Pages }}
+          <section class="child-entry">
+            <h2 class="title is-5">
+              <a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>
+            </h2>
+            {{ if eq .Section "news" }}
+              <p class="date">{{ .Date.Format "2 January, 2006" }}</p>
+            {{ end }}
+            <div class="content">
+              {{ .Summary }}
+            </div>
+          </section>
         {{ end }}
-        <div class="content">
-          {{ .Content }}
-        </div>
+      </div>
+    {{ else }}
+      {{ if eq .Section "news" }}
+        {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
+        {{ $dateHuman := .Date | time.Format ":date_long" }}
+        <p class="date">{{ $dateHuman }}</p>
       {{ end }}
-    </div>
-  </section>
+      <div class="content">
+        {{ .Content }}
+      </div>
+    {{ end }}
+  </div>
 {{ end }}

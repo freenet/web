@@ -279,10 +279,51 @@ pre code {
    be. Wide children (code blocks, tables) still scroll within it. */
 .container.is-prose {
     max-width: var(--measure-container);
+    font-size: 1.125rem;
+    line-height: 1.6;
     /* The column itself is now the measure, so switch off the per-block cap
        below. Leaving both on would cap the text a second time inside an
        already-narrow column and strand it again, just less obviously. */
     --measure: none;
+}
+
+/* Section landing pages are navigation surfaces, not long-form articles. Keep
+   their shell wide so child pages can form a useful card grid, while the
+   reading-measure rule below still caps introductory prose inside .content. */
+.container.is-section-page {
+    max-width: 1344px;
+}
+
+.page-list.is-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 32rem));
+    justify-content: start;
+    margin-top: 2.5rem;
+}
+
+.page-list.is-grid .child-entry {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    margin-bottom: 0;
+    padding: 1.5rem;
+}
+
+.page-list .child-entry > .title a {
+    color: var(--text-strong);
+}
+
+@media screen and (max-width: 768px) {
+    .page-list.is-grid {
+        gap: 1rem;
+        grid-template-columns: minmax(0, 1fr);
+        margin-top: 2rem;
+    }
+
+    .page-list.is-grid .child-entry {
+        padding: 1.25rem;
+    }
 }
 
 /* Tables, code blocks and figures are read by scanning rather than line by
