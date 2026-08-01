@@ -294,8 +294,11 @@ The [Uninstall guide](/uninstall/) has the full per-platform manual-fallback sni
 Freenet does not require AI, depend on AI, or embed AI into the platform. Users and contributors can
 use, build on, or participate in Freenet without interacting with AI in any form.
 
-In practice, some of the Freenet codebase is written with extensive assistance from AI tools and then
-reviewed, tested, and refined by humans. We rely on extensive testing to validate all code,
-including unit tests, integration tests, and simulations of small networks of Freenet peers. We use
-these tools because they dramatically increase developer productivity, allowing a small team to build
-and iterate far more quickly than would otherwise be possible.
+AI coding tools are, however, used extensively in Freenet's development. They allow a small team to
+implement, review, and iterate much more quickly than would otherwise be possible.
+
+We evaluate code by the safeguards around it, not by whether it was first written by a person or an
+AI tool. Changes go through multiple independent reviews by different AI models, along with unit
+tests, integration tests, and simulations of complete networks of Freenet peers before they are
+merged. Freenet is still alpha software and has bugs; these layers are intended to catch defects and
+regressions early and help us find and fix remaining problems quickly.
