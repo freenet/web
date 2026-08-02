@@ -53,6 +53,9 @@ system-wide service instead: `sudo freenet service install --system`
 **Network requirements:** Freenet uses UDP hole punching for peer-to-peer connections. Most home
 routers support this without configuration. Strict corporate firewalls may block connections.
 
+**Using too much disk or bandwidth?** See [data locations and resource limits](/configuration/) for
+where Freenet stores things and how to cap what the peer uses.
+
 Need to remove Freenet? See the [uninstall guide](/uninstall/).
 
 ## What's Next?
