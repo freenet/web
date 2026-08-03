@@ -15,11 +15,10 @@ Ghost Key is a persistent pseudonym, and two messages signed with the same one c
 same holder. We set out the limits in
 [what Ghost Keys don't hide](/ghostkey/#what-ghost-keys-dont-hide).
 
-> **Before you pay:** after donating you'll download your certificate and signing key, and that
-> download is the authoritative copy. Keep it somewhere safe, such as a secure note in a password
-> manager. The Ghostkey Vault you can import it into is still experimental and can currently lose
-> keys ([freenet/ghostkeys#3](https://github.com/freenet/ghostkeys/issues/3)), so the backup is what
-> protects you.
+> **Before you pay:** your Ghost Key is created in your browser on the next page and signed once.
+> That page is the only copy — reloading it will not bring the key back and the donation cannot be
+> reissued — so download it or import it to Freenet before closing the tab. Keep the downloaded file
+> somewhere safe, such as a secure note in a password manager.
 
 The minimum is **$1**. We use [Stripe](https://stripe.com/) for card processing. Freenet Project Inc
 is a 501(c)(3) nonprofit, and contributions are tax-deductible in the United States.

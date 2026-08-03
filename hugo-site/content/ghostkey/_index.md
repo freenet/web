@@ -203,6 +203,18 @@ the vault holds the only copy, some nodes reclaim idle storage, and a key you ca
 produce is a donation you cannot prove. A backup also lets you move your identity to a
 new node later.
 
+### Opening your vault
+
+If you have a Freenet node running on this computer, your Ghost Keys are here:
+
+<div class="gk-cta">
+<a href="http://localhost:7509/v1/contract/web/DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N/" class="funding-donate-button">Open your Ghost Key vault</a>
+<p class="gk-cta-note">Requires a Freenet node running on this computer. The link will not resolve otherwise.</p>
+</div>
+
+That address is your own machine, not a website — the vault runs inside your node, and the page is
+served locally. Bookmark it if you use Ghost Keys regularly.
+
 For developers, everything is open source:
 
 - The [`freenet/ghostkeys`](https://github.com/freenet/ghostkeys) repository contains

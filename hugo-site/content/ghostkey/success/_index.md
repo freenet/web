@@ -28,4 +28,10 @@ You can also download the certificate and signing key from this page right now
 if you would rather not wait — either copy works, and the vault can re-import
 from one at any time.
 
+**Your vault lives at**
+[localhost:7509/v1/contract/web/DLog47hEs…](http://localhost:7509/v1/contract/web/DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N/),
+on this computer rather than on the web. Importing opens it for you, but the
+address is worth bookmarking — it is how you reach your keys later, and nothing
+else links to it.
+
 {{< bulma-button href="/ghostkey/" color="#339966" >}}Ghost Key FAQ{{< /bulma-button >}}
