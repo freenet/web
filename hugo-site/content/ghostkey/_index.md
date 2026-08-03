@@ -195,20 +195,32 @@ For developers, everything is open source:
 
 ## How much should I donate?
 
-The minimum is **$1**. Donate as much as you can; the amount is recorded in your
-certificate, so apps that want to grant additional privileges to larger donors can do
-so.
+The minimum is **$1** and the maximum is **$10,000**. Donate as much as you can; the
+amount is recorded in your certificate, so apps that want to grant additional privileges
+to larger donors can do so.
+
+Card issuers commonly decline single charges in the thousands, so the two largest tiers
+may not go through on an ordinary consumer card. A decline costs you nothing — no charge
+is made and no key is issued — so it is safe to try one and fall back to a smaller
+amount.
 
 ### Why the amounts are fixed
 
-You choose from $1, $5, $20, $50, or $100 rather than typing your own figure, and that
-is a privacy decision rather than a limitation we haven't got around to lifting.
+You choose from $1, $5, $20, $50, $100, $500, $2,500, or $10,000 rather than typing your
+own figure, and that is a privacy decision rather than a limitation we haven't got around
+to lifting.
 
 The donation amount is written into your certificate, so anyone who verifies it can read
 it. Fixed tiers mean your certificate is indistinguishable from every other certificate
-issued at the same amount: the amount tells an observer which of five groups you are in
+issued at the same amount: the amount tells an observer which of eight groups you are in
 and nothing more. A free-form amount like $37.42 would be close to unique, and would
 give away much of what blind signing is there to protect.
+
+The same logic applies to the tiers themselves: the larger ones will have fewer holders,
+so a certificate at the top of the range says more about you than one at the bottom.
+Nobody outside the Freenet Project can turn that into a name — doing so needs the
+payment records, which never leave us and are never linked to a certificate — but if you
+want the largest possible crowd to hide in, the lower tiers are where it is.
 
 <div class="gk-cta">
 <a href="/ghostkey/create/" class="funding-donate-button">Get a Ghost Key</a>

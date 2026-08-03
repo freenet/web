@@ -10,6 +10,11 @@
          into the certificate and is visible to anyone who verifies it, so a
          free-form amount would be near-unique. Do not add a custom-amount field.
 
+         The high tiers ($2,500 and $10,000) exceed what many consumer cards
+         will authorise. That is a clean decline with no charge, not a
+         charged-without-a-key failure, but expect a proportion of attempts on
+         those two to fail at the card step.
+
          If you change this list, update the prose that names the tiers in
          hugo-site/content/ghostkey/_index.md ("Why the amounts are fixed").
 
@@ -21,6 +26,9 @@
         <label class="donation-amount-label"><input type="radio" name="amount" value="20"> $20</label>
         <label class="donation-amount-label"><input type="radio" name="amount" value="50"> $50</label>
         <label class="donation-amount-label"><input type="radio" name="amount" value="100"> $100</label>
+        <label class="donation-amount-label"><input type="radio" name="amount" value="500"> $500</label>
+        <label class="donation-amount-label"><input type="radio" name="amount" value="2500"> $2,500</label>
+        <label class="donation-amount-label"><input type="radio" name="amount" value="10000"> $10,000</label>
     </div>
     <div id="payment-element" style="margin-bottom: 20px;">
       <!-- Stripe Elements will be inserted here -->
