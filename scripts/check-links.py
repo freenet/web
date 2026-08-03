@@ -341,6 +341,8 @@ def self_test():
             <a href="#TOP">good: #top is case-insensitive</a>
             <a href="/caf%C3%A9/">good: percent-encoded path, raw UTF-8 on disk</a>
             <a href="/caf%C3%A9/#accented">good: fragment through a percent-encoded path</a>
+            <a href="/caf%C3%A9/#r%C3%A9sum%C3%A9">good: percent-encoded fragment too</a>
+            <a href="/encoded-alias/#accented">good: alias whose refresh URL is encoded</a>
             <a href="/%2e%2e/%2e%2e/etc/hostname">BAD: must not escape the output tree</a>
             <img srcset="data:image/png;base64,iVBORw0KGgo= 1x">
             <a href="https://sitemap-host.example/nope/">BAD: host taken from sitemap.xml</a>
@@ -376,7 +378,14 @@ def self_test():
             '<head><meta http-equiv="refresh" content="30; url=/about/"></head>'
             '<body><h2 id="own">still the right page</h2></body>',
         )
-        write("café/index.html", '<h2 id="accented">café</h2>')
+        # Both decode calls need a fixture that only passes when they run: an
+        # id that is non-ASCII (not just the path holding it), and an alias
+        # whose refresh URL is itself percent-encoded.
+        write("café/index.html", '<h2 id="accented">café</h2><h3 id="résumé">r</h3>')
+        write(
+            "encoded-alias/index.html",
+            '<head><meta http-equiv="refresh" content="0; url=/caf%C3%A9/"></head>',
+        )
         # A real page that merely *documents* a meta refresh must not be
         # mistaken for an alias stub.
         write(
