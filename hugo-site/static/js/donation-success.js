@@ -288,11 +288,19 @@ function displayCertificate(armoredCertificate, armoredSigningKey) {
         // can offer a one-click return once the key has actually landed.
         // Re-validated here because it has been through a Stripe redirect;
         // the vault validates it again and is the authority.
-        const returnTo = new URLSearchParams(window.location.search).get('return_to');
-        const returnFragment =
-          returnTo && /^[1-9A-HJ-NP-Za-km-z]{32,50}$/.test(returnTo)
-            ? `&return_to=${returnTo}`
-            : '';
+        const params = new URLSearchParams(window.location.search);
+        const returnTo = params.get('return_to');
+        const returnPath = params.get('return_path');
+        let returnFragment = '';
+        if (returnTo && /^[1-9A-HJ-NP-Za-km-z]{32,50}$/.test(returnTo)) {
+          returnFragment = `&return_to=${returnTo}`;
+          // Encoded, because the route may itself contain a `#` for an SPA
+          // route and this whole thing is going into a fragment -- one `#` too
+          // many and the vault's parse breaks.
+          if (returnPath) {
+            returnFragment += `&return_path=${encodeURIComponent(returnPath)}`;
+          }
+        }
         const importUrl = `http://localhost:7509/v1/contract/web/${contractId}/#import=${certB64}.${skB64}${returnFragment}`;
         window.open(importUrl, '_blank');
       });
