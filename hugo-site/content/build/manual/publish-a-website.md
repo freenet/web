@@ -71,6 +71,18 @@ permanent address -- it will not change when you update the site content.
 
 ## 2. Publish Your Website
 
+{{< alert type="warning" >}}
+**Keep your site small.** Every visitor's node downloads your site's full compressed archive over
+the peer-to-peer network before it can render, and every peer that hosts your contract stores that
+same archive. Size directly affects how fast your site loads for visitors and how much load it puts
+on the network.
+
+The node enforces a hard limit of **50MB**, but that's a ceiling, not a target -- treat it as the
+point where publishing simply fails, not something to aim for. In practice, **3MB is a reasonable
+practical maximum**, and **500KB is a good target** if you can get there. Compress images, avoid
+bundling unnecessary assets, and prefer plain text/SVG over large binaries.
+{{< /alert >}}
+
 Point `fdev` at a directory containing your website files. The directory must contain an
 `index.html` at its root.
 
@@ -157,7 +169,9 @@ Sites are served through a Freenet gateway inside a sandboxed iframe. Here's wha
   navigates to the target page (as of v0.2.41)
 - CSS, JavaScript, images, fonts bundled with your site
 - Single-page apps (React, Vue, Dioxus) -- routing handled in JavaScript
-- Large sites -- the archive is compressed with xz; the contract supports up to 100MB
+- Small to medium sites -- the archive is compressed with xz. The node enforces a hard limit of
+  50MB, but for the sake of visitors and the network you should aim far lower -- see
+  [Keep your site small](#2-publish-your-website) above (500KB target, 3MB practical maximum)
 
 **Won't work:**
 - **Traditional server-side logic** -- the website contract serves static files only. For dynamic
