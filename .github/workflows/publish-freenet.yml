@@ -31,6 +31,17 @@ jobs:
       - name: Install cargo-make
         run: cargo install --debug cargo-make
 
+      # Same content ships here as to GitHub Pages, so gate it on the same
+      # link check. This runs against an ordinary build: `cargo make
+      # build-freenet` rewrites every path for the contract baseURL and
+      # deletes the server-dependent directories, so its output is expected
+      # to contain dangling links and is not comparable.
+      # Placed before `cargo install fdev` so a bad link fails fast.
+      - name: Check internal links
+        run: |
+          (cd hugo-site && hugo --minify)
+          cargo make check-links
+
       - name: Install fdev
         run: cargo install fdev
         env:

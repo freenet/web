@@ -15,7 +15,11 @@
               <p class="date">{{ .Date.Format "2 January, 2006" }}</p>
             {{ end }}
             <div class="content">
-              {{ .Summary }}
+              {{/* Strip links: an auto-summary carries the child page's own
+                   hrefs, and a page-relative one ("#section", "introduction")
+                   resolves against THIS page instead, so it lands nowhere.
+                   The card title already links to the page. */}}
+              {{ .Summary | replaceRE `</?a[^>]*>` "" | safeHTML }}
             </div>
           </section>
         {{ end }}

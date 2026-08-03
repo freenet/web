@@ -34,7 +34,7 @@ close to that location.
 2. [Make it more difficult to target specific contracts](#2-location-hopping)
 3. Increase the cost of bad behavior by making other nodes in the network monitor for it and react
    accordingly
-4. [Use statistical anomaly detection to identify and thwart suspicious behavior](https://www.pivotaltracker.com/story/show/186472381)
+4. Use statistical anomaly detection to identify and thwart suspicious behavior
 
 ## 1. Identity Creation Cost
 

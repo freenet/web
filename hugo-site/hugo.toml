@@ -146,10 +146,6 @@ theme = "freenet"
   posts = "/:year/:month/:title/"
 
 [markup]
-  [markup.tableOfContents]
-    startLevel = 1
-    endLevel = 3
-
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true

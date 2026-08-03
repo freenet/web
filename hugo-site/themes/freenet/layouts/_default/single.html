@@ -35,7 +35,8 @@
           <p class="date">{{ .Date.Format "2 January, 2006" }}</p>
         {{ end }}
         <div class="content">
-          {{ .Summary }}
+          {{/* Links stripped for the same reason as in _default/list.html. */}}
+          {{ .Summary | replaceRE `</?a[^>]*>` "" | safeHTML }}
         </div>
       {{ end }}
     </div>

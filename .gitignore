@@ -17,3 +17,6 @@ Cargo.lock
 rust/browser-extension/node_modules
 rust/browser-extension/dist
 rust/browser-extension/wasm
+
+# Python bytecode from scripts/
+__pycache__/
