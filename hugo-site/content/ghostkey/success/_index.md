@@ -14,21 +14,18 @@ without revealing your identity. Please wait a moment while we process your info
 
 ## What's Next?
 
-> **⚠️ Back up first, import second.** The Ghostkey Vault delegate is experimental
-> and can lose keys. **Save your Ghost Key before clicking Import to Freenet.** If
-> the vault loses it and you have no backup, the key and the donation behind it
-> cannot be recovered. Tracked in
-> [freenet/ghostkeys#3](https://github.com/freenet/ghostkeys/issues/3).
+**1. Import to Freenet.** If you have a Freenet peer running on this computer,
+click "Import to Freenet" to add your Ghost Key to your local identity vault.
+Your peer must be running before you click. If you arrived here from an app,
+the vault will offer you the way back once the key has landed.
 
-**1. Backup (do this first):** Download your Ghost Key and save both the certificate
-and the signing key somewhere safe, such as a secure note in a password manager. This
-is currently the authoritative copy of your key. Treat the vault as a convenience, not
-as storage you can rely on.
+**2. Back up when the vault asks.** The vault marks a new identity as
+un-backed-up and shows a reminder next to it, with a one-click download. Do
+that before you rely on the key for anything you would mind losing: on most
+setups the vault holds the only copy, and Freenet is still experimental.
 
-**2. Import to Freenet:** Once you've backed up, if you have a Freenet peer running on
-this computer, click "Import to Freenet" to add your Ghost Key to your local identity
-vault. Your Freenet peer must be running before you click this button. If you lose
-access to your Freenet peer (or the vault loses the key), you can re-import from the
-backup.
+You can also download the certificate and signing key from this page right now
+if you would rather not wait — either copy works, and the vault can re-import
+from one at any time.
 
 {{< bulma-button href="/ghostkey/" color="#339966" >}}Ghost Key FAQ{{< /bulma-button >}}

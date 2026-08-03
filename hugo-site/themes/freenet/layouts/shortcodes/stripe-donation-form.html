@@ -186,10 +186,24 @@
     event.preventDefault();
     setLoading(true);
 
+    // Carry `return_to` across the Stripe round trip, so the success page can
+    // offer the donor the way back to the app that sent them here. Stripe
+    // preserves the query string on `return_url` and appends its own params.
+    //
+    // Only a syntactically valid Freenet contract id is passed on. The vault
+    // validates it again and independently, and only ever builds a
+    // same-origin `/v1/contract/web/<id>/` path from it, so this is about not
+    // propagating junk rather than about being the security boundary.
+    const returnTo = new URLSearchParams(window.location.search).get('return_to');
+    const returnToParam =
+      returnTo && /^[1-9A-HJ-NP-Za-km-z]{32,50}$/.test(returnTo)
+        ? `?return_to=${encodeURIComponent(returnTo)}`
+        : '';
+
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/ghostkey/success`,
+        return_url: `${window.location.origin}/ghostkey/success${returnToParam}`,
       },
     });
 
