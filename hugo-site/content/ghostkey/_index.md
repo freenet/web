@@ -116,17 +116,26 @@ The mitigation we are building toward is to **match key lifetime to the privacy 
 you actually want**. For apps where continuity is the feature, such as room membership
 or long-lived reputation, a single stable Ghost Key is the right choice, and that is
 what works today. For votes, ephemeral posts, and one-off signals, a fresh key per
-action is the right choice, and that is on our roadmap: a single donation will issue
-a *bundle* of blinded Ghost Keys so the economic model stays unchanged (you pay once
-for a supply, not per stamp) while apps get per-action unlinkability. The Ghostkey
-Vault already supports holding multiple keys; the missing piece is bundled issuance.
-Tracked in [freenet/ghostkeys#2](https://github.com/freenet/ghostkeys/issues/2).
+action would be the right choice, and a design exists for it: a single donation issuing
+a *bundle* of blinded Ghost Keys, so the economic model stays unchanged (you pay once
+for a supply, not per stamp) while apps get per-action unlinkability. The Ghostkey Vault
+already supports holding multiple keys.
 
-A stronger mitigation is on the roadmap as a longer-horizon design direction: proving
-that a valid Ghost Key signed a message *without revealing the key itself*, using a
-zero-knowledge proof over the certificate. It would require redesigning the signature
-format and the verifier, and is a substantial piece of work, but it is the direction
-we expect Ghost Keys to move in.
+That design is **parked rather than in progress**, and it is worth being straight about
+why. Ghost Keys are principally a replacement for CAPTCHAs on one-off actions, and they
+already do that job. Per-action unlinkability is an improvement on it, not a missing
+prerequisite — so it waits for an app that actually needs it. The reasoning and the
+measurements are recorded in
+[freenet/ghostkeys#2](https://github.com/freenet/ghostkeys/issues/2).
+
+A stronger mitigation would be to prove that a valid Ghost Key signed a message
+*without revealing the key itself*, using a zero-knowledge proof over the certificate.
+This has been prototyped far enough to measure: a proof is around 400 bytes and takes
+roughly 84 ms to verify inside a Freenet contract. The obstacle is not speed but
+structure — contract state is re-validated on every load, so verification has to happen
+once at admission rather than per read, and a contract cannot do that on its own. It is
+a real option rather than a plan, and it is parked alongside bundling for the same
+reason.
 
 <div class="gk-cta">
 <a href="/ghostkey/create/" class="funding-donate-button">Get a Ghost Key</a>
@@ -142,11 +151,16 @@ signatures; the private key never leaves the sandbox.
 
 {{< ghostkeys-diagram-delegate >}}
 
-Under the hood, an app sends a `SignMessage` request with a scope (the app's identity,
-attested by the runtime) and a payload. The vault wraps the payload in a
-`ScopedPayload`, signs it with your Ed25519 key, and returns a `SignResult` containing
-the signature and your certificate. The first time a given app asks, you're prompted
-to *allow once*, *always allow*, or *deny*.
+Under the hood, an app sends a `SignWithDefault` request carrying a payload. The vault
+wraps it in a `ScopedPayload` alongside the app's identity (attested by the runtime),
+signs it with your Ed25519 key, and returns a `SignResult` containing the signature and
+your certificate. The first time a given app asks, you're prompted to pick a key, or to
+deny. An app that already knows which key it wants can name one with `SignMessage`
+instead.
+
+Apps can also ask `HasIdentity` — a question rather than a request, answered without
+prompting you — so they can decide whether to offer you a Ghost Key path at all before
+putting any dialog in front of you.
 
 Two properties matter here:
 
@@ -180,9 +194,14 @@ Ghost Keys are a primitive, not a product. A few of the things they unlock:
 ## Storage, backup, and the CLI
 
 If you're running a Freenet node, click **Import to Freenet** on the success page after
-donating; this installs your Ghost Key into the Ghostkey Vault on your node. We also
-recommend downloading the certificate and signing key as a backup, so you can move your
-identity to a new node later.
+donating; this installs your Ghost Key into the Ghostkey Vault on your node.
+
+**Back it up.** The vault marks a newly imported identity as un-backed-up and shows a
+reminder next to it with a one-click download, which clears only once you confirm you
+have the file. Treat that as the point of the exercise rather than a nag: on most setups
+the vault holds the only copy, some nodes reclaim idle storage, and a key you cannot
+produce is a donation you cannot prove. A backup also lets you move your identity to a
+new node later.
 
 For developers, everything is open source:
 
