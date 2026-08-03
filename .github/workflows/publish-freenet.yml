@@ -31,6 +31,28 @@ jobs:
       - name: Install cargo-make
         run: cargo install --debug cargo-make
 
+      # This publishes the same *content* as deploy.yml, so gate it on the
+      # same link check: otherwise a broken anchor stops GitHub Pages while
+      # the contract still takes the new content, and the two mirrors
+      # silently diverge.
+      #
+      # Checks an ordinary build rather than `cargo make build-freenet`'s
+      # output, which rewrites every path for the contract baseURL and
+      # deletes the directories that need a server (/wasm, /ghostkey,
+      # /slides) — dangling links there are expected, so it cannot be
+      # compared against. That makes this a proxy for what ships, and the
+      # proxy differs in one known way: /wasm is absent here (it is
+      # gitignored and only deploy.yml builds it), which is what the
+      # contract gets anyway since build-freenet deletes it.
+      #
+      # Runs before `cargo install fdev` so a bad link fails in seconds
+      # rather than after a ~9 minute install, and before the signing key is
+      # written to disk.
+      - name: Check internal links
+        run: |
+          (cd hugo-site && hugo --minify)
+          cargo make check-links
+
       - name: Install fdev
         run: cargo install fdev
         env:

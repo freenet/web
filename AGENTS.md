@@ -42,6 +42,7 @@ cargo make build-site             # Prepare deployment artifacts
 cargo make integration-test
 ./test_cli_commands.sh
 cargo test --all
+cargo make check-links       # broken internal links / dead #anchors (needs hugo-site/public)
 ```
 
 ### Linting & Formatting

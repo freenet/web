@@ -35,6 +35,7 @@
           <p class="date">{{ .Date.Format "2 January, 2006" }}</p>
         {{ end }}
         <div class="content">
+          {{/* See the note on .Summary in _default/list.html. */}}
           {{ .Summary }}
         </div>
       {{ end }}

@@ -3,6 +3,9 @@ title: "Freenet Manual"
 date: 2025-04-13
 draft: false
 layout: "single"
+summary: >-
+  Comprehensive documentation on Freenet's components, architecture, developer guide, client SDKs,
+  and reference material.
 aliases:
   - /resources/manual/
   - /manual/

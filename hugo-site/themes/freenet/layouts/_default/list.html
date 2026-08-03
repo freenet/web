@@ -15,6 +15,11 @@
               <p class="date">{{ .Date.Format "2 January, 2006" }}</p>
             {{ end }}
             <div class="content">
+              {{/* An auto-summary carries the child page's own hrefs, and a
+                   page-relative one ("#section", "introduction") resolves
+                   against THIS page instead, so it lands nowhere. Give such a
+                   page an explicit `summary:` in its front matter; scripts/
+                   check-links.py fails the build if one slips through. */}}
               {{ .Summary }}
             </div>
           </section>

@@ -2,6 +2,9 @@
 title: "Freenet's History"
 date: 2024-06-24
 draft: false
+summary: >-
+  Freenet's 25-year history, and how the projects that grew out of the original
+  1999 release relate to each other.
 aliases:
   - /resources/history/
 ---

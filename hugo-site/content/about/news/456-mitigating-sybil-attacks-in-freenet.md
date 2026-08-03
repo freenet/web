@@ -30,10 +30,11 @@ close to that location.
 
 # Solutions
 
-1. [Increase the cost of creating a large number of nodes close to a specific chosen identities](#identity-creation-cost)
-2. [Make it more difficult to target specific contracts](#location-hopping)
-3. [Increase the cost of bad behavior by making other nodes in the network monitor for it and react accordingly](#peer-pressure)
-4. [Use statistical anomaly detection to identify and thwart suspicious behavior](https://www.pivotaltracker.com/story/show/186472381)
+1. [Increase the cost of creating a large number of nodes close to a specific chosen identities](#1-identity-creation-cost)
+2. [Make it more difficult to target specific contracts](#2-location-hopping)
+3. Increase the cost of bad behavior by making other nodes in the network monitor for it and react
+   accordingly
+4. Use statistical anomaly detection to identify and thwart suspicious behavior
 
 ## 1. Identity Creation Cost
 
