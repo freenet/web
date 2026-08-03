@@ -284,7 +284,16 @@ function displayCertificate(armoredCertificate, armoredSigningKey) {
         // Use localhost rather than the literal 127.0.0.1: the node binds its
         // API on the IPv6 loopback by default, so on Windows "localhost" (::1)
         // is reachable while the literal IPv4 address is refused.
-        const importUrl = `http://localhost:7509/v1/contract/web/${contractId}/#import=${certB64}.${skB64}`;
+        // If the donor arrived from an app, hand the vault the way back so it
+        // can offer a one-click return once the key has actually landed.
+        // Re-validated here because it has been through a Stripe redirect;
+        // the vault validates it again and is the authority.
+        const returnTo = new URLSearchParams(window.location.search).get('return_to');
+        const returnFragment =
+          returnTo && /^[1-9A-HJ-NP-Za-km-z]{32,50}$/.test(returnTo)
+            ? `&return_to=${returnTo}`
+            : '';
+        const importUrl = `http://localhost:7509/v1/contract/web/${contractId}/#import=${certB64}.${skB64}${returnFragment}`;
         window.open(importUrl, '_blank');
       });
     }
