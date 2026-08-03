@@ -194,11 +194,20 @@
     // validates it again and independently, and only ever builds a
     // same-origin `/v1/contract/web/<id>/` path from it, so this is about not
     // propagating junk rather than about being the security boundary.
-    const returnTo = new URLSearchParams(window.location.search).get('return_to');
-    const returnToParam =
-      returnTo && /^[1-9A-HJ-NP-Za-km-z]{32,50}$/.test(returnTo)
-        ? `?return_to=${encodeURIComponent(returnTo)}`
-        : '';
+    const params = new URLSearchParams(window.location.search);
+    const returnTo = params.get('return_to');
+    const returnPath = params.get('return_path');
+    let returnToParam = '';
+    if (returnTo && /^[1-9A-HJ-NP-Za-km-z]{32,50}$/.test(returnTo)) {
+      returnToParam = `?return_to=${encodeURIComponent(returnTo)}`;
+      // A route only means anything alongside a contract id, so it rides only
+      // when one is present. The vault validates it again and is the authority
+      // on whether it can escape the contract; this just avoids carrying junk
+      // through a payment flow.
+      if (returnPath) {
+        returnToParam += `&return_path=${encodeURIComponent(returnPath)}`;
+      }
+    }
 
     const { error } = await stripe.confirmPayment({
       elements,
