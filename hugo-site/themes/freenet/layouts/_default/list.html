@@ -18,8 +18,12 @@
               {{/* Strip links: an auto-summary carries the child page's own
                    hrefs, and a page-relative one ("#section", "introduction")
                    resolves against THIS page instead, so it lands nowhere.
-                   The card title already links to the page. */}}
-              {{ .Summary | replaceRE `</?a[^>]*>` "" | safeHTML }}
+                   The card title already links to the page.
+                   The pattern matches <a>/</a> only — the \s guard keeps it
+                   off <abbr>, <address>, <article>, <audio>, and the quoted
+                   alternatives keep a ">" inside an attribute value from
+                   ending the match early. */}}
+              {{ .Summary | replaceRE `</?a(?:\s(?:"[^"]*"|'[^']*'|[^>])*)?>` "" | safeHTML }}
             </div>
           </section>
         {{ end }}

@@ -36,7 +36,7 @@
         {{ end }}
         <div class="content">
           {{/* Links stripped for the same reason as in _default/list.html. */}}
-          {{ .Summary | replaceRE `</?a[^>]*>` "" | safeHTML }}
+          {{ .Summary | replaceRE `</?a(?:\s(?:"[^"]*"|'[^']*'|[^>])*)?>` "" | safeHTML }}
         </div>
       {{ end }}
     </div>
