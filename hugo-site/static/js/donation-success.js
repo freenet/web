@@ -6,6 +6,38 @@ function bufferToBase64(buffer) {
     return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
 }
 
+// Has the user got their Ghost Key somewhere other than this page?
+//
+// This matters more here than it looks. The key is generated in this browser
+// and the server signs exactly one per payment -- it records the payment as
+// used, so reloading mints a DIFFERENT key that it will refuse to sign. This
+// page is the only copy, and closing it without saving loses a donation that
+// cannot be reissued. Until this was added, nothing told the user that or got
+// in their way.
+let ghostKeySaved = false;
+
+function markGhostKeySaved() {
+  if (ghostKeySaved) return;
+  ghostKeySaved = true;
+  const unsaved = document.getElementById('unsavedWarning');
+  const saved = document.getElementById('savedConfirmation');
+  if (unsaved) unsaved.style.display = 'none';
+  if (saved) saved.style.display = 'block';
+}
+
+// Browsers only honour this after the user has interacted with the page, and
+// they show their own generic wording -- we cannot supply the text. That is
+// enough: the point is the confirmation step, not the sentence.
+window.addEventListener('beforeunload', (event) => {
+  const section = document.getElementById('certificateSection');
+  const keyIsOnScreen = section && section.style.display !== 'none';
+  if (keyIsOnScreen && !ghostKeySaved) {
+    event.preventDefault();
+    event.returnValue = '';
+    return '';
+  }
+});
+
 // URL-safe base64 encode a string (for import URLs)
 function urlSafeBase64(str) {
     return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -254,6 +286,7 @@ function displayCertificate(armoredCertificate, armoredSigningKey) {
         setTimeout(() => {
           copyButton.textContent = 'Copy';
         }, 2000);
+        markGhostKeySaved();
       });
     }
 
@@ -270,6 +303,7 @@ function displayCertificate(armoredCertificate, armoredSigningKey) {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        markGhostKeySaved();
       });
     }
 
@@ -303,6 +337,11 @@ function displayCertificate(armoredCertificate, armoredSigningKey) {
         }
         const importUrl = `http://localhost:7509/v1/contract/web/${contractId}/#import=${certB64}.${skB64}${returnFragment}`;
         window.open(importUrl, '_blank');
+        // The vault is cross-origin and cannot report back, so this is
+        // optimistic: the key has left this page for somewhere that persists
+        // it. The banner still tells them to keep a file, because an import
+        // the user did not verify is not a backup.
+        markGhostKeySaved();
       });
     }
 

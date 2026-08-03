@@ -35,6 +35,24 @@
         </div>
       </div>
       <p class="warning"><strong>Warning:</strong> Keep your Ghost Key secret. It contains both your certificate and private key.</p>
+
+      <!-- The key is generated in this browser and the server signs exactly
+           one per payment: it records the payment as used, so reloading this
+           page mints a DIFFERENT key which the server refuses to sign. This
+           page is therefore the only copy in existence, and closing it without
+           saving loses a donation that cannot be reissued. Nothing said so
+           until this was added. -->
+      <div id="unsavedWarning" class="gk-unsaved">
+        <strong>This page is the only copy of your Ghost Key.</strong>
+        It was created in your browser a moment ago and signed once. Reloading
+        will not bring it back, and the donation cannot be reissued.
+        <strong>Download it, or import it to Freenet, before you close this tab.</strong>
+      </div>
+
+      <div id="savedConfirmation" class="gk-saved" style="display: none;">
+        Saved — you can close this page. Keep the file somewhere you will still
+        have it later; on most setups your Freenet node holds the only other copy.
+      </div>
     </div>
   </div>
 </div>
@@ -94,6 +112,24 @@
     flex: 1;
     min-width: 140px;
   }
+  .gk-unsaved {
+    margin-top: 1rem;
+    padding: 0.875rem 1rem;
+    border: 2px solid #cc3300;
+    border-radius: 4px;
+    background-color: #fff4f0;
+    color: #661a00;
+    line-height: 1.5;
+  }
+  .gk-saved {
+    margin-top: 1rem;
+    padding: 0.875rem 1rem;
+    border: 1px solid #339966;
+    border-radius: 4px;
+    background-color: #f0fff7;
+    color: #14532d;
+    line-height: 1.5;
+  }
   .warning {
     background-color: #fff3cd;
     border: 1px solid #ffeeba;
@@ -115,6 +151,14 @@
     }
     .textarea-overlay {
       color: #666;
+    }
+    .gk-unsaved {
+      background-color: rgba(204, 51, 0, 0.12);
+      color: #ffd6cc;
+    }
+    .gk-saved {
+      background-color: rgba(51, 153, 102, 0.12);
+      color: #ccffe3;
     }
     .warning {
       background-color: rgba(255, 243, 205, 0.1);
