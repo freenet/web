@@ -116,7 +116,10 @@ class PageParser(HTMLParser):
             if not value:
                 continue
             if attr == "srcset":
-                # "a.png 1x, b.png 2x" -> each candidate URL
+                # "a.png 1x, b.png 2x" -> each candidate URL. A data: URI
+                # contains commas of its own, so leave the whole value alone.
+                if value.strip().lower().startswith("data:"):
+                    continue
                 for candidate in value.split(","):
                     candidate = candidate.strip().split()
                     if candidate:
@@ -166,6 +169,20 @@ def site_hosts(root):
     return hosts
 
 
+def resolves_to_file(root, path):
+    """True if a URL path names a real file inside the output tree.
+
+    A directory is not a valid target (the server 404s on it), and a path that
+    escapes ``root`` via ".." is never satisfied by something outside the
+    build.
+    """
+    candidate = os.path.realpath(os.path.join(root, path.lstrip("/")))
+    root = os.path.realpath(root)
+    if candidate != root and not candidate.startswith(root + os.sep):
+        return False
+    return os.path.isfile(candidate)
+
+
 def page_key(pages, path):
     """Resolve a URL path to the HTML file that serves it, if any."""
     if path.endswith("/"):
@@ -177,29 +194,33 @@ def page_key(pages, path):
     return candidate if candidate in pages else None
 
 
-def follow_redirects(pages, key):
+def follow_redirects(pages, hosts, key):
     """Chase meta-refresh alias stubs to the page that actually has content.
 
-    Returns ``(key, None)`` on success or ``(None, reason)`` if the chain does
-    not land anywhere real.
+    Returns ``(key, None)`` on success, ``(None, None)`` if the chain leaves
+    the site (not ours to verify), or ``(None, reason)`` if it does not land
+    anywhere real.
     """
+    base_host = "https://" + sorted(hosts)[0]
     seen = set()
-    while True:
+    # Bounded by iteration, not by len(seen): a two-page cycle revisits the
+    # same keys forever without growing the set, so counting hops is what
+    # guarantees termination and `seen` only names the reason.
+    for _ in range(MAX_REDIRECTS + 1):
         page = pages[key]
         if not page.redirect_to:
             return key, None
         if key in seen:
             return None, "redirect loop"
-        if len(seen) >= MAX_REDIRECTS:
-            return None, "redirect chain longer than %d hops" % MAX_REDIRECTS
         seen.add(key)
-        target = urllib.parse.urlparse(
-            urllib.parse.urljoin("https://site.invalid" + key, page.redirect_to)
-        )
-        next_key = page_key(pages, target.path)
+        target = urllib.parse.urlparse(urllib.parse.urljoin(base_host + key, page.redirect_to))
+        if (target.hostname or "").lower() not in hosts:
+            return None, None  # redirected off-site; the fragment is not ours
+        next_key = page_key(pages, urllib.parse.unquote(target.path))
         if next_key is None:
             return None, "redirect target does not exist"
         key = next_key
+    return None, "redirect chain longer than %d hops" % MAX_REDIRECTS
 
 
 def check(root):
@@ -207,36 +228,40 @@ def check(root):
     ``(page, reference, reason)``."""
     pages = load_pages(root)
     hosts = site_hosts(root)
+    # Any of our own hosts works as the base: urljoin resolves the path the
+    # same way whichever it is, and it only has to be one we call internal.
+    base_host = "https://" + sorted(hosts)[0]
     broken = []
     for source_key, page in sorted(pages.items()):
         for reference in page.references:
-            url = urllib.parse.urlparse(
-                urllib.parse.urljoin("https://" + sorted(hosts)[0] + source_key, reference)
-            )
+            url = urllib.parse.urlparse(urllib.parse.urljoin(base_host + source_key, reference))
             if url.scheme not in ("http", "https"):
                 continue  # mailto:, data:, javascript:, ...
             if (url.hostname or "").lower() not in hosts:
                 continue  # another site; not ours to verify
             fragment = urllib.parse.unquote(url.fragment)
+            # Hugo writes paths as raw UTF-8 but emits hrefs percent-encoded,
+            # so everything downstream works on the decoded path.
             path = urllib.parse.unquote(url.path)
 
-            target_key = page_key(pages, url.path)
+            target_key = page_key(pages, path)
             if target_key is None:
                 # Not a page, so it has to be a file that exists — a directory
                 # with no index.html is a 404, not a valid target.
-                if not os.path.isfile(os.path.join(root, path.lstrip("/"))):
+                if not resolves_to_file(root, path):
                     broken.append((source_key, reference, "target does not exist"))
                 continue
 
-            if not fragment or fragment in ALWAYS_VALID_FRAGMENTS:
+            if not fragment or fragment.lower() in ALWAYS_VALID_FRAGMENTS:
                 continue
             # Check the page's own ids before following any redirect: a real
             # page can carry a meta refresh and still be the fragment's home.
             if fragment in pages[target_key].ids:
                 continue
-            resolved, reason = follow_redirects(pages, target_key)
+            resolved, reason = follow_redirects(pages, hosts, target_key)
             if resolved is None:
-                broken.append((source_key, reference, reason))
+                if reason is not None:
+                    broken.append((source_key, reference, reason))
             elif fragment not in pages[resolved].ids:
                 broken.append((source_key, reference, "no #%s on the target page" % fragment))
     return len(pages), broken
@@ -266,6 +291,8 @@ def self_test():
     CI runs this before trusting a clean report on the real site. Every case
     below is one a previous version of this script got wrong.
     """
+    import contextlib
+    import io
     import shutil
     import tempfile
 
@@ -302,17 +329,54 @@ def self_test():
             <a href="/old-faq/#what-is-freenet">good through alias</a>
             <a href="/old-faq/#gone">BAD through alias</a>
             <a href="/loop-a/#anything">BAD: redirect loop</a>
+            <a href="/chain-1/#anything">BAD: chain longer than the hop cap</a>
+            <a href="/dangling-alias/#anything">BAD: alias to a page that is not there</a>
+            <a href="/offsite-alias/#anything">good: alias leaves the site, not ours to check</a>
             <a href="/documented/#really-here">good: refresh in body is not an alias</a>
             <a href="/body-refresh/#what-is-freenet">BAD: body refresh is not an alias to follow</a>
+            <a href="/head-refresh-with-id/#own">good: page owns the id, so do not follow</a>
             <a href="/dup-attr/" href="/about/">BAD: a browser honours the first href</a>
             <a href="HTTPS://FREENET.ORG/nope/">BAD: uppercase host is still us</a>
             <a href="https://freenet.org:443/nope/">BAD: default port is still us</a>
+            <a href="#TOP">good: #top is case-insensitive</a>
+            <a href="/caf%C3%A9/">good: percent-encoded path, raw UTF-8 on disk</a>
+            <a href="/caf%C3%A9/#accented">good: fragment through a percent-encoded path</a>
+            <a href="/%2e%2e/%2e%2e/etc/hostname">BAD: must not escape the output tree</a>
+            <img srcset="data:image/png;base64,iVBORw0KGgo= 1x">
+            <a href="https://sitemap-host.example/nope/">BAD: host taken from sitemap.xml</a>
             """,
+        )
+        # The build's own hostname comes from here, not just the hardcoded set.
+        write(
+            "sitemap.xml",
+            '<?xml version="1.0"?><urlset><url><loc>https://sitemap-host.example/about/</loc>'
+            "</url></urlset>",
         )
         write("about/index.html", "<p>hi</p>")
         write("old-faq/index.html", '<head><meta http-equiv="refresh" content="0; url=/faq/"></head>')
         write("loop-a/index.html", '<head><meta http-equiv="refresh" content="0; url=/loop-b/"></head>')
         write("loop-b/index.html", '<head><meta http-equiv="refresh" content="0; url=/loop-a/"></head>')
+        for hop in range(1, MAX_REDIRECTS + 2):
+            write(
+                "chain-%d/index.html" % hop,
+                '<head><meta http-equiv="refresh" content="0; url=/chain-%d/"></head>' % (hop + 1),
+            )
+        write(
+            "dangling-alias/index.html",
+            '<head><meta http-equiv="refresh" content="0; url=/never-built/"></head>',
+        )
+        write(
+            "offsite-alias/index.html",
+            '<head><meta http-equiv="refresh" content="0; url=https://example.com/faq/"></head>',
+        )
+        # A page can carry a head refresh and still be the fragment's own home;
+        # its ids must be consulted before the redirect is followed.
+        write(
+            "head-refresh-with-id/index.html",
+            '<head><meta http-equiv="refresh" content="30; url=/about/"></head>'
+            '<body><h2 id="own">still the right page</h2></body>',
+        )
+        write("café/index.html", '<h2 id="accented">café</h2>')
         # A real page that merely *documents* a meta refresh must not be
         # mistaken for an alias stub.
         write(
@@ -345,10 +409,14 @@ def self_test():
                 "/missing.js",
                 "/old-faq/#gone",
                 "/loop-a/#anything",
+                "/chain-1/#anything",
+                "/dangling-alias/#anything",
                 "/body-refresh/#what-is-freenet",
                 "/dup-attr/",
                 "HTTPS://FREENET.ORG/nope/",
                 "https://freenet.org:443/nope/",
+                "/%2e%2e/%2e%2e/etc/hostname",
+                "https://sitemap-host.example/nope/",
             ]
         )
         if found != expected:
@@ -356,6 +424,21 @@ def self_test():
             print("  missing: %s" % sorted(set(expected) - set(found)), file=sys.stderr)
             print("  unexpected: %s" % sorted(set(found) - set(expected)), file=sys.stderr)
             return 1
+
+        # report() owns the "nothing was built" guard, so exercise it here too:
+        # check() alone cannot tell an empty tree from a clean one.
+        empty = tempfile.mkdtemp(prefix="check-links-selftest-empty-")
+        try:
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(
+                io.StringIO()
+            ):
+                empty_status = report(empty)
+            if empty_status != 2:
+                print("self-test FAILED: empty output tree did not exit 2", file=sys.stderr)
+                return 1
+        finally:
+            shutil.rmtree(empty, ignore_errors=True)
+
         print("self-test passed (%d expected failures detected)" % len(expected))
         return 0
     finally:

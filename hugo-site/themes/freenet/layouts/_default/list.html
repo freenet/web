@@ -15,15 +15,12 @@
               <p class="date">{{ .Date.Format "2 January, 2006" }}</p>
             {{ end }}
             <div class="content">
-              {{/* Strip links: an auto-summary carries the child page's own
-                   hrefs, and a page-relative one ("#section", "introduction")
-                   resolves against THIS page instead, so it lands nowhere.
-                   The card title already links to the page.
-                   The pattern matches <a>/</a> only — the \s guard keeps it
-                   off <abbr>, <address>, <article>, <audio>, and the quoted
-                   alternatives keep a ">" inside an attribute value from
-                   ending the match early. */}}
-              {{ .Summary | replaceRE `</?a(?:\s(?:"[^"]*"|'[^']*'|[^>])*)?>` "" | safeHTML }}
+              {{/* An auto-summary carries the child page's own hrefs, and a
+                   page-relative one ("#section", "introduction") resolves
+                   against THIS page instead, so it lands nowhere. Give such a
+                   page an explicit `summary:` in its front matter; scripts/
+                   check-links.py fails the build if one slips through. */}}
+              {{ .Summary }}
             </div>
           </section>
         {{ end }}
