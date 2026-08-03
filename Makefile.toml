@@ -42,6 +42,13 @@ echo "Contents of public/wasm after running hugo:"
 ls -la public/wasm
 """
 
+[tasks.check-links]
+description = "Fail if the built site has broken internal links or dead #anchors"
+script = """
+python3 scripts/check-links.py --self-test
+python3 scripts/check-links.py hugo-site/public
+"""
+
 [tasks.build-wasm-dev]
 description = "Build WebAssembly in development mode"
 script = """

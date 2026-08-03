@@ -2,28 +2,16 @@
 title: "Frequently Asked Questions"
 date: 2024-06-24
 draft: false
+summary: >-
+  Common questions about Freenet: what it is, how it works, how it relates to the original Freenet,
+  and how to support the project.
 aliases:
   - /faq/
 ---
 
 {{< toc >}}
 
-- [What is Freenet?](#what-is-freenet)
-- [How does Freenet work?](#how-does-freenet-work)
-- [What is the project's history?](#what-is-the-projects-history)
-- [How do the previous and current versions of Freenet differ?](#how-do-the-previous-and-current-versions-of-freenet-differ)
-- [Does Freenet provide anonymity like Tor or I2P?](#does-freenet-provide-anonymity-like-tor-or-i2p)
-- [Will the new Freenet be backwards compatible with the old Freenet?](#will-the-new-freenet-be-backwards-compatible-with-the-old-freenet)
-- [Why was Freenet rearchitected and rebranded?](#why-was-freenet-rearchitected-and-rebranded)
-- [How does Freenet compare to other decentralized systems?](#how-does-freenet-compare-to-other-decentralized-systems)
-- [Does Freenet have decentralized domain names or DNS?](#does-freenet-have-decentralized-domain-names-or-dns)
-- [Who is behind Freenet?](#who-is-behind-freenet)
-- [How does Freenet handle harmful content?](#how-does-freenet-handle-harmful-content)
-- [What is the status of Freenet?](#what-is-the-status-of-freenet)
-- [Can I follow Freenet on social media?](#can-i-follow-freenet-on-social-media)
-- [How can I financially support Freenet development?](#how-can-i-financially-support-freenet-development)
-- [How do I uninstall Freenet?](#how-do-i-uninstall-freenet)
-- [Why does the Freenet project use and mention AI tools?](#why-does-the-freenet-project-use-and-mention-ai-tools)
+# What is Freenet? {#what-is-freenet}
 
 Freenet is a fully decentralized, peer-to-peer network and a drop-in replacement for the world wide
 web. It operates as a global shared computer, providing a platform for sophisticated decentralized

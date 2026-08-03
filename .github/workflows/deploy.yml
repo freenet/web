@@ -98,6 +98,12 @@ jobs:
           echo "Contents of hugo-site/public/wasm:"
           ls -la hugo-site/public/wasm
 
+      # Catch dead internal links and #anchors before they reach freenet.org.
+      # Hugo does not validate fragments, so a deleted section silently leaves
+      # every link to it broken.
+      - name: Check internal links
+        run: cargo make check-links
+
       # Upload the built site to GitHub Pages artifact
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
