@@ -22,18 +22,28 @@ use crate::handle_sign_cert::{
     sign_certificate, CertificateError, SignCertificateRequest, SignCertificateResponse,
 };
 use crate::invite;
+use crate::invite_blocklist::{BanReport, InviteBlocklist};
 use crate::invite_pow::{PowChallenge, PowChallengeResponse, PowError, PowManager};
 use crate::rate_limit::{
     AggregateBucket, RateLimiter, DEFAULT_GLOBAL_INVITES_PER_HOUR, GLOBAL_WINDOW_MINUTES,
     MAX_INVITES_PER_WINDOW,
 };
 use crate::tor::TorExitList;
+use sha2::{Digest, Sha256};
+use subtle::ConstantTimeEq;
 use tower_http::cors::CorsLayer;
 
 /// Shared application state for invite generation
 #[derive(Clone)]
 pub struct InviteState {
     pub rate_limiter: Arc<RateLimiter>,
+    /// Source addresses of banned members, refused for a week. See
+    /// `invite_blocklist` for why this is address-scoped and time-boxed.
+    pub blocklist: Arc<InviteBlocklist>,
+    /// Shared secret authorising ban reports. `None` disables the endpoint,
+    /// which is the correct posture when no secret is configured: an
+    /// unauthenticated version would let anyone block any address.
+    pub ban_report_token: Option<String>,
     /// Emergency ceiling across all successful invitation issuance.
     pub global_bucket: Arc<AggregateBucket>,
     pub pow: Arc<PowManager>,
@@ -46,8 +56,14 @@ pub struct InviteState {
 }
 
 impl InviteState {
+    // Grew past clippy's threshold when the blocklist path and operator token
+    // were threaded through. Bundling these into a config struct is a wider
+    // refactor of every caller than this change warrants.
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         rate_limit_file: PathBuf,
+        blocklist_file: PathBuf,
+        ban_report_token: Option<String>,
         tor_exit_cache: Option<PathBuf>,
         global_invites_per_hour: Option<usize>,
         pow_base_difficulty: u8,
@@ -76,6 +92,8 @@ impl InviteState {
         );
         Self {
             rate_limiter,
+            blocklist: Arc::new(InviteBlocklist::new(blocklist_file)),
+            ban_report_token,
             global_bucket: Arc::new(AggregateBucket::new_seeded(
                 global_invites_per_hour.unwrap_or(DEFAULT_GLOBAL_INVITES_PER_HOUR),
                 GLOBAL_WINDOW_MINUTES,
@@ -443,6 +461,16 @@ fn check_invite_network(
             Some(30),
         ));
     }
+    if state.blocklist.is_blocked(client_ip) {
+        warn!("Invite request refused from blocked source: {}", client_ip);
+        return Err(invite_error(
+            StatusCode::FORBIDDEN,
+            "Invitations are not available from this network right now. \
+             If you are on a VPN, try again without it, or ask someone in the \
+             room for an invite link.",
+            None,
+        ));
+    }
     if state.tor_exits.is_exit(&client_ip) {
         warn!("Invite request blocked from Tor exit: {}", client_ip);
         return Err(invite_error(
@@ -584,6 +612,14 @@ async fn create_room_invite(
                 "Generated invite for IP: {} member_id={}",
                 client_ip, created.member_id
             );
+            // Best effort: a member we cannot map is one we cannot act on
+            // later, but failing issuance over it would be worse.
+            if let Err(e) = state.blocklist.record_source(&created.member_id, client_ip) {
+                warn!(
+                    "Could not record invite source for {}: {e}",
+                    created.member_id
+                );
+            }
             Ok(Json(CreateInviteResponse {
                 invite_code: created.code,
                 room_name: state.room_name.clone(),
@@ -616,6 +652,191 @@ pub fn get_routes() -> Router {
         .layer(CorsLayer::permissive())
 }
 
+#[derive(Deserialize)]
+pub struct ReportBanRequest {
+    pub member_id: String,
+}
+
+#[derive(Serialize)]
+pub struct ReportBanResponse {
+    pub outcome: String,
+}
+
+/// Block the source address behind a banned member.
+///
+/// Authenticated with a shared secret, because an open version of this would
+/// let anyone deny invites to any address by naming a member they did not ban.
+/// Absent a configured secret the endpoint refuses everything.
+fn authorize_operator(
+    state: &InviteState,
+    headers: &axum::http::HeaderMap,
+) -> Result<(), (StatusCode, Json<InviteErrorResponse>)> {
+    let Some(expected) = state.ban_report_token.as_deref() else {
+        warn!("Operator request refused: no token configured");
+        return Err(invite_error(StatusCode::NOT_FOUND, "Not found.", None));
+    };
+    let presented = headers
+        .get("x-ban-report-token")
+        .and_then(|value| value.to_str().ok())
+        .unwrap_or_default();
+    // Compare digests rather than the raw tokens: equal-length inputs regardless
+    // of the presented value, so the length is not leaked by an early exit, and
+    // `ConstantTimeEq` is not something the optimiser is free to short-circuit
+    // the way a hand-rolled fold is.
+    let presented_digest = Sha256::digest(presented.as_bytes());
+    let expected_digest = Sha256::digest(expected.as_bytes());
+    let authorized: bool = presented_digest.ct_eq(&expected_digest).into();
+    if !authorized {
+        warn!("Operator request refused: bad token");
+        return Err(invite_error(
+            StatusCode::UNAUTHORIZED,
+            "Unauthorized.",
+            None,
+        ));
+    }
+    Ok(())
+}
+
+#[derive(Deserialize)]
+pub struct BlockRequest {
+    pub ip: String,
+    pub reason: Option<String>,
+}
+
+/// Block an address directly. Same week-long duration as a ban-driven block.
+async fn block_source(
+    State(state): State<InviteState>,
+    headers: axum::http::HeaderMap,
+    Json(request): Json<BlockRequest>,
+) -> Result<Json<serde_json::Value>, (StatusCode, Json<InviteErrorResponse>)> {
+    authorize_operator(&state, &headers)?;
+    let Ok(ip) = request.ip.parse::<IpAddr>() else {
+        return Err(invite_error(
+            StatusCode::BAD_REQUEST,
+            "Malformed address.",
+            None,
+        ));
+    };
+    let reason = request.reason.as_deref().unwrap_or("manual operator block");
+    match state.blocklist.block_ip(ip, reason) {
+        Ok(until) => {
+            info!("Operator blocked invite source {ip} until {until} ({reason})");
+            Ok(Json(serde_json::json!({
+                "ip": ip.to_string(),
+                "blocked_until": until.to_rfc3339(),
+            })))
+        }
+        Err(e) => {
+            error!("Blocklist error handling manual block: {e}");
+            Err(invite_error(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal server error.",
+                None,
+            ))
+        }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct UnblockRequest {
+    pub ip: String,
+}
+
+/// Lift a block early, and list what remains.
+///
+/// This exists because a blocked address can be a shared VPN exit, so an
+/// operator needs to undo a block that caught the wrong people without waiting
+/// out the week or restarting the service.
+async fn unblock_source(
+    State(state): State<InviteState>,
+    headers: axum::http::HeaderMap,
+    Json(request): Json<UnblockRequest>,
+) -> Result<Json<serde_json::Value>, (StatusCode, Json<InviteErrorResponse>)> {
+    authorize_operator(&state, &headers)?;
+    let Ok(ip) = request.ip.parse::<IpAddr>() else {
+        return Err(invite_error(
+            StatusCode::BAD_REQUEST,
+            "Malformed address.",
+            None,
+        ));
+    };
+    match state.blocklist.unblock(ip) {
+        Ok(removed) => {
+            info!("Operator unblock of {ip}: removed={removed}");
+            let remaining: Vec<_> = state
+                .blocklist
+                .active_blocks()
+                .into_iter()
+                .map(|(ip, until, member_id)| {
+                    serde_json::json!({
+                        "ip": ip.to_string(),
+                        "blocked_until": until.to_rfc3339(),
+                        "member_id": member_id,
+                    })
+                })
+                .collect();
+            Ok(Json(serde_json::json!({
+                "removed": removed,
+                "active_blocks": remaining,
+            })))
+        }
+        Err(e) => {
+            error!("Blocklist error handling unblock: {e}");
+            Err(invite_error(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal server error.",
+                None,
+            ))
+        }
+    }
+}
+
+async fn report_ban(
+    State(state): State<InviteState>,
+    headers: axum::http::HeaderMap,
+    Json(request): Json<ReportBanRequest>,
+) -> Result<Json<ReportBanResponse>, (StatusCode, Json<InviteErrorResponse>)> {
+    authorize_operator(&state, &headers)?;
+
+    match state.blocklist.report_ban(&request.member_id) {
+        Ok(BanReport::Blocked { ip, until }) => {
+            info!(
+                "Blocked invite source {} until {} after ban of member {}",
+                ip, until, request.member_id
+            );
+            Ok(Json(ReportBanResponse {
+                outcome: "blocked".into(),
+            }))
+        }
+        Ok(BanReport::Extended { ip, until }) => {
+            info!(
+                "Extended block on invite source {} to {} after ban of member {}",
+                ip, until, request.member_id
+            );
+            Ok(Json(ReportBanResponse {
+                outcome: "extended".into(),
+            }))
+        }
+        Ok(BanReport::UnknownMember) => {
+            info!(
+                "Ban reported for member {} with no recorded invite source",
+                request.member_id
+            );
+            Ok(Json(ReportBanResponse {
+                outcome: "unknown_member".into(),
+            }))
+        }
+        Err(e) => {
+            error!("Blocklist error handling ban report: {e}");
+            Err(invite_error(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal server error.",
+                None,
+            ))
+        }
+    }
+}
+
 /// Get routes that require invite state (for River room invites)
 pub fn get_invite_routes(state: InviteState) -> Router {
     let cors = CorsLayer::new()
@@ -630,6 +851,9 @@ pub fn get_invite_routes(state: InviteState) -> Router {
     Router::new()
         .route("/invite-challenge", get(get_invite_challenge))
         .route("/create-invite", post(create_room_invite))
+        .route("/report-ban", post(report_ban))
+        .route("/block-source", post(block_source))
+        .route("/unblock-source", post(unblock_source))
         .with_state(state)
         .layer(cors)
 }
@@ -648,6 +872,8 @@ mod invite_handler_tests {
         let signing_key = SigningKey::from_bytes(&seed);
         InviteState {
             rate_limiter: Arc::new(RateLimiter::new(dir.path().join("rl.json"), 24)),
+            blocklist: Arc::new(InviteBlocklist::new(dir.path().join("blocklist.json"))),
+            ban_report_token: Some("test-token".to_string()),
             global_bucket: Arc::new(AggregateBucket::new(ceiling, 60)),
             pow: Arc::new(PowManager::new(4)),
             tor_exits: Arc::new(TorExitList::new(Some(cache))),
@@ -693,6 +919,44 @@ mod invite_handler_tests {
     async fn request(state: &InviteState, ip: &str) -> StatusCode {
         let proof = solve(challenge(state, ip).await.unwrap());
         request_with(state, ip, proof).await
+    }
+
+    /// The whole point of the module, exercised through the handlers: an
+    /// address mints an invite, its member is banned, and the same address is
+    /// refused before it can spend any work. This is the 2026-07-26 sequence,
+    /// where the same address came back 37 minutes after a ban and succeeded.
+    #[tokio::test]
+    async fn a_banned_members_source_is_refused_on_its_next_attempt() {
+        let dir = tempfile::tempdir().unwrap();
+        let state = state_with(&dir, &["185.220.101.1"], 100);
+        let source = "170.62.100.54";
+
+        assert_eq!(request(&state, source).await, StatusCode::OK);
+
+        // The handler records the member behind that invite; take it from the
+        // ledger rather than hardcoding a generated id.
+        let member_id = state
+            .blocklist
+            .active_blocks()
+            .first()
+            .map(|(_, _, member)| member.clone());
+        assert!(member_id.is_none(), "nothing should be blocked yet");
+
+        // Report the ban for whichever member that invite created.
+        let minted = state.blocklist.recorded_members();
+        assert_eq!(minted.len(), 1, "the invite should have recorded a source");
+        assert!(matches!(
+            state.blocklist.report_ban(&minted[0]).unwrap(),
+            BanReport::Blocked { .. }
+        ));
+
+        // Refused at the network gate, before proof of work is even issued.
+        assert_eq!(
+            challenge(&state, source).await.unwrap_err(),
+            StatusCode::FORBIDDEN
+        );
+        // An unrelated address is unaffected.
+        assert!(challenge(&state, "73.11.36.49").await.is_ok());
     }
 
     #[tokio::test]
@@ -788,6 +1052,8 @@ mod invite_handler_tests {
         let signing_key = SigningKey::from_bytes(&[7; 32]);
         let state = InviteState::new(
             dir.path().join("rl.json"),
+            dir.path().join("blocklist.json"),
+            None,
             Some(cache),
             Some(200),
             4,

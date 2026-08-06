@@ -17,6 +17,7 @@ mod delegates;
 mod errors;
 mod handle_sign_cert;
 mod invite;
+mod invite_blocklist;
 mod invite_pow;
 mod payment_claim;
 mod rate_limit;
@@ -81,6 +82,31 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
             .map(|s| s.as_str())
             .unwrap_or("/var/lib/gkapi/invite_rate_limits.json"),
     );
+    let blocklist_file = PathBuf::from(
+        matches
+            .get_one::<String>("invite-blocklist-file")
+            .map(|s| s.as_str())
+            .unwrap_or("/var/lib/gkapi/invite_blocklist.json"),
+    );
+    // Read from a file rather than an env var so the secret does not sit in
+    // the unit file or in `/proc/<pid>/environ`.
+    let ban_report_token = matches
+        .get_one::<String>("ban-report-token-file")
+        .and_then(|path| match std::fs::read_to_string(path) {
+            Ok(token) => {
+                let token = token.trim().to_string();
+                if token.is_empty() {
+                    error!("Ban report token file {path} is empty; endpoint disabled");
+                    None
+                } else {
+                    Some(token)
+                }
+            }
+            Err(e) => {
+                error!("Could not read ban report token from {path}: {e}; endpoint disabled");
+                None
+            }
+        });
     let tor_exit_cache = Some(PathBuf::from(
         matches
             .get_one::<String>("tor-exit-cache")
@@ -149,6 +175,8 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
 
     Some(InviteState::new(
         rate_limit_file,
+        blocklist_file,
+        ban_report_token,
         tor_exit_cache,
         global_invites_per_hour,
         pow_base_difficulty,
@@ -291,6 +319,24 @@ async fn main() {
                 .env("RATE_LIMIT_FILE")
                 .default_value("/var/lib/gkapi/invite_rate_limits.json")
                 .help("Path to rate limit JSON file"),
+        )
+        .arg(
+            Arg::new("invite-blocklist-file")
+                .long("invite-blocklist-file")
+                .value_name("FILE")
+                .env("INVITE_BLOCKLIST_FILE")
+                .default_value("/var/lib/gkapi/invite_blocklist.json")
+                .help("Path to the invite source blocklist JSON file"),
+        )
+        .arg(
+            Arg::new("ban-report-token-file")
+                .long("ban-report-token-file")
+                .value_name("FILE")
+                .env("BAN_REPORT_TOKEN_FILE")
+                .help(
+                    "File holding the shared secret authorising POST /report-ban. \
+                     Without it the endpoint is disabled.",
+                ),
         )
         .arg(
             Arg::new("tor-exit-cache")
