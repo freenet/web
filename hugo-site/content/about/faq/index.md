@@ -34,8 +34,8 @@ scalability. Keys in this key-value store are
 - How can the value be efficiently synchronized between peers in the network
 
 These webassembly keys are also known as
-[contracts](https://freenet.org/build/manual/components/contracts/), and the values are also known as
-the contract's **state**.
+[contracts](https://freenet.org/build/manual/components/contracts/), and the values are also known
+as the contract's **state**.
 
 Like the web, most people will interact with Freenet through their web browser. Freenet provides a
 local [HTTP proxy](https://freenet.org/build/manual/components/ui/) that allows data such as a
@@ -201,8 +201,8 @@ network.
   personal rather than global, there's no central registry to control and no race to squat every
   good name.
 
-- **Discovery:** "Find the thing I want" is really a search problem, not a naming one, and search and
-  recommendation handle it better than a global namespace can. That's what we're designing in
+- **Discovery:** "Find the thing I want" is really a search problem, not a naming one, and search
+  and recommendation handle it better than a global namespace can. That's what we're designing in
   [Atlas](https://github.com/freenet/atlas), a decentralized discovery layer that's still at the
   design stage.
 
@@ -237,6 +237,31 @@ the foundation for a decentralized reputation system that respects privacy.
 No filtering approach is perfect, especially in centralized systems, but we think a decentralized
 method can work as well or better.
 
+# Is it legal to run a Freenet peer? {#is-it-legal-to-run-a-freenet-peer}
+
+Generally speaking, yes. Running a Freenet peer is like running any other network infrastructure
+that automatically handles other people's traffic, a role internet law has long distinguished from
+intentionally publishing material. Running a peer does not mean you endorse or intentionally publish
+every piece of information it may automatically route or cache.
+
+A concrete U.S. example is [17 U.S.C. §512](https://www.law.cornell.edu/uscode/text/17/512), part of
+the DMCA. It expressly addresses "transitory digital network communications" (automatic
+transmission, routing, and intermediate or transient storage) and "system caching" (certain
+automatic temporary storage of third-party material). The
+[U.S. Copyright Office](https://www.copyright.gov/512/) likewise describes §512 as covering service
+providers acting as conduits and providers that cache material automatically. This is useful
+evidence that operating infrastructure which automatically handles third-party information is a
+legally recognized role, separate from publishing that information.
+
+That said, §512 covers only copyright, and its protections come with conditions, so it is best read
+as a useful precedent rather than a blanket guarantee against legal risk. For someone running a peer
+normally, the distinction that matters is automatic versus knowing: automatically routing or caching
+traffic is not the same as knowingly facilitating unlawful activity. It's a different story for
+anyone hoping to use the network to hide unlawful activity: the Freenet Platform wasn't designed to
+provide anonymity (see
+[Does Freenet provide anonymity like Tor or I2P?](#does-freenet-provide-anonymity-like-tor-or-i2p))
+and should not be relied on for that kind of cover.
+
 # Can I follow Freenet on social media? {#can-i-follow-freenet-on-social-media}
 
 Yes, you can follow [\@FreenetOrg](https://twitter.com/freenetorg) on Twitter/X or discuss
@@ -265,17 +290,27 @@ Run:
 freenet uninstall
 ```
 
-This stops the service, removes the `freenet` and `fdev` binaries, and (with confirmation) deletes your data, config, cache, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to preserve all of them.
+This stops the service, removes the `freenet` and `fdev` binaries, and (with confirmation) deletes
+your data, config, cache, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to
+preserve all of them.
 
-**Do not run `sudo freenet uninstall`** if you installed with the `curl | sh` one-liner. The installer puts the binary in `~/.local/bin`, which is not on `sudo`'s default PATH, so the command fails with `command not found` and your install is left untouched. Only use `sudo` if you originally installed with `--system`.
+**Do not run `sudo freenet uninstall`** if you installed with the `curl | sh` one-liner. The
+installer puts the binary in `~/.local/bin`, which is not on `sudo`'s default PATH, so the command
+fails with `command not found` and your install is left untouched. Only use `sudo` if you originally
+installed with `--system`.
 
-If the `freenet` binary isn't on your PATH, invoke it by full path: `~/.local/bin/freenet uninstall`.
+If the `freenet` binary isn't on your PATH, invoke it by full path:
+`~/.local/bin/freenet uninstall`.
 
-If you installed with `cargo install freenet`, the binary is in `~/.cargo/bin/freenet`; run `cargo uninstall freenet` and then clean up the data directories below.
+If you installed with `cargo install freenet`, the binary is in `~/.cargo/bin/freenet`; run
+`cargo uninstall freenet` and then clean up the data directories below.
 
-On Windows, `freenet uninstall` has a known gap and may leave the config folder behind; after running it, also manually remove `%LOCALAPPDATA%\Freenet\bin`, `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`, and `%APPDATA%\The Freenet Project Inc\Freenet`.
+On Windows, `freenet uninstall` has a known gap and may leave the config folder behind; after
+running it, also manually remove `%LOCALAPPDATA%\Freenet\bin`,
+`%LOCALAPPDATA%\The Freenet Project Inc\Freenet`, and `%APPDATA%\The Freenet Project Inc\Freenet`.
 
-The [Uninstall guide](/uninstall/) has the full per-platform manual-fallback snippets (Linux systemd, macOS launchd, Windows PowerShell) for when the binary is missing or broken.
+The [Uninstall guide](/uninstall/) has the full per-platform manual-fallback snippets (Linux
+systemd, macOS launchd, Windows PowerShell) for when the binary is missing or broken.
 
 # Why does the Freenet project use and mention AI tools? {#why-does-the-freenet-project-use-and-mention-ai-tools}
 
