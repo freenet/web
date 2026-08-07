@@ -34,8 +34,8 @@ scalability. Keys in this key-value store are
 - How can the value be efficiently synchronized between peers in the network
 
 These webassembly keys are also known as
-[contracts](https://freenet.org/build/manual/components/contracts/), and the values are also known as
-the contract's **state**.
+[contracts](https://freenet.org/build/manual/components/contracts/), and the values are also known
+as the contract's **state**.
 
 Like the web, most people will interact with Freenet through their web browser. Freenet provides a
 local [HTTP proxy](https://freenet.org/build/manual/components/ui/) that allows data such as a
@@ -201,8 +201,8 @@ network.
   personal rather than global, there's no central registry to control and no race to squat every
   good name.
 
-- **Discovery:** "Find the thing I want" is really a search problem, not a naming one, and search and
-  recommendation handle it better than a global namespace can. That's what we're designing in
+- **Discovery:** "Find the thing I want" is really a search problem, not a naming one, and search
+  and recommendation handle it better than a global namespace can. That's what we're designing in
   [Atlas](https://github.com/freenet/atlas), a decentralized discovery layer that's still at the
   design stage.
 
@@ -290,17 +290,27 @@ Run:
 freenet uninstall
 ```
 
-This stops the service, removes the `freenet` and `fdev` binaries, and (with confirmation) deletes your data, config, cache, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to preserve all of them.
+This stops the service, removes the `freenet` and `fdev` binaries, and (with confirmation) deletes
+your data, config, cache, and logs. Pass `--purge` to skip the confirmation, or `--keep-data` to
+preserve all of them.
 
-**Do not run `sudo freenet uninstall`** if you installed with the `curl | sh` one-liner. The installer puts the binary in `~/.local/bin`, which is not on `sudo`'s default PATH, so the command fails with `command not found` and your install is left untouched. Only use `sudo` if you originally installed with `--system`.
+**Do not run `sudo freenet uninstall`** if you installed with the `curl | sh` one-liner. The
+installer puts the binary in `~/.local/bin`, which is not on `sudo`'s default PATH, so the command
+fails with `command not found` and your install is left untouched. Only use `sudo` if you originally
+installed with `--system`.
 
-If the `freenet` binary isn't on your PATH, invoke it by full path: `~/.local/bin/freenet uninstall`.
+If the `freenet` binary isn't on your PATH, invoke it by full path:
+`~/.local/bin/freenet uninstall`.
 
-If you installed with `cargo install freenet`, the binary is in `~/.cargo/bin/freenet`; run `cargo uninstall freenet` and then clean up the data directories below.
+If you installed with `cargo install freenet`, the binary is in `~/.cargo/bin/freenet`; run
+`cargo uninstall freenet` and then clean up the data directories below.
 
-On Windows, `freenet uninstall` has a known gap and may leave the config folder behind; after running it, also manually remove `%LOCALAPPDATA%\Freenet\bin`, `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`, and `%APPDATA%\The Freenet Project Inc\Freenet`.
+On Windows, `freenet uninstall` has a known gap and may leave the config folder behind; after
+running it, also manually remove `%LOCALAPPDATA%\Freenet\bin`,
+`%LOCALAPPDATA%\The Freenet Project Inc\Freenet`, and `%APPDATA%\The Freenet Project Inc\Freenet`.
 
-The [Uninstall guide](/uninstall/) has the full per-platform manual-fallback snippets (Linux systemd, macOS launchd, Windows PowerShell) for when the binary is missing or broken.
+The [Uninstall guide](/uninstall/) has the full per-platform manual-fallback snippets (Linux
+systemd, macOS launchd, Windows PowerShell) for when the binary is missing or broken.
 
 # Why does the Freenet project use and mention AI tools? {#why-does-the-freenet-project-use-and-mention-ai-tools}
 
