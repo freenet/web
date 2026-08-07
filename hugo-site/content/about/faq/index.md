@@ -248,11 +248,10 @@ One example comes from U.S. law, used here for illustration rather than as a uni
 [17 U.S.C. §512](https://www.law.cornell.edu/uscode/text/17/512), part of the DMCA. It expressly
 addresses "transitory digital network communications" (automatic transmission, routing, and
 intermediate or transient storage) and "system caching" (certain automatic temporary storage of
-third-party material). The
-[U.S. Copyright Office](https://www.copyright.gov/512/) likewise describes §512 as covering service
-providers acting as conduits and providers that cache material automatically. This is useful
-evidence that operating infrastructure which automatically handles third-party information is a
-legally recognized role, separate from publishing that information.
+third-party material). The [U.S. Copyright Office](https://www.copyright.gov/512/) likewise
+describes §512 as covering service providers acting as conduits and providers that cache material
+automatically. This is useful evidence that operating infrastructure which automatically handles
+third-party information is a legally recognized role, separate from publishing that information.
 
 That said, §512 covers only copyright, and its protections come with conditions, so it is best read
 as a useful precedent rather than a blanket guarantee against legal risk. Legal treatment of network
