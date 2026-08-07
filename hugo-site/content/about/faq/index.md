@@ -239,10 +239,10 @@ method can work as well or better.
 
 # Is it legal to run a Freenet peer? {#is-it-legal-to-run-a-freenet-peer}
 
-Running a Freenet peer does not mean you endorse or intentionally publish every piece of information
-the peer may automatically route or cache. Internet law has long distinguished between people who
-intentionally publish material and network intermediaries that automatically transmit or cache
-third-party material.
+Generally speaking, yes. Running a Freenet peer does not mean you endorse or intentionally publish
+every piece of information the peer may automatically route or cache. Internet law has long
+distinguished between people who intentionally publish material and network intermediaries that
+automatically transmit or cache third-party material.
 
 As a concrete U.S. example, [17 U.S.C. §512](https://www.law.cornell.edu/uscode/text/17/512) (part
 of the DMCA) expressly addresses both "transitory digital network communications," including
@@ -253,10 +253,13 @@ providers acting as conduits and providers that cache material automatically. Th
 evidence that operating infrastructure which automatically handles third-party information is a
 legally recognized role, distinct from intentionally publishing that information.
 
-That said, §512 concerns copyright liability specifically and its safe harbors have statutory
-requirements, so it shouldn't be read as a blanket guarantee that running a Freenet peer can never
-create legal liability. Other laws and jurisdictions may apply, particularly where an operator
-knowingly participates in unlawful activity.
+That said, §512 is specific to copyright, and its protections come with conditions attached, so
+it's best read as a useful precedent rather than a blanket guarantee against legal risk. For someone
+running a peer normally, the distinction that matters is automatic versus knowing: routing or
+caching traffic automatically is not the same as knowingly facilitating unlawful activity. It's a
+different story for anyone hoping to hide behind the network while doing the latter — the Freenet
+Platform itself wasn't designed to provide anonymity (see
+[above](#does-freenet-provide-anonymity-like-tor-or-i2p)), so it should not be relied on for cover.
 
 # Can I follow Freenet on social media? {#can-i-follow-freenet-on-social-media}
 
