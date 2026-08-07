@@ -257,7 +257,7 @@ That said, §512 is specific to copyright, and its protections come with conditi
 it's best read as a useful precedent rather than a blanket guarantee against legal risk. For someone
 running a peer normally, the distinction that matters is automatic versus knowing: routing or
 caching traffic automatically is not the same as knowingly facilitating unlawful activity. It's a
-different story for anyone hoping to hide behind the network while doing the latter — the Freenet
+different story for anyone hoping to hide behind the network while doing the latter: the Freenet
 Platform itself wasn't designed to provide anonymity (see
 [above](#does-freenet-provide-anonymity-like-tor-or-i2p)), so it should not be relied on for cover.
 
