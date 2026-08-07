@@ -240,25 +240,27 @@ method can work as well or better.
 # Is it legal to run a Freenet peer? {#is-it-legal-to-run-a-freenet-peer}
 
 Generally speaking, yes. Running a Freenet peer is like running any other network infrastructure
-that automatically handles other people's traffic, a role internet law has long distinguished from
-intentionally publishing material. Running a peer does not mean you endorse or intentionally publish
-every piece of information it may automatically route or cache.
+that automatically handles other people's traffic, a role many legal systems have long distinguished
+from intentionally publishing material. Running a peer does not mean you endorse or intentionally
+publish every piece of information it may automatically route or cache.
 
-A concrete U.S. example is [17 U.S.C. §512](https://www.law.cornell.edu/uscode/text/17/512), part of
-the DMCA. It expressly addresses "transitory digital network communications" (automatic
-transmission, routing, and intermediate or transient storage) and "system caching" (certain
-automatic temporary storage of third-party material). The
+One example comes from U.S. law, used here for illustration rather than as a universal rule:
+[17 U.S.C. §512](https://www.law.cornell.edu/uscode/text/17/512), part of the DMCA. It expressly
+addresses "transitory digital network communications" (automatic transmission, routing, and
+intermediate or transient storage) and "system caching" (certain automatic temporary storage of
+third-party material). The
 [U.S. Copyright Office](https://www.copyright.gov/512/) likewise describes §512 as covering service
 providers acting as conduits and providers that cache material automatically. This is useful
 evidence that operating infrastructure which automatically handles third-party information is a
 legally recognized role, separate from publishing that information.
 
 That said, §512 covers only copyright, and its protections come with conditions, so it is best read
-as a useful precedent rather than a blanket guarantee against legal risk. For someone running a peer
-normally, the distinction that matters is automatic versus knowing: automatically routing or caching
-traffic is not the same as knowingly facilitating unlawful activity. It's a different story for
-anyone hoping to use the network to hide unlawful activity: the Freenet Platform wasn't designed to
-provide anonymity (see
+as a useful precedent rather than a blanket guarantee against legal risk. Legal treatment of network
+and P2P software also varies by country, and not every jurisdiction draws the same line between
+automatic and knowing conduct, so operators should weigh their own local laws too. Where that
+distinction does apply, automatically routing or caching traffic is not the same as knowingly
+facilitating unlawful activity. It's a different story for anyone hoping to use the network to hide
+unlawful activity: the Freenet Platform wasn't designed to provide anonymity (see
 [Does Freenet provide anonymity like Tor or I2P?](#does-freenet-provide-anonymity-like-tor-or-i2p))
 and should not be relied on for that kind of cover.
 
