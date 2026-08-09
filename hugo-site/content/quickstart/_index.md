@@ -1,5 +1,5 @@
 ---
-title: "Try Freenet: Join River"
+title: "Install Freenet: Join River"
 date: 2025-01-01
 draft: false
 ---
@@ -9,6 +9,10 @@ It's the fastest way to see the network in action.
 
 The room runs as a Freenet contract: code that lives across the peer-to-peer network instead of on
 a central server. No company hosts it, no account to make, no admin who can shut it down.
+
+Want to look before installing? [Try River in your browser](/try/), a hosted demo of this same
+room that needs no download. It runs on our server rather than peer-to-peer, so it's a preview
+rather than the real thing.
 
 {{< alert type="warning" >}} **Alpha notes:** Freenet is under active development.
 
