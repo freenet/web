@@ -5,14 +5,14 @@ draft: false
 ---
 
 Install Freenet and you'll join the live chat room where the project's developers and users talk.
-It's the best way to see the network in action.
+It's the best way to see the network for real.
 
 The room runs as a Freenet contract: code that lives across the peer-to-peer network instead of on
 a central server. No company hosts it, no account to make, no admin who can shut it down.
 
 Want to look before installing? [Try River in your browser](/try/), a hosted demo of this same
-room with no download. It runs on a peer we host instead of one on your machine, so your data
-lives with us and it's a preview rather than the real thing.
+room with no download. It runs on a peer we host instead of one on your machine, so it's a
+preview rather than the real thing.
 
 {{< alert type="warning" >}} **Alpha notes:** Freenet is under active development.
 
@@ -56,8 +56,8 @@ system-wide service instead: `sudo freenet service install --system`
 
 **Network requirements:** Freenet uses UDP hole punching for peer-to-peer connections. Most home
 routers support this without configuration. Strict corporate firewalls may block connections. If
-yours does, [River in your browser](/try/) still works, since it reaches the network through a
-peer we host.
+yours does, the [hosted demo](/try/) usually still works, since it reaches the network over HTTPS
+through a peer we host.
 
 Need to remove Freenet? See the [uninstall guide](/uninstall/).
 
