@@ -151,9 +151,10 @@ key. Because anyone can PUT, this is only _safe_ if the following hold. An app t
 **not** get safe carry-forward, and you must design them in before your first release — you cannot
 retrofit them onto data that is already live.
 
-- **Mergeable / commutative state.** The new contract must be able to fold the old state into its
-  own deterministically. In practice this means your state is a commutative monoid — the same
-  requirement that makes Freenet sync work at all (see
+- **Mergeable / commutative / idempotent state.** The new contract must be able to fold the old
+  state into its own deterministically, including re-folding the same old state more than once
+  without changing the result. In practice this means your state is an idempotent commutative
+  monoid — the same requirement that makes Freenet sync work at all (see
   [Contracts](/build/manual/components/contracts/#state-synchronization-and-merging)).
 - **Strictly self-authorizing `validate_state`.** The new contract must re-verify _every byte_ it
   accepts, trusting nothing about who delivered it. Every field in state must be covered by a
@@ -247,7 +248,7 @@ Before you publish a new contract or delegate version:
       `wasm-opt` version is pinned or recorded.
 - [ ] A CI guard fails the build if the WASM hash changed without the old `code_hash` being added to
       your legacy registry (`freenet-migrate-build`'s hash-guard, or an equivalent script).
-- [ ] State is mergeable/commutative and `validate_state` re-verifies **every** field's signature
+- [ ] State is mergeable/commutative/idempotent and `validate_state` re-verifies **every** field's signature
       (fail closed).
 - [ ] User-facing identities are derived from keys, never from a contract key.
 - [ ] Delegates shipped an **export handler in v1**; you have the author signing key to authorize

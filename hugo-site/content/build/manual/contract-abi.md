@@ -146,9 +146,10 @@ design here. Freeing a result before the host reads it is a use-after-free.
 
 ## Behavioural requirement
 
-`update_state` must be commutative with respect to deltas. Applying a set of deltas in any order has
-to converge on the same state. The network deprioritizes contracts that violate this, so it is a
-correctness requirement rather than a style note. See
+`update_state` must be associative, commutative, and idempotent with respect to deltas. Applying a
+set of deltas in any order — including applying the same delta more than once — has to converge on
+the same state. The network deprioritizes contracts that violate this, so it is a correctness
+requirement rather than a style note. See
 [Delta-Sync](/build/manual/further-reading/delta-sync/) for the reasoning.
 
 ## Delegates
