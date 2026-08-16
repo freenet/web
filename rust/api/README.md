@@ -38,25 +38,45 @@ strings target/release/ghostkey-api | grep -c payment_claim   # sanity: expect n
 scp target/release/ghostkey-api vega:/tmp/ghostkey-api.new
 ssh vega 'strings /tmp/ghostkey-api.new | grep -q payment_claim && echo ok'
 
-# 3. back up with mv (keeps the capability on the backup, so rollback is clean)
-ssh vega 'sudo mv /home/gkapi/bin/ghostkey-api \
-                  /home/gkapi/bin/ghostkey-api.rollback-$(date +%Y%m%d-%H%M%S)'
-
-# 4. install, own, and RESTORE THE CAPABILITY before restarting
+# 3. stage it at its final location, fully prepared, WITHOUT displacing the live binary
 ssh vega '
-  sudo cp /tmp/ghostkey-api.new /home/gkapi/bin/ghostkey-api
-  sudo chown gkapi:gkapi /home/gkapi/bin/ghostkey-api
-  sudo chmod 775 /home/gkapi/bin/ghostkey-api
-  sudo setcap cap_net_bind_service+ep /home/gkapi/bin/ghostkey-api
-  getcap /home/gkapi/bin/ghostkey-api          # must print cap_net_bind_service=ep
+  sudo cp /tmp/ghostkey-api.new /home/gkapi/bin/ghostkey-api.staged
+  sudo chown gkapi:gkapi        /home/gkapi/bin/ghostkey-api.staged
+  sudo chmod 775                /home/gkapi/bin/ghostkey-api.staged
+  sudo setcap cap_net_bind_service+ep /home/gkapi/bin/ghostkey-api.staged
+  sudo getcap /home/gkapi/bin/ghostkey-api.staged
 '
+# Must print: /home/gkapi/bin/ghostkey-api.staged cap_net_bind_service=ep
+# If it does not, STOP. Nothing has changed yet and the live binary is untouched.
 
-# 5. only then restart
-ssh vega 'sudo systemctl reset-failed gkapi && sudo systemctl restart gkapi'
+# 4. swap with two adjacent renames, then restart
+ssh vega '
+  set -e
+  STAMP=$(date +%Y%m%d-%H%M%S)
+  sudo mv /home/gkapi/bin/ghostkey-api         /home/gkapi/bin/ghostkey-api.rollback-$STAMP
+  sudo mv /home/gkapi/bin/ghostkey-api.staged  /home/gkapi/bin/ghostkey-api
+  echo "rollback binary: /home/gkapi/bin/ghostkey-api.rollback-$STAMP"
+  sudo systemctl reset-failed gkapi
+  sudo systemctl restart gkapi
+'
 ```
 
-Verify `getcap` prints the capability **before** restarting. If it is empty, fix it rather
-than restarting to see what happens.
+Two things about that shape are deliberate, and both exist to avoid a worse failure than
+the one being fixed:
+
+- **Prepare the capability on the staged file, and verify it, before anything is
+  displaced.** The `getcap` gate in step 3 is the whole point of splitting the steps: if it
+  fails you stop with the running service completely untouched. Do not restart to see what
+  happens.
+- **Do not `mv` the old binary away in one command and `cp` the new one in with another.**
+  Between those two the path does not exist, and anything that restarts the unit in that
+  window (a crash, an OOM, a reboot, someone running `systemctl restart` out of order) fails
+  with `status=203/EXEC` and stays down. Step 4 closes that to two adjacent renames.
+  `mv` is also what carries the capability across, since it keeps the inode.
+
+`sudo` on `getcap` is not decoration: it lives in `/usr/sbin`, which is not on a normal
+user's `PATH`, so a bare `getcap` can fail as "command not found" and skip the check
+entirely.
 
 ### Verifying a deploy
 
@@ -72,7 +92,12 @@ if HTTPS looks healthy.
 
 Then confirm every donation tier still resolves its notary keypair, which is a separate
 failure mode from the binary (see the tier comment in
-`hugo-site/themes/freenet/layouts/shortcodes/stripe-donation-form.html`):
+`hugo-site/themes/freenet/layouts/shortcodes/stripe-donation-form.html`).
+
+Note that `/create-donation` has no dry-run mode: each call creates a real PaymentIntent in
+the live Stripe account. Nothing is charged and no card is attached, so these are harmless
+abandoned intents, exactly what a visitor clicking between the amount radios produces. Run
+the loop once after a deploy; do not wrap it in a retry-until-success script.
 
 ```bash
 for a in 1 5 20 50 100 500 2500 10000; do
@@ -84,16 +109,26 @@ done
 
 ### Rollback
 
+Substitute `<stamp>` with the timestamp step 4 printed.
+
 ```bash
 ssh vega '
-  sudo cp /home/gkapi/bin/ghostkey-api.rollback-<stamp> /home/gkapi/bin/ghostkey-api
-  sudo chown gkapi:gkapi /home/gkapi/bin/ghostkey-api
-  sudo setcap cap_net_bind_service+ep /home/gkapi/bin/ghostkey-api
+  set -e
+  sudo cp /home/gkapi/bin/ghostkey-api.rollback-<stamp> /home/gkapi/bin/ghostkey-api.staged
+  sudo chown gkapi:gkapi /home/gkapi/bin/ghostkey-api.staged
+  sudo chmod 775 /home/gkapi/bin/ghostkey-api.staged
+  sudo setcap cap_net_bind_service+ep /home/gkapi/bin/ghostkey-api.staged
+  sudo getcap /home/gkapi/bin/ghostkey-api.staged
+  sudo mv /home/gkapi/bin/ghostkey-api.staged /home/gkapi/bin/ghostkey-api
   sudo systemctl reset-failed gkapi && sudo systemctl restart gkapi
 '
 ```
 
-The `setcap` line is required on the way back too, for the reason above.
+The `setcap` line is required on the way back too, and this is the part that is genuinely
+easy to get wrong under pressure: copying a backup *into place* produces a file with no
+capability, so the service carries on panicking and it reads as "the new build is broken"
+rather than "the copy dropped a capability". If a rollback does not fix the panic, run
+`sudo getcap` on the live binary before concluding anything about the build.
 
 ## letsencrypt
 
