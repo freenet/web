@@ -83,10 +83,12 @@ maintain, no cloud bills, no terms of service.
 
 ## For Supporters
 
-Freenet is built by a small team, funded through grants and donations. Your support helps build
-decentralized internet infrastructure that matters.
+Freenet is built by a small team, funded through grants and donations. Donating can also issue you a
+Ghost Key, an anonymous identity that works across Freenet apps.
 
 <a href="/donate/" class="funding-learn-more">Support Freenet →</a>
+
+<a href="/ghostkey/" class="funding-learn-more">Get a Ghost Key →</a>
 
 </div>
 
