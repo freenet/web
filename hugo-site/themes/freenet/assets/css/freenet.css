@@ -1193,6 +1193,27 @@ picture.app-screenshot img {
   max-width: 640px;
 }
 
+/* Donate options, surfaced right under the hero lead so a visitor who already
+   decided to give (they clicked "Donate" in the nav) can act immediately,
+   without scrolling past "Why Freenet matters" / "About the project" /
+   "Major supporters" first. Two equally-weighted columns; wraps to a single
+   column on narrow viewports. The prose stays below unchanged, and the same
+   two options repeat at the bottom of the page for anyone who scrolls down
+   to read first — see .funding-donate-section. */
+.funding-hero-donate {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem 3rem;
+  margin-top: 2rem;
+}
+
+.funding-hero-donate-option {
+  flex: 1 1 240px;
+  max-width: 300px;
+  text-align: center;
+}
+
 .funding-section {
   margin-bottom: 2.5rem;
 }
@@ -1259,6 +1280,12 @@ picture.app-screenshot img {
 .funding-donate-button {
   display: inline-block;
   padding: 0.75rem 2rem;
+  /* Explicit rather than inherited: this button now renders inside both a
+     bare <p> (bottom donate sections) and a raw-HTML div with no <p> wrapper
+     (hero CTA), which without this rule pick up different ambient
+     line-heights from their parents and render at different heights.
+     Pinning it here keeps every instance of the button pixel-identical. */
+  line-height: 1.5;
   background: var(--color-primary);
   color: #ffffff !important;
   text-decoration: none !important;
@@ -1291,7 +1318,14 @@ picture.app-screenshot img {
   text-align: center;
 }
 
-.gk-cta-note {
+/* Doubled selector deliberately raises specificity to (0,2,0). .gk-cta-note
+   is a <p>, so a plain single-class selector here (0,1,0) loses outright to
+   `.funding-section p` (0,1,1) whenever a note is nested inside a
+   .funding-section container (donate page's bottom CTAs, hero CTA row) — the
+   note silently rendered a different color than on /ghostkey/. Do not drop
+   this back to plain `.gk-cta-note`; that reintroduces the bug regardless of
+   source order in the file (see PR #117 review). */
+.gk-cta-note.gk-cta-note {
   margin: 0.75rem auto 0 auto;
   max-width: 34rem;
   font-size: 0.9rem;
@@ -1306,25 +1340,17 @@ picture.app-screenshot img {
 }
 
 @media (prefers-color-scheme: dark) {
-  .gk-cta-note {
+  .gk-cta-note.gk-cta-note {
     color: #94a3b8;
   }
 }
 
-/* Ghost keys — understated */
+/* Ghost Keys donate option — same visual weight as PayPal (funding-donate-button
+   + gk-cta-note), just separated from it with a divider so the two read as
+   distinct, equally-weighted choices rather than one continuous block. */
 .funding-ghost-keys {
   padding-top: 1.5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.funding-ghost-keys h2 {
-  font-size: 1.15rem;
-  color: #64748b;
-}
-
-.funding-ghost-keys p {
-  color: #64748b;
-  font-size: 0.95rem;
 }
 
 /* Dark mode — funding page */
@@ -1375,14 +1401,6 @@ picture.app-screenshot img {
 
   .funding-ghost-keys {
     border-top-color: rgba(255, 255, 255, 0.08);
-  }
-
-  .funding-ghost-keys h2 {
-    color: #8896a8;
-  }
-
-  .funding-ghost-keys p {
-    color: #8896a8;
   }
 }
 

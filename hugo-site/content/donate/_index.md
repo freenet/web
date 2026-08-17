@@ -11,6 +11,21 @@ Freenet is a long-term effort to build decentralized infrastructure for a free a
 Development is funded primarily by donations and grants from individuals who believe this work
 matters.
 </p>
+
+<div class="funding-hero-donate">
+
+<div class="funding-hero-donate-option">
+<a href="https://www.paypal.com/donate?hosted_button_id=EQ9E7DPHB6ETY" class="funding-donate-button">Donate via PayPal</a>
+<p class="gk-cta-note">One-time or recurring, no account required.</p>
+</div>
+
+<div class="funding-hero-donate-option">
+<a href="/ghostkey/create/" class="funding-donate-button">Donate via card</a>
+<p class="gk-cta-note">Issues a <a href="/ghostkey/">Ghost Key</a>, an anonymous cryptographic identity that works across Freenet apps and can't be linked back to your payment. $1 minimum.</p>
+</div>
+
+</div>
+
 </div>
 
 <div class="funding-section">
@@ -62,18 +77,20 @@ If you are interested in supporting Freenet at a significant level, we would be 
 
 <div class="funding-section funding-donate-section">
 
-## Donate
+## Donate via PayPal
 
 <a href="https://www.paypal.com/donate?hosted_button_id=EQ9E7DPHB6ETY" class="funding-donate-button">Donate via PayPal</a>
 
+<p class="gk-cta-note">One-time or recurring, no account required.</p>
+
 </div>
 
-<div class="funding-section funding-ghost-keys">
+<div class="funding-section funding-donate-section funding-ghost-keys">
 
-## Donating by card
+## Donate via card
 
-If you would rather give by card, you can donate through [Ghost Keys](/ghostkey/). A Ghost Key is an
-anonymous cryptographic identity, issued with your donation, that works across Freenet apps and
-cannot be linked back to your payment. The minimum is $1.
+<a href="/ghostkey/create/" class="funding-donate-button">Donate via card</a>
+
+<p class="gk-cta-note">Issues a <a href="/ghostkey/">Ghost Key</a>, an anonymous cryptographic identity that works across Freenet apps and can't be linked back to your payment. $1 minimum.</p>
 
 </div>
