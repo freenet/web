@@ -1318,7 +1318,14 @@ picture.app-screenshot img {
   text-align: center;
 }
 
-.gk-cta-note {
+/* Doubled selector deliberately raises specificity to (0,2,0). .gk-cta-note
+   is a <p>, so a plain single-class selector here (0,1,0) loses outright to
+   `.funding-section p` (0,1,1) whenever a note is nested inside a
+   .funding-section container (donate page's bottom CTAs, hero CTA row) — the
+   note silently rendered a different color than on /ghostkey/. Do not drop
+   this back to plain `.gk-cta-note`; that reintroduces the bug regardless of
+   source order in the file (see PR #117 review). */
+.gk-cta-note.gk-cta-note {
   margin: 0.75rem auto 0 auto;
   max-width: 34rem;
   font-size: 0.9rem;
@@ -1333,7 +1340,7 @@ picture.app-screenshot img {
 }
 
 @media (prefers-color-scheme: dark) {
-  .gk-cta-note {
+  .gk-cta-note.gk-cta-note {
     color: #94a3b8;
   }
 }
