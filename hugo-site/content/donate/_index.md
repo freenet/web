@@ -11,6 +11,21 @@ Freenet is a long-term effort to build decentralized infrastructure for a free a
 Development is funded primarily by donations and grants from individuals who believe this work
 matters.
 </p>
+
+<div class="funding-hero-donate">
+
+<div class="funding-hero-donate-option">
+<a href="https://www.paypal.com/donate?hosted_button_id=EQ9E7DPHB6ETY" class="funding-donate-button">Donate via PayPal</a>
+<p class="gk-cta-note">One-time or recurring, no account required.</p>
+</div>
+
+<div class="funding-hero-donate-option">
+<a href="/ghostkey/create/" class="funding-donate-button">Donate via card</a>
+<p class="gk-cta-note">Issues a <a href="/ghostkey/">Ghost Key</a>, an anonymous cryptographic identity that works across Freenet apps and can't be linked back to your payment. $1 minimum.</p>
+</div>
+
+</div>
+
 </div>
 
 <div class="funding-section">

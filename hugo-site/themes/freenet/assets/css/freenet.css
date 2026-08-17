@@ -1193,6 +1193,27 @@ picture.app-screenshot img {
   max-width: 640px;
 }
 
+/* Donate options, surfaced right under the hero lead so a visitor who already
+   decided to give (they clicked "Donate" in the nav) can act immediately,
+   without scrolling past "Why Freenet matters" / "About the project" /
+   "Major supporters" first. Two equally-weighted columns; wraps to a single
+   column on narrow viewports. The prose stays below unchanged, and the same
+   two options repeat at the bottom of the page for anyone who scrolls down
+   to read first — see .funding-donate-section. */
+.funding-hero-donate {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem 3rem;
+  margin-top: 2rem;
+}
+
+.funding-hero-donate-option {
+  flex: 1 1 240px;
+  max-width: 300px;
+  text-align: center;
+}
+
 .funding-section {
   margin-bottom: 2.5rem;
 }
@@ -1259,6 +1280,12 @@ picture.app-screenshot img {
 .funding-donate-button {
   display: inline-block;
   padding: 0.75rem 2rem;
+  /* Explicit rather than inherited: this button now renders inside both a
+     bare <p> (bottom donate sections) and a raw-HTML div with no <p> wrapper
+     (hero CTA), which without this rule pick up different ambient
+     line-heights from their parents and render at different heights.
+     Pinning it here keeps every instance of the button pixel-identical. */
+  line-height: 1.5;
   background: var(--color-primary);
   color: #ffffff !important;
   text-decoration: none !important;
