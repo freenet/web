@@ -1311,20 +1311,12 @@ picture.app-screenshot img {
   }
 }
 
-/* Ghost keys — understated */
+/* Ghost Keys donate option — same visual weight as PayPal (funding-donate-button
+   + gk-cta-note), just separated from it with a divider so the two read as
+   distinct, equally-weighted choices rather than one continuous block. */
 .funding-ghost-keys {
   padding-top: 1.5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.funding-ghost-keys h2 {
-  font-size: 1.15rem;
-  color: #64748b;
-}
-
-.funding-ghost-keys p {
-  color: #64748b;
-  font-size: 0.95rem;
 }
 
 /* Dark mode — funding page */
@@ -1375,14 +1367,6 @@ picture.app-screenshot img {
 
   .funding-ghost-keys {
     border-top-color: rgba(255, 255, 255, 0.08);
-  }
-
-  .funding-ghost-keys h2 {
-    color: #8896a8;
-  }
-
-  .funding-ghost-keys p {
-    color: #8896a8;
   }
 }
 
