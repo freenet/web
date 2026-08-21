@@ -443,8 +443,10 @@ fn App() -> Element {
 ### Connecting to Freenet
 
 River's UI communicates with the kernel through a WebSocket API. See
-[River's sync module](https://github.com/freenet/river/tree/main/ui/src/sync) for the complete
-implementation pattern.
+[River's `freenet_api` module](https://github.com/freenet/river/tree/main/ui/src/components/app/freenet_api)
+for the complete implementation pattern: `connection_manager.rs` opens and reconnects the socket,
+`freenet_synchronizer.rs` drives the sync loop, `room_synchronizer.rs` maps rooms onto contract
+GET/PUT/SUBSCRIBE/UPDATE, and `response_handler/` handles each kind of node response.
 
 ---
 
