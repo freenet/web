@@ -12,7 +12,7 @@
   {{ $newsItems := slice }}
   {{ range first 10 $sortedNews }}
     {{ $tags := .Params.tags | default slice }}
-    {{ $newsItems = $newsItems | append (dict "date" (.Date.Format "2006-01-02T15:04:05Z") "title" .Title "url" .Permalink "tags" $tags "type" "news") }}
+    {{ $newsItems = $newsItems | append (dict "date" (.Date.Format "2006-01-02T15:04:05Z") "dateDisplay" (.Date.Format "January 2, 2006") "title" .Title "url" .Permalink "tags" $tags "type" "news") }}
   {{ end }}
 
   <div id="latest-news-container" data-news-items='{{ $newsItems | jsonify }}' data-limit="{{ $limit }}">
@@ -40,7 +40,12 @@
 
       let html = '<ul>';
       for (const item of shown) {
-        html += `<li><strong>${formatDate(item.date)}</strong> - <a href="${item.url}">${item.title}</a></li>`;
+        // Prefer the server-formatted date (correct in the site's intended
+        // timezone) for static news entries. GitHub release entries only
+        // carry a raw ISO timestamp, so fall back to client-side formatting
+        // for those.
+        const displayDate = item.dateDisplay || formatDate(item.date);
+        html += `<li><strong>${displayDate}</strong> - <a href="${item.url}">${item.title}</a></li>`;
       }
       html += '</ul>';
       container.innerHTML = html;
