@@ -49,10 +49,13 @@ A broken link, documentation that's wrong or confusing, a page that won't load, 
 
 ### Ghost Keys
 
-Anything about donations, Ghost Key certificates, or the Ghostkey Vault.
+Trouble with the Ghostkey Vault: importing a key, backing one up, an app that can't get a signature.
 
-→ [Report a Ghost Keys bug](https://github.com/freenet/ghostkeys/issues/new) ·
-[existing Ghost Keys issues](https://github.com/freenet/ghostkeys/issues)
+→ [Report a Ghostkey Vault bug](https://github.com/freenet/ghostkeys/issues/new) ·
+[existing Ghostkey Vault issues](https://github.com/freenet/ghostkeys/issues)
+
+A donation that didn't go through, or a Ghost Key certificate that never arrived, is handled by this
+website rather than by the vault, so [report those here](https://github.com/freenet/web/issues/new).
 
 ### One of the other apps
 
@@ -68,14 +71,14 @@ does, if you're not sure which you were using.
 
 Use the [Freenet issue tracker](https://github.com/freenet/freenet-core/issues/new). It's the one
 the maintainers watch most closely, and they'll move your report if it belongs somewhere else.
-Describing clearly what happened matters far more than landing it in the right place first time.
+Describing clearly what happened matters far more than landing it in the right place the first time.
 
 If you'd rather have someone work it out with you, ask in
 [Matrix](https://matrix.to/#/#freenet-locutus:matrix.org).
 
 ## What to put in a bug report
 
-You don't need to diagnose the problem. These are what make a report easy to act on:
+You don't need to diagnose the problem. What makes a report easy to act on:
 
 - What you were doing, what you expected, and what happened instead.
 - Whether it happens every time or only sometimes.
@@ -92,22 +95,22 @@ freenet service report
 
 It gathers your version, operating system, recent log entries and configuration, then asks you to
 describe the problem, uploads everything, and prints a short **report code** that looks like
-`X7K2M9`. Put that code in your bug report and the maintainers can pull up everything they need. The
-step that queries your running node can take up to a minute, so give it a moment before the prompt
-appears.
+`X7K2M9`. Put that code in your bug report and the maintainers can pull up everything they need. If
+your node isn't answering, that step waits up to a minute before giving up, so the prompt may take a
+while to appear.
 
 That upload is more than logs, so it's worth knowing what's in it: your machine's hostname, recent
 log lines, your Freenet configuration file (which includes paths containing your username), and, if
 your node is running, its current network state. That state covers your peer ID, the addresses of
-the peers you're connected to, and the contracts you're subscribed to, which for River means the
-rooms you're in. Your IP address is recorded when the upload is received.
+the peers you're connected to, and every contract your node holds. For River that includes the rooms
+you're in.
+
+Your IP address is recorded when the upload is received.
 
 If you'd rather read all of that before sending it, `freenet service report --local report.json`
 writes the same bundle to a file on your own machine and uploads nothing. There's no way to send a
-saved file afterwards, so run the command again without `--local` once you're happy with it.
-
-If you'd rather not attach the code to a public issue, send it to us in
-[Matrix](https://matrix.to/#/#freenet-locutus:matrix.org) instead and mention your issue number.
+saved file afterwards, so once you're happy with it, run the command again without `--local` and it
+will collect a fresh copy of the same things.
 
 ## Prefer to talk to a person?
 
