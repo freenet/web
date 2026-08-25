@@ -1107,6 +1107,43 @@ picture.app-screenshot img {
   }
 }
 
+/* Bug-report route in the footer — the one support link present on every page,
+   so it has to read as a link rather than as a caption. */
+.footer-report {
+  text-align: center;
+  margin: 2rem auto 0;
+  padding: 0 1rem;
+  font-size: 0.9rem;
+}
+
+.footer-report p {
+  margin: 0;
+}
+
+.footer-report a {
+  color: #64748b;
+  text-decoration: underline;
+  text-decoration-color: rgba(100, 116, 139, 0.4);
+  text-underline-offset: 2px;
+}
+
+.footer-report a:hover {
+  color: var(--color-primary);
+  text-decoration-color: var(--color-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  .footer-report a {
+    color: #94a3b8;
+    text-decoration-color: rgba(148, 163, 184, 0.4);
+  }
+
+  .footer-report a:hover {
+    color: #4da6ff;
+    text-decoration-color: #4da6ff;
+  }
+}
+
 /* Institutional statement in footer — quiet, just establishes 501(c)(3) status */
 .footer-institutional {
   max-width: 720px;
