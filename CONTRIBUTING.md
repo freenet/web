@@ -6,7 +6,7 @@ We welcome contributions to Freenet! Here's what you need to know.
 
 - **Claim the issue first.** Comment on the issue you want to work on and wait for a maintainer to confirm before starting work. This prevents duplicate effort and ensures the approach is aligned with project direction.
 - **Read the codebase conventions.** See [AGENTS.md](AGENTS.md) for project structure, coding standards, and testing requirements.
-- **Ask questions.** If something is unclear, ask on the issue or in our [Matrix channel](https://matrix.to/#/#freenet:matrix.org) before writing code.
+- **Ask questions.** If something is unclear, ask on the issue or in our [Matrix channel](https://matrix.to/#/#freenet-locutus:matrix.org) before writing code.
 
 ## Quality Standards
 
@@ -31,7 +31,7 @@ We require the use of a frontier-class model (as of early 2026: Claude Opus 4, G
 
 ## Getting Help
 
-- [Matrix chat](https://matrix.to/#/#freenet:matrix.org) for questions and discussion
+- [Matrix chat](https://matrix.to/#/#freenet-locutus:matrix.org) for questions and discussion
 - [Issue tracker](https://github.com/freenet/freenet-core/issues) for bugs and feature requests
 - [API docs](https://docs.rs/freenet) for code reference
 - [Freenet manual](https://freenet.org/resources/manual/) for architecture overview

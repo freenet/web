@@ -13,6 +13,6 @@ are tax-deductible in the United States.
 
 ### Stay connected
 
-- Join the conversation on [Matrix](https://matrix.to/#/#freenet:matrix.org)
+- Join the conversation on [Matrix](https://matrix.to/#/#freenet-locutus:matrix.org)
 - Follow project updates on [our news page](/about/news/)
 - Read about the architecture in the [whitepaper](/whitepaper/)
