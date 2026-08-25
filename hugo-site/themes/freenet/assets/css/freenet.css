@@ -1108,7 +1108,8 @@ picture.app-screenshot img {
 }
 
 /* Bug-report route in the footer — the one support link present on every page,
-   so it has to read as a link rather than as a caption. */
+   so it has to read as a link rather than as a caption. Shares the quiet
+   underlined link treatment with .footer-institutional below. */
 .footer-report {
   text-align: center;
   margin: 2rem auto 0;
@@ -1118,30 +1119,6 @@ picture.app-screenshot img {
 
 .footer-report p {
   margin: 0;
-}
-
-.footer-report a {
-  color: #64748b;
-  text-decoration: underline;
-  text-decoration-color: rgba(100, 116, 139, 0.4);
-  text-underline-offset: 2px;
-}
-
-.footer-report a:hover {
-  color: var(--color-primary);
-  text-decoration-color: var(--color-primary);
-}
-
-@media (prefers-color-scheme: dark) {
-  .footer-report a {
-    color: #94a3b8;
-    text-decoration-color: rgba(148, 163, 184, 0.4);
-  }
-
-  .footer-report a:hover {
-    color: #4da6ff;
-    text-decoration-color: #4da6ff;
-  }
 }
 
 /* Institutional statement in footer — quiet, just establishes 501(c)(3) status */
@@ -1159,29 +1136,34 @@ picture.app-screenshot img {
   margin: 0;
 }
 
-.footer-institutional a {
+.footer-institutional a,
+.footer-report a {
   color: #64748b;
   text-decoration: underline;
   text-decoration-color: rgba(100, 116, 139, 0.4);
   text-underline-offset: 2px;
 }
 
-.footer-institutional a:hover {
+.footer-institutional a:hover,
+.footer-report a:hover {
   color: var(--color-primary);
   text-decoration-color: var(--color-primary);
 }
 
 @media (prefers-color-scheme: dark) {
   .footer-institutional,
-  .footer-institutional a {
+  .footer-institutional a,
+  .footer-report a {
     color: #94a3b8;
   }
 
-  .footer-institutional a {
+  .footer-institutional a,
+  .footer-report a {
     text-decoration-color: rgba(148, 163, 184, 0.4);
   }
 
-  .footer-institutional a:hover {
+  .footer-institutional a:hover,
+  .footer-report a:hover {
     color: #4da6ff;
     text-decoration-color: #4da6ff;
   }

@@ -7,4 +7,4 @@ aliases:
 ---
 
 - [Github](https://github.com/freenet/freenet-core)
-- [Matrix](https://matrix.to/#/#locutus:matrix.org)
+- [Matrix](https://matrix.to/#/#freenet-locutus:matrix.org)
