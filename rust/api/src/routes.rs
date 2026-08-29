@@ -730,10 +730,14 @@ mod invite_handler_tests {
     }
 
     async fn challenge(state: &InviteState, ip: &str) -> Result<PowChallenge, StatusCode> {
-        get_invite_challenge(State(state.clone()), ConnectInfo(addr(ip)), HeaderMap::new())
-            .await
-            .map(|response| response.0.challenge)
-            .map_err(|(status, _)| status)
+        get_invite_challenge(
+            State(state.clone()),
+            ConnectInfo(addr(ip)),
+            HeaderMap::new(),
+        )
+        .await
+        .map(|response| response.0.challenge)
+        .map_err(|(status, _)| status)
     }
 
     async fn request_with(
@@ -741,7 +745,14 @@ mod invite_handler_tests {
         ip: &str,
         request: CreateInviteRequest,
     ) -> StatusCode {
-        match create_room_invite(State(state.clone()), ConnectInfo(addr(ip)), HeaderMap::new(), Json(request)).await {
+        match create_room_invite(
+            State(state.clone()),
+            ConnectInfo(addr(ip)),
+            HeaderMap::new(),
+            Json(request),
+        )
+        .await
+        {
             Ok(_) => StatusCode::OK,
             Err((code, _)) => code,
         }

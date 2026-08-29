@@ -1,10 +1,10 @@
 use anyhow::Result;
+use colored::*;
 use fantoccini::{Client, ClientBuilder, Locator};
-use std::time::{Duration, Instant};
+use serde_json::json;
 use std::path::Path;
 use std::process::Command;
-use serde_json::json;
-use colored::*;
+use std::time::{Duration, Instant};
 
 pub async fn run_browser_test(cli_args: &crate::cli::CliArgs, temp_dir: &Path) -> Result<()> {
     let mut caps = serde_json::map::Map::new();
@@ -13,13 +13,16 @@ pub async fn run_browser_test(cli_args: &crate::cli::CliArgs, temp_dir: &Path) -
     } else {
         json!([])
     };
-    caps.insert("goog:chromeOptions".to_string(), json!({"args": chrome_args}));
+    caps.insert(
+        "goog:chromeOptions".to_string(),
+        json!({"args": chrome_args}),
+    );
 
     let c = ClientBuilder::native()
         .capabilities(caps)
         .connect("http://localhost:9515")
         .await?;
-    
+
     // Set a consistent viewport size
     c.set_window_rect(0, 0, 1366, 768).await?;
 
@@ -52,39 +55,82 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
     crate::environment::print_task("Waiting for donation form to load");
     let _form = wait_for_element(c, Locator::Id("payment-form"), Duration::from_secs(30)).await?;
     // Wait for Stripe to finish initializing
-    wait_for_element(c, Locator::Css("#payment-element iframe"), Duration::from_secs(30)).await?;
+    wait_for_element(
+        c,
+        Locator::Css("#payment-element iframe"),
+        Duration::from_secs(30),
+    )
+    .await?;
     crate::environment::print_result(true);
 
     crate::environment::print_task("Selecting donation amount");
-    let amount_radio = wait_for_element(c, Locator::Css("#amount-options input[name='amount'][value='20']"), Duration::from_secs(10)).await?;
+    let amount_radio = wait_for_element(
+        c,
+        Locator::Css("#amount-options input[name='amount'][value='20']"),
+        Duration::from_secs(10),
+    )
+    .await?;
     if !amount_radio.is_selected().await? {
         amount_radio.click().await?;
     }
     crate::environment::print_result(true);
 
     crate::environment::print_task("Filling out Stripe payment form");
-    
+
     wait_for_element(c, Locator::Id("submit"), Duration::from_secs(30)).await?;
-    
+
     tokio::time::sleep(Duration::from_secs(1)).await;
-    
-    let stripe_iframe = wait_for_element(c, Locator::Css("iframe[name^='__privateStripeFrame']"), Duration::from_secs(30)).await?;
+
+    let stripe_iframe = wait_for_element(
+        c,
+        Locator::Css("iframe[name^='__privateStripeFrame']"),
+        Duration::from_secs(30),
+    )
+    .await?;
     let iframes = c.find_all(Locator::Css("iframe")).await?;
-    let iframe_index = iframes.iter().position(|e| e.element_id() == stripe_iframe.element_id()).unwrap() as u16;
+    let iframe_index = iframes
+        .iter()
+        .position(|e| e.element_id() == stripe_iframe.element_id())
+        .unwrap() as u16;
     c.enter_frame(Some(iframe_index)).await?;
-    
-    wait_for_element(c, Locator::Css("input[name='number']"), Duration::from_secs(30)).await?;
-    
-    let card_number = wait_for_element(c, Locator::Css("input[name='number']"), Duration::from_secs(10)).await?;
+
+    wait_for_element(
+        c,
+        Locator::Css("input[name='number']"),
+        Duration::from_secs(30),
+    )
+    .await?;
+
+    let card_number = wait_for_element(
+        c,
+        Locator::Css("input[name='number']"),
+        Duration::from_secs(10),
+    )
+    .await?;
     card_number.send_keys("4242424242424242").await?;
     tokio::time::sleep(Duration::from_millis(100)).await;
-    let card_expiry = wait_for_element(c, Locator::Css("input[name='expiry']"), Duration::from_secs(10)).await?;
+    let card_expiry = wait_for_element(
+        c,
+        Locator::Css("input[name='expiry']"),
+        Duration::from_secs(10),
+    )
+    .await?;
     card_expiry.send_keys("1225").await?;
     tokio::time::sleep(Duration::from_millis(100)).await;
-    let card_cvc = wait_for_element(c, Locator::Css("input[name='cvc']"), Duration::from_secs(10)).await?;
+    let card_cvc = wait_for_element(
+        c,
+        Locator::Css("input[name='cvc']"),
+        Duration::from_secs(10),
+    )
+    .await?;
     card_cvc.send_keys("123").await?;
     tokio::time::sleep(Duration::from_millis(100)).await;
-    let postal_code = wait_for_element(c, Locator::Css("input[name='postalCode']"), Duration::from_secs(10)).await?;
+    let postal_code = wait_for_element(
+        c,
+        Locator::Css("input[name='postalCode']"),
+        Duration::from_secs(10),
+    )
+    .await?;
     postal_code.send_keys("12345").await?;
     c.enter_frame(None).await?;
     crate::environment::print_result(true);
@@ -104,7 +150,10 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
             if let Ok(error_text) = error_element.text().await {
                 if !error_text.trim().is_empty() {
                     crate::environment::print_result(false);
-                    return Err(anyhow::anyhow!("Error occurred on the page: {}", error_text));
+                    return Err(anyhow::anyhow!(
+                        "Error occurred on the page: {}",
+                        error_text
+                    ));
                 }
             }
         }
@@ -124,7 +173,9 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
         println!("Current URL: {}", c.current_url().await?);
         println!("Page source:");
         println!("{}", c.source().await?);
-        return Err(anyhow::anyhow!("Timed out waiting for redirect to success page"));
+        return Err(anyhow::anyhow!(
+            "Timed out waiting for redirect to success page"
+        ));
     }
 
     crate::environment::print_task("Waiting for ghostkey certificate");
@@ -135,7 +186,12 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
     while start_time.elapsed() < timeout {
         let current_url = c.current_url().await?;
         if current_url.as_str().contains("/ghostkey/success") {
-            combined_key_result = wait_for_element(c, Locator::Css("textarea#combinedKey"), Duration::from_secs(5)).await;
+            combined_key_result = wait_for_element(
+                c,
+                Locator::Css("textarea#combinedKey"),
+                Duration::from_secs(5),
+            )
+            .await;
             if combined_key_result.is_ok() {
                 break;
             }
@@ -150,19 +206,27 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
         println!("Page source:");
         println!("{}", c.source().await?);
         crate::environment::print_result(false);
-        return Err(anyhow::anyhow!("Failed to find ghostkey certificate: {}", e));
+        return Err(anyhow::anyhow!(
+            "Failed to find ghostkey certificate: {}",
+            e
+        ));
     }
     crate::environment::print_result(true);
 
     crate::environment::print_task("Saving ghostkey certificate");
-    let combined_key_content = c.execute(
-        "return document.querySelector('textarea#combinedKey').value;",
-        vec![],
-    ).await?.as_str().unwrap_or("").to_string();
+    let combined_key_content = c
+        .execute(
+            "return document.querySelector('textarea#combinedKey').value;",
+            vec![],
+        )
+        .await?
+        .as_str()
+        .unwrap_or("")
+        .to_string();
     let output_file = temp_dir.join("ghost_key_certificate.pem");
     std::fs::write(&output_file, combined_key_content.clone())?;
     crate::environment::print_result(true);
-    
+
     crate::environment::print_task("Verifying ghostkey certificate");
     let master_verifying_key_file = temp_dir.join("master_verifying_key.pem");
     let output = Command::new("cargo")
@@ -188,7 +252,10 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
         let error_details = analyze_validation_error(&stderr, &stdout);
         println!("Detailed error analysis: {}", error_details);
         crate::environment::print_result(false);
-        return Err(anyhow::anyhow!("Ghost Key validation failed: {}. Aborting test.", error_details));
+        return Err(anyhow::anyhow!(
+            "Ghost Key validation failed: {}. Aborting test.",
+            error_details
+        ));
     }
 
     crate::environment::print_result(true);
@@ -196,7 +263,11 @@ async fn run_test(c: &Client, temp_dir: &Path) -> Result<()> {
     Ok(())
 }
 
-async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Duration) -> Result<fantoccini::elements::Element> {
+async fn wait_for_element(
+    client: &Client,
+    locator: Locator<'_>,
+    timeout: Duration,
+) -> Result<fantoccini::elements::Element> {
     let start = Instant::now();
     while start.elapsed() < timeout {
         match client.find(locator.clone()).await {
@@ -209,7 +280,10 @@ async fn wait_for_element(client: &Client, locator: Locator<'_>, timeout: Durati
         }
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
-    Err(anyhow::anyhow!("Timeout waiting for element with selector: {:?}", locator))
+    Err(anyhow::anyhow!(
+        "Timeout waiting for element with selector: {:?}",
+        locator
+    ))
 }
 
 fn analyze_validation_error(stderr: &str, stdout: &str) -> String {
