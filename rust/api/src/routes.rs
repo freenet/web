@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use axum::{
     extract::{ConnectInfo, Path, State},
+    http::HeaderMap,
     http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode},
     response::{IntoResponse, Json},
     routing::{get, post},
@@ -397,18 +398,33 @@ struct CreateInviteRequest {
 /// Extract the client IP used to key the invite rate limiter.
 ///
 /// We deliberately key on the TCP connection's peer address (`addr.ip()`) and
-/// do NOT trust `X-Forwarded-For` / `X-Real-IP`. gkapi is directly
-/// internet-facing (it binds :80/:443 and terminates its own TLS; there is no
-/// reverse proxy in front), so those headers are fully client-controlled and
-/// trusting them would let a spammer bypass the limit by rotating a spoofed
-/// header. `addr.ip()` returns the bare `IpAddr` (no port), so both IPv4 and
-/// IPv6 peers key correctly.
+/// trust `X-Forwarded-For` ONLY when the TCP peer is loopback, i.e. our own
+/// caddy reverse proxy on the same host. For any other peer we key on
+/// `addr.ip()`, because those headers are fully client-controlled and blanket
+/// trust would let a spammer bypass the limit by rotating a spoofed header.
 ///
-/// If a trusted reverse proxy / Cloudflare is ever placed in front of gkapi,
-/// revisit HERE to trust `X-Forwarded-For` ONLY when the peer is that proxy's
-/// IP. Do not re-add blanket `X-Forwarded-For` trust.
-fn get_client_ip(addr: SocketAddr) -> IpAddr {
-    addr.ip()
+/// This became load-bearing on 2026-08-28 when gkapi moved from vega (where it
+/// bound :80/:443 directly) to nova behind caddy. Every request then arrived
+/// from 127.0.0.1, so ALL users collapsed into one rate-limit bucket and the
+/// 5th invite in the window was refused for everyone. Do not re-add blanket
+/// `X-Forwarded-For` trust, and do not remove the loopback guard.
+fn get_client_ip(addr: SocketAddr, headers: &HeaderMap) -> IpAddr {
+    // Only a loopback peer is our own reverse proxy. A direct internet client
+    // can never present one, so header trust cannot be reached from outside.
+    if !addr.ip().is_loopback() {
+        return addr.ip();
+    }
+    // Caddy APPENDS the real peer to any client-supplied X-Forwarded-For, so the
+    // RIGHTMOST entry is the one caddy added and the only one not attacker-set.
+    // Taking the leftmost here would restore exactly the spoofing hole the
+    // doc comment above warns about.
+    headers
+        .get("x-forwarded-for")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.rsplit(',').next())
+        .map(str::trim)
+        .and_then(|v| v.parse::<IpAddr>().ok())
+        .unwrap_or_else(|| addr.ip())
 }
 
 fn invite_error(
@@ -457,8 +473,9 @@ fn check_invite_network(
 async fn get_invite_challenge(
     State(state): State<InviteState>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
 ) -> Result<Json<PowChallengeResponse>, (StatusCode, Json<InviteErrorResponse>)> {
-    let client_ip = get_client_ip(addr);
+    let client_ip = get_client_ip(addr, &headers);
     check_invite_network(&state, client_ip)?;
 
     if !state.global_bucket.has_capacity() {
@@ -503,9 +520,10 @@ async fn get_invite_challenge(
 async fn create_room_invite(
     State(state): State<InviteState>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
     Json(request): Json<CreateInviteRequest>,
 ) -> Result<Json<CreateInviteResponse>, (StatusCode, Json<InviteErrorResponse>)> {
-    let client_ip = get_client_ip(addr);
+    let client_ip = get_client_ip(addr, &headers);
     check_invite_network(&state, client_ip)?;
     info!("Received create-invite request from IP: {}", client_ip);
 
@@ -636,6 +654,45 @@ pub fn get_invite_routes(state: InviteState) -> Router {
 
 #[cfg(test)]
 mod invite_handler_tests {
+    /// #4 client-IP keying behind the caddy reverse proxy (2026-08-28 regression).
+    ///
+    /// When gkapi moved from vega (direct :443) to nova (behind caddy), every
+    /// request arrived from 127.0.0.1, so ALL users collapsed into ONE rate-limit
+    /// bucket and the 5th invite in the window was refused for everyone. These
+    /// cases pin both halves of the fix: the real client is recovered behind the
+    /// proxy, AND a client-supplied header is still not trusted.
+    #[test]
+    fn client_ip_trusts_forwarded_for_only_from_loopback() {
+        use std::net::{Ipv4Addr, SocketAddr};
+
+        let loopback = SocketAddr::from((Ipv4Addr::LOCALHOST, 40000));
+        let external = SocketAddr::from((Ipv4Addr::new(203, 0, 113, 7), 40000));
+
+        let mut hdr = HeaderMap::new();
+        hdr.insert("x-forwarded-for", "9.9.9.9, 198.51.100.4".parse().unwrap());
+
+        // Behind the proxy: caddy APPENDS the true peer, so the RIGHTMOST entry
+        // wins. Taking the leftmost would trust the attacker-supplied 9.9.9.9.
+        assert_eq!(
+            get_client_ip(loopback, &hdr),
+            "198.51.100.4".parse::<IpAddr>().unwrap(),
+            "rightmost XFF entry must win behind the proxy"
+        );
+
+        // Direct internet peer: header is fully client-controlled, ignore it.
+        assert_eq!(
+            get_client_ip(external, &hdr),
+            external.ip(),
+            "XFF must never be trusted from a non-loopback peer"
+        );
+
+        // Loopback with no/!unparseable header falls back to the peer.
+        assert_eq!(get_client_ip(loopback, &HeaderMap::new()), loopback.ip());
+        let mut junk = HeaderMap::new();
+        junk.insert("x-forwarded-for", "not-an-ip".parse().unwrap());
+        assert_eq!(get_client_ip(loopback, &junk), loopback.ip());
+    }
+
     use super::*;
     use crate::invite_pow::{valid_proof, PowManager};
     use tempfile::TempDir;
@@ -673,7 +730,7 @@ mod invite_handler_tests {
     }
 
     async fn challenge(state: &InviteState, ip: &str) -> Result<PowChallenge, StatusCode> {
-        get_invite_challenge(State(state.clone()), ConnectInfo(addr(ip)))
+        get_invite_challenge(State(state.clone()), ConnectInfo(addr(ip)), HeaderMap::new())
             .await
             .map(|response| response.0.challenge)
             .map_err(|(status, _)| status)
@@ -684,7 +741,7 @@ mod invite_handler_tests {
         ip: &str,
         request: CreateInviteRequest,
     ) -> StatusCode {
-        match create_room_invite(State(state.clone()), ConnectInfo(addr(ip)), Json(request)).await {
+        match create_room_invite(State(state.clone()), ConnectInfo(addr(ip)), HeaderMap::new(), Json(request)).await {
             Ok(_) => StatusCode::OK,
             Err((code, _)) => code,
         }
