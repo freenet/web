@@ -28,3 +28,27 @@ public_key = "keys/public.gw2.pem"
 
 [gateways.address]
 hostname = "gw2.freenet.org:31338"
+
+# Secondary gateway on independent infrastructure (AWS, different provider,
+# different /24, different uplink) while it is being retired.
+#
+# Addressed by bare IP deliberately. The name it used to carry was under a
+# personal domain, and this box is being shut down, so a new DNS record for it
+# would be churn for nothing. `hostname` with an IP literal resolves without
+# touching a DNS resolver at all (std's ToSocketAddrs parses it directly).
+#
+# `hostname` rather than `host_address`: host_address deserializes to
+# Option<SocketAddr>, so a malformed value is a serde error for the WHOLE
+# document and EVERY gateway is lost. With hostname it degrades to this one
+# gateway failing at dial time. Fail-soft matters more than exact typing in a
+# file that every peer fetches.
+#
+# REMOVE THIS ENTRY when the box is actually shut down. Until then it is the
+# only listed gateway outside the host that runs gw1 and gw2, so dropping it
+# early would leave every refetching peer with a bootstrap set confined to a
+# single machine, IP, uplink and datacenter.
+[[gateways]]
+public_key = "keys/public.vega.gw.pem"
+
+[gateways.address]
+hostname = "100.27.151.80:31337"
