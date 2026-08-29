@@ -5,9 +5,17 @@ public_key = "keys/public.nova.gw.pem"
 [gateways.address]
 hostname = "nova.locut.us:31337"
 
-# Vega gateway (AWS) - Secondary gateway
+# Vega gateway - Secondary gateway.
+#
+# Moved off AWS to nova on 2026-08-29 to cut ~$198/mo. It now runs as a second
+# process on the same host as the nova gateway, so it needs a distinct PORT:
+# both hostnames resolve to 5.9.111.215 and only one process can own 31337.
+#
+# The public key is UNCHANGED. The transport keypair was carried across, and the
+# private key was verified to derive exactly this published key, so no peer sees
+# a new gateway identity.
 [[gateways]]
 public_key = "keys/public.vega.gw.pem"
 
 [gateways.address]
-hostname = "vega.locut.us:31337"
+hostname = "vega.locut.us:31338"
