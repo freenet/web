@@ -411,7 +411,14 @@ struct CreateInviteRequest {
 fn get_client_ip(addr: SocketAddr, headers: &HeaderMap) -> IpAddr {
     // Only a loopback peer is our own reverse proxy. A direct internet client
     // can never present one, so header trust cannot be reached from outside.
-    if !addr.ip().is_loopback() {
+    // `to_canonical()` first: a dual-stack listener presents a loopback peer as
+    // the IPv4-mapped `::ffff:127.0.0.1`, for which `is_loopback()` is FALSE.
+    // Without the unmapping this fails CLOSED into the very bug it fixes — the
+    // header is ignored, every request keys on the proxy address, and all users
+    // collapse into one rate-limit bucket. Today's socket is IPv4-only and caddy
+    // targets 127.0.0.1 explicitly, so it does not bite; this keeps it from
+    // biting if either ever changes.
+    if !addr.ip().to_canonical().is_loopback() {
         return addr.ip();
     }
     // Caddy APPENDS the real peer to any client-supplied X-Forwarded-For, so the
@@ -684,6 +691,21 @@ mod invite_handler_tests {
             get_client_ip(external, &hdr),
             external.ip(),
             "XFF must never be trusted from a non-loopback peer"
+        );
+
+        // A dual-stack listener presents loopback as IPv4-mapped IPv6. If this
+        // is not unmapped, the header is ignored and every user collapses into
+        // one bucket — the original bug, reintroduced through a different
+        // address representation.
+        let mapped: SocketAddr = "[::ffff:127.0.0.1]:40000".parse().unwrap();
+        assert!(
+            !mapped.ip().is_loopback(),
+            "precondition: raw is_loopback is false here"
+        );
+        assert_eq!(
+            get_client_ip(mapped, &hdr),
+            "198.51.100.4".parse::<IpAddr>().unwrap(),
+            "IPv4-mapped loopback must be treated as loopback"
         );
 
         // Loopback with no/!unparseable header falls back to the peer.
