@@ -11,3 +11,28 @@ public_key = "keys/public.vega.gw.pem"
 
 [gateways.address]
 hostname = "vega.locut.us:31337"
+
+# gw2 (Hetzner, second process on the same host as the nova gateway).
+#
+# Replaces the vega gateway, which moved off AWS on 2026-08-29 to cut about
+# $198/mo. This is a NEW identity on a NEW name rather than vega's keypair on a
+# repointed vega.locut.us, deliberately:
+#
+#   - Preserving vega's key would preserve nothing. The address changes either
+#     way, so every peer reconnects, and ring Location is address-derived.
+#   - It would actively break the changeover: a peer holding a stale copy of
+#     this file would dial vega.locut.us:31337, now resolving to nova, reach the
+#     nova gateway, and fail the handshake on a key mismatch.
+#   - vega.locut.us would have been a lie — a name for a terminated AWS box.
+#
+# The vega entry ABOVE is deliberately LEFT IN PLACE for now. It keeps serving
+# from AWS until peers have refetched this file, so the overlap has no failure
+# window. Remove it, and shut down vega, only after that has had time to happen.
+#
+# The name is role-based, not machine-based, so moving this gateway to another
+# host in future is a DNS change and nothing else.
+[[gateways]]
+public_key = "keys/public.gw2.pem"
+
+[gateways.address]
+hostname = "gw2.freenet.org:31338"
