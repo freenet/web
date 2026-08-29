@@ -693,6 +693,16 @@ mod invite_handler_tests {
             "XFF must never be trusted from a non-loopback peer"
         );
 
+        // A PRIVATE address is not loopback either. Without this case, widening
+        // the guard to `is_loopback() || is_private()` passes — and nova has
+        // other hosts on its networks.
+        let private = SocketAddr::from((Ipv4Addr::new(10, 0, 0, 1), 40000));
+        assert_eq!(
+            get_client_ip(private, &hdr),
+            private.ip(),
+            "only LOOPBACK is the trusted proxy; private ranges are not"
+        );
+
         // A dual-stack listener presents loopback as IPv4-mapped IPv6. If this
         // is not unmapped, the header is ignored and every user collapses into
         // one bucket — the original bug, reintroduced through a different
@@ -706,6 +716,17 @@ mod invite_handler_tests {
             get_client_ip(mapped, &hdr),
             "198.51.100.4".parse::<IpAddr>().unwrap(),
             "IPv4-mapped loopback must be treated as loopback"
+        );
+
+        // If caddy's appended value is unparseable we must NOT fall back to an
+        // earlier, attacker-supplied entry. Taking the rightmost PARSEABLE entry
+        // instead of the rightmost entry would hand back 9.9.9.9 here.
+        let mut trailing_junk = HeaderMap::new();
+        trailing_junk.insert("x-forwarded-for", "9.9.9.9, not-an-ip".parse().unwrap());
+        assert_eq!(
+            get_client_ip(loopback, &trailing_junk),
+            loopback.ip(),
+            "unparseable rightmost entry must fall back to the peer, never to an earlier entry"
         );
 
         // Loopback with no/!unparseable header falls back to the peer.
@@ -783,6 +804,87 @@ mod invite_handler_tests {
     async fn request(state: &InviteState, ip: &str) -> StatusCode {
         let proof = solve(challenge(state, ip).await.unwrap());
         request_with(state, ip, proof).await
+    }
+
+    /// Same as `challenge`/`request_with`, but arriving the way production
+    /// traffic actually does: from the loopback proxy, with the real client in
+    /// `X-Forwarded-For`. The plain helpers above always pass an EMPTY header
+    /// map, so they cannot detect a handler that stops forwarding headers —
+    /// which is exactly the bug this file's `get_client_ip` exists to fix.
+    fn proxied(forwarded: &str) -> HeaderMap {
+        let mut h = HeaderMap::new();
+        h.insert("x-forwarded-for", forwarded.parse().unwrap());
+        h
+    }
+
+    async fn request_proxied(state: &InviteState, forwarded: &str) -> StatusCode {
+        // The challenge endpoint is rate-limited on the SAME key, so a limited
+        // client is refused here rather than at create time. Propagate that
+        // status instead of unwrapping — being refused a challenge IS the limit
+        // working, and unwrapping would turn the expected outcome into a panic.
+        let challenge = match get_invite_challenge(
+            State(state.clone()),
+            ConnectInfo(addr("127.0.0.1")),
+            proxied(forwarded),
+        )
+        .await
+        {
+            Ok(r) => r.0.challenge,
+            Err((status, _)) => return status,
+        };
+        let proof = solve(challenge);
+        match create_room_invite(
+            State(state.clone()),
+            ConnectInfo(addr("127.0.0.1")),
+            proxied(forwarded),
+            Json(proof),
+        )
+        .await
+        {
+            Ok(_) => StatusCode::OK,
+            Err((code, _)) => code,
+        }
+    }
+
+    /// Pins the HANDLER WIRING, not just the helper.
+    ///
+    /// The unit test on `get_client_ip` proves the helper is correct, and the
+    /// helper was never the fragile part: the production bug was that every
+    /// request keyed on the proxy address, collapsing ALL users into one
+    /// bucket. Mutating both call sites to pass `&HeaderMap::new()` reproduces
+    /// that bug exactly, and every other test in this module still passes — so
+    /// without this test the suite is green on the shipped defect.
+    ///
+    /// Two distinct forwarded clients must therefore get INDEPENDENT budgets.
+    #[tokio::test]
+    async fn forwarded_clients_get_independent_budgets_through_the_proxy() {
+        let dir = tempfile::tempdir().unwrap();
+        // Non-empty exit list: an empty one fails closed with 503, as
+        // `missing_tor_list_fails_closed` pins. Neither forwarded client is on it.
+        let state = state_with(&dir, &["185.220.101.1"], 100);
+
+        // One client exhausts its own allowance.
+        for i in 0..MAX_INVITES_PER_WINDOW {
+            assert_eq!(
+                request_proxied(&state, "198.51.100.4").await,
+                StatusCode::OK,
+                "invite {i} for the first forwarded client should be allowed"
+            );
+        }
+        assert_eq!(
+            request_proxied(&state, "198.51.100.4").await,
+            StatusCode::TOO_MANY_REQUESTS,
+            "first forwarded client must be limited after its allowance"
+        );
+
+        // A DIFFERENT forwarded client must be unaffected. If the handlers stop
+        // passing headers through, both collapse onto the proxy address and
+        // this is TOO_MANY_REQUESTS instead.
+        assert_eq!(
+            request_proxied(&state, "203.0.113.9").await,
+            StatusCode::OK,
+            "a different forwarded client must have its own budget;              failure here means the handlers are keying on the proxy address"
+        );
     }
 
     #[tokio::test]
