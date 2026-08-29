@@ -703,6 +703,18 @@ mod invite_handler_tests {
             "only LOOPBACK is the trusted proxy; private ranges are not"
         );
 
+        // A dual-stack listener presents an EXTERNAL v4 client as IPv4-mapped
+        // too, not only loopback. Widening the guard to "any IPv4-mapped
+        // address" passes every other case in this test and is then blanket
+        // X-Forwarded-For trust, because under that listener EVERY v4 client
+        // arrives mapped.
+        let mapped_external: SocketAddr = "[::ffff:203.0.113.7]:40000".parse().unwrap();
+        assert_eq!(
+            get_client_ip(mapped_external, &hdr),
+            mapped_external.ip(),
+            "an IPv4-MAPPED external peer is still external; XFF must be ignored"
+        );
+
         // A dual-stack listener presents loopback as IPv4-mapped IPv6. If this
         // is not unmapped, the header is ignored and every user collapses into
         // one bucket — the original bug, reintroduced through a different
@@ -884,6 +896,66 @@ mod invite_handler_tests {
             request_proxied(&state, "203.0.113.9").await,
             StatusCode::OK,
             "a different forwarded client must have its own budget;              failure here means the handlers are keying on the proxy address"
+        );
+    }
+
+    /// The challenge endpoint applies the Tor check to the client IP, so behind
+    /// the proxy it must apply it to the FORWARDED client. Pinned separately
+    /// from the per-IP limit below: they are distinct consumers of `client_ip`
+    /// at `get_invite_challenge`, and a single test covering both can be
+    /// "repaired" by deleting the half that broke.
+    #[tokio::test]
+    async fn tor_exit_behind_the_proxy_is_blocked_before_work_is_issued() {
+        let dir = tempfile::tempdir().unwrap();
+        let state = state_with(&dir, &["185.220.101.1"], 100);
+        let status = get_invite_challenge(
+            State(state.clone()),
+            ConnectInfo(addr("127.0.0.1")),
+            proxied("185.220.101.1"),
+        )
+        .await
+        .map(|_| StatusCode::OK)
+        .unwrap_or_else(|(status, _)| status);
+        assert_eq!(
+            status,
+            StatusCode::FORBIDDEN,
+            "a Tor exit arriving via X-Forwarded-For must be refused at the challenge, \
+             exactly as tor_is_blocked_before_work_is_issued requires for a direct peer"
+        );
+        assert_eq!(
+            state.global_bucket.current(),
+            0,
+            "no work should have been issued"
+        );
+    }
+
+    /// The challenge endpoint's per-IP pre-check must key on the FORWARDED
+    /// client. `forwarded_clients_get_independent_budgets_through_the_proxy`
+    /// cannot see this: create's own 429 is the same observable status, so it
+    /// stays green when the challenge wrongly returns 200.
+    #[tokio::test]
+    async fn challenge_applies_the_per_ip_limit_to_the_forwarded_client() {
+        let dir = tempfile::tempdir().unwrap();
+        let state = state_with(&dir, &["185.220.101.1"], 100);
+        for _ in 0..MAX_INVITES_PER_WINDOW {
+            assert_eq!(
+                request_proxied(&state, "198.51.100.4").await,
+                StatusCode::OK
+            );
+        }
+        let status = get_invite_challenge(
+            State(state.clone()),
+            ConnectInfo(addr("127.0.0.1")),
+            proxied("198.51.100.4"),
+        )
+        .await
+        .map(|_| StatusCode::OK)
+        .unwrap_or_else(|(status, _)| status);
+        assert_eq!(
+            status,
+            StatusCode::TOO_MANY_REQUESTS,
+            "an exhausted forwarded client must be refused AT THE CHALLENGE, \
+             not merely at create"
         );
     }
 
