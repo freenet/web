@@ -425,13 +425,38 @@ fn get_client_ip(addr: SocketAddr, headers: &HeaderMap) -> IpAddr {
     // RIGHTMOST entry is the one caddy added and the only one not attacker-set.
     // Taking the leftmost here would restore exactly the spoofing hole the
     // doc comment above warns about.
-    headers
-        .get("x-forwarded-for")
+    // `get_all(..).last()`, not `get(..)`: `get` returns the FIRST header line,
+    // so with two separate X-Forwarded-For lines it would return the
+    // client-supplied one. Caddy folds duplicates into a single header and
+    // `Set`s it, so that is not reachable today — but reading the last line
+    // removes the silent dependency on that behaviour surviving a caddy upgrade.
+    let forwarded = headers
+        .get_all("x-forwarded-for")
+        .iter()
+        .last()
         .and_then(|v| v.to_str().ok())
         .and_then(|v| v.rsplit(',').next())
         .map(str::trim)
-        .and_then(|v| v.parse::<IpAddr>().ok())
-        .unwrap_or_else(|| addr.ip())
+        .and_then(|v| v.parse::<IpAddr>().ok());
+
+    match forwarded {
+        Some(ip) => ip,
+        None => {
+            // Fail closed, but NOT silently. Every request keying on the proxy
+            // address is precisely the outage this function exists to prevent
+            // (all clients collapse into one rate-limit bucket), and it
+            // previously produced no log line at all. A loopback peer with no
+            // usable X-Forwarded-For should be impossible in production, so if
+            // this fires the deployment is misconfigured.
+            warn!(
+                "loopback peer {} sent no usable X-Forwarded-For; keying on the \
+                 proxy address. If this repeats, the reverse proxy is not \
+                 forwarding the client and per-IP rate limiting is degraded.",
+                addr.ip()
+            );
+            addr.ip()
+        }
+    }
 }
 
 fn invite_error(
@@ -701,6 +726,19 @@ mod invite_handler_tests {
             get_client_ip(private, &hdr),
             private.ip(),
             "only LOOPBACK is the trusted proxy; private ranges are not"
+        );
+
+        // TWO separate X-Forwarded-For header lines. `get()` returns the FIRST,
+        // which is the client-supplied one; only the last line is caddy's.
+        // Caddy folds duplicates today, so this is defence against that
+        // behaviour changing rather than a live hole.
+        let mut two_lines = HeaderMap::new();
+        two_lines.append("x-forwarded-for", "9.9.9.9".parse().unwrap());
+        two_lines.append("x-forwarded-for", "198.51.100.4".parse().unwrap());
+        assert_eq!(
+            get_client_ip(loopback, &two_lines),
+            "198.51.100.4".parse::<IpAddr>().unwrap(),
+            "with duplicate XFF lines the LAST is the proxy's; the first is attacker-supplied"
         );
 
         // A dual-stack listener presents an EXTERNAL v4 client as IPv4-mapped
