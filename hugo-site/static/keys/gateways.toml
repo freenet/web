@@ -1,36 +1,28 @@
-# Nova gateway (Hetzner) - Primary gateway
+# Freenet bootstrap gateways.
+#
+# Names are ROLE-based (gwN.freenet.org), deliberately not machine-based. A
+# gateway can then move host with a DNS change and nothing else — the churn that
+# migrating off AWS in August 2026 had to pay for.
+#
+# Peers re-fetch this file at every startup, so changes here take effect as peers
+# restart. The previous personal-domain names were removed on 2026-08-29; keep
+# their DNS records alive for a while yet, because a peer holding an older copy
+# of this file still resolves them.
+
+# gw1 — primary gateway.
 [[gateways]]
 public_key = "keys/public.nova.gw.pem"
 
 [gateways.address]
-hostname = "nova.locut.us:31337"
+hostname = "gw1.freenet.org:31337"
 
-# Vega gateway (AWS) - Secondary gateway
-[[gateways]]
-public_key = "keys/public.vega.gw.pem"
-
-[gateways.address]
-hostname = "vega.locut.us:31337"
-
-# gw2 (Hetzner, second process on the same host as the nova gateway).
-#
-# Replaces the vega gateway, which moved off AWS on 2026-08-29 to cut about
-# $198/mo. This is a NEW identity on a NEW name rather than vega's keypair on a
-# repointed vega.locut.us, deliberately:
-#
-#   - Preserving vega's key would preserve nothing. The address changes either
-#     way, so every peer reconnects, and ring Location is address-derived.
-#   - It would actively break the changeover: a peer holding a stale copy of
-#     this file would dial vega.locut.us:31337, now resolving to nova, reach the
-#     nova gateway, and fail the handshake on a key mismatch.
-#   - vega.locut.us would have been a lie — a name for a terminated AWS box.
-#
-# The vega entry ABOVE is deliberately LEFT IN PLACE for now. It keeps serving
-# from AWS until peers have refetched this file, so the overlap has no failure
-# window. Remove it, and shut down vega, only after that has had time to happen.
-#
-# The name is role-based, not machine-based, so moving this gateway to another
-# host in future is a DNS change and nothing else.
+# gw2 — secondary gateway. Replaces the AWS gateway retired on 2026-08-29 to cut
+# about $198/mo. It is a second process on the same host as gw1, hence the
+# distinct port: both names resolve to one address and only one process can bind
+# 31337. It has its own identity, not the retired gateway's keypair — reusing
+# that key would have preserved nothing (the address changes either way, so peers
+# reconnect regardless, and ring Location is address-derived) while making a peer
+# with a stale copy of this file fail a handshake against gw1.
 [[gateways]]
 public_key = "keys/public.gw2.pem"
 
