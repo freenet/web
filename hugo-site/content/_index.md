@@ -22,9 +22,10 @@ in the middle.
   <a href="/try/" class="cta-secondary-btn">Open River in your&nbsp;browser&nbsp;→</a>
 </div>
 
-<p class="cta-note">The browser version is a centralized demo running on our server. Installing your
-own peer takes a couple of minutes on Windows, macOS or Linux, and gives you the real thing, with no
-server in the middle.</p>
+<p class="cta-note">The browser version is the real River on the real Freenet network. You're just
+borrowing a peer we run instead of one on your own machine, so your keys live with us. Installing
+your own peer takes a couple of minutes on Windows, macOS or Linux, and keeps everything on your
+side.</p>
 
 </div>
 

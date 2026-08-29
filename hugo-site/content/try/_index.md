@@ -8,16 +8,19 @@ Try Freenet right now, no install. This opens **River**, a group chat app that r
 peer-to-peer Freenet contract, and drops you into the live **Freenet Official** room where the
 project's developers and users talk. No account, no download.
 
-{{< alert type="warning" >}} **This is a hosted demo.** It runs on our server, so your data lives
-with us. It's encrypted with your access key, so while you're not using it even we can't read it.
-[Install your own peer](/quickstart/) anytime and export your data to it in one click. {{< /alert >}}
+{{< alert type="warning" >}} **You're using our peer, not your own.** Everything else here is the
+real thing: the real River app, the real Freenet network, the same room people running their own
+peers are in. The one difference is that the peer talking to the network is one we host, so your
+keys live with us. They're encrypted with your access key, so while you're not using it even we
+can't read them. [Install your own peer](/quickstart/) anytime and export your data to it in one
+click. {{< /alert >}}
 
 {{< river-invite-button room="Freenet Official" base="https://try.freenet.org/v1/contract/web/raAqMhMG7KUpXBU2SxgCQ3Vh4PYjttxdSWd9ftV7RLv/" hosted="true" >}}
 
-## Ready for the real thing?
+## Ready to run your own peer?
 
-The hosted demo is centralized, which is the opposite of what Freenet is for. Running your own peer
-takes a couple of minutes and gives you the real deal: apps that can't be taken down, don't track
-you, and run without any server.
+What you do here really happens on Freenet, so the only piece you're borrowing is the peer itself.
+Running your own takes a couple of minutes and closes that gap: your keys stay on your machine, and
+your computer joins the network instead of leaning on ours.
 
 [Install Freenet →](/quickstart/)
