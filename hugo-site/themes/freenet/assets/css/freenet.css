@@ -246,8 +246,9 @@
     text-decoration: none;
 }
 
-/* Caveat under the CTA row: the browser option is a hosted demo. Quiet, but
-   present, so the homepage never implies the demo is decentralized. */
+/* Caveat under the CTA row: the browser option runs on a peer we host, so the
+   visitor's keys live with us. Quiet, but present, so the homepage never
+   implies the browser option is as self-sufficient as your own peer. */
 .cta-note {
     margin: -2.25rem 0 3.25rem 0;
     max-width: 34rem;
