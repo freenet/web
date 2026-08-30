@@ -421,10 +421,21 @@ fn get_client_ip(addr: SocketAddr, headers: &HeaderMap) -> IpAddr {
     if !addr.ip().to_canonical().is_loopback() {
         return addr.ip();
     }
-    // Caddy APPENDS the real peer to any client-supplied X-Forwarded-For, so the
-    // RIGHTMOST entry is the one caddy added and the only one not attacker-set.
-    // Taking the leftmost here would restore exactly the spoofing hole the
-    // doc comment above warns about.
+    // Caddy (2.11.4, bare `reverse_proxy`, no `trusted_proxies`) DISCARDS any
+    // client-supplied X-Forwarded-For and sets a single entry: the true client
+    // IP. Measured against the deployed config 2026-08-30, not assumed — an
+    // earlier version of this comment said caddy APPENDS, which is what it did
+    // before 2.7 and is no longer true with an empty `trusted_proxies`.
+    //
+    // We take the rightmost entry anyway, so this stays correct if caddy is
+    // ever given `trusted_proxies` and starts appending again. Taking the
+    // leftmost would restore the spoofing hole the doc comment above warns of.
+    //
+    // TRAP: if a CDN is ever placed in front of caddy AND added to
+    // `trusted_proxies`, the rightmost entry becomes the CDN EDGE, not the
+    // client — which collapses every user behind that edge into one rate-limit
+    // bucket. That is precisely the 2026-08-28 outage this function exists to
+    // prevent. Revisit this function before adding `trusted_proxies`.
     // `get_all(..).last()`, not `get(..)`: `get` returns the FIRST header line,
     // so with two separate X-Forwarded-For lines it would return the
     // client-supplied one. Caddy folds duplicates into a single header and
