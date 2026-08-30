@@ -1,13 +1,59 @@
-# Nova gateway (Hetzner) - Primary gateway
+# Freenet bootstrap gateways.
+#
+# Names are ROLE-based (gwN.freenet.org), deliberately not machine-based. A
+# gateway can then move host with a DNS change and nothing else — the churn that
+# migrating off AWS in August 2026 had to pay for.
+#
+# Peers re-fetch this file at every startup, so changes here take effect as peers
+# restart. The previous personal-domain names were removed on 2026-08-29; keep
+# their DNS records alive for a while yet, because a peer holding an older copy
+# of this file still resolves them.
+
+# gw1 — primary gateway.
 [[gateways]]
 public_key = "keys/public.nova.gw.pem"
 
 [gateways.address]
-hostname = "nova.locut.us:31337"
+hostname = "gw1.freenet.org:31337"
 
-# Vega gateway (AWS) - Secondary gateway
+# gw2 — secondary gateway. Takes over from the AWS gateway, which is BEING
+# retired (it is still running; see the third entry) to cut about $198/mo. It is a second process on the same host as gw1, hence the
+# distinct port: both names resolve to one address and only one process can bind
+# 31337. It has its own identity, not the AWS gateway's keypair — reusing
+# that key would have preserved nothing (the address changes either way, so peers
+# reconnect regardless, and ring Location is address-derived) while making a peer
+# with a stale copy of this file fail a handshake against gw1.
+[[gateways]]
+public_key = "keys/public.gw2.pem"
+
+[gateways.address]
+hostname = "gw2.freenet.org:31338"
+
+# Secondary gateway on independent infrastructure (AWS, different provider,
+# different /24, different uplink). Still running; retirement is pending.
+#
+# Addressed by bare IP deliberately. The name it used to carry was under a
+# personal domain, and this box is being shut down, so a new DNS record for it
+# would be churn for nothing. `hostname` with an IP literal resolves without
+# touching a DNS resolver at all (std's ToSocketAddrs parses it directly).
+#
+# `hostname` rather than `host_address` because it is the shape already in this
+# file and is covered by a back-compat test pinned against the deployed copy,
+# and because an IP literal resolves without touching a resolver at all.
+#
+# NOT for fail-soft reasons. An earlier revision of this comment claimed a bad
+# `hostname` would degrade to one gateway failing at dial time. That is FALSE:
+# `parse_socket_addr(..).await?` runs INSIDE the per-gateway loop
+# (freenet-core node.rs:587), so a single unresolvable entry aborts
+# NodeConfig::new and the node does not start. Any entry here can take every
+# peer down on restart. Treat all three as equally load-bearing.
+#
+# REMOVE THIS ENTRY when the box is actually shut down. Until then it is the
+# only listed gateway outside the host that runs gw1 and gw2, so dropping it
+# early would leave every refetching peer with a bootstrap set confined to a
+# single machine, IP, uplink and datacenter.
 [[gateways]]
 public_key = "keys/public.vega.gw.pem"
 
 [gateways.address]
-hostname = "vega.locut.us:31337"
+hostname = "100.27.151.80:31337"
