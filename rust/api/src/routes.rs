@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use axum::{
     extract::{ConnectInfo, Path, State},
+    http::HeaderMap,
     http::{header::CONTENT_TYPE, HeaderValue, Method, StatusCode},
     response::{IntoResponse, Json},
     routing::{get, post},
@@ -397,18 +398,76 @@ struct CreateInviteRequest {
 /// Extract the client IP used to key the invite rate limiter.
 ///
 /// We deliberately key on the TCP connection's peer address (`addr.ip()`) and
-/// do NOT trust `X-Forwarded-For` / `X-Real-IP`. gkapi is directly
-/// internet-facing (it binds :80/:443 and terminates its own TLS; there is no
-/// reverse proxy in front), so those headers are fully client-controlled and
-/// trusting them would let a spammer bypass the limit by rotating a spoofed
-/// header. `addr.ip()` returns the bare `IpAddr` (no port), so both IPv4 and
-/// IPv6 peers key correctly.
+/// trust `X-Forwarded-For` ONLY when the TCP peer is loopback, i.e. our own
+/// caddy reverse proxy on the same host. For any other peer we key on
+/// `addr.ip()`, because those headers are fully client-controlled and blanket
+/// trust would let a spammer bypass the limit by rotating a spoofed header.
 ///
-/// If a trusted reverse proxy / Cloudflare is ever placed in front of gkapi,
-/// revisit HERE to trust `X-Forwarded-For` ONLY when the peer is that proxy's
-/// IP. Do not re-add blanket `X-Forwarded-For` trust.
-fn get_client_ip(addr: SocketAddr) -> IpAddr {
-    addr.ip()
+/// This became load-bearing on 2026-08-28 when gkapi moved from vega (where it
+/// bound :80/:443 directly) to nova behind caddy. Every request then arrived
+/// from 127.0.0.1, so ALL users collapsed into one rate-limit bucket and the
+/// 5th invite in the window was refused for everyone. Do not re-add blanket
+/// `X-Forwarded-For` trust, and do not remove the loopback guard.
+fn get_client_ip(addr: SocketAddr, headers: &HeaderMap) -> IpAddr {
+    // Only a loopback peer is our own reverse proxy. A direct internet client
+    // can never present one, so header trust cannot be reached from outside.
+    // `to_canonical()` first: a dual-stack listener presents a loopback peer as
+    // the IPv4-mapped `::ffff:127.0.0.1`, for which `is_loopback()` is FALSE.
+    // Without the unmapping this fails CLOSED into the very bug it fixes — the
+    // header is ignored, every request keys on the proxy address, and all users
+    // collapse into one rate-limit bucket. Today's socket is IPv4-only and caddy
+    // targets 127.0.0.1 explicitly, so it does not bite; this keeps it from
+    // biting if either ever changes.
+    if !addr.ip().to_canonical().is_loopback() {
+        return addr.ip();
+    }
+    // Caddy (2.11.4, bare `reverse_proxy`, no `trusted_proxies`) DISCARDS any
+    // client-supplied X-Forwarded-For and sets a single entry: the true client
+    // IP. Measured against the deployed config 2026-08-30, not assumed — an
+    // earlier version of this comment said caddy APPENDS, which is what it did
+    // before 2.7 and is no longer true with an empty `trusted_proxies`.
+    //
+    // We take the rightmost entry anyway, so this stays correct if caddy is
+    // ever given `trusted_proxies` and starts appending again. Taking the
+    // leftmost would restore the spoofing hole the doc comment above warns of.
+    //
+    // TRAP: if a CDN is ever placed in front of caddy AND added to
+    // `trusted_proxies`, the rightmost entry becomes the CDN EDGE, not the
+    // client — which collapses every user behind that edge into one rate-limit
+    // bucket. That is precisely the 2026-08-28 outage this function exists to
+    // prevent. Revisit this function before adding `trusted_proxies`.
+    // `get_all(..).last()`, not `get(..)`: `get` returns the FIRST header line,
+    // so with two separate X-Forwarded-For lines it would return the
+    // client-supplied one. Caddy folds duplicates into a single header and
+    // `Set`s it, so that is not reachable today — but reading the last line
+    // removes the silent dependency on that behaviour surviving a caddy upgrade.
+    let forwarded = headers
+        .get_all("x-forwarded-for")
+        .iter()
+        .last()
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.rsplit(',').next())
+        .map(str::trim)
+        .and_then(|v| v.parse::<IpAddr>().ok());
+
+    match forwarded {
+        Some(ip) => ip,
+        None => {
+            // Fail closed, but NOT silently. Every request keying on the proxy
+            // address is precisely the outage this function exists to prevent
+            // (all clients collapse into one rate-limit bucket), and it
+            // previously produced no log line at all. A loopback peer with no
+            // usable X-Forwarded-For should be impossible in production, so if
+            // this fires the deployment is misconfigured.
+            warn!(
+                "loopback peer {} sent no usable X-Forwarded-For; keying on the \
+                 proxy address. If this repeats, the reverse proxy is not \
+                 forwarding the client and per-IP rate limiting is degraded.",
+                addr.ip()
+            );
+            addr.ip()
+        }
+    }
 }
 
 fn invite_error(
@@ -457,8 +516,9 @@ fn check_invite_network(
 async fn get_invite_challenge(
     State(state): State<InviteState>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
 ) -> Result<Json<PowChallengeResponse>, (StatusCode, Json<InviteErrorResponse>)> {
-    let client_ip = get_client_ip(addr);
+    let client_ip = get_client_ip(addr, &headers);
     check_invite_network(&state, client_ip)?;
 
     if !state.global_bucket.has_capacity() {
@@ -503,9 +563,10 @@ async fn get_invite_challenge(
 async fn create_room_invite(
     State(state): State<InviteState>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
     Json(request): Json<CreateInviteRequest>,
 ) -> Result<Json<CreateInviteResponse>, (StatusCode, Json<InviteErrorResponse>)> {
-    let client_ip = get_client_ip(addr);
+    let client_ip = get_client_ip(addr, &headers);
     check_invite_network(&state, client_ip)?;
     info!("Received create-invite request from IP: {}", client_ip);
 
@@ -636,6 +697,106 @@ pub fn get_invite_routes(state: InviteState) -> Router {
 
 #[cfg(test)]
 mod invite_handler_tests {
+    /// #4 client-IP keying behind the caddy reverse proxy (2026-08-28 regression).
+    ///
+    /// When gkapi moved from vega (direct :443) to nova (behind caddy), every
+    /// request arrived from 127.0.0.1, so ALL users collapsed into ONE rate-limit
+    /// bucket and the 5th invite in the window was refused for everyone. These
+    /// cases pin both halves of the fix: the real client is recovered behind the
+    /// proxy, AND a client-supplied header is still not trusted.
+    #[test]
+    fn client_ip_trusts_forwarded_for_only_from_loopback() {
+        use std::net::{Ipv4Addr, SocketAddr};
+
+        let loopback = SocketAddr::from((Ipv4Addr::LOCALHOST, 40000));
+        let external = SocketAddr::from((Ipv4Addr::new(203, 0, 113, 7), 40000));
+
+        let mut hdr = HeaderMap::new();
+        hdr.insert("x-forwarded-for", "9.9.9.9, 198.51.100.4".parse().unwrap());
+
+        // Behind the proxy: caddy APPENDS the true peer, so the RIGHTMOST entry
+        // wins. Taking the leftmost would trust the attacker-supplied 9.9.9.9.
+        assert_eq!(
+            get_client_ip(loopback, &hdr),
+            "198.51.100.4".parse::<IpAddr>().unwrap(),
+            "rightmost XFF entry must win behind the proxy"
+        );
+
+        // Direct internet peer: header is fully client-controlled, ignore it.
+        assert_eq!(
+            get_client_ip(external, &hdr),
+            external.ip(),
+            "XFF must never be trusted from a non-loopback peer"
+        );
+
+        // A PRIVATE address is not loopback either. Without this case, widening
+        // the guard to `is_loopback() || is_private()` passes — and nova has
+        // other hosts on its networks.
+        let private = SocketAddr::from((Ipv4Addr::new(10, 0, 0, 1), 40000));
+        assert_eq!(
+            get_client_ip(private, &hdr),
+            private.ip(),
+            "only LOOPBACK is the trusted proxy; private ranges are not"
+        );
+
+        // TWO separate X-Forwarded-For header lines. `get()` returns the FIRST,
+        // which is the client-supplied one; only the last line is caddy's.
+        // Caddy folds duplicates today, so this is defence against that
+        // behaviour changing rather than a live hole.
+        let mut two_lines = HeaderMap::new();
+        two_lines.append("x-forwarded-for", "9.9.9.9".parse().unwrap());
+        two_lines.append("x-forwarded-for", "198.51.100.4".parse().unwrap());
+        assert_eq!(
+            get_client_ip(loopback, &two_lines),
+            "198.51.100.4".parse::<IpAddr>().unwrap(),
+            "with duplicate XFF lines the LAST is the proxy's; the first is attacker-supplied"
+        );
+
+        // A dual-stack listener presents an EXTERNAL v4 client as IPv4-mapped
+        // too, not only loopback. Widening the guard to "any IPv4-mapped
+        // address" passes every other case in this test and is then blanket
+        // X-Forwarded-For trust, because under that listener EVERY v4 client
+        // arrives mapped.
+        let mapped_external: SocketAddr = "[::ffff:203.0.113.7]:40000".parse().unwrap();
+        assert_eq!(
+            get_client_ip(mapped_external, &hdr),
+            mapped_external.ip(),
+            "an IPv4-MAPPED external peer is still external; XFF must be ignored"
+        );
+
+        // A dual-stack listener presents loopback as IPv4-mapped IPv6. If this
+        // is not unmapped, the header is ignored and every user collapses into
+        // one bucket — the original bug, reintroduced through a different
+        // address representation.
+        let mapped: SocketAddr = "[::ffff:127.0.0.1]:40000".parse().unwrap();
+        assert!(
+            !mapped.ip().is_loopback(),
+            "precondition: raw is_loopback is false here"
+        );
+        assert_eq!(
+            get_client_ip(mapped, &hdr),
+            "198.51.100.4".parse::<IpAddr>().unwrap(),
+            "IPv4-mapped loopback must be treated as loopback"
+        );
+
+        // If caddy's appended value is unparseable we must NOT fall back to an
+        // earlier, attacker-supplied entry. Taking the rightmost PARSEABLE entry
+        // instead of the rightmost entry would hand back 9.9.9.9 here.
+        let mut trailing_junk = HeaderMap::new();
+        trailing_junk.insert("x-forwarded-for", "9.9.9.9, not-an-ip".parse().unwrap());
+        assert_eq!(
+            get_client_ip(loopback, &trailing_junk),
+            loopback.ip(),
+            "unparseable rightmost entry must fall back to the peer, never to an earlier entry"
+        );
+
+        // Loopback with no/!unparseable header falls back to the peer.
+        assert_eq!(get_client_ip(loopback, &HeaderMap::new()), loopback.ip());
+        let mut junk = HeaderMap::new();
+        junk.insert("x-forwarded-for", "not-an-ip".parse().unwrap());
+        assert_eq!(get_client_ip(loopback, &junk), loopback.ip());
+    }
+
     use super::*;
     use crate::invite_pow::{valid_proof, PowManager};
     use tempfile::TempDir;
@@ -673,10 +834,14 @@ mod invite_handler_tests {
     }
 
     async fn challenge(state: &InviteState, ip: &str) -> Result<PowChallenge, StatusCode> {
-        get_invite_challenge(State(state.clone()), ConnectInfo(addr(ip)))
-            .await
-            .map(|response| response.0.challenge)
-            .map_err(|(status, _)| status)
+        get_invite_challenge(
+            State(state.clone()),
+            ConnectInfo(addr(ip)),
+            HeaderMap::new(),
+        )
+        .await
+        .map(|response| response.0.challenge)
+        .map_err(|(status, _)| status)
     }
 
     async fn request_with(
@@ -684,7 +849,14 @@ mod invite_handler_tests {
         ip: &str,
         request: CreateInviteRequest,
     ) -> StatusCode {
-        match create_room_invite(State(state.clone()), ConnectInfo(addr(ip)), Json(request)).await {
+        match create_room_invite(
+            State(state.clone()),
+            ConnectInfo(addr(ip)),
+            HeaderMap::new(),
+            Json(request),
+        )
+        .await
+        {
             Ok(_) => StatusCode::OK,
             Err((code, _)) => code,
         }
@@ -693,6 +865,147 @@ mod invite_handler_tests {
     async fn request(state: &InviteState, ip: &str) -> StatusCode {
         let proof = solve(challenge(state, ip).await.unwrap());
         request_with(state, ip, proof).await
+    }
+
+    /// Same as `challenge`/`request_with`, but arriving the way production
+    /// traffic actually does: from the loopback proxy, with the real client in
+    /// `X-Forwarded-For`. The plain helpers above always pass an EMPTY header
+    /// map, so they cannot detect a handler that stops forwarding headers —
+    /// which is exactly the bug this file's `get_client_ip` exists to fix.
+    fn proxied(forwarded: &str) -> HeaderMap {
+        let mut h = HeaderMap::new();
+        h.insert("x-forwarded-for", forwarded.parse().unwrap());
+        h
+    }
+
+    async fn request_proxied(state: &InviteState, forwarded: &str) -> StatusCode {
+        // The challenge endpoint is rate-limited on the SAME key, so a limited
+        // client is refused here rather than at create time. Propagate that
+        // status instead of unwrapping — being refused a challenge IS the limit
+        // working, and unwrapping would turn the expected outcome into a panic.
+        let challenge = match get_invite_challenge(
+            State(state.clone()),
+            ConnectInfo(addr("127.0.0.1")),
+            proxied(forwarded),
+        )
+        .await
+        {
+            Ok(r) => r.0.challenge,
+            Err((status, _)) => return status,
+        };
+        let proof = solve(challenge);
+        match create_room_invite(
+            State(state.clone()),
+            ConnectInfo(addr("127.0.0.1")),
+            proxied(forwarded),
+            Json(proof),
+        )
+        .await
+        {
+            Ok(_) => StatusCode::OK,
+            Err((code, _)) => code,
+        }
+    }
+
+    /// Pins the HANDLER WIRING, not just the helper.
+    ///
+    /// The unit test on `get_client_ip` proves the helper is correct, and the
+    /// helper was never the fragile part: the production bug was that every
+    /// request keyed on the proxy address, collapsing ALL users into one
+    /// bucket. Mutating both call sites to pass `&HeaderMap::new()` reproduces
+    /// that bug exactly, and every other test in this module still passes — so
+    /// without this test the suite is green on the shipped defect.
+    ///
+    /// Two distinct forwarded clients must therefore get INDEPENDENT budgets.
+    #[tokio::test]
+    async fn forwarded_clients_get_independent_budgets_through_the_proxy() {
+        let dir = tempfile::tempdir().unwrap();
+        // Non-empty exit list: an empty one fails closed with 503, as
+        // `missing_tor_list_fails_closed` pins. Neither forwarded client is on it.
+        let state = state_with(&dir, &["185.220.101.1"], 100);
+
+        // One client exhausts its own allowance.
+        for i in 0..MAX_INVITES_PER_WINDOW {
+            assert_eq!(
+                request_proxied(&state, "198.51.100.4").await,
+                StatusCode::OK,
+                "invite {i} for the first forwarded client should be allowed"
+            );
+        }
+        assert_eq!(
+            request_proxied(&state, "198.51.100.4").await,
+            StatusCode::TOO_MANY_REQUESTS,
+            "first forwarded client must be limited after its allowance"
+        );
+
+        // A DIFFERENT forwarded client must be unaffected. If the handlers stop
+        // passing headers through, both collapse onto the proxy address and
+        // this is TOO_MANY_REQUESTS instead.
+        assert_eq!(
+            request_proxied(&state, "203.0.113.9").await,
+            StatusCode::OK,
+            "a different forwarded client must have its own budget;              failure here means the handlers are keying on the proxy address"
+        );
+    }
+
+    /// The challenge endpoint applies the Tor check to the client IP, so behind
+    /// the proxy it must apply it to the FORWARDED client. Pinned separately
+    /// from the per-IP limit below: they are distinct consumers of `client_ip`
+    /// at `get_invite_challenge`, and a single test covering both can be
+    /// "repaired" by deleting the half that broke.
+    #[tokio::test]
+    async fn tor_exit_behind_the_proxy_is_blocked_before_work_is_issued() {
+        let dir = tempfile::tempdir().unwrap();
+        let state = state_with(&dir, &["185.220.101.1"], 100);
+        let status = get_invite_challenge(
+            State(state.clone()),
+            ConnectInfo(addr("127.0.0.1")),
+            proxied("185.220.101.1"),
+        )
+        .await
+        .map(|_| StatusCode::OK)
+        .unwrap_or_else(|(status, _)| status);
+        assert_eq!(
+            status,
+            StatusCode::FORBIDDEN,
+            "a Tor exit arriving via X-Forwarded-For must be refused at the challenge, \
+             exactly as tor_is_blocked_before_work_is_issued requires for a direct peer"
+        );
+        assert_eq!(
+            state.global_bucket.current(),
+            0,
+            "no work should have been issued"
+        );
+    }
+
+    /// The challenge endpoint's per-IP pre-check must key on the FORWARDED
+    /// client. `forwarded_clients_get_independent_budgets_through_the_proxy`
+    /// cannot see this: create's own 429 is the same observable status, so it
+    /// stays green when the challenge wrongly returns 200.
+    #[tokio::test]
+    async fn challenge_applies_the_per_ip_limit_to_the_forwarded_client() {
+        let dir = tempfile::tempdir().unwrap();
+        let state = state_with(&dir, &["185.220.101.1"], 100);
+        for _ in 0..MAX_INVITES_PER_WINDOW {
+            assert_eq!(
+                request_proxied(&state, "198.51.100.4").await,
+                StatusCode::OK
+            );
+        }
+        let status = get_invite_challenge(
+            State(state.clone()),
+            ConnectInfo(addr("127.0.0.1")),
+            proxied("198.51.100.4"),
+        )
+        .await
+        .map(|_| StatusCode::OK)
+        .unwrap_or_else(|(status, _)| status);
+        assert_eq!(
+            status,
+            StatusCode::TOO_MANY_REQUESTS,
+            "an exhausted forwarded client must be refused AT THE CHALLENGE, \
+             not merely at create"
+        );
     }
 
     #[tokio::test]

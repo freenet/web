@@ -1,4 +1,4 @@
-use clap::{Command as ClapCommand, Arg, ArgAction};
+use clap::{Arg, ArgAction, Command as ClapCommand};
 
 pub struct CliArgs {
     pub wait_on_failure: bool,
@@ -8,18 +8,24 @@ pub struct CliArgs {
 
 pub fn parse_arguments() -> CliArgs {
     let matches = ClapCommand::new("Integration Test")
-        .arg(Arg::new("visible")
-            .long("visible")
-            .help("Run browser in visible mode (non-headless)")
-            .action(ArgAction::SetTrue))
-        .arg(Arg::new("wait-on-failure")
-            .long("wait-on-failure")
-            .help("Wait for user input if the test fails")
-            .action(ArgAction::SetTrue))
-        .arg(Arg::new("wait")
-            .long("wait")
-            .help("Wait for user input after the test, regardless of outcome")
-            .action(ArgAction::SetTrue))
+        .arg(
+            Arg::new("visible")
+                .long("visible")
+                .help("Run browser in visible mode (non-headless)")
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("wait-on-failure")
+                .long("wait-on-failure")
+                .help("Wait for user input if the test fails")
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("wait")
+                .long("wait")
+                .help("Wait for user input after the test, regardless of outcome")
+                .action(ArgAction::SetTrue),
+        )
         .get_matches();
 
     CliArgs {
