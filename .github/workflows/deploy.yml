@@ -60,7 +60,7 @@ jobs:
       # Cache WebAssembly files
       - name: Cache WebAssembly files
         id: cache-wasm
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: hugo-site/static/wasm
           key: ${{ runner.os }}-wasm-${{ hashFiles('rust/gkwasm/**', 'rust/gklib/**') }}
