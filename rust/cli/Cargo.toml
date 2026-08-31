@@ -25,7 +25,7 @@ env_logger = "0.11.3"
 rand = "0.8.5"
 serde_cbor = "0.11.2"
 typenum = "1.17.0"
-sha3 = "0.11.0-pre.3"
+sha3 = "0.12.0"
 signature = "2.2.0"
 blind-rsa-signatures = "=0.15.1"
 ghostkey_lib = { version = "0.2", path = "../gklib" }
