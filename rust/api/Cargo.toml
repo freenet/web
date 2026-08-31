@@ -27,7 +27,7 @@ hmac = "0.12"
 clap = { version = "4.3", features = ["derive", "env"] }
 rand = "0.8"
 fantoccini = "0.21.0"
-thiserror = "1.0"
+thiserror = "2.0"
 chrono = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 blind-rsa-signatures = "0.15.1"
