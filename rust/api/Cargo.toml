@@ -21,7 +21,7 @@ hex = "0.4.3"
 log = "0.4"
 env_logger = "0.11.3"
 base64 = "0.22.1"
-rand_core = "0.6.4"
+rand_core = "0.10.1"
 sha2 = "0.10.6"
 hmac = "0.12"
 clap = { version = "4.3", features = ["derive", "env"] }

@@ -1090,7 +1090,7 @@ dependencies = [
  "hmac",
  "log",
  "rand 0.8.5",
- "rand_core 0.6.4",
+ "rand_core 0.10.1",
  "reqwest",
  "rmp-serde",
  "rustls",
@@ -2126,6 +2126,12 @@ checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom 0.2.15",
 ]
+
+[[package]]
+name = "rand_core"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
 
 [[package]]
 name = "rand_hc"
