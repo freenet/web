@@ -301,6 +301,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
+name = "base64"
+version = "0.23.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac07cdecf99051d9a5238b80f35af32cdeba5b336e55d957b318b50137e18da5"
+
+[[package]]
 name = "base64ct"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1073,7 +1079,7 @@ dependencies = [
  "async-stripe",
  "axum",
  "axum-server",
- "base64 0.22.1",
+ "base64 0.23.1",
  "blind-rsa-signatures",
  "bs58",
  "chrono",
@@ -1130,7 +1136,7 @@ checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
 name = "gkwasm"
 version = "0.1.0"
 dependencies = [
- "base64 0.22.1",
+ "base64 0.23.1",
  "blind-rsa-signatures",
  "ciborium",
  "curve25519-dalek",
@@ -1539,7 +1545,7 @@ name = "integration_test"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "base64 0.22.1",
+ "base64 0.23.1",
  "clap",
  "colored",
  "curve25519-dalek",
