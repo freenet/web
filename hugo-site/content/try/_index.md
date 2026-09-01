@@ -20,7 +20,8 @@ click. {{< /alert >}}
 ## Ready to run your own peer?
 
 What you do here really happens on Freenet, so the only piece you're borrowing is the peer itself.
-Running your own takes a couple of minutes and closes that gap: your keys stay on your machine, and
-your computer joins the network instead of leaning on ours.
+Running your own takes a few seconds and closes that gap: your keys stay on your hardware, and your
+computer joins the network instead of leaning on ours. Your private data moves across from our peer
+in a single click.
 
 [Install Freenet →](/quickstart/)
