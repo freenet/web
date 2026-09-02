@@ -54,6 +54,14 @@
     margin-bottom: 0.75rem;
 }
 
+.os-install-tabs .tab-pane p.os-alt {
+    margin-top: 1.25rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.925rem;
+    color: #6b7280;
+}
+
 .os-install-tabs .tab-pane pre {
     margin-bottom: 0.75rem;
 }
@@ -246,6 +254,9 @@
         <p>Run this command in your terminal:</p>
         <pre><code class="language-bash">curl -fsSL https://freenet.org/install.sh | sh</code></pre>
         <p>This downloads and installs Freenet, then starts it as a background service.</p>
+        <p class="os-alt">Running a server, a NAS or a Raspberry Pi? There's an official
+        container image that keeps itself updated:
+        <a href="/quickstart/docker/">run Freenet in Docker</a>.</p>
     </div>
 </div>
 

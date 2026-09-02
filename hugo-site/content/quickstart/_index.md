@@ -51,8 +51,10 @@ for help, or see [Report a Bug or Get Help](/community/support/) for where to fi
 fresh invite code. If you see the room but can't send messages, click the **"i"** icon next to the
 room name, click **"Leave Room"**, then get a new invite.
 
-**Containers & headless servers:** If service installation fails (common in LXC/Docker), use the
-system-wide service instead: `sudo freenet service install --system`
+**Containers & headless servers:** There is an official container image, and it is the easier
+route on a server: see [run Freenet in Docker](/quickstart/docker/). If you are instead running
+the installer inside an existing container or LXC and service installation fails, use the
+system-wide service: `sudo freenet service install --system`
 
 **Network requirements:** Freenet uses UDP hole punching for peer-to-peer connections. Most home
 routers support this without configuration. Strict corporate firewalls may block connections. If
