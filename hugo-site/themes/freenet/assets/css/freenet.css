@@ -1,6 +1,6 @@
 /* Hover effect for navbar item */
 .navbar-item:hover .logo-text {
-    color: #007bff; /* Preferred hover color */
+    color: var(--accent-text);
 }
 
 /* Logo container styling */
@@ -19,11 +19,7 @@
     font-family: 'Leto', sans-serif !important;
     font-size: 1.5rem !important;
     font-weight: 700 !important;
-    background: radial-gradient(circle, #000000 0%, #404040 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    color: transparent;
+    color: var(--text-strong);
 }
 
 /* Override Bulma's navbar-item styles for the logo */
@@ -82,11 +78,14 @@
 
 /* Custom font and color variables */
 :root {
+    color-scheme: light dark;
     --font-display: 'Outfit', system-ui, sans-serif;
     --font-body: 'Source Sans 3', system-ui, sans-serif;
     --font-code: 'Inconsolata', 'Hack', 'SF Mono', 'Roboto Mono', 'Source Code Pro', 'Ubuntu Mono', monospace;
-    --color-primary: #0066CC;
+    --color-primary: #0066CC;        /* button fill; white text sits on this */
     --color-primary-hover: #004C99;
+    --accent-text: #0066CC;          /* accent used AS text, on the page ground */
+    --focus-ring: #0066CC;           /* needs 3:1 against every surface it lands on */
 
     /* Surface and text roles. These carry everything base.css paints; Bulma
        derived the same values from its own scheme variables. Declaring both
@@ -125,9 +124,22 @@
   :root {
     --text-strong: #ebecf0;
     --text: #abb1bf;
+    /* Essentially the same relative luminance as the old #4da6ff (0.3656 vs
+       0.3607, i.e. a shade lighter) with roughly half the chroma. The neon read
+       came from saturation, not brightness, so this is a chroma cut rather than
+       a dimming. Accent-on-ground lands at 7.10:1 here; it was 7.33:1 before,
+       the small drop coming from the ground being lifted, not from this value. */
+    --accent-text: #79a7d6;
+    /* #0066CC measures only 2.96:1 against --surface, failing SC 1.4.11 for a
+       focus indicator. The accent gives 7.10 on the ground and 6.53 on cards. */
+    --focus-ring: #79a7d6;
+    /* Was declared only in the light scheme, so base.css painted a near-white
+       #f1f2f4 under near-white text on a keyboard-focused navbar item: 1.05:1,
+       which made the wordmark vanish on Tab. */
+    --navbar-item-hover: #232a33;
     --border: #353a46;
-    --surface: #14161a;
-    --surface-soft: #1f2229;
+    --surface: #1c1f26;
+    --surface-soft: #232a33;
     --code-color: #e7e9ee;
     --code-background: #1e2430;
   }
@@ -141,10 +153,7 @@
 .home .content h1:first-child {
     font-size: 2.75rem;
     margin-bottom: 1.5rem;
-    background: linear-gradient(135deg, #005cbf 0%, #0066CC 50%, #00a6ff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-strong);
 }
 
 /* News section styling */
@@ -194,7 +203,7 @@
 .cta-button {
     display: inline-block;
     margin: 0;
-    background: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
+    background: var(--color-primary);
     color: #ffffff !important;
     border: none;
     font-family: var(--font-display);
@@ -202,12 +211,12 @@
     padding: 0.875rem 2rem;
     border-radius: 8px;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(0, 127, 255, 0.25);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12);
 }
 
 .cta-button:hover {
-    background: linear-gradient(135deg, #0066cc 0%, #005cbf 100%);
-    box-shadow: 0 6px 20px rgba(0, 127, 255, 0.35);
+    background: var(--color-primary-hover);
+    box-shadow: 0 2px 6px rgba(16, 24, 40, 0.16);
     transform: translateY(-1px);
     color: #ffffff !important;
 }
@@ -259,13 +268,13 @@
 
 @media (prefers-color-scheme: dark) {
     .cta-secondary-btn {
-        color: #4da6ff !important;
-        border-color: rgba(77, 166, 255, 0.65);
+        color: #79a7d6 !important;
+        border-color: rgba(121, 167, 214, 0.65);
     }
 
     .cta-secondary-btn:hover {
-        border-color: #4da6ff;
-        background: rgba(77, 166, 255, 0.1);
+        border-color: #79a7d6;
+        background: rgba(121, 167, 214, 0.1);
     }
 
     .cta-note {
@@ -371,7 +380,7 @@
 
 @media (prefers-color-scheme: dark) {
     .home-browser {
-        background: #1a1a1a;
+        background: var(--surface);
         border-color: rgba(255, 255, 255, 0.1);
         box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
     }
@@ -620,11 +629,11 @@ p.page-end-spacer {
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
     html {
-        background-color: #121212;
+        background-color: #15171b;
     }
 
     body {
-        background-color: #121212;
+        background-color: #15171b;
         color: #e0e0e0;
     }
 
@@ -632,12 +641,10 @@ p.page-end-spacer {
         color: #ffffff;
     }
 
-    /* Dark mode hero gradient text */
+    /* Headline is solid ink in both schemes. A gradient-filled headline is a
+       stock landing-page tell and it costs contrast for nothing. */
     .home .content h1:first-child {
-        background: linear-gradient(135deg, #4da6ff 0%, #0066CC 50%, #00a6ff 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: var(--text-strong);
     }
 
     /* Dark mode news section */
@@ -651,26 +658,26 @@ p.page-end-spacer {
 
     /* Dark mode CTA button */
     .cta-button {
-        background: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
-        box-shadow: 0 4px 14px rgba(0, 127, 255, 0.3);
+        background: var(--color-primary);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     }
 
     .cta-button:hover {
-        background: linear-gradient(135deg, #4da6ff 0%, #0066CC 100%);
-        box-shadow: 0 6px 20px rgba(0, 127, 255, 0.4);
+        background: var(--color-primary-hover);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
     }
 
     a {
-        color: #4da6ff;
+        color: #79a7d6;
     }
 
     a:hover {
-        color: #80bfff;
+        color: #9dc0e2;
     }
 
     .box {
-        background-color: #1e1e1e;
-        color: #e0e0e0;
+        background-color: var(--surface);
+        color: var(--text);
     }
 
     .date {
@@ -687,8 +694,8 @@ p.page-end-spacer {
     .button.is-medium-teal,
     .button.is-medium-purple,
     .button.is-medium-orange {
-        border-color: #4da6ff;
-        color: #4da6ff;
+        border-color: #79a7d6;
+        color: #79a7d6;
     }
 
     .buttons .button:hover,
@@ -700,12 +707,12 @@ p.page-end-spacer {
     .button.is-medium-teal:hover,
     .button.is-medium-purple:hover,
     .button.is-medium-orange:hover {
-        background-color: #4da6ff;
-        color: #121212;
+        background-color: #79a7d6;
+        color: #15171b;
     }
 
     .navbar {
-        background-color: #121212;
+        background-color: #15171b;
     }
 
     .navbar-item,
@@ -719,22 +726,6 @@ p.page-end-spacer {
         color: #ffffff !important;
     }
 
-    .logo-text {
-        background: radial-gradient(circle, #ffffff 0%, #707070 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        color: transparent;
-    }
-
-    .navbar-item:hover .logo-text {
-        background: radial-gradient(circle, #ffffff 0%, #909090 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        color: transparent;
-    }
-
     .navbar-burger span {
         background-color: #e0e0e0;
     }
@@ -742,11 +733,11 @@ p.page-end-spacer {
     /* Open state. Keyed off the checkbox rather than .is-active, which used to
        be applied by a JS handler that has been removed. */
     .navbar-toggle-checkbox:checked ~ .navbar-brand .navbar-burger span {
-        background-color: #4da6ff;
+        background-color: #79a7d6;
     }
 
     .navbar-link:not(.is-arrowless)::after {
-        border-color: #4da6ff;
+        border-color: #79a7d6;
     }
 
     .button.is-dark-blue,
@@ -782,12 +773,12 @@ p.page-end-spacer {
 
     /* Dark mode Donate header button */
     .navbar-item.donate-nav-button {
-        color: #4da6ff !important;
-        border-color: #4da6ff;
+        color: #79a7d6 !important;
+        border-color: #79a7d6;
     }
 
     .navbar-item.donate-nav-button:hover {
-        background-color: #4da6ff !important;
+        background-color: #79a7d6 !important;
         color: #0a0a0a !important;
     }
 }
@@ -937,8 +928,8 @@ p.page-end-spacer {
 
 @media (prefers-color-scheme: dark) {
   .talk-card {
-    background: #1a1a1a;
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--surface);
+    border-color: rgba(255, 255, 255, 0.14);
   }
   .talk-card-caption {
     color: #94a3b8;
@@ -958,21 +949,22 @@ p.page-end-spacer {
 }
 
 .network-hero-link a {
-  font-size: 0.8rem;
-  color: #888;
-  text-decoration: none;
-  opacity: 0.6;
-  transition: opacity 0.2s;
+  font-size: 0.85rem;
+  color: var(--accent-text);
+  transition: color 0.2s, text-decoration-color 0.2s;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
 }
 
 .network-hero-link a:hover {
-  opacity: 1;
-  color: #007bff;
+  color: var(--color-primary-hover);
+  text-decoration-color: currentColor;
 }
 
 @media (prefers-color-scheme: dark) {
   .network-hero-link a:hover {
-    color: #7ecfef;
+    color: #9dc0e2;
   }
 }
 
@@ -1052,7 +1044,7 @@ picture.app-screenshot img {
 .home-section h2 {
   margin-top: 0;
   font-size: 1.25rem;
-  color: var(--color-primary);
+  color: var(--text-strong);
 }
 
 .home-section p {
@@ -1067,12 +1059,8 @@ picture.app-screenshot img {
 
 @media (prefers-color-scheme: dark) {
   .home-section {
-    background: #1a1a1a;
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-
-  .home-section h2 {
-    color: #4da6ff;
+    background: var(--surface);
+    border-color: rgba(255, 255, 255, 0.14);
   }
 
   .home-section p {
@@ -1104,7 +1092,7 @@ picture.app-screenshot img {
   }
 
   .secondary-links a:hover {
-    color: #4da6ff;
+    color: #79a7d6;
   }
 }
 
@@ -1165,8 +1153,8 @@ picture.app-screenshot img {
 
   .footer-institutional a:hover,
   .footer-report a:hover {
-    color: #4da6ff;
-    text-decoration-color: #4da6ff;
+    color: #79a7d6;
+    text-decoration-color: #79a7d6;
   }
 }
 
@@ -1400,7 +1388,7 @@ picture.app-screenshot img {
   }
 
   .funding-enables li::before {
-    background: #4da6ff;
+    background: #79a7d6;
   }
 
   .funding-major-supporters {
@@ -1408,15 +1396,7 @@ picture.app-screenshot img {
   }
 
   .funding-contact a {
-    color: #4da6ff;
-  }
-
-  .funding-donate-button {
-    background: #0066CC;
-  }
-
-  .funding-donate-button:hover {
-    background: #4da6ff;
+    color: #79a7d6;
   }
 
   .funding-ghost-keys {
@@ -1451,11 +1431,11 @@ picture.app-screenshot img {
 
 @media (prefers-color-scheme: dark) {
   .funding-learn-more {
-    color: #4da6ff;
+    color: #79a7d6;
   }
 
   .funding-learn-more:hover {
-    color: #80bfff;
+    color: #9dc0e2;
   }
 }
 
@@ -1524,8 +1504,8 @@ picture.app-screenshot img {
     --gk-bg:          #1e1e1e;
     --gk-fg:          #e7e9ee;
     --gk-muted:       #9aa3b2;
-    --gk-accent:      #4da6ff;
-    --gk-accent-soft: rgba(77, 166, 255, 0.16);
+    --gk-accent:      #79a7d6;
+    --gk-accent-soft: rgba(121, 167, 214, 0.16);
     --gk-border:      #2a2a2a;
     --gk-shadow:      0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.4);
   }
