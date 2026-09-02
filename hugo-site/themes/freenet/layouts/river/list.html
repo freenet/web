@@ -41,11 +41,12 @@
           </span>
         </div>
         <picture>
-          {{/* The dark screenshot is 1290x867, a different aspect ratio from the
-               light one, so it needs its own dimensions or the reserved box is
-               the wrong shape in dark mode. */}}
-          <source srcset="{{ $dark }}" media="(prefers-color-scheme: dark)" width="1290" height="867">
-          <img src="{{ $light }}" alt="A live River chat room, the Freenet Official room, with a member list and messages" width="1379" height="1269" fetchpriority="high">
+          {{/* Both screenshots are captured in one pass at the same viewport, so
+               they share one aspect ratio and one set of dimensions. They used to
+               be 1290x867 dark against 1379x1269 light and needed separate
+               boxes. */}}
+          <source srcset="{{ $dark }}" media="(prefers-color-scheme: dark)" width="1800" height="910">
+          <img src="{{ $light }}" alt="A live River chat room, the Freenet room, with a room list, messages and a member list" width="1800" height="910" fetchpriority="high">
         </picture>
       </div>
     </div>
