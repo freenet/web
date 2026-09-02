@@ -37,14 +37,14 @@ side.</p>
     </span>
     <picture>
       <source type="image/webp" srcset="/images/river-hero-dark.webp"
-              media="(prefers-color-scheme: dark)" width="1290" height="867">
+              media="(prefers-color-scheme: dark)" width="1800" height="910">
       <source type="image/webp" srcset="/images/river-hero-light.webp"
-              width="1379" height="1269">
+              width="1800" height="910">
       <source srcset="/images/river-screenshot-dark.png"
-              media="(prefers-color-scheme: dark)" width="1290" height="867">
+              media="(prefers-color-scheme: dark)" width="1800" height="910">
       <img src="/images/river-screenshot-light.png"
-           alt="A live River chat room, the Freenet Official room, showing messages and a member list"
-           width="1379" height="1269" fetchpriority="high" decoding="async">
+           alt="A live River chat room, the Freenet room, showing a room list, a conversation and a member list"
+           width="1800" height="910" fetchpriority="high" decoding="async">
     </picture>
   </a>
 </div>

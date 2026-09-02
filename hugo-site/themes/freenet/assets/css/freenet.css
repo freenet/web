@@ -363,12 +363,15 @@
 }
 
 /* Natural aspect ratio, no cropping. A fixed height with object-fit: cover was
-   tried and reverted: the light and dark screenshots have different aspect
-   ratios (1379x1269 against 1290x867), so any height tall enough to suit the
-   light one crops the DARK one horizontally, which removed the member list
-   entirely and sliced message text mid-word. The two schemes therefore have
-   slightly different hero heights, which nobody sees, and both show the whole
-   screenshot, which everybody does.
+   tried and reverted back when the two screenshots had different aspect ratios
+   (1379x1269 light against 1290x867 dark): any height tall enough for the light
+   one cropped the DARK one horizontally, removing the member list and slicing
+   message text mid-word.
+
+   Both are now captured in one pass at the same viewport, so they are both
+   1800x910 and the two schemes render at identical heights. The cropping hazard
+   above is therefore gone, but there is still nothing to gain from object-fit:
+   cover, so this stays as it is.
 
    The width/height attributes on each <source> reserve the correct box before
    the image lands, so this costs no layout shift. */
