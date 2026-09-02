@@ -16,13 +16,16 @@
   const SPAWN_INTERVAL = 120;      // ms between particle spawns
   const MAX_PARTICLES = 60;
 
-  // Event type colors (matches dashboard)
+  // Event type colours. These deliberately do NOT match the telemetry
+  // dashboard: the dashboard's ramp is tuned for a dense technical view with a
+  // legend, whereas here the hues are decorative (the homepage shows no key)
+  // and the saturated originals fluoresced against the dark ground.
   const COLORS = {
-    connect:   '#7ecfef',
-    put:       '#fbbf24',
-    get:       '#34d399',
-    update:    '#a78bfa',
-    subscribe: '#f472b6',
+    connect:   '#84a9c9',
+    put:       '#c9a227',
+    get:       '#6fa88c',
+    update:    '#9990bd',
+    subscribe: '#b48a9f',
   };
   const COLOR_LIST = Object.values(COLORS);
   const TYPE_NAMES = Object.keys(COLORS);
@@ -41,14 +44,13 @@
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
 
-  function ringColor()   { return isDark() ? '#1a2a2a' : '#d0d8e0'; }
-  function glowColor()   { return isDark() ? 'rgba(0, 212, 170, 0.08)' : 'rgba(0, 140, 120, 0.06)'; }
-  function peerColor()   { return isDark() ? '#007FFF' : '#3388dd'; }
-  function peerGlow()    { return isDark() ? 'rgba(0, 127, 255, 0.18)' : 'rgba(0, 100, 200, 0.12)'; }
-  function gwColor()     { return '#f59e0b'; }
-  function labelColor()  { return isDark() ? '#484f58' : '#8090a0'; }
-  function innerRing()   { return isDark() ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)'; }
-  function bgColor()     { return isDark() ? '#0d1117' : '#ffffff'; }
+  function ringColor()   { return isDark() ? '#2b303a' : '#d0d8e0'; }
+  function peerColor()   { return isDark() ? '#79a7d6' : '#3f7fbf'; }
+  function gwColor()     { return isDark() ? '#c9922b' : '#b3801f'; }
+  function labelColor()  { return isDark() ? '#5b6472' : '#8090a0'; }
+  function innerRing()   { return isDark() ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'; }
+  // Matches the page ground in each scheme; a mismatch shows as a disc edge.
+  function bgColor()     { return isDark() ? '#15171b' : '#f8fafc'; }
 
   // --- Geometry helpers ---
   function locationToXY(loc) {
@@ -169,15 +171,6 @@
 
   // --- Draw static ring elements ---
   function drawRing(ctx) {
-    var dark = isDark();
-
-    // Outer glow
-    ctx.beginPath();
-    ctx.arc(CENTER, CENTER, RADIUS + 5, 0, Math.PI * 2);
-    ctx.strokeStyle = glowColor();
-    ctx.lineWidth = 20;
-    ctx.stroke();
-
     // Inner reference circles
     [0.6, 0.3].forEach(function (scale) {
       ctx.beginPath();
@@ -214,9 +207,9 @@
     ctx.lineWidth = 0.7;
     ctx.lineCap = 'round';
     var dark = isDark();
-    var alpha = dark ? 0.09 : 0.05;
+    var alpha = dark ? 0.16 : 0.13;
 
-    ctx.strokeStyle = dark ? 'rgba(0, 127, 255, ' + alpha + ')' : 'rgba(0, 80, 180, ' + alpha + ')';
+    ctx.strokeStyle = dark ? 'rgba(121, 167, 214, ' + alpha + ')' : 'rgba(40, 90, 150, ' + alpha + ')';
     ctx.beginPath();
     for (var i = 0; i < connections.length; i++) {
       var c = connections[i];
@@ -243,7 +236,9 @@
       var p = peers[i];
       ctx.beginPath();
       ctx.arc(p.pos.x, p.pos.y, p.isGateway ? gwGlowR : glowR, 0, Math.PI * 2);
-      ctx.fillStyle = p.isGateway ? 'rgba(245, 158, 11, 0.25)' : peerGlow();
+      ctx.fillStyle = p.isGateway
+        ? 'rgba(201, 146, 43, 0.16)'
+        : (isDark() ? 'rgba(121, 167, 214, 0.07)' : 'rgba(63, 127, 191, 0.07)');
       ctx.fill();
     }
     // Solid pass
