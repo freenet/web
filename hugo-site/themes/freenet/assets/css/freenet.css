@@ -940,15 +940,21 @@ p.page-end-spacer {
 .network-hero-link a {
   font-size: 0.85rem;
   color: var(--accent-text);
-  text-decoration: none;
-  transition: text-decoration-color 0.2s;
+  transition: color 0.2s, text-decoration-color 0.2s;
   text-decoration: underline;
   text-decoration-color: transparent;
   text-underline-offset: 2px;
 }
 
 .network-hero-link a:hover {
+  color: var(--color-primary-hover);
   text-decoration-color: currentColor;
+}
+
+@media (prefers-color-scheme: dark) {
+  .network-hero-link a:hover {
+    color: #9dc0e2;
+  }
 }
 
 /* App screenshot styling with click-to-expand */
@@ -1380,14 +1386,6 @@ picture.app-screenshot img {
 
   .funding-contact a {
     color: #79a7d6;
-  }
-
-  .funding-donate-button {
-    background: #0066CC;
-  }
-
-  .funding-donate-button:hover {
-    background: #79a7d6;
   }
 
   .funding-ghost-keys {

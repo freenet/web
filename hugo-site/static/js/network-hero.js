@@ -446,15 +446,28 @@
 
     loopStart = performance.now();
 
-    // Static frame for reduced-motion
+    // Static frame for reduced-motion. There is no animation loop on this
+    // path, so the scheme poll in frame() never runs; redraw on the media
+    // query instead or the ring keeps the old scheme's colours for the life
+    // of the page.
     if (prefersReduced) {
-      var ctx = canvas.getContext('2d');
-      var scale = dims.displayW / SIZE;
-      ctx.setTransform(dims.dpr * scale, 0, 0, dims.dpr * scale, 0, 0);
-      drawRing(ctx);
-      drawConnections(ctx, peers, connections);
-      drawPeers(ctx, peers);
-      drawCenterLabel(ctx);
+      var drawStatic = function () {
+        dims = sizeCanvas();
+        var ctx = canvas.getContext('2d');
+        var scale = dims.displayW / SIZE;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.setTransform(dims.dpr * scale, 0, 0, dims.dpr * scale, 0, 0);
+        drawRing(ctx);
+        drawConnections(ctx, peers, connections);
+        drawPeers(ctx, peers);
+        drawCenterLabel(ctx);
+      };
+      drawStatic();
+      var schemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      if (schemeQuery.addEventListener) schemeQuery.addEventListener('change', drawStatic);
+      else if (schemeQuery.addListener) schemeQuery.addListener(drawStatic);
+      window.addEventListener('resize', drawStatic);
       return;
     }
 
