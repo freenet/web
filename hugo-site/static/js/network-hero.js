@@ -49,8 +49,6 @@
   function gwColor()     { return isDark() ? '#c9922b' : '#b3801f'; }
   function labelColor()  { return isDark() ? '#5b6472' : '#8090a0'; }
   function innerRing()   { return isDark() ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'; }
-  // Matches the page ground in each scheme; a mismatch shows as a disc edge.
-  function bgColor()     { return isDark() ? '#15171b' : '#f8fafc'; }
 
   // --- Geometry helpers ---
   function locationToXY(loc) {
@@ -518,7 +516,6 @@
     }
 
     // Mark static dirty on resize
-    var origResize = window.onresize;
     window.addEventListener('resize', function () { dims = sizeCanvas(); staticDirty = true; });
 
     requestAnimationFrame(frame);
