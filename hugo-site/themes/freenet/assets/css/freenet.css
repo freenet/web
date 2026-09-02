@@ -78,12 +78,14 @@
 
 /* Custom font and color variables */
 :root {
+    color-scheme: light dark;
     --font-display: 'Outfit', system-ui, sans-serif;
     --font-body: 'Source Sans 3', system-ui, sans-serif;
     --font-code: 'Inconsolata', 'Hack', 'SF Mono', 'Roboto Mono', 'Source Code Pro', 'Ubuntu Mono', monospace;
     --color-primary: #0066CC;        /* button fill; white text sits on this */
     --color-primary-hover: #004C99;
     --accent-text: #0066CC;          /* accent used AS text, on the page ground */
+    --focus-ring: #0066CC;           /* needs 3:1 against every surface it lands on */
 
     /* Surface and text roles. These carry everything base.css paints; Bulma
        derived the same values from its own scheme variables. Declaring both
@@ -122,10 +124,19 @@
   :root {
     --text-strong: #ebecf0;
     --text: #abb1bf;
-    /* Same luminance as the old #4da6ff (so contrast is unchanged at ~7:1) with
-       roughly half the chroma. The neon read came from saturation, not
-       brightness, so this is a chroma cut rather than a dimming. */
+    /* Essentially the same relative luminance as the old #4da6ff (0.3656 vs
+       0.3607, i.e. a shade lighter) with roughly half the chroma. The neon read
+       came from saturation, not brightness, so this is a chroma cut rather than
+       a dimming. Accent-on-ground lands at 7.10:1 here; it was 7.33:1 before,
+       the small drop coming from the ground being lifted, not from this value. */
     --accent-text: #79a7d6;
+    /* #0066CC measures only 2.96:1 against --surface, failing SC 1.4.11 for a
+       focus indicator. The accent gives 7.10 on the ground and 6.53 on cards. */
+    --focus-ring: #79a7d6;
+    /* Was declared only in the light scheme, so base.css painted a near-white
+       #f1f2f4 under near-white text on a keyboard-focused navbar item: 1.05:1,
+       which made the wordmark vanish on Tab. */
+    --navbar-item-hover: #232a33;
     --border: #353a46;
     --surface: #1c1f26;
     --surface-soft: #232a33;
@@ -369,7 +380,7 @@
 
 @media (prefers-color-scheme: dark) {
     .home-browser {
-        background: #1a1a1a;
+        background: var(--surface);
         border-color: rgba(255, 255, 255, 0.1);
         box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
     }

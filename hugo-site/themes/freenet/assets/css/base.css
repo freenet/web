@@ -172,7 +172,7 @@ a:focus-visible,
 button:focus-visible,
 label:focus-visible,
 summary:focus-visible {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--focus-ring, var(--color-primary));
     outline-offset: 1px;
 }
 
