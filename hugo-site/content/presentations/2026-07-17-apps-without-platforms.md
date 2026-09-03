@@ -34,7 +34,6 @@ slides:
   - futo/renegade
   # 7. The apps
   - futo/app-status
-  - futo/river-no-backend
   - futo/private-rooms
   - futo/private-rooms-limits
   - futo/delta
@@ -52,4 +51,10 @@ slides:
   #   futo/demand-hosting       (partly-done redesign, needs hedging)
   #   futo/issue-prioritizer    (about running the project, not the thesis)
   #   futo/signal-contrast      (folded into private-rooms-limits; value-prop redundant with slides 3 and 8)
+  # RETIRED (files deleted, not recoverable by re-adding):
+  #   futo/river-no-backend     (its screenshot showed a contributor's direct-message
+  #                              list, a stale "Atlas (search engine)" topic, and a
+  #                              pinned line calling the browser version centralized,
+  #                              which #125 corrected. River is still covered by
+  #                              private-rooms and private-rooms-limits.)
 ---
