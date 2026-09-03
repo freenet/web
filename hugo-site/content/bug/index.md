@@ -8,6 +8,7 @@ draft: false
 aliases:
   - /bugs/
   - /report/
+  - /community/
   - /community/support/
   - /community/get-involved/
 ---
