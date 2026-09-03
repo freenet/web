@@ -133,6 +133,6 @@ just a few hops, scaling efficiently to millions of peers, no servers required.
 [River](/river/) · [Apps](/apps/) · [Video Talks](/about/video-talks/) ·
 [Matrix Chat](https://matrix.to/#/#freenet-locutus:matrix.org) ·
 [GitHub](https://github.com/freenet/freenet-core) · [FAQ](/about/faq/) ·
-[Report a Bug](/community/support/)
+[Report a Bug](/bug/)
 
 </div>

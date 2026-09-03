@@ -44,7 +44,7 @@ Prefer the terminal? River has a full-featured CLI, `riverctl`. See the
 ## Troubleshooting
 
 If you run into problems, join our [Matrix chat](https://matrix.to/#/#freenet-locutus:matrix.org)
-for help, or see [Report a Bug or Get Help](/community/support/) for where to file a report.
+for help, or see [Report a Bug or Get Help](/bug/) for where to file a report.
 
 **Invite didn't work?** If River opened but you're not in the room, try restarting Freenet
 (`freenet service restart`), then come back to this page and click the invite button again for a
@@ -67,4 +67,4 @@ Need to remove Freenet? See the [uninstall guide](/uninstall/).
 - [User Manual](/build/manual/) - Learn how Freenet works
 - [Video Talks](/about/video-talks/) - Watch presentations about Freenet
 - [FAQ](/about/faq/) - Common questions and answers
-- [Report a Bug or Get Help](/community/support/) - Where to send a bug report or feature idea
+- [Report a Bug or Get Help](/bug/) - Where to send a bug report or feature idea
