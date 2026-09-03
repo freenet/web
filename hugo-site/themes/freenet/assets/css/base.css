@@ -1,3 +1,63 @@
+/* ---- Metric-matched fallbacks -------------------------------------------
+   The webfonts load with display=swap, so the fallback paints first and the
+   real face replaces it. The fallback was materially wider than both webfonts,
+   so that swap reflowed headings and paragraphs: a single 0.163 layout shift on
+   /river/ (a block growing 266->291px) and 0.015 on the homepage. Blocking the
+   Google Fonts request took /river/ to exactly 0.000, which is how the cause
+   was confirmed.
+
+   These faces give the fallback each webfont's width so the swap is a
+   like-for-like repaint rather than a reflow.
+
+   Ratios were measured by laying out a 45-word prose corpus and reading
+   offsetWidth at 16px and 40px, NOT with canvas TextMetrics. Canvas over a
+   mixed alphanumeric probe gave 98.13%/89.15%, and those values made the
+   homepage WORSE (0.015 -> 0.093): a fallback 9% too narrow wraps to fewer
+   lines than the real font, so everything below the hero moved DOWN when it
+   swapped in. Layout width drives wrapping, so layout is what to measure.
+
+   Split by weight because Arial has no real 600: the browser synthesises it and
+   the ratio moves about five points between 400 and 600. One size-adjust per
+   family cannot cover both.
+
+     weight 400-500   Outfit 99.83%   Source Sans 3 94.54%
+     weight 600-700   Outfit 95.08%   Source Sans 3 89.24%
+
+   No ascent/descent overrides: every line-height in this stylesheet is
+   unitless, so line boxes are font-size x line-height and do not depend on the
+   font's vertical metrics. Only wrapping matters, and that is width.
+
+   Arial is named because its metrics are stable across platforms and Liberation
+   Sans is metric-compatible with it. If none of the locals resolve, the face is
+   simply unusable and the stack falls through to system-ui, as before. */
+@font-face {
+    font-family: 'Outfit Fallback';
+    src: local('Arial'), local('Liberation Sans'), local('Helvetica');
+    font-weight: 400 500;
+    size-adjust: 99.83%;
+}
+
+@font-face {
+    font-family: 'Outfit Fallback';
+    src: local('Arial'), local('Liberation Sans'), local('Helvetica');
+    font-weight: 600 700;
+    size-adjust: 95.08%;
+}
+
+@font-face {
+    font-family: 'Source Sans 3 Fallback';
+    src: local('Arial'), local('Liberation Sans'), local('Helvetica');
+    font-weight: 400 500;
+    size-adjust: 94.54%;
+}
+
+@font-face {
+    font-family: 'Source Sans 3 Fallback';
+    src: local('Arial'), local('Liberation Sans'), local('Helvetica');
+    font-weight: 600 700;
+    size-adjust: 89.24%;
+}
+
 /* ==========================================================================
    base.css
 
