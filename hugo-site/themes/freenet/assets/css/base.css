@@ -27,6 +27,13 @@
    unitless, so line boxes are font-size x line-height and do not depend on the
    font's vertical metrics. Only wrapping matters, and that is width.
 
+   The 600-700 faces name the BOLD locals. src: local('Arial') resolves Arial
+   Regular, and declaring that resource as font-weight 600 700 tells the browser
+   it already IS bold, so it will neither select a bold face nor synthesise one
+   - bold text renders at regular weight for the whole swap window. The heavy
+   ratios above were measured against bold Arial, so they are correct only once
+   the face actually serves bold.
+
    Arial is named because its metrics are stable across platforms and Liberation
    Sans is metric-compatible with it. If none of the locals resolve, the face is
    simply unusable and the stack falls through to system-ui, as before. */
@@ -39,7 +46,8 @@
 
 @font-face {
     font-family: 'Outfit Fallback';
-    src: local('Arial'), local('Liberation Sans'), local('Helvetica');
+    src: local('Arial Bold'), local('Arial-BoldMT'),
+         local('Liberation Sans Bold'), local('Helvetica Bold');
     font-weight: 600 700;
     size-adjust: 95.08%;
 }
@@ -53,7 +61,8 @@
 
 @font-face {
     font-family: 'Source Sans 3 Fallback';
-    src: local('Arial'), local('Liberation Sans'), local('Helvetica');
+    src: local('Arial Bold'), local('Arial-BoldMT'),
+         local('Liberation Sans Bold'), local('Helvetica Bold');
     font-weight: 600 700;
     size-adjust: 89.24%;
 }
