@@ -22,13 +22,19 @@ report for you.
 
 Filing a report on GitHub needs a free GitHub account. If you'd rather not create one, say it in
 [our Matrix room](https://matrix.to/#/#freenet-locutus:matrix.org) instead and someone will file it
-for you.
+for you. The one exception is a security vulnerability, which should never go in a public room. See
+below.
 
-{{< alert type="warning" >}} **Found a security vulnerability?** Don't open a public issue. A public
-write-up of an unfixed hole tells everyone how to attack the network before there's a fix. Report it
-privately instead, through
-[Freenet's security advisory form](https://github.com/freenet/freenet-core/security/advisories/new),
-whichever project it affects. We'll credit you when the fix ships. {{< /alert >}}
+{{< alert type="warning" >}} **Found a security vulnerability?** Don't open a public issue, and
+don't describe it in the Matrix room either. A public write-up of an unfixed hole tells everyone how
+to attack the network before there's a fix.
+
+Use
+[the freenet-core advisory form](https://github.com/freenet/freenet-core/security/advisories/new)
+even when the bug is in River, Delta or any other project. It is the one private channel, and the
+other repositories have no equivalent form. It needs a GitHub account; without one, email
+{{< email-protect "gro.teneerf@nai" "ian@freenet.org" >}} instead. We'll acknowledge your report and
+work with you on a fix and a coordinated disclosure. {{< /alert >}}
 
 ## What were you using?
 
@@ -88,34 +94,35 @@ If you'd rather have someone work it out with you, ask in
 
 ## Every project's tracker {#every-project}
 
-The complete list, largest project first. Most people only ever need the first three. Each name
-opens a blank report form for that project. To read what has already been filed, click **Issues** at
-the top of the form.
+The complete list, most-starred project first. Most people only ever need the first three. Each name
+opens that project's open issues, so you can check whether yours is already there; the **New issue**
+button is at the top of that page.
 
-| Project                                                                                          | What it covers                         |
-| ------------------------------------------------------------------------------------------------ | -------------------------------------- |
-| [freenet-core](https://github.com/freenet/freenet-core/issues/new)                               | The Freenet peer itself                |
-| [river](https://github.com/freenet/river/issues/new)                                             | River group chat and `riverctl`        |
-| [web](https://github.com/freenet/web/issues/new)                                                 | This website, freenet.org              |
-| [freenet-git](https://github.com/freenet/freenet-git/issues/new)                                 | Git hosting over Freenet               |
-| [delta](https://github.com/freenet/delta/issues/new)                                             | Decentralized website builder          |
-| [mail](https://github.com/freenet/mail/issues/new)                                               | Decentralized email                    |
-| [atlas](https://github.com/freenet/atlas/issues/new)                                             | Discovery layer, at the RFC stage      |
-| [raven](https://github.com/freenet/raven/issues/new)                                             | Live social feed                       |
-| [freenet-agent-skills](https://github.com/freenet/freenet-agent-skills/issues/new)               | Skills for AI coding agents            |
-| [freenet-stdlib](https://github.com/freenet/freenet-stdlib/issues/new)                           | Contract and delegate library          |
-| [harvest](https://github.com/freenet/harvest/issues/new)                                         | Peer-to-peer marketplace               |
-| [freenet-wiki](https://github.com/freenet/freenet-wiki/issues/new)                               | Decentralized wiki                     |
-| [replay-channel](https://github.com/freenet/replay-channel/issues/new)                           | Rust broadcast-channel library         |
-| [freenet-scaffold](https://github.com/freenet/freenet-scaffold/issues/new)                       | Mergeable contract state crate         |
-| [freenet-telemetry-dashboard](https://github.com/freenet/freenet-telemetry-dashboard/issues/new) | The dashboard at telemetry.freenet.org |
-| [ghostkeys](https://github.com/freenet/ghostkeys/issues/new)                                     | Ghost Keys vault and delegate          |
-| [freenet-migrate](https://github.com/freenet/freenet-migrate/issues/new)                         | App data across version changes        |
-| [freenet-delegates](https://github.com/freenet/freenet-delegates/issues/new)                     | Shared utility delegates               |
+| Project                                                                                      | What it covers                         |
+| -------------------------------------------------------------------------------------------- | -------------------------------------- |
+| [freenet-core](https://github.com/freenet/freenet-core/issues)                               | The Freenet peer itself                |
+| [river](https://github.com/freenet/river/issues)                                             | River group chat and `riverctl`        |
+| [web](https://github.com/freenet/web/issues)                                                 | This website, freenet.org              |
+| [freenet-git](https://github.com/freenet/freenet-git/issues)                                 | Git hosting over Freenet               |
+| [delta](https://github.com/freenet/delta/issues)                                             | Decentralized website builder          |
+| [mail](https://github.com/freenet/mail/issues)                                               | Decentralized email                    |
+| [atlas](https://github.com/freenet/atlas/issues)                                             | Discovery layer, at the RFC stage      |
+| [raven](https://github.com/freenet/raven/issues)                                             | Live social feed                       |
+| [freenet-agent-skills](https://github.com/freenet/freenet-agent-skills/issues)               | Skills for AI coding agents            |
+| [freenet-stdlib](https://github.com/freenet/freenet-stdlib/issues)                           | Contract and delegate library          |
+| [harvest](https://github.com/freenet/harvest/issues)                                         | Peer-to-peer marketplace               |
+| [freenet-wiki](https://github.com/freenet/freenet-wiki/issues)                               | Decentralized wiki                     |
+| [replay-channel](https://github.com/freenet/replay-channel/issues)                           | Rust broadcast-channel library         |
+| [freenet-scaffold](https://github.com/freenet/freenet-scaffold/issues)                       | Mergeable contract state crate         |
+| [paper-1](https://github.com/freenet/paper-1/issues)                                         | Source of the architectural whitepaper |
+| [freenet-telemetry-dashboard](https://github.com/freenet/freenet-telemetry-dashboard/issues) | The dashboard at telemetry.freenet.org |
+| [ghostkeys](https://github.com/freenet/ghostkeys/issues)                                     | Ghost Keys vault and delegate          |
+| [freenet-migrate](https://github.com/freenet/freenet-migrate/issues)                         | App data across version changes        |
+| [freenet-delegates](https://github.com/freenet/freenet-delegates/issues)                     | Shared utility delegates               |
 
-Repositories not listed here are internal build and test infrastructure. If a bug seems to belong to
-one of those, file it against [freenet-core](https://github.com/freenet/freenet-core/issues/new) and
-it will get moved.
+Anything not listed is internal infrastructure, a dormant experiment, or a crate with issues
+switched off. If a bug seems to belong to one of those, file it against
+[freenet-core](https://github.com/freenet/freenet-core/issues/new) and it will get moved.
 
 ## What to put in a bug report
 
