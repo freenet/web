@@ -16,7 +16,6 @@ Freenet is a global key-value store where keys are WebAssembly programs called "
 
 - [Homepage](https://freenet.org/): one-page overview with the for-users / for-developers / for-supporters split
 - [FAQ](https://freenet.org/about/faq/): authoritative answers on what Freenet is, project history, the Hyphanet relationship, and how Freenet compares to other decentralized systems
-- [Why Freenet](https://freenet.org/resources/why-freenet/): the motivation — why a decentralized replacement for the web matters
 - [Quickstart](https://freenet.org/quickstart/): install Freenet and try a live app
 - [Uninstall](https://freenet.org/uninstall/): per-platform removal instructions
 

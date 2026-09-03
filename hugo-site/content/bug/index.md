@@ -31,10 +31,10 @@ to attack the network before there's a fix.
 
 Use
 [the freenet-core advisory form](https://github.com/freenet/freenet-core/security/advisories/new)
-even when the bug is in River, Delta or any other project. It is the one private channel, and the
-other repositories have no equivalent form. It needs a GitHub account; without one, email
-{{< email-protect "gro.teneerf@nai" "ian@freenet.org" >}} instead. We'll acknowledge your report and
-work with you on a fix and a coordinated disclosure. {{< /alert >}}
+even when the bug is in River, Delta or any other project. Reports for every project are handled
+there. It needs a GitHub account; without one, email Ian at **ian at freenet dot org**, spelled that
+way to slow down address scrapers. We'll acknowledge your report and work with you on a fix and a
+coordinated disclosure. {{< /alert >}}
 
 ## What were you using?
 
@@ -94,9 +94,9 @@ If you'd rather have someone work it out with you, ask in
 
 ## Every project's tracker {#every-project}
 
-The complete list, most-starred project first. Most people only ever need the first three. Each name
-opens that project's open issues, so you can check whether yours is already there; the **New issue**
-button is at the top of that page.
+Every project you can file against, most-starred first. Most people only ever need the first three.
+Each name opens that project's open issues, so you can check whether yours is already there; the
+**New issue** button is at the top of that page.
 
 | Project                                                                                      | What it covers                         |
 | -------------------------------------------------------------------------------------------- | -------------------------------------- |
@@ -120,8 +120,8 @@ button is at the top of that page.
 | [freenet-migrate](https://github.com/freenet/freenet-migrate/issues)                         | App data across version changes        |
 | [freenet-delegates](https://github.com/freenet/freenet-delegates/issues)                     | Shared utility delegates               |
 
-Anything not listed is internal infrastructure, a dormant experiment, or a crate with issues
-switched off. If a bug seems to belong to one of those, file it against
+Anything not listed is internal infrastructure, dormant, or has issues switched off. If a bug seems
+to belong to one of those, file it against
 [freenet-core](https://github.com/freenet/freenet-core/issues/new) and it will get moved.
 
 ## What to put in a bug report
