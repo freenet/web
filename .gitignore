@@ -20,3 +20,4 @@ rust/browser-extension/wasm
 
 # Python bytecode from scripts/
 __pycache__/
+hugo-site/public_review

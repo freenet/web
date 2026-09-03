@@ -16,7 +16,6 @@ Freenet is a global key-value store where keys are WebAssembly programs called "
 
 - [Homepage](https://freenet.org/): one-page overview with the for-users / for-developers / for-supporters split
 - [FAQ](https://freenet.org/about/faq/): authoritative answers on what Freenet is, project history, the Hyphanet relationship, and how Freenet compares to other decentralized systems
-- [Why Freenet](https://freenet.org/resources/why-freenet/): the motivation — why a decentralized replacement for the web matters
 - [Quickstart](https://freenet.org/quickstart/): install Freenet and try a live app
 - [Uninstall](https://freenet.org/uninstall/): per-platform removal instructions
 
@@ -41,7 +40,7 @@ Freenet is a global key-value store where keys are WebAssembly programs called "
 - [About](https://freenet.org/about/): project background and leadership
 - [Video talks](https://freenet.org/about/video-talks/): recorded talks explaining Freenet
 - [News](https://freenet.org/about/news/): development updates and announcements
-- [Get involved](https://freenet.org/community/get-involved/): how to contribute
+- [Report a bug](https://freenet.org/bug/): which issue tracker to use for each project, what to put in a report, and how to report a security vulnerability privately
 - [Donate](https://freenet.org/donate/): support the 501(c)(3) non-profit
 - [Ghost Keys](https://freenet.org/ghostkey/): cryptographic anonymous-but-verifiable identities, used for donations and as a building block for decentralized reputation
 
