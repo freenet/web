@@ -1,6 +1,8 @@
 {{ define "main" }}
 {{- $light := "images/river-screenshot-light.png" | relURL -}}
 {{- $dark := "images/river-screenshot-dark.png" | relURL -}}
+{{- $lightWebp := "images/river-hero-light.webp" | relURL -}}
+{{- $darkWebp := "images/river-hero-dark.webp" | relURL -}}
 {{- $logo := "images/river_logo.svg" | relURL -}}
 
 <!-- ===================== HERO ===================== -->
@@ -43,10 +45,14 @@
         <picture>
           {{/* Both screenshots are captured in one pass at the same viewport, so
                they share one aspect ratio and one set of dimensions. They used to
-               be 1290x867 dark against 1379x1269 light and needed separate
-               boxes. */}}
-          <source srcset="{{ $dark }}" media="(prefers-color-scheme: dark)" width="1800" height="910">
-          <img src="{{ $light }}" alt="A live River chat room, the Freenet room, with a room list, messages and a member list" width="1800" height="910" fetchpriority="high">
+               be 1290x867 dark against 1379x1269 light and needed separate boxes.
+
+               WebP first: this is the LCP image on this page and it was loading
+               the PNG fallback, which is more than twice the size in dark. */}}
+          <source type="image/webp" srcset="{{ $darkWebp }}" media="(prefers-color-scheme: dark)" width="1800" height="886">
+          <source type="image/webp" srcset="{{ $lightWebp }}" width="1800" height="886">
+          <source srcset="{{ $dark }}" media="(prefers-color-scheme: dark)" width="1800" height="886">
+          <img src="{{ $light }}" alt="A live River chat room, the Freenet room, with a room list, messages and a member list" width="1800" height="886" fetchpriority="high">
         </picture>
       </div>
     </div>
