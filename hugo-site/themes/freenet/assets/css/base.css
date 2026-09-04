@@ -1,3 +1,70 @@
+/* ---- Self-hosted webfonts ------------------------------------------------
+   Both families are VARIABLE fonts, so one file per subset covers every weight
+   the site uses (400-800). Verified rather than assumed: the weight axis gives
+   five distinct widths from 300 to 800, and Outfit at 800 works even though the
+   old Google request only asked for 400-700.
+
+   font-display: optional is the point of this whole change. It gives the face
+   a ~100ms block period and NO swap period: if the file has not arrived, the
+   fallback is used for that page load and the webfont is never substituted
+   mid-view. Combined with the preload in head.html - which puts both files in
+   flight alongside the render-blocking stylesheet, so they normally win that
+   race - text renders in the real font on essentially every load, and on the
+   rare miss it renders in the fallback and simply stays there.
+
+   This replaces four metric-matched fallback @font-face rules that existed to
+   make display=swap cheap. They got /river/ from 0.163 to 0.013, but the width
+   match drifts +/-4% at body sizes, which left /apps/ at 390px at 0.098, and
+   they carried two traps worth recording:
+
+     - src: local('Arial') under a font-weight: 600 700 descriptor tells the
+       browser that resource already IS bold, so it neither picks a bold face
+       nor synthesises one. Bold silently rendered at regular weight.
+     - local() matching is loose. On a Linux box with no Arial, a face whose
+       only src was local('Arial') was observed binding to Tinos, a SERIF, while
+       still carrying a size-adjust tuned for Arial.
+
+   Neither hazard exists here: nothing depends on what the visitor has
+   installed.
+
+   URLs are RELATIVE (../fonts/), not root-absolute. The stylesheet is always
+   served from <baseURL>/css/, so ../fonts/ resolves correctly under every
+   baseURL - including the Freenet contract build, which serves the site from
+   /v1/contract/web/<key>/. A root-absolute url(/fonts/...) 404s there: the
+   preload in head.html uses relURL and gets prefixed, but nothing rewrites
+   url() inside CSS (scripts/rewrite-paths.py walks only .html and matches only
+   href/src/srcset). With font-display: optional a 404 is not a slow font, it
+   is PERMANENT system-ui, so this had to be right before merge.
+
+   Only the latin subsets are shipped. The latin-ext files were dropped: they
+   are not preloaded, so they lose the optional block window and were measured
+   unused on 12/12 cold loads across three network profiles, and the built site
+   contains zero latin-ext characters today. If content ever needs them, add
+   the face back AND preload it, or the same thing happens again. Characters
+   outside the declared range fall through to the system font, which is what
+   already happens for the arrows and emoji the site uses. */
+@font-face {
+    font-family: 'Outfit';
+    src: url('../fonts/outfit-latin.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: optional;
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+                   U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
+                   U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Source Sans 3';
+    src: url('../fonts/source-sans-3-latin.woff2') format('woff2');
+    font-weight: 200 900;
+    font-style: normal;
+    font-display: optional;
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+                   U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
+                   U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /* ==========================================================================
    base.css
 
