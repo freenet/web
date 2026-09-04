@@ -14,8 +14,10 @@
      is not used for that page load and NEVER swaps in mid-view. That is what
      makes the shift structurally impossible rather than merely small.
 
-     Same-origin: no preconnect, no third-party DNS/TCP/TLS, and no request to
-     Google on any page load. */}}
+     Same-origin: no preconnect, no third-party DNS/TCP/TLS and no Google
+     request from any page using THIS head. layouts/presentations/single.html
+     is a standalone layout with its own head and still loads Inter from
+     Google; it is not covered here. */}}
 <link rel="preload" href="{{ "fonts/outfit-latin.woff2" | relURL }}" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{{ "fonts/source-sans-3-latin.woff2" | relURL }}" as="font" type="font/woff2" crossorigin>
 {{/* Warm the connection to the Ghost Key API (DNS + TCP + TLS) on the pages
