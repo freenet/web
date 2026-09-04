@@ -28,32 +28,3 @@ public_key = "keys/public.gw2.pem"
 
 [gateways.address]
 hostname = "gw2.freenet.org:31338"
-
-# Secondary gateway on independent infrastructure (AWS, different provider,
-# different /24, different uplink). Still running; retirement is pending.
-#
-# Addressed by bare IP deliberately. The name it used to carry was under a
-# personal domain, and this box is being shut down, so a new DNS record for it
-# would be churn for nothing. `hostname` with an IP literal resolves without
-# touching a DNS resolver at all (std's ToSocketAddrs parses it directly).
-#
-# `hostname` rather than `host_address` because it is the shape already in this
-# file and is covered by a back-compat test pinned against the deployed copy,
-# and because an IP literal resolves without touching a resolver at all.
-#
-# NOT for fail-soft reasons. An earlier revision of this comment claimed a bad
-# `hostname` would degrade to one gateway failing at dial time. That is FALSE:
-# `parse_socket_addr(..).await?` runs INSIDE the per-gateway loop
-# (freenet-core node.rs:587), so a single unresolvable entry aborts
-# NodeConfig::new and the node does not start. Any entry here can take every
-# peer down on restart. Treat all three as equally load-bearing.
-#
-# REMOVE THIS ENTRY when the box is actually shut down. Until then it is the
-# only listed gateway outside the host that runs gw1 and gw2, so dropping it
-# early would leave every refetching peer with a bootstrap set confined to a
-# single machine, IP, uplink and datacenter.
-[[gateways]]
-public_key = "keys/public.vega.gw.pem"
-
-[gateways.address]
-hostname = "100.27.151.80:31337"
