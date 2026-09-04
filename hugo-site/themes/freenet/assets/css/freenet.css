@@ -79,8 +79,8 @@
 /* Custom font and color variables */
 :root {
     color-scheme: light dark;
-    --font-display: 'Outfit', 'Outfit Fallback', system-ui, sans-serif;
-    --font-body: 'Source Sans 3', 'Source Sans 3 Fallback', system-ui, sans-serif;
+    --font-display: 'Outfit', system-ui, sans-serif;
+    --font-body: 'Source Sans 3', system-ui, sans-serif;
     --font-code: 'Inconsolata', 'Hack', 'SF Mono', 'Roboto Mono', 'Source Code Pro', 'Ubuntu Mono', monospace;
     --color-primary: #0066CC;        /* button fill; white text sits on this */
     --color-primary-hover: #004C99;
