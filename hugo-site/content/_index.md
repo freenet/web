@@ -24,8 +24,8 @@ in the middle.
 
 <p class="cta-note">The browser version is the real River on the real Freenet network. You're just
 borrowing a peer we run instead of one on your own machine, so your keys live with us. Installing
-your own peer takes a couple of minutes on Windows, macOS or Linux, and keeps everything on your
-side.</p>
+your own peer takes a few seconds on Windows, macOS or Linux, keeps your data on your hardware, and
+your private data moves across from our peer in a single click.</p>
 
 </div>
 
