@@ -33,8 +33,9 @@ Instead of relying on heavyweight consensus mechanisms, Freenet adopts a (to our
 
 In Freenet, every value stored under a given key must be **mergeable**, meaning that different
 versions can be combined into a consistent state. To ensure consistency, merging must be
-order-independent, always producing the same result regardless of the sequence in which states are
-combined (a property known as a commutative monoid). Rather than imposing a rigid, universal merge
+order-independent and safe to repeat, always producing the same result regardless of the sequence
+in which states are combined or whether the same update is applied more than once (a property
+known as an idempotent commutative monoid). Rather than imposing a rigid, universal merge
 strategy, Freenet leverages **WebAssembly (Wasm) contracts** to define custom synchronization rules.
 Each Wasm contract is authored to specify how data should be merged, allowing synchronization to be
 tailored to the unique requirements of the application. This flexibility is essential because

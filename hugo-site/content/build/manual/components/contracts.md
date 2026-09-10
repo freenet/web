@@ -37,9 +37,10 @@ concept similar to
 As a very simple example, if the contract's state is a single number, then the contract could define
 the merging of two states as the maximum of the two numbers.
 
-In mathematical terms, a contract defines a
+In mathematical terms, a contract defines an idempotent
 [commutative monoid](https://mathworld.wolfram.com/CommutativeMonoid.html) on the contract's state -
-but you can ignore this if you're not a mathematician.
+merging is associative, commutative, and applying the same update twice has no extra effect - but
+you can ignore this if you're not a mathematician.
 
 #### Efficient State Synchronization
 
