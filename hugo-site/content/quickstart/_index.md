@@ -29,6 +29,8 @@ browser.
 
 {{< os-install >}}
 
+Using Nix or NixOS? See the [Nix install guide](/nix/). You get the same self-updating peer.
+
 ## Step 2: Join the room
 
 Click below to join the **Freenet Official** room. A small daily limit helps protect the room from spam.
