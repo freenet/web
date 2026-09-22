@@ -10,6 +10,18 @@ on:
   workflow_dispatch:  # Manual trigger from the Actions tab, e.g. to refresh
                      # the whitepaper PDF after a paper-1 release without
                      # needing a code change in this repo.
+  schedule:
+    # Daily rebuild, so content pulled in at build time appears without
+    # anyone pushing a commit. Today that is the YouTube video list on
+    # /about/video-talks/ and the whitepaper PDF; the channel gets several
+    # uploads a week while this repo sees a commit every few weeks, so
+    # without this the page would be weeks stale.
+    #
+    # Two things to know about GitHub's scheduler: runs can be delayed by
+    # tens of minutes under load (fine for a daily refresh), and it disables
+    # a schedule after 60 days with no repository activity, which this repo's
+    # commit rate clears but not by much.
+    - cron: '17 18 * * *'
 
 env:
   # Opt the Node 20-targeting actions (checkout, cache, upload-artifact)
@@ -42,22 +54,9 @@ jobs:
         with:
           components: rustfmt, clippy
 
-      # Add WebAssembly target for Rust
-      - name: Add WebAssembly target
-        run: rustup target add wasm32-unknown-unknown
-
-      # Install WebAssembly tools
-      - name: Install wasm-pack and wasm-bindgen-cli
-        run: |
-          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-          cargo install --force wasm-pack
-          cargo install --force wasm-bindgen-cli
-
-      # Install cargo-make for building
-      - name: Install cargo-make
-        run: cargo install --debug cargo-make
-
-      # Cache WebAssembly files
+      # Cache WebAssembly files. Restored before the toolchain steps below so
+      # they can be skipped when the cache already has what they would build;
+      # the daily scheduled run hits this cache every time.
       - name: Cache WebAssembly files
         id: cache-wasm
         uses: actions/cache@v3
@@ -65,9 +64,41 @@ jobs:
           path: hugo-site/static/wasm
           key: ${{ runner.os }}-wasm-${{ hashFiles('rust/gkwasm/**', 'rust/gklib/**') }}
 
-      # Build WebAssembly if cache miss or files changed
+      # Ask the same question `cargo make build-site` asks (is there anything
+      # in hugo-site/static/wasm?) rather than trusting cache-hit, so the two
+      # cannot disagree. A hit that restored an empty directory still builds.
+      - name: Check for usable WebAssembly output
+        id: wasm-state
+        run: |
+          if [ -d hugo-site/static/wasm ] && [ -n "$(ls -A hugo-site/static/wasm)" ]; then
+            echo "Using cached WebAssembly files; skipping wasm toolchain install."
+            echo "needs-build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "No cached WebAssembly files; will install the wasm toolchain and build."
+            echo "needs-build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Add WebAssembly target for Rust
+      - name: Add WebAssembly target
+        if: steps.wasm-state.outputs.needs-build == 'true'
+        run: rustup target add wasm32-unknown-unknown
+
+      # Install WebAssembly tools
+      - name: Install wasm-pack and wasm-bindgen-cli
+        if: steps.wasm-state.outputs.needs-build == 'true'
+        run: |
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          cargo install --force wasm-pack
+          cargo install --force wasm-bindgen-cli
+
+      # Install cargo-make for building. Needed on every run, cached wasm or
+      # not, because build-site and check-links are cargo-make tasks.
+      - name: Install cargo-make
+        run: cargo install --debug cargo-make
+
+      # Build WebAssembly if the cache had nothing usable
       - name: Build WebAssembly
-        if: steps.cache-wasm.outputs.cache-hit != 'true'
+        if: steps.wasm-state.outputs.needs-build == 'true'
         run: cargo make build-wasm-release
 
       # Refresh whitepaper PDF from the paper-1 'latest' release so the
@@ -86,6 +117,24 @@ jobs:
           else
             rm -f "$tmp"
             echo "::warning::Could not fetch whitepaper PDF; using committed snapshot."
+          fi
+
+      # The feed parser is deterministic and offline, so a failure here is a
+      # real bug and should stop the build rather than silently fall back.
+      - name: Test YouTube feed parser
+        run: python3 scripts/fetch-youtube-videos.py --self-test
+
+      # Refresh the video list on /about/video-talks/ from the channel's
+      # public Atom feed. Best-effort, like the whitepaper PDF above: a
+      # YouTube outage leaves the committed snapshot in place rather than
+      # blocking the deploy.
+      - name: Refresh YouTube video list
+        run: |
+          set -u
+          if python3 scripts/fetch-youtube-videos.py; then
+            echo "Refreshed YouTube video list."
+          else
+            echo "::warning::Could not refresh YouTube video list; using committed snapshot."
           fi
 
       # Build the site using cargo-make
@@ -112,8 +161,9 @@ jobs:
 
   deploy:
     needs: build
-    # Run on push to main, or on manual workflow_dispatch
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    # Run on push to main, on manual workflow_dispatch, and on the daily
+    # schedule (which would otherwise build and publish nothing).
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     runs-on: ubuntu-22.04
     permissions:
       pages: write

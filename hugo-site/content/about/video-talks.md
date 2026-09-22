@@ -5,7 +5,14 @@ aliases:
   - /resources/video-talks/
 ---
 
-Here you will find a collection of video talks about Freenet. Subscribe on our
+Talks and explainers about Freenet, newest first. Subscribe on our
 [YouTube channel](https://www.youtube.com/@FreenetOrg) for new uploads.
+
+{{< youtube-video-grid >}}
+
+## Talk pages
+
+Some talks have a page here as well, with mirrors on other platforms and
+additional context.
 
 {{< latest-news tag="video-talk" limit="0" >}}
