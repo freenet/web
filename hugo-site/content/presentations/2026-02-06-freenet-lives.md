@@ -1,5 +1,6 @@
 ---
 title: "Freenet Lives! Real-Time Decentralized Applications at Scale"
+description: "Ian Clarke's February 2026 talk on Freenet: the hard problems solved to run real-time decentralized applications at scale."
 date: 2026-02-06
 aliases:
   - /presentations/2025-02-06-freenet-lives/

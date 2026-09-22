@@ -1,5 +1,6 @@
 ---
 title: "Community"
+description: "Where to find the Freenet developer community: the freenet-core repository on GitHub and the Freenet Matrix chat room."
 date: 2025-04-13
 draft: false
 aliases:

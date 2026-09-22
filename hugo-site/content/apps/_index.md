@@ -1,5 +1,6 @@
 ---
 title: "Apps & Ecosystem"
+description: "Apps that run on Freenet rather than on a company's servers: River group chat and the rest of the ecosystem, all built on the same open protocol."
 date: 2026-05-23
 draft: false
 layout: "single"

@@ -132,6 +132,8 @@ theme = "freenet"
   # Default meta description and link-preview image; see partials/head/seo.html.
   description = "Freenet is a peer-to-peer platform for apps that no company controls. Apps on Freenet can't be taken down, don't track you, and need no servers behind them."
   ogImage = "images/og-card.png"
+  ogImageWidth = 1200
+  ogImageHeight = 630
   canonicalBaseURL = "https://freenet.org/"
   stripePublishableKeyTest = "pk_test_51PUf6RCCPv9UL23G0yLdnS51VCStEcnqzd2AftFWiXAOjFOgonYRRBL6F5eKOCrr2yuEHCBDqqYa8H0w7ouRyW6d00awdNMKsf"
   stripePublishableKeyLive = "pk_live_51PUf6RCCPv9UL23Gw8QzBFY3LxQMWmw2qp9k2MOyJQpaAPF5jpomsZ5K81JDvG8BW05PSqm2LjjGqfaepzHNWk8y007raWcjJX"

@@ -1,5 +1,6 @@
 ---
 title: "Install Freenet: Join River"
+description: "Install Freenet and join the live River chat room where the project's developers and users talk. No company hosts it and no account is needed."
 date: 2025-01-01
 draft: false
 ---

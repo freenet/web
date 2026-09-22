@@ -9,21 +9,31 @@
      the baseURL's path from .RelPermalink gives the site-relative path under
      either build.
 
-     Description: front matter `description`, else the page summary for
-     regular pages, else params.description. Image: front matter `image` (a
-     static path or absolute URL), else params.ogImage. */}}
+     Description: front matter `description`, else front matter `summary`,
+     else the generated summary for regular pages (a section's is its child
+     list), else params.description. Headings are dropped from the
+     summary first: plainify alone runs "Purpose" into the paragraph after it.
+     Image: front matter `image` (a static path or absolute URL) with optional
+     imageWidth/imageHeight, else params.ogImage and its dimensions. */}}
 {{ $base := site.Params.canonicalBaseURL | default "https://freenet.org/" }}
 {{ $path := strings.TrimPrefix (urls.Parse site.BaseURL).Path .RelPermalink | strings.TrimPrefix "/" }}
 {{ $url := printf "%s%s" $base $path }}
 
-{{ $desc := .Description }}
+{{ $desc := .Description | default .Params.summary }}
 {{ if and (not $desc) .IsPage }}
-  {{ $desc = .Summary | plainify | htmlUnescape | replaceRE `\s+` " " | strings.TrimSpace | truncate 160 }}
+  {{ $desc = .Summary | replaceRE `(?s)<h[1-6][^>]*>.*?</h[1-6]>` " " | plainify | htmlUnescape | replaceRE `\s+` " " | strings.TrimSpace | truncate 160 }}
 {{ end }}
 {{ $desc = $desc | default site.Params.description }}
 
-{{ $img := .Params.image | default site.Params.ogImage }}
-{{ if not (hasPrefix $img "http") }}
+{{ $img := site.Params.ogImage }}
+{{ $imgW := site.Params.ogImageWidth }}
+{{ $imgH := site.Params.ogImageHeight }}
+{{ with .Params.image }}
+  {{ $img = . }}
+  {{ $imgW = $.Params.imageWidth }}
+  {{ $imgH = $.Params.imageHeight }}
+{{ end }}
+{{ if and $img (not (hasPrefix $img "http")) }}
   {{ $img = printf "%s%s" $base (strings.TrimPrefix "/" $img) }}
 {{ end }}
 
@@ -36,5 +46,11 @@
 <meta property="og:description" content="{{ $desc }}">
 <meta property="og:type" content="{{ cond .IsPage "article" "website" }}">
 <meta property="og:url" content="{{ $url }}">
-<meta property="og:image" content="{{ $img }}">
+{{ with $img }}
+<meta property="og:image" content="{{ . }}">
+{{ with $imgW }}<meta property="og:image:width" content="{{ . }}">{{ end }}
+{{ with $imgH }}<meta property="og:image:height" content="{{ . }}">{{ end }}
 <meta name="twitter:card" content="summary_large_image">
+{{ else }}
+<meta name="twitter:card" content="summary">
+{{ end }}
