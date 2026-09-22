@@ -170,10 +170,11 @@ def write_output(path, channel_id, videos):
     os.makedirs(directory, exist_ok=True)
     handle, temp_path = tempfile.mkstemp(dir=directory, suffix=".tmp")
     try:
-        # mkstemp creates 0600. Leaving it there would hand the build a data
-        # file only the user that fetched it can read.
-        os.chmod(temp_path, 0o644)
         with os.fdopen(handle, "w", encoding="utf-8") as out:
+            # mkstemp creates 0600. Leaving it there would hand the build a
+            # data file only the user that fetched it can read. Done on the
+            # open descriptor so a failure here still closes it.
+            os.fchmod(out.fileno(), 0o644)
             json.dump(payload, out, indent=2, ensure_ascii=False)
             out.write("\n")
         os.replace(temp_path, path)

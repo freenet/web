@@ -49,10 +49,12 @@ cargo make check-links       # broken internal links / dead #anchors (needs hugo
 ```bash
 cargo make refresh-video-list   # /about/video-talks/ from the YouTube channel feed
 ```
-Writes `hugo-site/data/youtube_videos.json`. CI runs the same script before
-every Hugo build, so the deployed page tracks the channel; the copy committed
-to git is only the fallback used when the fetch fails, and is expected to lag.
-Run this locally if you want fresh videos in `cargo make dev`.
+Writes `hugo-site/data/youtube_videos.json`. Both `deploy.yml` and
+`publish-freenet.yml` run the same script before their Hugo builds, so neither
+mirror ships the checked-in copy: that copy is only the fallback used when the
+fetch fails, and is expected to lag. GitHub Pages refreshes daily on the
+schedule; the Freenet contract refreshes whenever it is published. Run this
+locally if you want fresh videos in `cargo make dev`.
 
 ### Linting & Formatting
 ```bash
