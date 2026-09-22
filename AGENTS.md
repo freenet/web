@@ -3,23 +3,11 @@
 ## Project Overview
 This repository contains the Freenet.org website, combining a Hugo static site with Rust-based WebAssembly components for Ghost Key functionality.
 
-## Repository Structure (Git Worktrees)
+## Git Worktrees
 
-This repo uses git worktrees for parallel development:
-
-```
-~/code/freenet/web/           # Parent directory for worktrees
-├── main/                     # Main branch worktree (primary development)
-├── <feature-branch>/         # Feature branch worktrees as needed
-```
-
-**Creating a new worktree:**
-```bash
-cd ~/code/freenet/web
-git worktree add <branch-name>
-```
-
-**Important:** Always work in the appropriate worktree directory, not the bare repo root.
+This repo uses git worktrees as siblings under `~/code/freenet/web/` (e.g.
+`main/` is the primary worktree). Always work in the appropriate worktree
+directory, not the bare repo root.
 
 ## Build Commands
 
@@ -58,7 +46,6 @@ prettier --write "hugo-site/**/*.{html,css,js,md}"
 - `rust/gkwasm/`: WebAssembly bindings exposed to the browser via wasm-bindgen
 - `rust/api/`: Axum-based REST API for Ghost Key operations (Stripe integration)
 - `rust/cli/`: CLI for Ghost Key management tasks (published to crates.io as `ghostkey`)
-- `rust/browser-extension/`: Chrome extension for ghost key management (WIP)
 - `hugo-site/`: Hugo source, theme, and static assets (including WASM output)
 
 ### WebAssembly workflow
@@ -81,7 +68,6 @@ GitHub Actions builds and deploys the site on pushes to `main`:
 4. Publish to GitHub Pages
 
 ## Development Tips
-- Use `cargo make` tasks defined in `Makefile.toml` for consistent commands.
 - WebAssembly builds are cached in CI; keep build scripts in sync.
 - Run CLI tests (`test_cli_commands.sh`) when touching Ghost Key commands.
 - Prettier config enforces a 100-character line width and automatic markdown wrapping.

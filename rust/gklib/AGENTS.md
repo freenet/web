@@ -32,14 +32,6 @@ Deprecated `delegate_*` type aliases and the `delegate_certificate` module
 path are preserved through the 0.2 release line and slated for removal in a
 future release.
 
-## Key Modules
-- `armorable.rs`: Base64 serialization trait for cryptographic objects.
-- `notary_certificate.rs`: Notary key management and verification (was `delegate_certificate.rs`).
-- `delegate_certificate.rs`: Deprecated stub re-exporting the renamed types.
-- `ghost_key_certificate.rs`: Certificate creation and validation logic.
-- `util.rs`: Blind signature helpers and cryptographic utilities.
-- `errors.rs`: Error types used across the library.
-
 ## Building & Testing
 ```bash
 cd rust/gklib
@@ -58,12 +50,11 @@ cargo make integration-test
 ## Browser Integration
 - `rust/gkwasm/` exposes Ghost Key functionality to the browser (wasm-bindgen).
 - WebAssembly output is copied to `hugo-site/static/wasm/`.
-- `hugo-site/content/ghostkey/create/index.html` demonstrates the end-to-end flow.
+- `hugo-site/content/ghostkey/create/` is the Hugo page that drives the end-to-end flow.
 
 ## Security Notes
 - Blind signatures ensure server never sees the real public key.
 - Certificates verify back to the master key (`FREENET_MASTER_VERIFYING_KEY_BASE64`).
-- Keep an eye on revocation, delegation chains, and threshold signatures when extending.
 
 ## Useful CLI Commands
 ```bash
