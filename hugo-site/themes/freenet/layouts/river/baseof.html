@@ -3,15 +3,6 @@
       dir="{{ or site.Language.LanguageDirection `ltr` }}">
 <head>
     {{ partial "head.html" . }}
-    {{/* Social card for /river */}}
-    <meta property="og:title" content="{{ .Title }}">
-    <meta property="og:description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Summary }}{{ end }}">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ .Permalink }}">
-    <meta property="og:image" content="{{ "images/river-screenshot-light.png" | absURL }}">
-    <meta property="og:image:width" content="1800">
-    <meta property="og:image:height" content="886">
-    <meta name="twitter:card" content="summary_large_image">
     <style>
     /* ===== River landing page (scoped to .river-page; loads only on /river) ===== */
     .river-page{

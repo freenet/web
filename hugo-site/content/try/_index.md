@@ -1,5 +1,6 @@
 ---
 title: "Try Freenet in your browser"
+description: "Try Freenet in your browser with no install: open River, a peer-to-peer group chat app, and join the live Freenet Official room."
 date: 2026-07-07
 draft: false
 ---

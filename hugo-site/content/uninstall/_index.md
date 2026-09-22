@@ -1,5 +1,6 @@
 ---
 title: "Uninstalling Freenet"
+description: "How to uninstall Freenet and remove its data on macOS, Windows and Linux, for each install method."
 date: 2026-04-22
 draft: false
 ---

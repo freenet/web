@@ -1,5 +1,6 @@
 ---
 title: "Funding Freenet"
+description: "Freenet is funded by donations and grants. Donate via PayPal or by card, and optionally receive a Ghost Key, an anonymous identity for Freenet apps."
 date: 2024-06-24
 draft: false
 layout: "funding"

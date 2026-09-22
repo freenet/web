@@ -1,5 +1,6 @@
 ---
 title: "Build on Freenet"
+description: "Build decentralized apps with Rust and TypeScript and deploy them to Freenet's global peer-to-peer network, with no servers to maintain."
 date: 2024-06-11T00:00:00Z
 draft: false
 aliases:

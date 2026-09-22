@@ -1,5 +1,6 @@
 ---
 title: "Ghost Keys"
+description: "A Ghost Key is an anonymous, verifiable identity backed by a donation to Freenet. Any Freenet app can verify it without learning who you are."
 date: 2024-07-10
 draft: false
 layout: "single"
