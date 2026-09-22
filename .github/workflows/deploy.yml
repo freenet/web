@@ -32,6 +32,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    # A stuck network step should not hold a runner for the default six hours,
+    # now that a run starts unattended every day.
+    timeout-minutes: 30
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
@@ -64,17 +67,24 @@ jobs:
           path: hugo-site/static/wasm
           key: ${{ runner.os }}-wasm-${{ hashFiles('rust/gkwasm/**', 'rust/gklib/**') }}
 
-      # Ask the same question `cargo make build-site` asks (is there anything
-      # in hugo-site/static/wasm?) rather than trusting cache-hit, so the two
-      # cannot disagree. A hit that restored an empty directory still builds.
+      # Decide whether the wasm build is still needed by looking for the two
+      # artifacts the site actually loads (see static/js/donation-success.js).
+      #
+      # NOT by asking whether hugo-site/static/wasm is non-empty: that
+      # directory holds a tracked README.md, so it is non-empty straight out of
+      # checkout even when nothing has been built, and a cache miss would skip
+      # the build and deploy a site with no Ghost Key support. `cargo make
+      # build-site` makes the same decision the same way, so the two cannot
+      # disagree, and the Verify step below fails the build if they are both
+      # somehow wrong.
       - name: Check for usable WebAssembly output
         id: wasm-state
         run: |
-          if [ -d hugo-site/static/wasm ] && [ -n "$(ls -A hugo-site/static/wasm)" ]; then
+          if [ -s hugo-site/static/wasm/gkwasm.js ] && [ -s hugo-site/static/wasm/gkwasm_bg.wasm ]; then
             echo "Using cached WebAssembly files; skipping wasm toolchain install."
             echo "needs-build=false" >> "$GITHUB_OUTPUT"
           else
-            echo "No cached WebAssembly files; will install the wasm toolchain and build."
+            echo "No cached WebAssembly output; will install the wasm toolchain and build."
             echo "needs-build=true" >> "$GITHUB_OUTPUT"
           fi
 
@@ -141,11 +151,21 @@ jobs:
       - name: Build Site
         run: cargo make build-site
 
-      # Verify the contents of the build
+      # Verify the contents of the build. This asserts rather than just
+      # listing: hugo-site/static/wasm holds a tracked README.md, so a
+      # directory listing succeeds even when nothing was built, and a site
+      # deployed without these two files 404s the Ghost Key flow on the page
+      # a user lands on after paying.
       - name: Verify WebAssembly files in build
         run: |
           echo "Contents of hugo-site/public/wasm:"
           ls -la hugo-site/public/wasm
+          for artifact in gkwasm.js gkwasm_bg.wasm; do
+            if [ ! -s "hugo-site/public/wasm/$artifact" ]; then
+              echo "::error::hugo-site/public/wasm/$artifact is missing or empty; refusing to publish a build without Ghost Key support."
+              exit 1
+            fi
+          done
 
       # Catch dead internal links and #anchors before they reach freenet.org.
       # Hugo does not validate fragments, so a deleted section silently leaves
@@ -165,6 +185,13 @@ jobs:
     # schedule (which would otherwise build and publish nothing).
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     runs-on: ubuntu-22.04
+    # Only the build job was serialised before. The daily schedule creates a
+    # window where a push landing near 18:17 UTC could put two deploy-pages
+    # calls in flight at once, so serialise the publish too. Queue rather than
+    # cancel: a cancelled deploy leaves the previous build published.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     permissions:
       pages: write
       id-token: write

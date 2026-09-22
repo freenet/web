@@ -26,7 +26,10 @@ dependencies = [
 description = "Build WebAssembly and Hugo site for deployment"
 script = """
 if [ -n "$GITHUB_ACTIONS" ]; then
-    if [ -d "hugo-site/static/wasm" ] && [ -n "$(ls -A hugo-site/static/wasm)" ]; then
+    # Test for the artifacts the site loads, not for a non-empty directory:
+    # hugo-site/static/wasm holds a tracked README.md, so an emptiness test
+    # is satisfied by a fresh checkout and would skip the build entirely.
+    if [ -s "hugo-site/static/wasm/gkwasm.js" ] && [ -s "hugo-site/static/wasm/gkwasm_bg.wasm" ]; then
         echo "Using cached WebAssembly files"
     else
         echo "WebAssembly files not found in cache, rebuilding..."
@@ -40,6 +43,13 @@ cd hugo-site
 hugo --minify
 echo "Contents of public/wasm after running hugo:"
 ls -la public/wasm
+"""
+
+[tasks.refresh-video-list]
+description = "Refresh the video list on /about/video-talks/ from the YouTube channel feed"
+script = """
+python3 scripts/fetch-youtube-videos.py --self-test
+python3 scripts/fetch-youtube-videos.py
 """
 
 [tasks.check-links]

@@ -6,10 +6,14 @@ Usage: python3 scripts/fetch-youtube-videos.py [--channel-id ID] [--output PATH]
 
 Reads YouTube's public per-channel Atom feed and writes
 ``hugo-site/data/youtube_videos.json``, which the ``youtube-video-grid``
-shortcode renders at build time. The committed copy of that file is a
-snapshot: CI overwrites it on every build, and falls back to the snapshot if
-this script fails, so a YouTube outage degrades to a slightly stale list
-rather than a broken deploy.
+shortcode renders at build time.
+
+CI runs this before every Hugo build, so what gets deployed is whatever the
+feed said moments earlier. It does not commit the result back: the copy in git
+is a hand-refreshed snapshot, used only as the fallback when this script
+fails, so a YouTube outage degrades to a stale list rather than a broken
+deploy. Expect the committed copy to lag; that is not a sign the refresh is
+broken.
 
 The feed needs no API key and has no quota, which is why it is used in
 preference to the YouTube Data API. Two limits come with that:
@@ -24,9 +28,14 @@ shortcode untouched.
 
 The script never overwrites the existing file with an empty or partial list:
 any failure exits non-zero leaving the previous contents in place.
+
+--self-test covers the parsing and writing above, offline. It deliberately
+does not cover fetch_feed(), which would need a stub HTTP server to say
+anything useful; that path is exercised for real on every CI build.
 """
 
 import argparse
+import datetime
 import json
 import os
 import sys
@@ -52,12 +61,41 @@ USER_AGENT = "freenet.org-site-build/1.0 (+https://freenet.org)"
 FETCH_TIMEOUT_SECONDS = 30
 FETCH_ATTEMPTS = 2
 
+# The real feed is about 24 KB. This is a sanity bound, not a tuning knob: it
+# exists so a response that is not really the feed cannot be read into memory
+# without limit.
+MAX_FEED_BYTES = 4 * 1024 * 1024
+
+
+def parse_timestamp(value):
+    """Return an aware datetime for an RFC 3339 string, or None if unusable.
+
+    Python 3.10's fromisoformat does not accept a trailing 'Z', which the feed
+    does not currently use but is valid RFC 3339, so normalise it first.
+    """
+    text = value.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = datetime.datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=datetime.timezone.utc)
+    return parsed
+
 
 def parse_feed(xml_bytes):
-    """Return [{id, title, published}, ...], newest first.
+    """Return [{id, title, published, published_display}, ...], newest first.
 
-    Entries missing a video id, title or timestamp are dropped: they cannot be
-    rendered as a card, and a half-built card is worse than a missing one.
+    Entries are dropped unless they have a video id, a title, and a timestamp
+    that actually parses. Dropping an unparseable date matters more than it
+    looks: the template renders published_display verbatim, so a date this
+    function let through unchecked would have had to be parsed by Hugo, and a
+    date Hugo cannot parse fails the entire site build, not just this page.
+    Formatting it here means no value from the feed can reach a function that
+    is able to fail.
+
     Raises ElementTree.ParseError if the document is not XML at all.
     """
     root = ET.fromstring(xml_bytes)
@@ -69,15 +107,30 @@ def parse_feed(xml_bytes):
         published = (entry.findtext("atom:published", default="", namespaces=NS) or "").strip()
         if not video_id or not title or not published:
             continue
+        timestamp = parse_timestamp(published)
+        if timestamp is None:
+            print("dropping %s: unparseable published value %r" % (video_id, published),
+                  file=sys.stderr)
+            continue
         if video_id in seen:
             continue
         seen.add(video_id)
-        videos.append({"id": video_id, "title": title, "published": published})
+        videos.append({
+            "id": video_id,
+            "title": title,
+            "published": published,
+            "published_display": "%s %d, %d" % (
+                timestamp.strftime("%B"), timestamp.day, timestamp.year),
+            "_sort_key": timestamp,
+        })
 
     # The feed arrives newest-first already; sorting makes that a property of
-    # this script rather than an assumption about YouTube. The timestamps are
-    # RFC 3339 with a fixed +00:00 offset, so they sort correctly as strings.
-    videos.sort(key=lambda v: v["published"], reverse=True)
+    # this script rather than an assumption about YouTube. Sorting on the
+    # parsed value rather than the string keeps it correct if entries ever
+    # carry different UTC offsets.
+    videos.sort(key=lambda v: v["_sort_key"], reverse=True)
+    for video in videos:
+        del video["_sort_key"]
     return videos
 
 
@@ -89,7 +142,13 @@ def fetch_feed(channel_id):
     for attempt in range(FETCH_ATTEMPTS):
         try:
             with urllib.request.urlopen(request, timeout=FETCH_TIMEOUT_SECONDS) as response:
-                return response.read()
+                body = response.read(MAX_FEED_BYTES + 1)
+                if len(body) > MAX_FEED_BYTES:
+                    raise SystemExit(
+                        "%s returned more than %d bytes; refusing to parse it"
+                        % (url, MAX_FEED_BYTES)
+                    )
+                return body
         except (urllib.error.URLError, OSError) as error:  # includes timeouts
             last_error = error
             print(
@@ -111,6 +170,9 @@ def write_output(path, channel_id, videos):
     os.makedirs(directory, exist_ok=True)
     handle, temp_path = tempfile.mkstemp(dir=directory, suffix=".tmp")
     try:
+        # mkstemp creates 0600. Leaving it there would hand the build a data
+        # file only the user that fetched it can read.
+        os.chmod(temp_path, 0o644)
         with os.fdopen(handle, "w", encoding="utf-8") as out:
             json.dump(payload, out, indent=2, ensure_ascii=False)
             out.write("\n")
@@ -145,6 +207,18 @@ SELF_TEST_FEED = """<?xml version="1.0" encoding="UTF-8"?>
   <published>2026-09-20T00:00:00+00:00</published>
  </entry>
  <entry>
+  <id>yt:video:DDDDDDDDDDD</id>
+  <yt:videoId>DDDDDDDDDDD</yt:videoId>
+  <title>Entry whose date cannot be parsed</title>
+  <published>sometime last Tuesday</published>
+ </entry>
+ <entry>
+  <id>yt:video:EEEEEEEEEEE</id>
+  <yt:videoId>EEEEEEEEEEE</yt:videoId>
+  <title>Entry timestamped with a trailing Z</title>
+  <published>2026-09-20T12:00:00Z</published>
+ </entry>
+ <entry>
   <id>yt:video:BBBBBBBBBBB</id>
   <yt:videoId>BBBBBBBBBBB</yt:videoId>
   <title>Duplicate of the newest talk</title>
@@ -160,16 +234,40 @@ def self_test():
 
     videos = parse_feed(SELF_TEST_FEED.encode("utf-8"))
 
-    if [v["id"] for v in videos] != ["BBBBBBBBBBB", "AAAAAAAAAAA"]:
-        failures.append("expected newest-first ids, got %r" % [v["id"] for v in videos])
-    if len(videos) != 2:
+    # Ordering, and the four entries that must not survive: no id, duplicate
+    # id, and an unparseable date. The last one is the one that matters most:
+    # letting it through would fail the whole site build, not just this page.
+    expected_ids = ["BBBBBBBBBBB", "EEEEEEEEEEE", "AAAAAAAAAAA"]
+    actual_ids = [v["id"] for v in videos]
+    if actual_ids != expected_ids:
+        failures.append("expected ids %r newest-first, got %r" % (expected_ids, actual_ids))
+    if any(v["id"] == "DDDDDDDDDDD" for v in videos):
+        failures.append("an entry with an unparseable published value was not dropped")
+
+    by_id = {v["id"]: v for v in videos}
+    if "AAAAAAAAAAA" in by_id and by_id["AAAAAAAAAAA"]["title"] != "Older talk & friends":
+        failures.append("XML entities should be decoded, got %r" % by_id["AAAAAAAAAAA"]["title"])
+    if "BBBBBBBBBBB" in by_id:
+        newest = by_id["BBBBBBBBBBB"]
+        if newest["published"] != "2026-09-21T01:19:22+00:00":
+            failures.append("published timestamp not preserved, got %r" % newest["published"])
+        if newest["published_display"] != "September 21, 2026":
+            failures.append(
+                "published_display should be the rendered date, got %r"
+                % newest["published_display"]
+            )
+    # A trailing Z is valid RFC 3339 and must not be treated as unparseable.
+    if "EEEEEEEEEEE" not in by_id:
+        failures.append("a Z-suffixed timestamp was wrongly dropped")
+    elif by_id["EEEEEEEEEEE"]["published_display"] != "September 20, 2026":
         failures.append(
-            "expected the id-less and duplicate entries to be dropped, got %d" % len(videos)
+            "Z-suffixed timestamp formatted wrongly, got %r"
+            % by_id["EEEEEEEEEEE"]["published_display"]
         )
-    if len(videos) == 2 and videos[1]["title"] != "Older talk & friends":
-        failures.append("XML entities should be decoded, got %r" % videos[1]["title"])
-    if videos and videos[0]["published"] != "2026-09-21T01:19:22+00:00":
-        failures.append("published timestamp not preserved, got %r" % videos[0]["published"])
+
+    # No entry may carry the internal sort key into the data file.
+    if any("_sort_key" in v for v in videos):
+        failures.append("internal sort key leaked into the output")
 
     # An empty or video-less feed must produce nothing, so that main() refuses
     # to overwrite a good snapshot with it.

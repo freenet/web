@@ -9,6 +9,12 @@
 
   A missing or empty data file warns and renders nothing, rather than failing
   the build: the rest of the page is still worth deploying.
+
+  The caption is printed as the script formatted it rather than parsed here
+  with dateFormat. A date Hugo cannot parse is a hard error that fails the
+  whole site build, and this data comes from a third party on an unattended
+  daily schedule, so no value from the feed should reach a function that can
+  fail. fetch-youtube-videos.py drops entries whose date does not parse.
 */ -}}
 {{- $videos := slice -}}
 {{- with .Site.Data.youtube_videos -}}
@@ -22,7 +28,7 @@
   {{ partial "talk-card.html" (dict
        "id" .id
        "title" .title
-       "caption" (dateFormat "January 2, 2006" .published)) }}
+       "caption" .published_display) }}
   {{- end }}
 </div>
 {{- end -}}
