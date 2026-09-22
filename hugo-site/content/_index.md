@@ -1,5 +1,5 @@
 ---
-title: "Decentralize Everything"
+title: "Services without Servers"
 date: 2024-06-11T00:00:00Z
 draft: false
 layout: "home"
@@ -8,7 +8,7 @@ layout: "home"
 <div class="hero-grid">
 <div class="hero-copy">
 
-<h1 class="title">Decentralize Everything</h1>
+<h1 class="title">Services without Servers</h1>
 
 Freenet is a peer-to-peer platform for apps that no company controls. Your computer becomes part of
 a global network, and the apps running on it can't be taken down, don't track you, and need no
