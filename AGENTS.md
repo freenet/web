@@ -45,6 +45,17 @@ cargo test --all
 cargo make check-links       # broken internal links / dead #anchors (needs hugo-site/public)
 ```
 
+### Content pulled in at build time
+```bash
+cargo make refresh-video-list   # /about/video-talks/ from the YouTube channel feed
+```
+Writes `hugo-site/data/youtube_videos.json`. Both `deploy.yml` and
+`publish-freenet.yml` run the same script before their Hugo builds, so neither
+mirror ships the checked-in copy: that copy is only the fallback used when the
+fetch fails, and is expected to lag. GitHub Pages refreshes daily on the
+schedule; the Freenet contract refreshes whenever it is published. Run this
+locally if you want fresh videos in `cargo make dev`.
+
 ### Linting & Formatting
 ```bash
 cargo fmt --all
@@ -74,11 +85,15 @@ prettier --write "hugo-site/**/*.{html,css,js,md}"
 - `STRIPE_LIVE_WEBHOOK_SECRET`
 
 ## Deployment
-GitHub Actions builds and deploys the site on pushes to `main`:
+GitHub Actions builds and deploys the site on pushes to `main`, on manual
+`workflow_dispatch`, and on a daily schedule at 18:17 UTC (so build-time
+content such as the video list and the whitepaper PDF refreshes without a
+commit):
 1. Build Rust components (with WASM caching)
 2. Compile WebAssembly modules
-3. Build Hugo site
-4. Publish to GitHub Pages
+3. Refresh build-time content (whitepaper PDF, YouTube video list)
+4. Build Hugo site
+5. Publish to GitHub Pages
 
 ## Development Tips
 - Use `cargo make` tasks defined in `Makefile.toml` for consistent commands.

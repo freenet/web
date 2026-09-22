@@ -1,0 +1,84 @@
+{
+  "channel_id": "UCNVlXH0XHFqKoGL3RrbTy_w",
+  "channel_url": "https://www.youtube.com/channel/UCNVlXH0XHFqKoGL3RrbTy_w",
+  "videos": [
+    {
+      "id": "PKUmtpwbsMs",
+      "title": "Freenet, Tor, and the Limits of Anonymity",
+      "published": "2026-09-21T01:19:22+00:00",
+      "published_display": "September 21, 2026"
+    },
+    {
+      "id": "XxUANNgyL1k",
+      "title": "How Freenet Finds Data Without Knowing Where It Is",
+      "published": "2026-09-19T22:07:04+00:00",
+      "published_display": "September 19, 2026"
+    },
+    {
+      "id": "jrKxLmDVIAI",
+      "title": "Freenet: A Better Architecture for Private Data",
+      "published": "2026-09-15T00:22:40+00:00",
+      "published_display": "September 15, 2026"
+    },
+    {
+      "id": "sFfp2uL2pY8",
+      "title": "How a Network With No Servers Catches Its Own Bugs",
+      "published": "2026-09-11T20:39:39+00:00",
+      "published_display": "September 11, 2026"
+    },
+    {
+      "id": "Mx2fChUS7vw",
+      "title": "Freenet: How we handle malicious peers and contracts",
+      "published": "2026-06-01T19:52:49+00:00",
+      "published_display": "June 1, 2026"
+    },
+    {
+      "id": "DZNedczsHuY",
+      "title": "Freenet - A Peer-to-Peer Platform for Real-Time Decentralized Applications",
+      "published": "2026-05-24T17:53:06+00:00",
+      "published_display": "May 24, 2026"
+    },
+    {
+      "id": "sfdsljrnJiI",
+      "title": "Freenet and the future of anonymous networks",
+      "published": "2026-05-15T19:30:39+00:00",
+      "published_display": "May 15, 2026"
+    },
+    {
+      "id": "tuXtIfqRms8",
+      "title": "Is Freenet the missing link for mesh networks?",
+      "published": "2026-05-11T19:43:55+00:00",
+      "published_display": "May 11, 2026"
+    },
+    {
+      "id": "GI2PUQV-ug0",
+      "title": "Can Freenet solve our institutional collapse?",
+      "published": "2026-05-08T19:17:34+00:00",
+      "published_display": "May 8, 2026"
+    },
+    {
+      "id": "3UT_3-9KDUQ",
+      "title": "The first decentralized group chat - River!",
+      "published": "2026-05-05T21:08:36+00:00",
+      "published_display": "May 5, 2026"
+    },
+    {
+      "id": "JZIS3pOrJyw",
+      "title": "Can we decentralize Git with Freenet?",
+      "published": "2026-05-01T18:28:23+00:00",
+      "published_display": "May 1, 2026"
+    },
+    {
+      "id": "cCQfjw_Q1zk",
+      "title": "How do you trust strangers on the Internet?",
+      "published": "2026-04-28T21:06:20+00:00",
+      "published_display": "April 28, 2026"
+    },
+    {
+      "id": "PRfX57fu_sw",
+      "title": "AI: The New Panopticon",
+      "published": "2026-04-28T20:24:32+00:00",
+      "published_display": "April 28, 2026"
+    }
+  ]
+}

@@ -929,6 +929,21 @@ p.page-end-spacer {
   color: #64748b;
 }
 
+/* Grid of every channel video (/about/video-talks/) */
+.talk-grid {
+  display: grid;
+  /* min() keeps a single column from overflowing a viewport under 240px. */
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0 2.5rem;
+}
+
+/* The homepage card is a fixed-width sidebar item; in the grid the column
+   sets the width. */
+.talk-grid .talk-card {
+  max-width: none;
+}
+
 @media (prefers-color-scheme: dark) {
   .talk-card {
     background: var(--surface);

@@ -1,0 +1,34 @@
+{{- /*
+  Renders every video in hugo-site/data/youtube_videos.json as a card grid.
+
+  That file is refreshed from the channel's public Atom feed by
+  scripts/fetch-youtube-videos.py, which CI runs on every build (including a
+  daily scheduled one), so the page tracks the channel without anyone editing
+  content. The committed copy of the JSON is the fallback used when the fetch
+  fails.
+
+  A missing or empty data file warns and renders nothing, rather than failing
+  the build: the rest of the page is still worth deploying.
+
+  The caption is printed as the script formatted it rather than parsed here
+  with dateFormat. A date Hugo cannot parse is a hard error that fails the
+  whole site build, and this data comes from a third party on an unattended
+  daily schedule, so no value from the feed should reach a function that can
+  fail. fetch-youtube-videos.py drops entries whose date does not parse.
+*/ -}}
+{{- $videos := slice -}}
+{{- with .Site.Data.youtube_videos -}}
+  {{- $videos = .videos | default slice -}}
+{{- end -}}
+{{- if not $videos -}}
+  {{- warnf "youtube-video-grid: no videos in hugo-site/data/youtube_videos.json; run scripts/fetch-youtube-videos.py" -}}
+{{- else -}}
+<div class="talk-grid">
+  {{- range $videos }}
+  {{ partial "talk-card.html" (dict
+       "id" .id
+       "title" .title
+       "caption" .published_display) }}
+  {{- end }}
+</div>
+{{- end -}}

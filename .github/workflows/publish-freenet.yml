@@ -31,6 +31,28 @@ jobs:
       - name: Install cargo-make
         run: cargo install --debug cargo-make
 
+      # Refresh build-time content for the same reason the link check below
+      # exists: this publishes the same *content* as deploy.yml, and without
+      # this the contract would render the committed snapshot of the video
+      # list while GitHub Pages renders the live one. Same split as there —
+      # the offline parser test blocks, the network fetch does not.
+      #
+      # Note this makes the mirror fresh as of each publish, not daily:
+      # deploy.yml's schedule deliberately does not extend here, because a
+      # daily contract publish is a change of publishing cadence to shared
+      # infrastructure rather than a build detail.
+      - name: Test YouTube feed parser
+        run: python3 scripts/fetch-youtube-videos.py --self-test
+
+      - name: Refresh YouTube video list
+        run: |
+          set -u
+          if python3 scripts/fetch-youtube-videos.py; then
+            echo "Refreshed YouTube video list."
+          else
+            echo "::warning::Could not refresh YouTube video list; using committed snapshot."
+          fi
+
       # This publishes the same *content* as deploy.yml, so gate it on the
       # same link check: otherwise a broken anchor stops GitHub Pages while
       # the contract still takes the new content, and the two mirrors
