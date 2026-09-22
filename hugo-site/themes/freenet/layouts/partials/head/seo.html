@@ -1,0 +1,40 @@
+{{/* Search and link-preview metadata: meta description, canonical URL, Open
+     Graph and Twitter card.
+
+     URLs are built from params.canonicalBaseURL rather than .Permalink or
+     absURL. The Freenet-hosted mirror (cargo make build-freenet) builds with a
+     relative baseURL (/v1/contract/web/<key>/), where .Permalink is not an
+     absolute URL; canonical, og:url and og:image all require one, and every
+     copy of a page should name freenet.org as the canonical anyway. Stripping
+     the baseURL's path from .RelPermalink gives the site-relative path under
+     either build.
+
+     Description: front matter `description`, else the page summary for
+     regular pages, else params.description. Image: front matter `image` (a
+     static path or absolute URL), else params.ogImage. */}}
+{{ $base := site.Params.canonicalBaseURL | default "https://freenet.org/" }}
+{{ $path := strings.TrimPrefix (urls.Parse site.BaseURL).Path .RelPermalink | strings.TrimPrefix "/" }}
+{{ $url := printf "%s%s" $base $path }}
+
+{{ $desc := .Description }}
+{{ if and (not $desc) .IsPage }}
+  {{ $desc = .Summary | plainify | htmlUnescape | replaceRE `\s+` " " | strings.TrimSpace | truncate 160 }}
+{{ end }}
+{{ $desc = $desc | default site.Params.description }}
+
+{{ $img := .Params.image | default site.Params.ogImage }}
+{{ if not (hasPrefix $img "http") }}
+  {{ $img = printf "%s%s" $base (strings.TrimPrefix "/" $img) }}
+{{ end }}
+
+{{ $title := cond .IsHome (printf "%s: %s" site.Title .Title) .Title }}
+
+<meta name="description" content="{{ $desc }}">
+<link rel="canonical" href="{{ $url }}">
+<meta property="og:site_name" content="{{ site.Title }}">
+<meta property="og:title" content="{{ $title }}">
+<meta property="og:description" content="{{ $desc }}">
+<meta property="og:type" content="{{ cond .IsPage "article" "website" }}">
+<meta property="og:url" content="{{ $url }}">
+<meta property="og:image" content="{{ $img }}">
+<meta name="twitter:card" content="summary_large_image">
