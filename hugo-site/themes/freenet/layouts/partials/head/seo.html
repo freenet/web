@@ -19,9 +19,15 @@
 {{ $path := strings.TrimPrefix (urls.Parse site.BaseURL).Path .RelPermalink | strings.TrimPrefix "/" }}
 {{ $url := printf "%s%s" $base $path }}
 
-{{ $desc := .Description | default .Params.summary }}
-{{ if and (not $desc) .IsPage }}
-  {{ $desc = .Summary | replaceRE `(?s)<h[1-6][^>]*>.*?</h[1-6]>` " " | plainify | htmlUnescape | replaceRE `\s+` " " | strings.TrimSpace | truncate 160 }}
+{{ $desc := .Description }}
+{{ if not $desc }}
+  {{ $raw := "" }}
+  {{ if .Params.summary }}
+    {{ $raw = markdownify .Params.summary }}
+  {{ else if .IsPage }}
+    {{ $raw = .Summary }}
+  {{ end }}
+  {{ $desc = $raw | replaceRE `(?s)<h[1-6][^>]*>.*?</h[1-6]>` " " | plainify | htmlUnescape | replaceRE `\s+` " " | strings.TrimSpace | truncate 160 }}
 {{ end }}
 {{ $desc = $desc | default site.Params.description }}
 
