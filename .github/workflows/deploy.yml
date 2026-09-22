@@ -187,11 +187,16 @@ jobs:
     runs-on: ubuntu-22.04
     # Only the build job was serialised before. The daily schedule creates a
     # window where a push landing near 18:17 UTC could put two deploy-pages
-    # calls in flight at once, so serialise the publish too. Queue rather than
-    # cancel: a cancelled deploy leaves the previous build published.
+    # calls in flight at once, so serialise the publish too. Matches GitHub's
+    # own Pages template. cancel-in-progress: false means a running deploy
+    # always finishes; note GitHub still cancels an already-pending deploy
+    # when a newer one arrives, so the newest content is what lands.
     concurrency:
       group: pages
       cancel-in-progress: false
+    # Consistent with the build job above, and more pointed now that deploys
+    # queue: a stalled deploy at the head of the queue holds up later ones.
+    timeout-minutes: 15
     permissions:
       pages: write
       id-token: write
