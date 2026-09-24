@@ -15,21 +15,21 @@
         <span class="rv-brand-tag">built on Freenet</span>
       </div>
       <h1 class="rv-h1">Group chat <span class="rv-grad">without the company in the middle.</span></h1>
-      <p class="rv-sub">River feels familiar, like Signal or WhatsApp. But it runs on Freenet, a global network nobody controls, with no servers behind it.</p>
+      <p class="rv-sub">River feels familiar, like Signal or WhatsApp. But it runs on Freenet, a global network nobody controls, and there is no River backend behind it.</p>
       <p class="rv-punch">No account. No phone number. No one in the middle. Just you.</p>
-      <p class="rv-hero-note">Install a Freenet peer once, then join the live official room in your browser, where the developers hang out.</p>
+      <p class="rv-hero-note">Open the live official room in your browser and see it working. The demo runs on a peer we host; install Freenet when you want your own.</p>
       <div class="rv-cta-row">
-        <a class="rv-btn rv-btn-primary" href="{{ "quickstart/" | relURL }}">Install Freenet &amp; Join River
+        <a class="rv-btn rv-btn-primary" href="{{ "try/" | relURL }}">Try River in your browser
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
-        <a class="rv-btn rv-btn-ghost" href="#how">How it works</a>
+        <a class="rv-btn rv-btn-ghost" href="{{ "quickstart/" | relURL }}">Install Freenet</a>
       </div>
       <p class="rv-platform">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        Runs on Windows, macOS, and Linux. No mobile app yet.
+        Freenet installs on Windows, macOS, and Linux. No mobile app yet.
       </p>
       <ul class="rv-reassure">
-        <li><span class="rv-tick">{{ partial "inline/rv-check.html" . }}</span> Quick, easy install</li>
+        <li><span class="rv-tick">{{ partial "inline/rv-check.html" . }}</span> No signup</li>
         <li><span class="rv-tick">{{ partial "inline/rv-check.html" . }}</span> Free and open source</li>
       </ul>
     </div>
@@ -65,7 +65,7 @@
     <div>
       <p class="rv-eyebrow">How it works</p>
       <h2 class="rv-h2">Wait, no servers?</h2>
-      <p class="rv-lede">Most chat apps send your messages to <strong>servers a company runs</strong>. River sends them to <strong>Freenet</strong>, a network made of its users' own computers. Each room lives on the network itself, so it keeps working even if the person who made it goes offline, and nobody has a server to shut down, snoop on, or bill.</p>
+      <p class="rv-lede">Most chat apps send your messages to <strong>servers a company runs</strong>. River sends them to <strong>Freenet</strong>, a network made of its users' own computers. There is no River backend: each room lives on the network itself, so it keeps working when the person who made it goes offline, and no company runs a River server to shut down, snoop on, or bill.</p>
     </div>
     <div class="rv-shapes">
       <div class="rv-shape">
@@ -100,8 +100,8 @@
         <span class="rv-ic">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="4.5" cy="7" r="2"/><circle cx="19.5" cy="7" r="2"/><circle cx="4.5" cy="17" r="2"/><circle cx="19.5" cy="17" r="2"/><path d="M6.3 8.1 9.6 10.6M17.7 8.1 14.4 10.6M6.3 15.9 9.6 13.4M17.7 15.9 14.4 13.4"/></svg>
         </span>
-        <h3 class="rv-pillar-t">No servers</h3>
-        <p>Every room lives on Freenet, hosted by the network's own peers. There's no backend for anyone to run, pay for, or take down.</p>
+        <h3 class="rv-pillar-t">No backend</h3>
+        <p>Every room lives on Freenet, hosted by the network's own peers. River has no backend for anyone to run, pay for, or take down.</p>
       </div>
       <div class="rv-pillar">
         <span class="rv-ic">
@@ -121,8 +121,8 @@
         <span class="rv-ic">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="12" r="2.4"/><circle cx="17.5" cy="6" r="2.4"/><circle cx="17.5" cy="18" r="2.4"/><path d="M8.1 10.9 15.4 7.1M8.1 13.1 15.4 16.9"/></svg>
         </span>
-        <h3 class="rv-pillar-t">Scales with demand</h3>
-        <p>The more people a room has, the more peers cache it, so it gets faster and sturdier as it grows, not slower. The opposite of the server model, where traffic is a bill.</p>
+        <h3 class="rv-pillar-t">Stays up when you log off</h3>
+        <p>Your room doesn't go offline when you do: while other members use it, their peers keep it available. As demand for a room grows, more peers host it, so capacity grows with demand instead of turning into a hosting bill.</p>
       </div>
     </div>
   </div>
@@ -157,6 +157,7 @@
       <a class="rv-btn rv-btn-primary" href="{{ "quickstart/" | relURL }}">Install Freenet &amp; Join River
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
+      <a class="rv-btn rv-btn-ghost" href="{{ "try/" | relURL }}">Try it in your browser first</a>
     </div>
   </div>
 </section>
@@ -242,7 +243,8 @@
           Still alpha
         </h3>
         <ul>
-          <li>Desktop only (Windows, macOS, Linux); no mobile app yet</li>
+          <li>Installing Freenet needs a desktop (Windows, macOS, Linux); no mobile app yet</li>
+          <li>The in-browser demo runs on a peer we host, so it is centralized; install Freenet to run your own</li>
           <li>Your Freenet peer sends diagnostic telemetry (peer activity, general system info) to help debug the network</li>
           <li>Metadata isn't hidden: whether a room exists, its size, and message timing are observable</li>
           <li>Not for sensitive communications yet</li>
@@ -268,11 +270,12 @@
   <div class="rv-wrap">
     <div class="rv-final-box">
       <h2 class="rv-h2">The developers are in the room right now</h2>
-      <p>Join the official room where Freenet's developers and users hang out. It's the fastest way to see peer-to-peer chat working.</p>
+      <p>Join Freenet's developers and users in the official room. Open it in your browser, no install needed.</p>
       <div class="rv-final-cta">
-        <a class="rv-btn rv-btn-oncolor" href="{{ "quickstart/" | relURL }}">Install Freenet &amp; Join River
+        <a class="rv-btn rv-btn-oncolor" href="{{ "try/" | relURL }}">Open the live room
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
+        <a class="rv-btn rv-btn-ghost-oncolor" href="{{ "quickstart/" | relURL }}">Install Freenet</a>
         <a class="rv-btn rv-btn-ghost-oncolor" href="https://github.com/freenet/river">River on GitHub</a>
       </div>
     </div>
