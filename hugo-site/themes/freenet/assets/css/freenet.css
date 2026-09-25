@@ -465,6 +465,10 @@ h1, h2, h3, h4, h5, h6 {
     color: #000000;
     font-family: var(--font-display);
     letter-spacing: -0.02em;
+    /* Outfit's word space is narrow, and the negative tracking above narrows
+       it further: "Works today" read as "Workstoday". This restores a visible
+       gap between words without loosening the letters. */
+    word-spacing: 0.1em;
 }
 
 h1 {
