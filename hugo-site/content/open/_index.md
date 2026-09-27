@@ -1,5 +1,8 @@
 ---
 title: "Open a Freenet link"
+description:
+  "Open an app that runs on your own computer, not on freenet.org's server -- on your own peer, in
+  your browser with no install, or by installing Freenet."
 date: 2026-09-27
 draft: false
 layout: "single"

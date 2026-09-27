@@ -49,6 +49,16 @@
     color: var(--text);
   }
 </style>
+<noscript>
+  <style>
+    /* Without JavaScript this page can't read the fragment or build any
+       destination link, so the "reading" placeholder would otherwise sit
+       on screen forever alongside the message below. */
+    #open-link-loading {
+      display: none;
+    }
+  </style>
+</noscript>
 
 <div id="open-link">
   <div id="open-link-loading" class="open-link-state">
@@ -126,9 +136,10 @@
       return map;
     })();
     var CONTRACT_KEY_BYTES = 32;
-    // Longest a genuine 32-byte id can encode to. Rejecting anything longer
-    // before decoding keeps a pasted wall of text from making this page do
-    // O(n^2) bignum work on itself.
+    // A genuine 32-byte id encodes to at most 44 base58 characters; 64 is a
+    // generous ceiling above that. Rejecting anything longer before decoding
+    // keeps a pasted wall of text from making this page do O(n^2) bignum
+    // work on itself.
     var MAX_CANDIDATE_ID_LEN = 64;
     var MAX_REST_LEN = 2000;
 
@@ -187,9 +198,9 @@
     // (freenet-stdlib's ContractInstanceId::from_base58) silently zero-pads
     // a short or malformed decode instead of rejecting it, so a bare
     // length/charset check is not enough on its own. Re-encoding the
-    // decoded bytes and comparing to the original text is the only way to
-    // be sure the id means what it says, rather than being a short string
-    // that happens to decode to *some* 32-byte value.
+    // decoded bytes and comparing to the original text is what catches a
+    // short string that decodes to *some* 32-byte value rather than the one
+    // the text actually names.
     function parseContractId(candidate) {
       if (
         candidate.length === 0 ||
@@ -209,7 +220,31 @@
     // never parsed apart here, only checked so it cannot make a browser (or
     // a future native freenet:// handler) treat it as something other than
     // a sub-path of the fixed prefix each destination button hard-codes.
-    var REST_ALLOWED = /^[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*$/;
+    // `{}|^` are added to the RFC 3986 unreserved/reserved set because they
+    // are NOT in the WHATWG fragment percent-encode set, so a browser leaves
+    // them unencoded in `location.hash` -- rejecting them here would show
+    // "this link looks broken" for an otherwise-valid app link that happens
+    // to use one.
+    var REST_ALLOWED = /^[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%{}|^]*$/;
+
+    // A path segment that is a single- or double-dot segment once percent-
+    // decoded, per the WHATWG URL Standard's "remove dot segments" rules
+    // (case-insensitive; the comparison is against the raw, still-encoded
+    // segment text, exactly as a browser does it -- it does not recurse, so
+    // this does not need to either). Left unchecked, `%2e%2e` would pass a
+    // literal `"."`/`".."` comparison but still resolve as `..` once the
+    // browser navigates the href, letting a path segment escape the fixed
+    // `/v1/contract/web/<id>/` prefix on the local and try.freenet.org
+    // buttons -- verified: `%2e%2e/<other-id>/` opens a DIFFERENT contract
+    // than the one this page displays.
+    function isDotSegment(segment) {
+      var s = segment.toLowerCase();
+      return s === "." || s === "%2e";
+    }
+    function isDotDotSegment(segment) {
+      var s = segment.toLowerCase();
+      return s === ".." || s === ".%2e" || s === "%2e." || s === "%2e%2e";
+    }
 
     function validateRest(rest) {
       if (rest.length > MAX_REST_LEN) return false;
@@ -217,10 +252,24 @@
       // Blocks a "//host/..." path that some URL parsers would read as a
       // new authority component.
       if (rest.indexOf("//") === 0) return false;
+
+      // Every '%' must start a well-formed two-hex-digit escape and must not
+      // encode a control character. A browser leaves an already-encoded
+      // fragment alone, so this mostly guards a *future* native handler that
+      // may decode the path itself.
+      for (var i = 0; i < rest.length; i++) {
+        if (rest.charAt(i) === "%") {
+          var hex = rest.substr(i + 1, 2);
+          if (!/^[0-9A-Fa-f]{2}$/.test(hex)) return false;
+          var code = parseInt(hex, 16);
+          if (code <= 0x1f || code === 0x7f) return false;
+        }
+      }
+
       var pathPart = rest.split(/[?#]/)[0];
       var segments = pathPart.split("/");
-      for (var i = 0; i < segments.length; i++) {
-        if (segments[i] === "." || segments[i] === "..") return false;
+      for (var j = 0; j < segments.length; j++) {
+        if (isDotSegment(segments[j]) || isDotDotSegment(segments[j])) return false;
       }
       return true;
     }
@@ -245,7 +294,7 @@
       }
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
+    function processFragment() {
       document.getElementById("open-link-loading").style.display = "none";
 
       // Everything after the FIRST '#' is the fragment; a second literal
@@ -266,9 +315,11 @@
       }
 
       // textContent only -- the fragment is attacker-controlled and must
-      // never be written into the DOM as HTML.
-      document.getElementById("open-link-id").textContent =
-        contractId.slice(0, 6) + "…" + contractId.slice(-4);
+      // never be written into the DOM as HTML. The full id is shown (not a
+      // truncated slice) so a viewer can actually compare it against the
+      // one they expect, rather than a handful of characters an attacker
+      // could plausibly grind a lookalike for.
+      document.getElementById("open-link-id").textContent = contractId;
 
       // The scheme and host are always this fixed literal, never derived
       // from the fragment, so nothing in `rest` can turn these into a
@@ -280,6 +331,12 @@
         "https://try.freenet.org/v1/contract/web/" + contractId + parts.rest;
 
       show("open-link-valid");
-    });
+    }
+
+    document.addEventListener("DOMContentLoaded", processFragment);
+    // Re-run if the fragment changes without a full page load (e.g. a
+    // visitor edits the address bar in place), so the buttons never point
+    // somewhere other than what the page currently displays.
+    window.addEventListener("hashchange", processFragment);
   })();
 </script>
