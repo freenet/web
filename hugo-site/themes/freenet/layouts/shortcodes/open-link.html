@@ -1,0 +1,342 @@
+<style>
+  .open-link {
+    max-width: 480px;
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background-color: var(--surface-soft);
+    color: var(--text);
+  }
+
+  .open-link h2 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 1.15rem;
+    color: var(--text-strong);
+  }
+
+  .open-link p {
+    margin: 0 0 1rem 0;
+    line-height: 1.6;
+  }
+
+  .open-link code {
+    word-break: break-all;
+  }
+
+  .open-link-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .open-link-option .button {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .open-link-note {
+    margin: 0.375rem 0 0 0 !important;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  .open-link-devnote {
+    max-width: 480px;
+    margin: 0.5rem 0 1.5rem 0;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+</style>
+<noscript>
+  <style>
+    /* Without JavaScript this page can't read the fragment or build any
+       destination link, so the "reading" placeholder would otherwise sit
+       on screen forever alongside the message below. */
+    #open-link-loading {
+      display: none;
+    }
+  </style>
+</noscript>
+
+<div id="open-link">
+  <div id="open-link-loading" class="open-link-state">
+    <p>Reading the link&hellip;</p>
+  </div>
+
+  <div id="open-link-missing" class="open-link-state" style="display: none">
+    <h2>No link yet</h2>
+    <p>
+      This page opens links to apps on Freenet. If you followed a share link and landed here with
+      nothing after the <code>#</code>, the full link probably wasn't copied.
+    </p>
+    <a class="button" href="/quickstart/">Get Freenet</a>
+  </div>
+
+  <div id="open-link-invalid" class="open-link-state" style="display: none">
+    <h2>This link looks broken</h2>
+    <p>
+      The part after the <code>#</code> doesn't look like a valid Freenet address. It may have been
+      cut off when it was copied or shared. Ask whoever sent it for a fresh link.
+    </p>
+    <a class="button" href="/quickstart/">Get Freenet</a>
+  </div>
+
+  <div id="open-link-valid" class="open-link-state" style="display: none">
+    <h2>Open this link</h2>
+    <p>This link points to a Freenet app: <code id="open-link-id"></code></p>
+
+    <div class="open-link-buttons">
+      <div class="open-link-option">
+        <a id="open-link-scheme" class="button is-primary" href="#">Open in Freenet</a>
+        <p class="open-link-note">
+          Needs a Freenet install that has registered this link type on your computer. If nothing
+          happens, try the option below.
+        </p>
+      </div>
+      <div class="open-link-option">
+        <a id="open-link-local" class="button" href="#" target="_blank" rel="noopener noreferrer"
+          >Open on this computer</a
+        >
+        <p class="open-link-note">
+          Use this if Freenet is already installed and running on this computer.
+        </p>
+      </div>
+      <div class="open-link-option">
+        <a id="open-link-try" class="button" href="#" target="_blank" rel="noopener noreferrer"
+          >Use in your browser</a
+        >
+        <p class="open-link-note">No install. Runs on a peer we host, not yours.</p>
+      </div>
+      <div class="open-link-option">
+        <a class="button" href="/quickstart/">Get Freenet</a>
+        <p class="open-link-note">
+          Install your own peer. Free, and it only takes a couple of minutes.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <noscript>
+    <p>This page needs JavaScript to open Freenet links.</p>
+  </noscript>
+</div>
+
+<script>
+  (function () {
+    // Standard base58 (Bitcoin alphabet), matching freenet-stdlib's
+    // ContractInstanceId::encode/from_base58 (contract_interface/key.rs).
+    var B58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    var B58_INDEX = (function () {
+      var map = Object.create(null);
+      for (var i = 0; i < B58_ALPHABET.length; i++) {
+        map[B58_ALPHABET.charAt(i)] = i;
+      }
+      return map;
+    })();
+    var CONTRACT_KEY_BYTES = 32;
+    // A genuine 32-byte id encodes to at most 44 base58 characters; 64 is a
+    // generous ceiling above that. Rejecting anything longer before decoding
+    // keeps a pasted wall of text from making this page do O(n^2) bignum
+    // work on itself.
+    var MAX_CANDIDATE_ID_LEN = 64;
+    var MAX_REST_LEN = 2000;
+
+    function base58Decode(input) {
+      var bytes = [0];
+      var i, j, carry, value;
+      for (i = 0; i < input.length; i++) {
+        value = B58_INDEX[input.charAt(i)];
+        if (value === undefined) return null;
+        carry = value;
+        for (j = 0; j < bytes.length; j++) {
+          carry += bytes[j] * 58;
+          bytes[j] = carry & 0xff;
+          carry >>= 8;
+        }
+        while (carry > 0) {
+          bytes.push(carry & 0xff);
+          carry >>= 8;
+        }
+      }
+      for (i = 0; i < input.length && input.charAt(i) === "1"; i++) {
+        bytes.push(0);
+      }
+      return bytes.reverse();
+    }
+
+    function base58Encode(bytes) {
+      var digits = [0];
+      var i, j, carry;
+      for (i = 0; i < bytes.length; i++) {
+        carry = bytes[i];
+        for (j = 0; j < digits.length; j++) {
+          carry += digits[j] << 8;
+          digits[j] = carry % 58;
+          carry = Math.floor(carry / 58);
+        }
+        while (carry > 0) {
+          digits.push(carry % 58);
+          carry = Math.floor(carry / 58);
+        }
+      }
+      var out = "";
+      for (i = 0; i < bytes.length && bytes[i] === 0; i++) {
+        out += "1";
+      }
+      for (i = digits.length - 1; i >= 0; i--) {
+        out += B58_ALPHABET.charAt(digits[i]);
+      }
+      return out;
+    }
+
+    // Strict, round-trip validation of a contract id from an untrusted URL
+    // fragment. This mirrors the defense freenet-core's own webapp cache
+    // sweep uses on the same kind of input (crates/core/src/server/
+    // path_handlers.rs, scan_webapp_cache): the underlying decoder
+    // (freenet-stdlib's ContractInstanceId::from_base58) silently zero-pads
+    // a short or malformed decode instead of rejecting it, so a bare
+    // length/charset check is not enough on its own. Re-encoding the
+    // decoded bytes and comparing to the original text is what catches a
+    // short string that decodes to *some* 32-byte value rather than the one
+    // the text actually names.
+    function parseContractId(candidate) {
+      if (
+        candidate.length === 0 ||
+        candidate.length > MAX_CANDIDATE_ID_LEN ||
+        !/^[1-9A-HJ-NP-Za-km-z]+$/.test(candidate)
+      ) {
+        return null;
+      }
+      var decoded = base58Decode(candidate);
+      if (!decoded || decoded.length !== CONTRACT_KEY_BYTES) return null;
+      if (base58Encode(decoded) !== candidate) return null;
+      return candidate;
+    }
+
+    // Everything after the id is opaque to this page: an app's own path,
+    // query and nested fragment, copied verbatim from its local link. It is
+    // never parsed apart here, only checked so it cannot make a browser (or
+    // a future native freenet:// handler) treat it as something other than
+    // a sub-path of the fixed prefix each destination button hard-codes.
+    // `{}|^` are added to the RFC 3986 unreserved/reserved set because they
+    // are NOT in the WHATWG fragment percent-encode set, so a browser leaves
+    // them unencoded in `location.hash` -- rejecting them here would show
+    // "this link looks broken" for an otherwise-valid app link that happens
+    // to use one.
+    var REST_ALLOWED = /^[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%{}|^]*$/;
+
+    // A path segment that is a single- or double-dot segment once percent-
+    // decoded, per the WHATWG URL Standard's "remove dot segments" rules
+    // (case-insensitive; the comparison is against the raw, still-encoded
+    // segment text, exactly as a browser does it -- it does not recurse, so
+    // this does not need to either). Left unchecked, `%2e%2e` would pass a
+    // literal `"."`/`".."` comparison but still resolve as `..` once the
+    // browser navigates the href, letting a path segment escape the fixed
+    // `/v1/contract/web/<id>/` prefix on the local and try.freenet.org
+    // buttons -- verified: `%2e%2e/<other-id>/` opens a DIFFERENT contract
+    // than the one this page displays.
+    function isDotSegment(segment) {
+      var s = segment.toLowerCase();
+      return s === "." || s === "%2e";
+    }
+    function isDotDotSegment(segment) {
+      var s = segment.toLowerCase();
+      return s === ".." || s === ".%2e" || s === "%2e." || s === "%2e%2e";
+    }
+
+    function validateRest(rest) {
+      if (rest.length > MAX_REST_LEN) return false;
+      if (!REST_ALLOWED.test(rest)) return false;
+      // Blocks a "//host/..." path that some URL parsers would read as a
+      // new authority component.
+      if (rest.indexOf("//") === 0) return false;
+
+      // Every '%' must start a well-formed two-hex-digit escape and must not
+      // encode a control character. A browser leaves an already-encoded
+      // fragment alone, so this mostly guards a *future* native handler that
+      // may decode the path itself.
+      for (var i = 0; i < rest.length; i++) {
+        if (rest.charAt(i) === "%") {
+          var hex = rest.substr(i + 1, 2);
+          if (!/^[0-9A-Fa-f]{2}$/.test(hex)) return false;
+          var code = parseInt(hex, 16);
+          if (code <= 0x1f || code === 0x7f) return false;
+        }
+      }
+
+      var pathPart = rest.split(/[?#]/)[0];
+      var segments = pathPart.split("/");
+      for (var j = 0; j < segments.length; j++) {
+        if (isDotSegment(segments[j]) || isDotDotSegment(segments[j])) return false;
+      }
+      return true;
+    }
+
+    function splitFragment(raw) {
+      var i = 0;
+      while (
+        i < raw.length &&
+        raw.charAt(i) !== "/" &&
+        raw.charAt(i) !== "?" &&
+        raw.charAt(i) !== "#"
+      ) {
+        i++;
+      }
+      return { id: raw.slice(0, i), rest: raw.slice(i) };
+    }
+
+    function show(stateId) {
+      var states = ["open-link-missing", "open-link-invalid", "open-link-valid"];
+      for (var i = 0; i < states.length; i++) {
+        document.getElementById(states[i]).style.display = states[i] === stateId ? "" : "none";
+      }
+    }
+
+    function processFragment() {
+      document.getElementById("open-link-loading").style.display = "none";
+
+      // Everything after the FIRST '#' is the fragment; a second literal
+      // '#' inside it (the app's own fragment) is just text here, never a
+      // new browser fragment. Fragments never reach the server, so this
+      // page -- and freenet.org -- never learns what a visitor opens.
+      var raw = window.location.hash.slice(1);
+      if (raw.length === 0) {
+        show("open-link-missing");
+        return;
+      }
+
+      var parts = splitFragment(raw);
+      var contractId = parseContractId(parts.id);
+      if (!contractId || !validateRest(parts.rest)) {
+        show("open-link-invalid");
+        return;
+      }
+
+      // textContent only -- the fragment is attacker-controlled and must
+      // never be written into the DOM as HTML. The full id is shown (not a
+      // truncated slice) so a viewer can actually compare it against the
+      // one they expect, rather than a handful of characters an attacker
+      // could plausibly grind a lookalike for.
+      document.getElementById("open-link-id").textContent = contractId;
+
+      // The scheme and host are always this fixed literal, never derived
+      // from the fragment, so nothing in `rest` can turn these into a
+      // link to somewhere else.
+      document.getElementById("open-link-scheme").href = "freenet://" + contractId + parts.rest;
+      document.getElementById("open-link-local").href =
+        "http://127.0.0.1:7509/v1/contract/web/" + contractId + parts.rest;
+      document.getElementById("open-link-try").href =
+        "https://try.freenet.org/v1/contract/web/" + contractId + parts.rest;
+
+      show("open-link-valid");
+    }
+
+    document.addEventListener("DOMContentLoaded", processFragment);
+    // Re-run if the fragment changes without a full page load (e.g. a
+    // visitor edits the address bar in place), so the buttons never point
+    // somewhere other than what the page currently displays.
+    window.addEventListener("hashchange", processFragment);
+  })();
+</script>
