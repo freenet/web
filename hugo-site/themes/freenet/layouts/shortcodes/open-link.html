@@ -88,15 +88,19 @@
     <p>This link points to a Freenet app: <code id="open-link-id"></code></p>
 
     <div class="open-link-buttons">
+      <!-- "Open on this computer" is the primary (highlighted, first) button
+           because installers don't register the freenet:// scheme yet
+           (freenet-core#5726 tracks that work) -- until they do, "Open in
+           Freenet" below does nothing for almost every visitor. Swap the
+           `is-primary` class and the button order back to lead with "Open in
+           Freenet" once installers register the scheme. -->
       <div class="open-link-option">
-        <a id="open-link-scheme" class="button is-primary" href="#">Open in Freenet</a>
-        <p class="open-link-note">
-          Needs a Freenet install that has registered this link type on your computer. If nothing
-          happens, try the option below.
-        </p>
-      </div>
-      <div class="open-link-option">
-        <a id="open-link-local" class="button" href="#" target="_blank" rel="noopener noreferrer"
+        <a
+          id="open-link-local"
+          class="button is-primary"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
           >Open on this computer</a
         >
         <p class="open-link-note">
@@ -108,6 +112,13 @@
           >Use in your browser</a
         >
         <p class="open-link-note">No install. Runs on a peer we host, not yours.</p>
+      </div>
+      <div class="open-link-option">
+        <a id="open-link-scheme" class="button" href="#">Open in Freenet</a>
+        <p class="open-link-note">
+          Only works once your Freenet install registers freenet:// links (coming soon). Try the
+          options above instead.
+        </p>
       </div>
       <div class="open-link-option">
         <a class="button" href="/quickstart/">Get Freenet</a>
