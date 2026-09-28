@@ -50,7 +50,9 @@ https://freenet.org/open#6FzSeAUKcqJrveKyU8RJgGKc5jRB1Z2juvxXtwTA4Em9/#store=Ab3
   visitor's own local peer (`http://127.0.0.1:7509/v1/contract/web/<contract-id>/...`), for anyone
   who already has Freenet installed and running.
 - **Use in your browser** -- the same target on `try.freenet.org`, a peer we host, for anyone who
-  wants to look without installing anything.
+  wants to look without installing anything. Apps that hold keys a visitor should keep on their own
+  peer, currently just the Ghost Key vault, get a note saying so instead of this button; the list is
+  `LOCAL_ONLY` in `open-link.html`.
 - **Open in Freenet** -- `freenet:<contract-id>/<path>...`, which the visitor's own Freenet opens
   on their local peer. The handler ([freenet-core#5726](https://github.com/freenet/freenet-core/issues/5726))
   ships in the first release after 0.2.139, so until peers have updated this button is styled and

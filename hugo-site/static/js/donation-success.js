@@ -315,9 +315,10 @@ function displayCertificate(armoredCertificate, armoredSigningKey) {
         const certB64 = urlSafeBase64(armoredCertificate);
         const skB64 = urlSafeBase64(armoredSigningKey);
         const contractId = 'DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N';
-        // Use localhost rather than the literal 127.0.0.1: the node binds its
-        // API on the IPv6 loopback by default, so on Windows "localhost" (::1)
-        // is reachable while the literal IPv4 address is refused.
+        // localhost rather than the literal 127.0.0.1 dates from when the node
+        // served its API on the IPv6 loopback only, so Windows refused the
+        // IPv4 literal. Nodes serve both since freenet-core#4332; localhost
+        // still reaches peers older than that.
         // If the donor arrived from an app, hand the vault the way back so it
         // can offer a one-click return once the key has actually landed.
         // Re-validated here because it has been through a Stripe redirect;

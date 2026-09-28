@@ -107,12 +107,13 @@
           Use this if Freenet is already installed and running on this computer.
         </p>
       </div>
-      <div class="open-link-option">
+      <div id="open-link-try-option" class="open-link-option">
         <a id="open-link-try" class="button" href="#" target="_blank" rel="noopener noreferrer"
           >Use in your browser</a
         >
         <p class="open-link-note">No install. Runs on a peer we host, not yours.</p>
       </div>
+      <p id="open-link-local-only" class="open-link-note" style="display: none"></p>
       <div class="open-link-option">
         <a id="open-link-scheme" class="button" href="#">Open in Freenet</a>
         <p class="open-link-note">
@@ -147,6 +148,18 @@
       return map;
     })();
     var CONTRACT_KEY_BYTES = 32;
+
+    // Apps that hold keys a visitor should keep on their own peer. For these
+    // the "Use in your browser" button is replaced by the reason:
+    // try.freenet.org is for trying Freenet out, and anything stored there
+    // lives on a peer we host. Keyed by the app's web container id, so a
+    // re-key of the app must update its entry here too.
+    var LOCAL_ONLY = Object.create(null);
+    // Ghost Key vault (freenet/ghostkeys, published-contract/contract-id.txt).
+    LOCAL_ONLY["DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N"] =
+      "This is the Ghost Key vault, so open it on your own peer. " +
+      "try.freenet.org is for trying Freenet out, and a Ghost Key kept there lives on a " +
+      "peer we host instead of your computer.";
     // A genuine 32-byte id encodes to at most 44 base58 characters; 64 is a
     // generous ceiling above that. Rejecting anything longer before decoding
     // keeps a pasted wall of text from making this page do O(n^2) bignum
@@ -343,6 +356,14 @@
         "http://127.0.0.1:7509/v1/contract/web/" + contractId + parts.rest;
       document.getElementById("open-link-try").href =
         "https://try.freenet.org/v1/contract/web/" + contractId + parts.rest;
+
+      // Set both ways every time: hashchange can move between a local-only
+      // app and any other.
+      var localOnly = LOCAL_ONLY[contractId];
+      document.getElementById("open-link-try-option").style.display = localOnly ? "none" : "";
+      var localOnlyNote = document.getElementById("open-link-local-only");
+      localOnlyNote.textContent = localOnly || "";
+      localOnlyNote.style.display = localOnly ? "" : "none";
 
       show("open-link-valid");
     }

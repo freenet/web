@@ -91,7 +91,7 @@ Anonymous, Sybil-resistant identity certificates. Donate a small amount to
 mint a key; apps can verify the certificate without learning who you are. Used
 across Freenet apps as a spam- and abuse-resistance primitive.
 
-→ [Get a Ghost Key](/ghostkey/) · [github.com/freenet/ghostkeys](https://github.com/freenet/ghostkeys)
+→ [Get a Ghost Key](/ghostkey/) · [Open your vault](/open/#DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N/) · [github.com/freenet/ghostkeys](https://github.com/freenet/ghostkeys)
 
 ### freenet-scaffold {#freenet-scaffold}
 

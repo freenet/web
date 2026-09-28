@@ -31,16 +31,23 @@ function runPage(hash) {
     getElementById: el,
     addEventListener: (ev, fn) => (listeners[ev] = fn),
   };
+  const windowListeners = {};
   const window = {
     location: { hash },
-    addEventListener: () => {},
+    addEventListener: (ev, fn) => (windowListeners[ev] = fn),
   };
   vm.runInNewContext(match[1], { document, window });
   listeners.DOMContentLoaded();
-  const shown = ["open-link-missing", "open-link-invalid", "open-link-valid"].find(
-    (id) => el(id).style.display === "",
-  );
-  return { shown, el };
+  const shown = () =>
+    ["open-link-missing", "open-link-invalid", "open-link-valid"].find(
+      (id) => el(id).style.display === "",
+    );
+  const navigate = (newHash) => {
+    window.location.hash = newHash;
+    windowListeners.hashchange();
+    return shown();
+  };
+  return { shown: shown(), el, navigate };
 }
 
 const { vectors } = JSON.parse(
@@ -70,6 +77,41 @@ for (const v of vectors) {
     console.error(`FAIL ${JSON.stringify(v.raw.slice(0, 80))} (${v.note}): ${problem}`);
   }
 }
+
+// Local-only apps (the Ghost Key vault): no try.freenet.org button, a note
+// saying why instead, and the local button unaffected. Driven through a
+// hashchange to an ordinary id too, since both states must be reset.
+const VAULT = "DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N";
+const OTHER = "6FzSeAUKcqJrveKyU8RJgGKc5jRB1Z2juvxXtwTA4Em9";
+{
+  const check = (cond, what) => {
+    if (!cond) {
+      failures++;
+      console.error(`FAIL local-only: ${what}`);
+    }
+  };
+  const tryHidden = (el) => el("open-link-try-option").style.display === "none";
+  const noteShown = (el) =>
+    el("open-link-local-only").style.display === "" &&
+    el("open-link-local-only").textContent.length > 0;
+
+  const { shown, el, navigate } = runPage("#" + VAULT + "/");
+  check(shown === "open-link-valid", `vault link showed ${shown}`);
+  check(tryHidden(el), "try option visible for the vault");
+  check(noteShown(el), "no local-only note for the vault");
+  check(
+    el("open-link-local").href === `http://127.0.0.1:7509/v1/contract/web/${VAULT}/`,
+    `vault local button ${el("open-link-local").href}`,
+  );
+
+  check(navigate("#" + OTHER + "/") === "open-link-valid", "other id not valid");
+  check(!tryHidden(el), "try option still hidden after leaving the vault");
+  check(el("open-link-local-only").style.display === "none", "note still shown after leaving the vault");
+
+  const fresh = runPage("#" + OTHER + "/");
+  check(!tryHidden(fresh.el), "try option hidden for an ordinary id");
+}
+
 console.log(`${vectors.length} vectors, ${failures} failures`);
 if (vectors.length < 40) {
   console.error("vector file looks truncated");
