@@ -144,7 +144,8 @@ generate_set() {
 
     for amount in "${AMOUNTS[@]}"; do
         # NOTE: the JSON key "delegate-key-created" is baked into the cert `info`
-        # field of every donation ever minted and is parsed by River's UI. DO NOT
+        # field of every donation ever minted and is parsed by the ghostkeys Vault
+        # UI (and Harvest) as "YYYY-MM-DD HH:MM:SS". DO NOT
         # rename it or we lose backward compatibility with every historical ghost
         # key in the wild. See freenet/web#24.
         local info="{\"action\":\"freenet-donation\",\"amount\":$amount,\"delegate-key-created\":\"$created\"}"
