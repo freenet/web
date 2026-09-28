@@ -55,10 +55,13 @@ for (const v of vectors) {
     problem = `expected valid=${v.valid}, page showed ${shown}`;
   } else if (valid) {
     const local = el("open-link-local").href;
+    const tryIt = el("open-link-try").href;
     const scheme = el("open-link-scheme").href;
     const want = "http://127.0.0.1:7509" + v.local_path;
+    const wantTry = "https://try.freenet.org" + v.local_path;
     const rest = v.local_path.slice("/v1/contract/web/".length);
     if (local !== want) problem = `local button ${local} != ${want}`;
+    else if (tryIt !== wantTry) problem = `try button ${tryIt} != ${wantTry}`;
     else if (scheme !== "freenet:" + rest)
       problem = `scheme button ${scheme} != freenet:${rest}`;
   }

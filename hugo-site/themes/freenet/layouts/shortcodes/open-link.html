@@ -229,7 +229,7 @@
     // Everything after the id is opaque to this page: an app's own path,
     // query and nested fragment, copied verbatim from its local link. It is
     // never parsed apart here, only checked so it cannot make a browser (or
-    // a future native freenet:// handler) treat it as something other than
+    // the freenet:// handler, which applies the same rules) treat it as something other than
     // a sub-path of the fixed prefix each destination button hard-codes.
     // `{}|^` are added to the RFC 3986 unreserved/reserved set because they
     // are NOT in the WHATWG fragment percent-encode set, so a browser leaves
@@ -266,8 +266,8 @@
 
       // Every '%' must start a well-formed two-hex-digit escape and must not
       // encode a control character. A browser leaves an already-encoded
-      // fragment alone, so this mostly guards a *future* native handler that
-      // may decode the path itself.
+      // fragment alone, so this mostly keeps the page's rules identical to the
+      // freenet:// handler's, which enforces the same check.
       for (var i = 0; i < rest.length; i++) {
         if (rest.charAt(i) === "%") {
           var hex = rest.substr(i + 1, 2);
