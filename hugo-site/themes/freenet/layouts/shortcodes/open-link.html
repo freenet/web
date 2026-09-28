@@ -89,11 +89,11 @@
 
     <div class="open-link-buttons">
       <!-- "Open on this computer" is the primary (highlighted, first) button
-           because installers don't register the freenet:// scheme yet
-           (freenet-core#5726 tracks that work) -- until they do, "Open in
-           Freenet" below does nothing for almost every visitor. Swap the
-           `is-primary` class and the button order back to lead with "Open in
-           Freenet" once installers register the scheme. -->
+           until the freenet: link handler (freenet-core#5726, merged in
+           freenet-core#5753) has shipped in a release and peers have
+           auto-updated to it -- until then, "Open in Freenet" below does
+           nothing for most visitors. Swap the `is-primary` class and the
+           button order back to lead with "Open in Freenet" after that. -->
       <div class="open-link-option">
         <a
           id="open-link-local"
@@ -116,8 +116,8 @@
       <div class="open-link-option">
         <a id="open-link-scheme" class="button" href="#">Open in Freenet</a>
         <p class="open-link-note">
-          Only works once your Freenet install registers freenet:// links (coming soon). Try the
-          options above instead.
+          Needs a Freenet release newer than 0.2.139 (it registers freenet: links). If nothing
+          happens, try the options above instead.
         </p>
       </div>
       <div class="open-link-option">
@@ -335,7 +335,10 @@
       // The scheme and host are always this fixed literal, never derived
       // from the fragment, so nothing in `rest` can turn these into a
       // link to somewhere else.
-      document.getElementById("open-link-scheme").href = "freenet://" + contractId + parts.rest;
+      // The authority-less form: in "freenet://<id>" the case-sensitive id is
+      // the URL host, which some desktops lowercase (Qt/KDE) before the
+      // handler sees it. The freenet-core handler accepts both forms.
+      document.getElementById("open-link-scheme").href = "freenet:" + contractId + parts.rest;
       document.getElementById("open-link-local").href =
         "http://127.0.0.1:7509/v1/contract/web/" + contractId + parts.rest;
       document.getElementById("open-link-try").href =
