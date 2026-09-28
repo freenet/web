@@ -51,11 +51,12 @@ https://freenet.org/open#6FzSeAUKcqJrveKyU8RJgGKc5jRB1Z2juvxXtwTA4Em9/#store=Ab3
   who already has Freenet installed and running.
 - **Use in your browser** -- the same target on `try.freenet.org`, a peer we host, for anyone who
   wants to look without installing anything.
-- **Open in Freenet** -- `freenet://<contract-id>/<path>...`. Works once a visitor's Freenet install
-  has registered the `freenet://` link type. That handler is not shipped yet
-  ([freenet-core#5726](https://github.com/freenet/freenet-core/issues/5726) tracks it), so this
-  button is styled and ordered as a secondary option for now -- swap it back to primary and first
-  once installers register the scheme.
+- **Open in Freenet** -- `freenet:<contract-id>/<path>...`, which the visitor's own Freenet opens
+  on their local peer. The handler ([freenet-core#5726](https://github.com/freenet/freenet-core/issues/5726))
+  ships in the first release after 0.2.139, so until peers have updated this button is styled and
+  ordered as a secondary option. The link has no `//`: in `freenet://<contract-id>` the
+  case-sensitive contract id would be the URL's host, which some desktops lowercase before the
+  handler sees it. (The handler accepts both forms.)
 - **Get Freenet** -- the [install guide](/quickstart/).
 
 An invalid or truncated fragment shows a "this link looks broken" message instead of guessing at

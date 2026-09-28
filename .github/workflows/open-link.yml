@@ -1,0 +1,45 @@
+name: /open link validation
+
+# The /open page and freenet-core's freenet:// handler must accept exactly the
+# same links. Both are tested against one vector file, which lives in
+# freenet-core (crates/core/tests/data/share-link-vectors.json); this repo
+# keeps a copy. This workflow runs the page's own JS over the copy and fails
+# if the copy has drifted from freenet-core main.
+
+on:
+  pull_request:
+    paths:
+      - 'hugo-site/themes/freenet/layouts/shortcodes/open-link.html'
+      - 'hugo-site/tests/**'
+      - '.github/workflows/open-link.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'hugo-site/themes/freenet/layouts/shortcodes/open-link.html'
+      - 'hugo-site/tests/**'
+      - '.github/workflows/open-link.yml'
+  schedule:
+    # Catch a rule change on the freenet-core side, which no change here
+    # would trigger.
+    - cron: '41 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  vectors:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Page JS against the shared vectors
+        run: node hugo-site/tests/open-link-vectors.test.mjs
+      - name: Vector copy matches freenet-core main
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/freenet/freenet-core/main/crates/core/tests/data/share-link-vectors.json \
+            -o /tmp/upstream-vectors.json
+          if ! diff -u /tmp/upstream-vectors.json hugo-site/tests/share-link-vectors.json; then
+            echo "::error::hugo-site/tests/share-link-vectors.json differs from freenet-core main. Copy it over, and update open-link.html if the rules changed."
+            exit 1
+          fi
