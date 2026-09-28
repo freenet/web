@@ -361,6 +361,14 @@ pre code {
     max-width: 1344px;
 }
 
+/* ...but cap the intro as a whole, not just its paragraphs. Capping only the
+   paragraphs left code blocks, tables, tabs and alerts running the full shell
+   width beside them, so the prose looked hard-wrapped in a narrow strip. The
+   card grid below keeps the full width. */
+.container.is-section-page .page-intro {
+    max-width: var(--measure);
+}
+
 .page-list.is-grid {
     display: grid;
     gap: 1.5rem;
@@ -401,6 +409,9 @@ pre code {
 @media screen and (min-width: 1024px) {
     .container.is-prose .content > table,
     .container.is-prose .content > pre,
+    /* Hugo wraps every highlighted fence in <div class="highlight">, so the
+       bare `> pre` above never matched a fenced code block. */
+    .container.is-prose .content > .highlight,
     .container.is-prose .content > figure {
         margin-inline: calc((var(--measure-content) - var(--breakout)) / 2);
         width: var(--breakout);
