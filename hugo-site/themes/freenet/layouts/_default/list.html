@@ -1,5 +1,9 @@
 {{ define "main" }}
-  <div class="container{{ if .IsSection }} is-section-page{{ else }} is-prose{{ end }}">
+  {{/* The wide shell exists for the child-page card grid. A section with no
+       child pages (try, uninstall, ...) is just an article, and in the wide
+       shell its capped paragraphs sit beside full-width code blocks and
+       alerts, which reads as hard-wrapped text. */}}
+  <div class="container{{ if and .IsSection .Pages }} is-section-page{{ else }} is-prose{{ end }}">
     <h1 class="title">{{ .Title }}</h1>
     {{ if .IsSection }}
       <div class="content page-intro">
