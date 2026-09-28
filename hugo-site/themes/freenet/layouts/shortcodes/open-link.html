@@ -93,8 +93,7 @@
            freenet-core#5753) has shipped in a release and peers have
            auto-updated to it -- until then, "Open in Freenet" below does
            nothing for most visitors. Swap the `is-primary` class and the
-           button order back to lead with "Open in Freenet" after that, and
-           replace its "not in a Freenet release yet" note. -->
+           button order back to lead with "Open in Freenet" after that. -->
       <div class="open-link-option">
         <a
           id="open-link-local"
@@ -115,11 +114,18 @@
         <p class="open-link-note">No install. Runs on a peer we host, not yours.</p>
       </div>
       <p id="open-link-local-only" class="open-link-note" style="display: none"></p>
-      <div class="open-link-option">
+      <!-- HIDDEN until a Freenet release registers the freenet: link handler
+           (freenet-core#5726, merged in #5753 after 0.2.139 was cut). No
+           release has it yet, so the button only produced "no app can open
+           this link". The JS still fills in its href and the vector test
+           still checks it. TO RE-ENABLE once that release is out: delete
+           style="display: none" below, then see the comment above about
+           making this the primary button once peers have auto-updated. -->
+      <div id="open-link-scheme-option" class="open-link-option" style="display: none">
         <a id="open-link-scheme" class="button" href="#">Open in Freenet</a>
         <p class="open-link-note">
-          Not in a Freenet release yet: it arrives in the next one after 0.2.139, which teaches
-          your computer to open freenet: links. Until you have it, use the options above.
+          Opens it in the Freenet installed on this computer. If nothing happens, your Freenet may
+          be older than this feature: try the options above instead.
         </p>
       </div>
       <div class="open-link-option">

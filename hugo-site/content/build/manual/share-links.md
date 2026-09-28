@@ -44,7 +44,7 @@ https://freenet.org/open#6FzSeAUKcqJrveKyU8RJgGKc5jRB1Z2juvxXtwTA4Em9/#store=Ab3
 
 ## What the page does
 
-`/open` validates the contract id and shows four buttons, in this order:
+`/open` validates the contract id and shows these buttons, in this order:
 
 - **Open on this computer** (currently the highlighted, primary button) -- the target on the
   visitor's own local peer (`http://127.0.0.1:7509/v1/contract/web/<contract-id>/...`), for anyone
@@ -55,10 +55,10 @@ https://freenet.org/open#6FzSeAUKcqJrveKyU8RJgGKc5jRB1Z2juvxXtwTA4Em9/#store=Ab3
   `LOCAL_ONLY` in `open-link.html`.
 - **Open in Freenet** -- `freenet:<contract-id>/<path>...`, which the visitor's own Freenet opens
   on their local peer. The handler ([freenet-core#5726](https://github.com/freenet/freenet-core/issues/5726))
-  ships in the first release after 0.2.139, so until peers have updated this button is styled and
-  ordered as a secondary option. The link has no `//`: in `freenet://<contract-id>` the
-  case-sensitive contract id would be the URL's host, which some desktops lowercase before the
-  handler sees it. (The handler accepts both forms.)
+  ships in the first release after 0.2.139, so this button is hidden until that release is out,
+  and then shown as a secondary option until peers have updated. The link has no `//`: in
+  `freenet://<contract-id>` the case-sensitive contract id would be the URL's host, which some
+  desktops lowercase before the handler sees it. (The handler accepts both forms.)
 - **Get Freenet** -- the [install guide](/quickstart/).
 
 An invalid or truncated fragment shows a "this link looks broken" message instead of guessing at
