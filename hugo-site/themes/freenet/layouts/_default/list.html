@@ -9,6 +9,7 @@
       <div class="content page-intro">
         {{ .Content }}
       </div>
+      {{ if .Pages }}
       <div class="page-list{{ if not .Params.list_child_pages }} is-grid{{ end }}">
         {{ range .Pages }}
           <section class="child-entry">
@@ -29,6 +30,7 @@
           </section>
         {{ end }}
       </div>
+      {{ end }}
     {{ else }}
       {{ if eq .Section "news" }}
         {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
