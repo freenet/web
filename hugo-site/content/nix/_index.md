@@ -45,6 +45,7 @@ Add freenet-core as a flake input and hand its `freenet-node` package to your co
 
 ```nix
 {
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   inputs.freenet.url = "github:freenet/freenet-core/v0.2.139";
 
   outputs = { nixpkgs, freenet, ... }: {
