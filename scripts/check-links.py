@@ -269,6 +269,8 @@ def check(root):
             if resolved is None:
                 if reason is not None:
                     broken.append((source_key, reference, reason))
+            elif resolved in FRAGMENT_IS_DATA_PAGES:
+                continue  # an alias of /open still hands the fragment to its JS
             elif fragment not in pages[resolved].ids:
                 broken.append((source_key, reference, "no #%s on the target page" % fragment))
     return len(pages), broken
@@ -352,6 +354,7 @@ def self_test():
             <a href="/encoded-alias/#accented">good: alias whose refresh URL is encoded</a>
             <a href="/open/#6FzSeAUKcqJrveKyU8RJgGKc5jRB1Z2juvxXtwTA4Em9/">good: /open reads its fragment as data</a>
             <a href="/open#6FzSeAUKcqJrveKyU8RJgGKc5jRB1Z2juvxXtwTA4Em9/">good: same, without the slash</a>
+            <a href="/old-open/#6FzSeAUKcqJrveKyU8RJgGKc5jRB1Z2juvxXtwTA4Em9/">good: through an alias of /open</a>
             <a href="/about/#6FzSeAUKcqJrveKyU8RJgGKc5jRB1Z2juvxXtwTA4Em9/">BAD: only /open is exempt</a>
             <a href="/%2e%2e/%2e%2e/etc/hostname">BAD: must not escape the output tree</a>
             <img srcset="data:image/png;base64,iVBORw0KGgo= 1x">
@@ -366,6 +369,7 @@ def self_test():
         )
         write("about/index.html", "<p>hi</p>")
         write("open/index.html", "<p>reads location.hash</p>")
+        write("old-open/index.html", '<head><meta http-equiv="refresh" content="0; url=/open/"></head>')
         write("old-faq/index.html", '<head><meta http-equiv="refresh" content="0; url=/faq/"></head>')
         write("loop-a/index.html", '<head><meta http-equiv="refresh" content="0; url=/loop-b/"></head>')
         write("loop-b/index.html", '<head><meta http-equiv="refresh" content="0; url=/loop-a/"></head>')
