@@ -165,15 +165,52 @@ function generateTestCertificate() {
   displayCertificate(publicKey, privateKey, unblindedSignature);
 }
 
+// The notary certificate this payment was quoted. It must be the one we blind
+// against: the server signs with its pair, and notary keys rotate monthly.
+// localStorage is only a fallback (an API without this endpoint), because every
+// tab shares it and another checkout may have overwritten it with a different
+// month's certificate for the same amount.
+async function fetchQuotedNotaryCertificate(paymentIntentId) {
+  try {
+    const apiUrl = window.ghostkeyApiUrl;
+    // Bounded, so a hung request falls back instead of leaving the page
+    // spinning. AbortController rather than AbortSignal.timeout, which older
+    // browsers lack (it would throw and silently skip this fetch every time).
+    // The timer covers the body as well as the headers.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20000);
+    try {
+      const response = await fetch(
+        `${apiUrl}/notary-certificate/${encodeURIComponent(paymentIntentId)}`,
+        { signal: controller.signal }
+      );
+      if (!response.ok) {
+        console.warn("Could not fetch quoted notary certificate:", response.status);
+        return null;
+      }
+      const data = await response.json();
+      return data.notary_certificate_base64 || null;
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch (error) {
+    console.warn("Could not fetch quoted notary certificate:", error);
+    return null;
+  }
+}
+
 async function generateAndSignCertificate(paymentIntentId) {
   console.log("Starting generateAndSignCertificate");
   try {
-      // Read the canonical notary key first, fall back to the legacy
+      let notaryCertificateBase64 = await fetchQuotedNotaryCertificate(paymentIntentId);
+      // Fallback: read the canonical notary key first, then the legacy
       // delegate key for sessions opened before the rename. We write the
       // canonical key on migration so future reads are clean, but we do
       // NOT delete the legacy key for one release in case an old cached
       // tab reads it. Removal tracked for a future release in freenet/web#24.
-      let notaryCertificateBase64 = localStorage.getItem('notary_certificate_base64');
+      if (!notaryCertificateBase64) {
+        notaryCertificateBase64 = localStorage.getItem('notary_certificate_base64');
+      }
       if (!notaryCertificateBase64) {
         notaryCertificateBase64 = localStorage.getItem('delegate_certificate_base64');
         if (notaryCertificateBase64) {
@@ -209,9 +246,11 @@ async function generateAndSignCertificate(paymentIntentId) {
         headers: { 
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          payment_intent_id: paymentIntentId, 
-          blinded_ghost_key_base64: blindedPublicKey
+        body: JSON.stringify({
+          payment_intent_id: paymentIntentId,
+          blinded_ghost_key_base64: blindedPublicKey,
+          // Lets the server refuse a mismatch before spending the donation.
+          notary_certificate_base64: notaryCertificateBase64
         }),
         credentials: 'same-origin'
       });

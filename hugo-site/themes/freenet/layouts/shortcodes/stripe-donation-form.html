@@ -2,9 +2,10 @@
     <form id="payment-form">
     {{/* These tiers are NOT free to change. Each one needs a matching per-amount
          notary keypair on the API host (notary_certificate_{amount}.pem and
-         notary_signing_key_{amount}.pem, see rust/api/src/delegates.rs). An
-         amount with no keypair fails certificate signing AFTER the card has been
-         charged, leaving the donor paid up with no key.
+         notary_signing_key_{amount}.pem, see rust/api/src/delegates.rs), in the
+         flat files AND in every month of the notary schedule, so adding a tier
+         means a master-key session (rust/api/README.md). An amount with no
+         keypair fails when the donation is quoted, before any charge.
 
          Fixed tiers are also load-bearing for anonymity: the amount is written
          into the certificate and is visible to anyone who verifies it, so a

@@ -230,8 +230,9 @@ async fn main() {
                 .env("NOTARY_DIR")
                 .value_name("DIR")
                 .help(
-                    "Directory containing per-amount notary certificates and signing keys. \
-                     Falls back to the NOTARY_DIR env var and then to the legacy \
+                    "Directory containing per-amount notary certificates and signing keys, \
+                     optionally with a monthly schedule of YYYY-MM/ subdirectories \
+                     (see rust/api/README.md). Falls back to the NOTARY_DIR env var and then to the legacy \
                      DELEGATE_DIR env var for backward compatibility.",
                 )
                 .required(true),
