@@ -127,7 +127,8 @@ April, July or October).
   higher tiers see too few donors a month for a monthly date to be safe (see the script
   header).
 - **Why not yearly:** an application that wants a *recent* ghost key can still use the date.
-  A key is never shown more than three months older than it is.
+  While the schedule covers the current month, a key is never shown more than three months
+  older than it is.
 
 The script verifies every pair against the compiled-in Freenet master key. It builds each
 month in a hidden directory before renaming it into place, and refuses to touch an existing

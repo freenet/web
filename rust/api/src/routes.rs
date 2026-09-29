@@ -429,15 +429,15 @@ pub struct NotaryCertificateResponse {
 async fn notary_certificate_route(
     Path(payment_intent_id): Path<String>,
 ) -> Result<Json<NotaryCertificateResponse>, DonationError> {
-    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
-    let client = Client::new(&secret_key);
-
     // Accept only well-formed PaymentIntent ids, before any Stripe call. A
     // malformed or unknown id is the caller's problem, not a server error, and
     // this endpoint is unauthenticated: 404, not an error log.
     if !is_payment_intent_id(&payment_intent_id) {
         return Err(DonationError::NotFound("Payment not found"));
     }
+
+    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
+    let client = Client::new(&secret_key);
     let payment_intent_id = PaymentIntentId::from_str(&payment_intent_id)
         .map_err(|_| DonationError::NotFound("Payment not found"))?;
     // Only Stripe saying "no such PaymentIntent" is a 404; an outage or a bad

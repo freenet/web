@@ -21,8 +21,9 @@
 #   donors per month can afford a monthly date; on a tier with one or two
 #   donors a month, the date would let whoever holds the payment records link a
 #   ghost key to its donor. Quarterly rather than yearly keeps the date useful
-#   to an application that wants a recent key: a key is never shown more than
-#   three months older than it is.
+#   to an application that wants a recent key: while the schedule covers the
+#   current month, a key is never shown more than three months older than it
+#   is.
 #
 #   A schedule run only ever adds months. An existing month is an error (it may
 #   be live, and replacing its keys would break donations quoted from it), and
@@ -378,7 +379,7 @@ if [ "$SCHEDULE" = true ]; then
         mv "$partial" "$dir"
         partial=""
         [ -f "$policy_file" ] || echo "$policy" >"$policy_file"
-        echo "$month: ${#AMOUNTS[@]} monthly and ${#QUARTERLY_AMOUNTS[@]} quarterly notary keypairs ($reused reused from earlier in the quarter)"
+        echo "$month: ${#AMOUNTS[@]} monthly and ${#QUARTERLY_AMOUNTS[@]} quarterly notary keypairs ($reused reused from elsewhere in the quarter)"
     done
 else
     for amount in "${AMOUNTS[@]}"; do

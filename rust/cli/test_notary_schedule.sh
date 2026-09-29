@@ -163,6 +163,20 @@ check "warns when 12 or fewer months remain" "publish 2027-01 && grep -q 'WARNIN
 check "month missing from the schedule fails loudly" "! publish 2029-06 && grep -q 'no 2029-06' $tmp/pub"
 check "no publishing directories left" "[ -z \"\$(find $L -maxdepth 1 -name '.*' ! -name . )\" ]"
 
+# Quarters in the middle of the year (and the 10# base in quarter_start: 08
+# and 09 are not octal).
+Q="$tmp/midyear"
+runq() { bash "$GEN" "${MASTER[@]}" --notary-dir "$Q" "$@" >"$tmp/out" 2>&1; }
+check "mid-year schedule succeeds" "runq --start-month 2029-06 --months 4"
+check "June belongs to the April quarter" \
+    "[ \"\$(info $Q/2029-06/notary_certificate_50.pem)\" = '{\"action\":\"freenet-donation\",\"amount\":50,\"delegate-key-created\":\"2029-04-01 00:00:00\"}' ]"
+check "a new quarter starts in July" \
+    "! same $Q/2029-06/notary_certificate_50.pem $Q/2029-07/notary_certificate_50.pem"
+check "August and September share July's pair" \
+    "same $Q/2029-07/notary_certificate_50.pem $Q/2029-08/notary_certificate_50.pem && same $Q/2029-07/notary_certificate_50.pem $Q/2029-09/notary_certificate_50.pem"
+check "September's pair is dated 1 July" \
+    "[ \"\$(info $Q/2029-09/notary_certificate_50.pem)\" = '{\"action\":\"freenet-donation\",\"amount\":50,\"delegate-key-created\":\"2029-07-01 00:00:00\"}' ]"
+
 check "no scratch or partial directories left" "[ -z \"\$(find $D $P -maxdepth 1 -type d -name '.*')\" ]"
 check "signing keys are private" "[ -z \"\$(find $D -name 'notary_signing_key_*' ! -perm 600)\" ]"
 

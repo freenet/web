@@ -296,10 +296,8 @@ mod tests {
         squeeze(production)
     }
 
-    /// The claim has to be taken before the flag is read, not after. Taking it
-    /// afterwards leaves exactly the read-check-write window it exists to
-    /// close, and nothing else in the test suite would notice: the happy path
-    /// still returns a valid certificate.
+    /// A missing notary pair or a mismatched client certificate has to fail
+    /// before the payment is marked, while the donor can still retry.
     #[test]
     fn notary_is_loaded_and_checked_before_the_payment_is_marked_spent() {
         let source = production_source();
@@ -323,6 +321,10 @@ mod tests {
         );
     }
 
+    /// The claim has to be taken before the flag is read, not after. Taking it
+    /// afterwards leaves exactly the read-check-write window it exists to
+    /// close, and nothing else in the test suite would notice: the happy path
+    /// still returns a valid certificate.
     #[test]
     fn claim_is_taken_before_the_signed_flag_is_read() {
         let source = production_source();
