@@ -42,6 +42,13 @@ pub async fn sign_certificate(
     log::debug!("Current working directory: {:?}", std::env::current_dir());
     log::debug!("HOME environment variable: {:?}", std::env::var("HOME"));
 
+    // Accept only well-formed PaymentIntent ids. Checked first, before any
+    // other work is done for the request.
+    if !crate::payment_claim::is_payment_intent_id(&request.payment_intent_id) {
+        log::warn!("Rejected sign-certificate request with a malformed PaymentIntent id");
+        return Err(CertificateError::InvalidPaymentIntentId);
+    }
+
     let stripe_secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(|e| {
         log::error!("Environment variable STRIPE_SECRET_KEY not found: {}", e);
         log::error!(
@@ -77,6 +84,15 @@ pub async fn sign_certificate(
 
     log::info!("Retrieved PaymentIntent: {:?}", pi);
     log::info!("PaymentIntent status: {:?}", pi.status);
+
+    // Require the retrieved PaymentIntent to be the one requested.
+    if pi.id.as_str() != request.payment_intent_id {
+        log::error!(
+            "Retrieved PaymentIntent {} does not match the requested id",
+            pi.id
+        );
+        return Err(CertificateError::InvalidPaymentIntentId);
+    }
 
     match pi.status {
         PaymentIntentStatus::Succeeded => {
@@ -261,6 +277,73 @@ mod tests {
             "`let _ = claim(..)` drops the guard on the spot, so the claim is \
              released before the flag is even read and the race is fully open"
         );
+    }
+
+    /// The id format check has to run before the claim and before the first
+    /// Stripe call, not somewhere later in the function.
+    #[test]
+    fn payment_intent_id_is_checked_before_the_claim_and_stripe() {
+        let source = production_source();
+
+        let check_at = source
+            .find(&squeeze(
+                "payment_claim::is_payment_intent_id(&request.payment_intent_id)",
+            ))
+            .expect("sign_certificate no longer checks the PaymentIntent id format");
+        let claim_at = source
+            .find(&squeeze("payment_claim::claim(&request.payment_intent_id)"))
+            .expect("sign_certificate no longer claims the PaymentIntent at all");
+        let retrieve_at = source
+            .find(&squeeze("PaymentIntent::retrieve("))
+            .expect("the PaymentIntent retrieval has moved or been renamed");
+
+        assert!(
+            check_at < claim_at,
+            "the PaymentIntent id format must be checked before the claim is taken"
+        );
+        assert!(
+            check_at < retrieve_at,
+            "the PaymentIntent id format must be checked before calling Stripe"
+        );
+    }
+
+    /// The retrieved PaymentIntent must be compared with the requested id
+    /// before the PaymentIntent is marked as spent.
+    #[test]
+    fn retrieved_payment_intent_is_matched_before_it_is_marked() {
+        let source = production_source();
+
+        let match_at = source
+            .find(&squeeze("if pi.id.as_str() != request.payment_intent_id {"))
+            .expect("sign_certificate no longer checks the retrieved PaymentIntent id");
+        let mark_at = source
+            .find(&squeeze(
+                r#"metadata.insert("certificate_signed".to_string(), "true".to_string());"#,
+            ))
+            .expect("the certificate_signed mark has moved or been renamed");
+
+        assert!(
+            match_at < mark_at,
+            "the retrieved PaymentIntent must be matched against the requested \
+             id before it is marked as spent"
+        );
+    }
+
+    /// Malformed ids are refused without needing Stripe at all: the check runs
+    /// before STRIPE_SECRET_KEY is even read, so this stays hermetic.
+    #[tokio::test]
+    async fn malformed_payment_intent_ids_are_refused() {
+        for id in ["", "pi_", "pi_abc-def", "pi_abc def", "cus_123"] {
+            let result = super::sign_certificate(super::SignCertificateRequest {
+                payment_intent_id: id.to_string(),
+                blinded_ghost_key_base64: String::new(),
+            })
+            .await;
+            assert!(
+                matches!(result, Err(super::CertificateError::InvalidPaymentIntentId)),
+                "{id:?} was not refused as an invalid payment reference: {result:?}"
+            );
+        }
     }
 
     /// A signing failure after the mark is set must clear it, or the donor is
