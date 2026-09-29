@@ -420,7 +420,7 @@ async fn notary_certificate_route(
     let client = Client::new(&secret_key);
 
     // A malformed or unknown id is the caller's problem, not a server error,
-    // and this endpoint is unauthenticated: 404, logged quietly. The id ends up
+    // and this endpoint is unauthenticated: 404, not an error log. The id ends up
     // in a Stripe API path and PaymentIntentId::from_str only checks the
     // prefix, so accept nothing but pi_ followed by alphanumerics.
     if !is_payment_intent_id(&payment_intent_id) {

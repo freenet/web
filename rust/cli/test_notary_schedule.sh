@@ -55,6 +55,16 @@ check "extension reuses the year's yearly pair" \
 check "extension still mints new monthly pairs" \
     "! same $D/2027-01/notary_certificate_1.pem $D/2027-02/notary_certificate_1.pem"
 
+# A reused yearly pair is checked as a pair, not just its certificate: swap in
+# another valid signing key and an extension into that year must refuse it.
+cp -p "$D/2027-01/notary_signing_key_100.pem" "$tmp/key100.bak"
+cp "$D/2027-01/notary_signing_key_5.pem" "$D/2027-01/notary_signing_key_100.pem"
+cp "$D/2027-01/notary_signing_key_5.pem" "$D/2027-02/notary_signing_key_100.pem"
+cp "$D/2027-01/notary_signing_key_5.pem" "$D/2027-03/notary_signing_key_100.pem"
+check "a reused yearly pair whose key does not match is refused" \
+    "! run --start-month 2027-04 --months 1 && grep -q 'does not verify' $tmp/out && [ ! -e $D/2027-04 ]"
+for m in 2027-01 2027-02 2027-03; do cp -p "$tmp/key100.bak" "$D/$m/notary_signing_key_100.pem"; done
+
 # Months are only ever added.
 # shellcheck disable=SC2034 # read inside check's eval
 before=$(find "$D" -type f -exec sha256sum {} + | sort)
@@ -133,6 +143,15 @@ mkdir -m 777 "$tmp/open" && chmod 777 "$tmp/open" && mkdir -m 700 "$tmp/open/sch
 check "a schedule under a directory others can rewrite is refused" \
     "! NOTARY_WINDOW_NOW=2027-01 bash $PUB $tmp/open/schedule $L $me >$tmp/pub 2>&1 && grep -q 'writable by someone else' $tmp/pub"
 check "numeric owner is accepted" "NOTARY_WINDOW_NOW=2027-01 bash $PUB $D $L $(id -u):$(id -g) >$tmp/pub 2>&1"
+# Modes are set on the way in, not inherited from the source.
+S="$tmp/loose"
+L2="$tmp/live2"
+mkdir -m 700 "$S" "$L2"
+cp -R "$D/2027-01" "$S/2027-01"
+chmod 777 "$S/2027-01"
+chmod 755 "$S"/2027-01/*
+check "loose source modes are normalised" \
+    "NOTARY_WINDOW_NOW=2027-01 bash $PUB $S $L2 $me >$tmp/pub 2>&1 && [ \"\$(stat -c %a $L2/2027-01)\" = 700 ] && [ -z \"\$(find $L2/2027-01 -type f ! -perm 600)\" ]"
 check "warns when 12 or fewer months remain" "publish 2027-01 && grep -q 'WARNING: the schedule has 3 months left' $tmp/pub"
 check "month missing from the schedule fails loudly" "! publish 2029-06 && grep -q 'no 2029-06' $tmp/pub"
 check "no publishing directories left" "[ -z \"\$(find $L -maxdepth 1 -name '.*' ! -name . )\" ]"

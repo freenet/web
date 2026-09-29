@@ -103,7 +103,8 @@ for src in "$schedule"/[0-9][0-9][0-9][0-9]-[0-9][0-9]; do
     # Contents only, not modes, ACLs or xattrs from wherever the schedule has
     # been; staging is unreachable to <owner>, so setting modes here is safe.
     cp -R --preserve=timestamps "$src" "$staging/$month"
-    chmod -R u=rwX,go= "$staging/$month"
+    find "$staging/$month" -type d -exec chmod 700 {} +
+    find "$staging/$month" -type f -exec chmod 600 {} +
     chown -R "$owner" "$staging/$month"
     mv --no-copy -T "$staging/$month" "./$month"
     echo "published $month"

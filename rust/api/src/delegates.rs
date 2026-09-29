@@ -231,6 +231,24 @@ fn read_pair(
             e
         ))
     })?;
+
+    // A key that is not the certificate's would still produce a signature,
+    // just one the donor cannot unblind, and signing happens after the charge.
+    // Quoting reads the same pair, so refusing it here fails before any charge.
+    let matches = match (
+        signing_key.public_key().and_then(|k| k.to_der()),
+        cert.payload.notary_verifying_key.to_der(),
+    ) {
+        (Ok(key), Ok(cert_key)) => key == cert_key,
+        _ => false,
+    };
+    if !matches {
+        return Err(CertificateError::KeyError(format!(
+            "{} is not the signing key for {}",
+            signing_key_path.display(),
+            cert_path.display()
+        )));
+    }
     Ok((cert, signing_key))
 }
 
@@ -407,6 +425,35 @@ mod tests {
             quoted.certificate.to_base64().unwrap()
         );
         assert_pair_matches(&signed);
+    }
+
+    #[test]
+    fn a_signing_key_that_is_not_the_certificates_is_refused() {
+        let dir = tempdir().unwrap();
+        write_pair(&dir.path().join("a"), 5, "a");
+        write_pair(&dir.path().join("b"), 5, "b");
+        write_pair(&dir.path().join("2026-10"), 5, "2026-10");
+        // Pair a's certificate with b's key in the flat files and in a month.
+        for target in [dir.path().to_path_buf(), dir.path().join("2026-10")] {
+            std::fs::copy(
+                dir.path()
+                    .join("a")
+                    .join(NamingScheme::Notary.cert_filename(5)),
+                target.join(NamingScheme::Notary.cert_filename(5)),
+            )
+            .unwrap();
+            std::fs::copy(
+                dir.path()
+                    .join("b")
+                    .join(NamingScheme::Notary.signing_key_filename(5)),
+                target.join(NamingScheme::Notary.signing_key_filename(5)),
+            )
+            .unwrap();
+        }
+        // Refused when quoting (before any charge) and when signing.
+        assert!(current_notary_in(dir.path(), 5, at(2026, 10)).is_err());
+        assert!(current_notary_in(dir.path(), 5, at(2026, 9)).is_err());
+        assert!(quoted_notary_in(dir.path(), 5, Some("2026-10")).is_err());
     }
 
     #[test]

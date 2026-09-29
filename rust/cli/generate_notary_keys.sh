@@ -270,6 +270,21 @@ verify_cert() {
     fi
 }
 
+# Fail unless a ghost key issued from the pair in <dir> (canonical
+# notary_{certificate,signing_key}.pem names) verifies end to end, which proves
+# the signing key belongs to the certificate.
+verify_pair() {
+    local dir="$1" what="$2"
+    rm -rf "$scratch/ghost"
+    if ! "$GHOSTKEY" generate-ghost-key --notary-dir "$dir" \
+        --output-dir "$scratch/ghost" >/dev/null 2>&1 \
+        || ! ghostkey_verify verify-ghost-key \
+            --ghost-certificate "$scratch/ghost/ghost_key_certificate.pem" >/dev/null 2>&1; then
+        echo "Error: a ghost key issued by $what does not verify" >&2
+        exit 1
+    fi
+}
+
 # generate_pair <dir> <amount> <created: "YYYY-MM-DD HH:MM:SS">
 generate_pair() {
     local dir="$1" amount="$2" created="$3"
@@ -290,13 +305,7 @@ generate_pair() {
 
     verify_cert "$scratch/notary/notary_certificate.pem" "$info"
 
-    if ! "$GHOSTKEY" generate-ghost-key --notary-dir "$scratch/notary" \
-        --output-dir "$scratch/ghost" >/dev/null 2>&1 \
-        || ! ghostkey_verify verify-ghost-key \
-            --ghost-certificate "$scratch/ghost/ghost_key_certificate.pem" >/dev/null 2>&1; then
-        echo "Error: a ghost key issued by the new notary for amount $amount does not verify" >&2
-        exit 1
-    fi
+    verify_pair "$scratch/notary" "the new notary for amount $amount"
 
     mv "$scratch/notary/notary_signing_key.pem" "$dir/notary_signing_key_$amount.pem"
     mv "$scratch/notary/notary_certificate.pem" "$dir/notary_certificate_$amount.pem"
@@ -311,6 +320,14 @@ existing_yearly_dir() {
     for d in "$NOTARY_DIR/$year"-[0-9][0-9]; do
         if [ -f "$d/notary_certificate_$amount.pem" ]; then
             verify_cert "$d/notary_certificate_$amount.pem" "$(info_for "$amount" "$year-01-01 00:00:00")"
+            # And that its signing key really is that certificate's, before
+            # copying the pair into more months.
+            rm -rf "$scratch/reuse"
+            mkdir -m 700 "$scratch/reuse"
+            cp "$d/notary_certificate_$amount.pem" "$scratch/reuse/notary_certificate.pem"
+            cp "$d/notary_signing_key_$amount.pem" "$scratch/reuse/notary_signing_key.pem"
+            verify_pair "$scratch/reuse" "the existing $year pair for amount $amount in $d"
+            rm -rf "$scratch/reuse"
             echo "$d"
             return
         fi
