@@ -183,7 +183,8 @@ async fn sign_certificate_route(
 
 #[derive(Debug)]
 pub enum DonationError {
-    InvalidCurrency,
+    /// The request's PaymentIntent id is not well-formed.
+    InvalidPaymentIntentId,
     StripeError(stripe::StripeError),
     EnvError(std::env::VarError),
     OtherError(String),
@@ -192,7 +193,9 @@ pub enum DonationError {
 impl IntoResponse for DonationError {
     fn into_response(self) -> axum::response::Response {
         let (status, error_message) = match self {
-            DonationError::InvalidCurrency => (StatusCode::BAD_REQUEST, "Invalid currency"),
+            DonationError::InvalidPaymentIntentId => {
+                (StatusCode::BAD_REQUEST, "Invalid payment reference")
+            }
             DonationError::StripeError(e) => {
                 error!("Stripe error: {:?}", e);
                 (StatusCode::INTERNAL_SERVER_ERROR, "Stripe error occurred")
@@ -319,14 +322,14 @@ async fn update_donation(
 
     // Accept only well-formed PaymentIntent ids, before any Stripe call.
     if !is_payment_intent_id(&request.payment_intent_id) {
-        return Err(DonationError::InvalidCurrency);
+        return Err(DonationError::InvalidPaymentIntentId);
     }
 
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(&secret_key);
 
     let payment_intent_id = PaymentIntentId::from_str(&request.payment_intent_id)
-        .map_err(|_| DonationError::InvalidCurrency)?;
+        .map_err(|_| DonationError::InvalidPaymentIntentId)?;
     let params = stripe::UpdatePaymentIntent {
         amount: Some(request.amount),
         ..Default::default()
@@ -365,14 +368,14 @@ async fn check_payment_status_route(
 
     // Accept only well-formed PaymentIntent ids, before any Stripe call.
     if !is_payment_intent_id(&payment_intent_id) {
-        return Err(DonationError::InvalidCurrency);
+        return Err(DonationError::InvalidPaymentIntentId);
     }
 
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(&secret_key);
 
     let payment_intent_id = PaymentIntentId::from_str(&payment_intent_id)
-        .map_err(|_| DonationError::InvalidCurrency)?;
+        .map_err(|_| DonationError::InvalidPaymentIntentId)?;
 
     let intent = stripe::PaymentIntent::retrieve(&client, &payment_intent_id, &[])
         .await
@@ -1135,6 +1138,17 @@ mod payment_intent_id_route_tests {
 
     const MALFORMED: [&str; 5] = ["", "pi_", "pi_abc-def", "pi_abc def", "cus_123"];
 
+    /// The status and `error` message a DonationError is sent to the client as.
+    async fn rendered(e: DonationError) -> (StatusCode, String) {
+        let response = e.into_response();
+        let status = response.status();
+        let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        let body: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+        (status, body["error"].as_str().unwrap().to_string())
+    }
+
     /// The format check runs before STRIPE_SECRET_KEY is read, so a malformed
     /// id is a 400 here without Stripe being configured or contacted.
     #[tokio::test]
@@ -1145,22 +1159,36 @@ mod payment_intent_id_route_tests {
                 amount: 100,
             }))
             .await;
-            let status = match result {
+            let error = match result {
                 Ok(_) => panic!("{id:?} was accepted by update-donation"),
-                Err(e) => e.into_response().status(),
+                Err(e) => rendered(e).await,
             };
-            assert_eq!(status, StatusCode::BAD_REQUEST, "{id:?}");
+            assert_eq!(
+                error,
+                (
+                    StatusCode::BAD_REQUEST,
+                    "Invalid payment reference".to_string()
+                ),
+                "{id:?}"
+            );
         }
     }
 
     #[tokio::test]
     async fn check_payment_status_refuses_malformed_ids() {
         for id in MALFORMED {
-            let status = match check_payment_status_route(Path(id.to_string())).await {
+            let error = match check_payment_status_route(Path(id.to_string())).await {
                 Ok(_) => panic!("{id:?} was accepted by check-payment-status"),
-                Err(e) => e.into_response().status(),
+                Err(e) => rendered(e).await,
             };
-            assert_eq!(status, StatusCode::BAD_REQUEST, "{id:?}");
+            assert_eq!(
+                error,
+                (
+                    StatusCode::BAD_REQUEST,
+                    "Invalid payment reference".to_string()
+                ),
+                "{id:?}"
+            );
         }
     }
 

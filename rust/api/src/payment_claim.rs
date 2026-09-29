@@ -137,14 +137,19 @@ pub(crate) async fn claim(payment_intent_id: &str) -> ClaimGuard {
     }
 }
 
+/// Stripe's documented maximum length for an object id, in bytes.
+const MAX_PAYMENT_INTENT_ID_LEN: usize = 255;
+
 /// Whether `id` is a well-formed PaymentIntent id: `pi_` followed by one or
-/// more ASCII alphanumerics.
+/// more ASCII alphanumerics, and no longer than Stripe's 255-byte id limit.
 ///
 /// Callers check this before taking a claim or making any Stripe call, so
 /// that only well-formed PaymentIntent ids are ever accepted.
 pub(crate) fn is_payment_intent_id(id: &str) -> bool {
-    id.strip_prefix("pi_")
-        .is_some_and(|rest| !rest.is_empty() && rest.bytes().all(|b| b.is_ascii_alphanumeric()))
+    id.len() <= MAX_PAYMENT_INTENT_ID_LEN
+        && id
+            .strip_prefix("pi_")
+            .is_some_and(|rest| !rest.is_empty() && rest.bytes().all(|b| b.is_ascii_alphanumeric()))
 }
 
 /// Whether a specific PaymentIntent currently has a live entry.
@@ -195,6 +200,23 @@ mod tests {
         ] {
             assert!(!is_payment_intent_id(id), "{id:?} should be rejected");
         }
+    }
+
+    #[test]
+    fn payment_intent_ids_are_capped_at_255_bytes() {
+        let longest = format!("pi_{}", "a".repeat(252));
+        assert_eq!(longest.len(), 255);
+        assert!(
+            is_payment_intent_id(&longest),
+            "a 255-byte id should be accepted"
+        );
+
+        let too_long = format!("pi_{}", "a".repeat(253));
+        assert_eq!(too_long.len(), 256);
+        assert!(
+            !is_payment_intent_id(&too_long),
+            "a 256-byte id should be rejected"
+        );
     }
 
     /// The property the whole module exists for: two concurrent claims on one
