@@ -62,7 +62,7 @@ cp "$D/2027-01/notary_signing_key_5.pem" "$D/2027-01/notary_signing_key_100.pem"
 cp "$D/2027-01/notary_signing_key_5.pem" "$D/2027-02/notary_signing_key_100.pem"
 cp "$D/2027-01/notary_signing_key_5.pem" "$D/2027-03/notary_signing_key_100.pem"
 check "a reused yearly pair whose key does not match is refused" \
-    "! run --start-month 2027-04 --months 1 && grep -q 'does not verify' $tmp/out && [ ! -e $D/2027-04 ]"
+    "! run --start-month 2027-04 --months 1 && grep -q 'a ghost key issued by the existing 2027 pair' $tmp/out && [ ! -e $D/2027-04 ]"
 for m in 2027-01 2027-02 2027-03; do cp -p "$tmp/key100.bak" "$D/$m/notary_signing_key_100.pem"; done
 
 # Months are only ever added.
@@ -152,6 +152,10 @@ chmod 777 "$S/2027-01"
 chmod 755 "$S"/2027-01/*
 check "loose source modes are normalised" \
     "NOTARY_WINDOW_NOW=2027-01 bash $PUB $S $L2 $me >$tmp/pub 2>&1 && [ \"\$(stat -c %a $L2/2027-01)\" = 700 ] && [ -z \"\$(find $L2/2027-01 -type f ! -perm 600)\" ]"
+ln -s /etc/passwd "$S/2027-01/notary_extra.pem"
+rm -rf "$L2/2027-01"
+check "a month containing a symlink is refused" \
+    "! NOTARY_WINDOW_NOW=2027-01 bash $PUB $S $L2 $me >$tmp/pub 2>&1 && grep -q 'other than files' $tmp/pub && [ ! -e $L2/2027-01 ]"
 check "warns when 12 or fewer months remain" "publish 2027-01 && grep -q 'WARNING: the schedule has 3 months left' $tmp/pub"
 check "month missing from the schedule fails loudly" "! publish 2029-06 && grep -q 'no 2029-06' $tmp/pub"
 check "no publishing directories left" "[ -z \"\$(find $L -maxdepth 1 -name '.*' ! -name . )\" ]"

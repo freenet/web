@@ -99,6 +99,12 @@ for src in "$schedule"/[0-9][0-9][0-9][0-9]-[0-9][0-9]; do
     if [[ "$month" > "$last" ]] || [ -e "./$month" ] || [ -L "./$month" ]; then
         continue
     fi
+    # The generator writes only directories and regular files; anything else
+    # (a symlink, a device node) would be handed to <owner> as is.
+    if [ -n "$(find "$src" ! -type f ! -type d -print -quit)" ]; then
+        echo "Error: $src contains something other than files and directories" >&2
+        exit 1
+    fi
     rm -rf "${staging:?}/$month"
     # Contents only, not modes, ACLs or xattrs from wherever the schedule has
     # been; staging is unreachable to <owner>, so setting modes here is safe.
