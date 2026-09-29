@@ -121,12 +121,18 @@ rust/cli/generate_notary_keys.sh --master-key <master_signing_key.pem> \
   --notary-dir <drive>/notary-schedule --start-month 2026-10 --months 120
 ```
 
-By default $1 and $5 are dated monthly and $20 and up are dated yearly, because the date
-partitions each tier's anonymity set and the higher tiers see too few donors a month for a
-monthly date to be safe (see the script header). The script verifies every pair against the
-compiled-in Freenet master key, builds each month in a hidden directory before renaming it
-into place, refuses to touch an existing month, and reuses a year's yearly pairs when
-extending a schedule mid-year. `rust/cli/test_notary_schedule.sh` tests it (CI runs it).
+By default $1 and $5 are dated monthly, and $20 and up are dated quarterly (1 January,
+April, July or October).
+- **Why not monthly for everything:** the date partitions each tier's anonymity set, and the
+  higher tiers see too few donors a month for a monthly date to be safe (see the script
+  header).
+- **Why not yearly:** an application that wants a *recent* ghost key can still use the date.
+  A key is never shown more than three months older than it is.
+
+The script verifies every pair against the compiled-in Freenet master key. It builds each
+month in a hidden directory before renaming it into place, and refuses to touch an existing
+month. When extending a schedule mid-quarter, it reuses that quarter's pairs, after
+checking them. `rust/cli/test_notary_schedule.sh` tests it (CI runs it).
 To extend later, run it again with `--start-month` just after the last month.
 
 Keep the output on the encrypted master-key drive. It is the backup.

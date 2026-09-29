@@ -32,7 +32,7 @@ info() {
         --notary-certificate "$1" | sed -n 's/^Info: //p'
 }
 
-# A schedule across a year boundary.
+# A schedule across a year (and quarter) boundary.
 check "3-month schedule succeeds" "run --start-month 2026-11 --months 3"
 for m in 2026-11 2026-12 2027-01; do
     check "$m has all 8 tiers" "[ \$(ls $D/$m/notary_certificate_*.pem | wc -l) -eq 8 ]"
@@ -41,29 +41,31 @@ check "monthly tier changes every month" \
     "! same $D/2026-11/notary_certificate_5.pem $D/2026-12/notary_certificate_5.pem"
 check "monthly tier dated the 1st" \
     "[ \"\$(info $D/2026-12/notary_certificate_5.pem)\" = '{\"action\":\"freenet-donation\",\"amount\":5,\"delegate-key-created\":\"2026-12-01 00:00:00\"}' ]"
-check "yearly tier shared within a year" \
+check "quarterly tier shared within a quarter" \
     "same $D/2026-11/notary_certificate_20.pem $D/2026-12/notary_certificate_20.pem && same $D/2026-11/notary_signing_key_20.pem $D/2026-12/notary_signing_key_20.pem"
-check "yearly tier changes with the year" \
+check "quarterly tier changes with the quarter" \
     "! same $D/2026-12/notary_certificate_20.pem $D/2027-01/notary_certificate_20.pem"
-check "yearly tier dated 1 January" \
-    "[ \"\$(info $D/2027-01/notary_certificate_10000.pem)\" = '{\"action\":\"freenet-donation\",\"amount\":10000,\"delegate-key-created\":\"2027-01-01 00:00:00\"}' ]"
+check "quarterly tier dated the first day of its quarter" \
+    "[ \"\$(info $D/2026-11/notary_certificate_10000.pem)\" = '{\"action\":\"freenet-donation\",\"amount\":10000,\"delegate-key-created\":\"2026-10-01 00:00:00\"}' ] && [ \"\$(info $D/2027-01/notary_certificate_10000.pem)\" = '{\"action\":\"freenet-donation\",\"amount\":10000,\"delegate-key-created\":\"2027-01-01 00:00:00\"}' ]"
 
-# Extending mid-year in a later run must reuse that year's yearly pairs.
-check "extension run succeeds" "run --start-month 2027-02 --months 2"
-check "extension reuses the year's yearly pair" \
-    "same $D/2027-01/notary_certificate_100.pem $D/2027-03/notary_certificate_100.pem && same $D/2027-01/notary_signing_key_100.pem $D/2027-03/notary_signing_key_100.pem"
+# Extending mid-quarter in a later run must reuse that quarter's pairs.
+check "extension run succeeds" "run --start-month 2027-02 --months 1"
+check "extension reuses the quarter's pair" \
+    "same $D/2027-01/notary_certificate_100.pem $D/2027-02/notary_certificate_100.pem && same $D/2027-01/notary_signing_key_100.pem $D/2027-02/notary_signing_key_100.pem"
 check "extension still mints new monthly pairs" \
     "! same $D/2027-01/notary_certificate_1.pem $D/2027-02/notary_certificate_1.pem"
 
-# A reused yearly pair is checked as a pair, not just its certificate: swap in
-# another valid signing key and an extension into that year must refuse it.
+# A reused quarterly pair is checked as a pair, not just its certificate: swap
+# in another valid signing key and an extension into that quarter must refuse it.
 cp -p "$D/2027-01/notary_signing_key_100.pem" "$tmp/key100.bak"
 cp "$D/2027-01/notary_signing_key_5.pem" "$D/2027-01/notary_signing_key_100.pem"
 cp "$D/2027-01/notary_signing_key_5.pem" "$D/2027-02/notary_signing_key_100.pem"
-cp "$D/2027-01/notary_signing_key_5.pem" "$D/2027-03/notary_signing_key_100.pem"
-check "a reused yearly pair whose key does not match is refused" \
-    "! run --start-month 2027-04 --months 1 && grep -q 'a ghost key issued by the existing 2027 pair' $tmp/out && [ ! -e $D/2027-04 ]"
-for m in 2027-01 2027-02 2027-03; do cp -p "$tmp/key100.bak" "$D/$m/notary_signing_key_100.pem"; done
+check "a reused quarterly pair whose key does not match is refused" \
+    "! run --start-month 2027-03 --months 1 && grep -q 'a ghost key issued by the existing 2027-01 quarter pair' $tmp/out && [ ! -e $D/2027-03 ]"
+for m in 2027-01 2027-02; do cp -p "$tmp/key100.bak" "$D/$m/notary_signing_key_100.pem"; done
+check "with the pair restored, the quarter can be completed" "run --start-month 2027-03 --months 1"
+check "the completed quarter shares one pair" \
+    "same $D/2027-01/notary_certificate_100.pem $D/2027-03/notary_certificate_100.pem"
 
 # Months are only ever added.
 # shellcheck disable=SC2034 # read inside check's eval
@@ -75,7 +77,7 @@ check "refusals changed nothing" "[ \"\$(find $D -type f -exec sha256sum {} + | 
 # Input validation.
 check "zero-padded --months is refused" "! run --start-month 2027-04 --months 08"
 check "invalid amount is refused" "! run --start-month 2027-04 --months 1 --amounts 05"
-check "duplicate amount is refused" "! run --start-month 2027-04 --months 1 --amounts 5 --yearly-amounts 5"
+check "duplicate amount is refused" "! run --start-month 2027-04 --months 1 --amounts 5 --quarterly-amounts 5"
 check "invalid month is refused" "! run --start-month 2027-13 --months 1"
 check "schedule without --notary-dir is refused" \
     "! bash $GEN --master-key $tmp/master/master_signing_key.pem --start-month 2027-04 --months 1 >$tmp/out 2>&1 && grep -q 'explicit --notary-dir' $tmp/out"
@@ -87,8 +89,8 @@ check "wrong master key is refused" \
 check "failed run leaves no month directory" "[ ! -e $D/2027-04 ]"
 
 # Changing the dating policy of an existing schedule is refused, both ways.
-check "yearly to monthly is refused" "! run --start-month 2027-04 --months 1 --amounts 1 5 20 --yearly-amounts 50 100 500 2500 10000"
-check "monthly to yearly is refused" "! run --start-month 2027-04 --months 1 --amounts 1 --yearly-amounts 5 20 50 100 500 2500 10000"
+check "quarterly to monthly is refused" "! run --start-month 2027-04 --months 1 --amounts 1 5 20 --quarterly-amounts 50 100 500 2500 10000"
+check "monthly to quarterly is refused" "! run --start-month 2027-04 --months 1 --amounts 1 --quarterly-amounts 5 20 50 100 500 2500 10000"
 check "refused policy change leaves no month directory" "[ ! -e $D/2027-04 ]"
 
 # A first run that fails outright does not pin its policy.
@@ -99,12 +101,13 @@ check "failed first run records no policy" "[ ! -e $F/.schedule-policy ]"
 check "a corrected retry with other amounts is accepted" \
     "bash $GEN ${MASTER[*]} --notary-dir $F --start-month 2027-01 --months 1 >$tmp/out 2>&1 && [ -f $F/.schedule-policy ]"
 
-# Belt and braces for a schedule without a policy file: a year whose existing
-# month dated a yearly tier some other way is an error, not silently shared.
-# (February: a January monthly date would equal the yearly one.)
+# Belt and braces for a schedule without a policy file: a quarter whose
+# existing month dated a quarterly tier some other way is an error, not silently
+# shared. (February: a monthly date on a quarter's first month would equal the
+# quarterly one.)
 P="$tmp/nopolicy"
 runp() { bash "$GEN" "${MASTER[@]}" --notary-dir "$P" "$@" >"$tmp/out" 2>&1; }
-check "tier dated monthly in 2028-02" "runp --start-month 2028-02 --months 1 --amounts 20 --yearly-amounts"
+check "tier dated monthly in 2028-02" "runp --start-month 2028-02 --months 1 --amounts 20 --quarterly-amounts"
 rm -f "$P/.schedule-policy"
 check "conflicting existing month is refused" "! runp --start-month 2028-03 --months 1"
 check "conflict leaves no month directory" "[ ! -e $P/2028-03 ]"

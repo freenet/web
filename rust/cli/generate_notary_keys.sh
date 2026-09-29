@@ -14,18 +14,21 @@
 #   current month's directory (see rust/api/README.md for installing it).
 #
 #   In a schedule, --amounts tiers are dated monthly (the 1st of the month,
-#   00:00:00 UTC) and --yearly-amounts tiers are dated yearly (1 January): one
-#   keypair per year, shared by all of that year's month directories. The date
-#   is visible to anyone who verifies a ghost key, so it partitions each tier's
-#   anonymity set. Only tiers with plenty of donors per month can afford a
-#   monthly date; on a tier with one or two donors a month, the date would let
-#   whoever holds the payment records link a ghost key to its donor.
+#   00:00:00 UTC) and --quarterly-amounts tiers are dated quarterly (1 January,
+#   April, July or October): one keypair per quarter, shared by that quarter's
+#   three month directories. The date is visible to anyone who verifies a ghost
+#   key, so it partitions each tier's anonymity set. Only tiers with plenty of
+#   donors per month can afford a monthly date; on a tier with one or two
+#   donors a month, the date would let whoever holds the payment records link a
+#   ghost key to its donor. Quarterly rather than yearly keeps the date useful
+#   to an application that wants a recent key: a key is never shown more than
+#   three months older than it is.
 #
 #   A schedule run only ever adds months. An existing month is an error (it may
 #   be live, and replacing its keys would break donations quoted from it), and
-#   a year that already has a month in --notary-dir reuses that month's yearly
-#   keypairs instead of minting a second set, so a schedule can be extended
-#   later without splitting a year's anonymity set. Each month is built in a
+#   a quarter that already has a month in --notary-dir reuses that month's
+#   quarterly keypairs instead of minting a second set, so a schedule can be
+#   extended later without splitting a quarter's anonymity set. Each month is built in a
 #   hidden directory and renamed into place only when complete.
 #
 # Every generated pair is checked before the script moves on: the certificate
@@ -46,7 +49,7 @@ set -euo pipefail
 # hugo-site/themes/freenet/layouts/shortcodes/stripe-donation-form.html
 DEFAULT_AMOUNTS=(1 5 20 50 100 500 2500 10000)
 DEFAULT_SCHEDULE_MONTHLY_AMOUNTS=(1 5)
-DEFAULT_SCHEDULE_YEARLY_AMOUNTS=(20 50 100 500 2500 10000)
+DEFAULT_SCHEDULE_QUARTERLY_AMOUNTS=(20 50 100 500 2500 10000)
 TODAYS_DATE=$(date +%Y%m%d)
 DEFAULT_NOTARY_DIR="$HOME/code/freenet/keys/mnt/ghostkey-${TODAYS_DATE}/notaries"
 OVERWRITE=false
@@ -54,7 +57,7 @@ OVERWRITE=false
 usage() {
     echo "Usage: $0 --master-key <master_signing_key_file> [--notary-dir <notary_dir>]" >&2
     echo "          [--amounts <amount1> <amount2> ...] [--overwrite]" >&2
-    echo "          [--start-month YYYY-MM --months N [--yearly-amounts <amount1> ...]]" >&2
+    echo "          [--start-month YYYY-MM --months N [--quarterly-amounts <amount1> ...]]" >&2
     echo "          [--master-verifying-key <file>]" >&2
     exit 1
 }
@@ -65,8 +68,8 @@ NOTARY_DIR="$DEFAULT_NOTARY_DIR"
 NOTARY_DIR_SET=false
 AMOUNTS=()
 AMOUNTS_SET=false
-YEARLY_AMOUNTS=()
-YEARLY_AMOUNTS_SET=false
+QUARTERLY_AMOUNTS=()
+QUARTERLY_AMOUNTS_SET=false
 START_MONTH=""
 MONTHS=""
 
@@ -99,11 +102,11 @@ while [ $# -gt 0 ]; do
                 shift
             done
             ;;
-        --yearly-amounts)
+        --quarterly-amounts)
             shift
-            YEARLY_AMOUNTS_SET=true
+            QUARTERLY_AMOUNTS_SET=true
             while [[ $# -gt 0 && ! "$1" =~ ^-- ]]; do
-                YEARLY_AMOUNTS+=("$1")
+                QUARTERLY_AMOUNTS+=("$1")
                 shift
             done
             ;;
@@ -144,7 +147,7 @@ if [ -n "$START_MONTH" ] || [ -n "$MONTHS" ]; then
         usage
     fi
     # The default directory is named after today's date, so a later extension
-    # run would start an empty schedule and mint a second set of yearly keys.
+    # run would start an empty schedule and mint a second set of quarterly keys.
     if [ "$NOTARY_DIR_SET" = false ]; then
         echo "Error: a schedule needs an explicit --notary-dir (the same one every run)." >&2
         exit 1
@@ -156,12 +159,12 @@ if [ -n "$START_MONTH" ] || [ -n "$MONTHS" ]; then
     if [ "$AMOUNTS_SET" = false ]; then
         AMOUNTS=("${DEFAULT_SCHEDULE_MONTHLY_AMOUNTS[@]}")
     fi
-    if [ "$YEARLY_AMOUNTS_SET" = false ]; then
-        YEARLY_AMOUNTS=("${DEFAULT_SCHEDULE_YEARLY_AMOUNTS[@]}")
+    if [ "$QUARTERLY_AMOUNTS_SET" = false ]; then
+        QUARTERLY_AMOUNTS=("${DEFAULT_SCHEDULE_QUARTERLY_AMOUNTS[@]}")
     fi
 else
-    if [ "$YEARLY_AMOUNTS_SET" = true ]; then
-        echo "Error: --yearly-amounts only applies with --start-month/--months." >&2
+    if [ "$QUARTERLY_AMOUNTS_SET" = true ]; then
+        echo "Error: --quarterly-amounts only applies with --start-month/--months." >&2
         usage
     fi
     if [ "$AMOUNTS_SET" = false ]; then
@@ -171,7 +174,7 @@ fi
 
 # The API looks pairs up by the amount formatted as an integer, and the amount
 # is interpolated into the certificate's JSON, so only plain positive integers.
-ALL_AMOUNTS=(${AMOUNTS[@]+"${AMOUNTS[@]}"} ${YEARLY_AMOUNTS[@]+"${YEARLY_AMOUNTS[@]}"})
+ALL_AMOUNTS=(${AMOUNTS[@]+"${AMOUNTS[@]}"} ${QUARTERLY_AMOUNTS[@]+"${QUARTERLY_AMOUNTS[@]}"})
 if [ ${#ALL_AMOUNTS[@]} -eq 0 ]; then
     echo "Error: no amounts to generate." >&2
     exit 1
@@ -183,7 +186,7 @@ for a in "${ALL_AMOUNTS[@]}"; do
     fi
 done
 if [ "$(printf '%s\n' "${ALL_AMOUNTS[@]}" | sort | uniq -d)" != "" ]; then
-    echo "Error: an amount is listed more than once (across --amounts and --yearly-amounts)." >&2
+    echo "Error: an amount is listed more than once (across --amounts and --quarterly-amounts)." >&2
     exit 1
 fi
 
@@ -213,15 +216,15 @@ mkdir -p "$NOTARY_DIR"
 chmod 700 "$NOTARY_DIR"
 
 # A schedule keeps one dating policy for its whole life. Moving a tier between
-# monthly and yearly part-way would split that tier's anonymity set, so the
+# monthly and quarterly part-way would split that tier's anonymity set, so the
 # first run records the policy and later runs must match it.
 if [ "$SCHEDULE" = true ]; then
     sorted() { printf '%s\n' "$@" | sort -n | tr '\n' ' '; }
-    policy="monthly: $(sorted ${AMOUNTS[@]+"${AMOUNTS[@]}"})| yearly: $(sorted ${YEARLY_AMOUNTS[@]+"${YEARLY_AMOUNTS[@]}"})"
+    policy="monthly: $(sorted ${AMOUNTS[@]+"${AMOUNTS[@]}"})| quarterly: $(sorted ${QUARTERLY_AMOUNTS[@]+"${QUARTERLY_AMOUNTS[@]}"})"
     policy_file="$NOTARY_DIR/.schedule-policy"
     if [ -f "$policy_file" ] && [ "$(cat "$policy_file")" != "$policy" ]; then
         echo "Error: this schedule was generated with policy '$(cat "$policy_file")';" >&2
-        echo "       this run asks for '$policy'. Pass the same --amounts/--yearly-amounts." >&2
+        echo "       this run asks for '$policy'. Pass the same --amounts/--quarterly-amounts." >&2
         exit 1
     fi
     # Recorded once the first month is in place (below), so a run that fails
@@ -312,21 +315,30 @@ generate_pair() {
     chmod 600 "$dir/notary_signing_key_$amount.pem" "$dir/notary_certificate_$amount.pem"
 }
 
-# The completed month directory of <year> already holding the yearly pair for
-# <amount>, if any. Verified, so a month generated under a different policy
-# (say, this amount dated monthly) is an error rather than silently shared.
-existing_yearly_dir() {
-    local year="$1" amount="$2" d
-    for d in "$NOTARY_DIR/$year"-[0-9][0-9]; do
+# The first month (YYYY-MM) of the quarter <month> is in.
+quarter_start() {
+    local month="$1" m
+    m=$((10#${month#*-}))
+    printf '%s-%02d' "${month%-*}" $(((m - 1) / 3 * 3 + 1))
+}
+
+# The completed month directory of the quarter starting <qstart> already
+# holding the quarterly pair for <amount>, if any. Verified, so a month
+# generated under a different policy (say, this amount dated monthly) is an
+# error rather than silently shared.
+existing_quarterly_dir() {
+    local qstart="$1" amount="$2" d k
+    for k in 0 1 2; do
+        d="$NOTARY_DIR/$(date -u -d "$qstart-01 +$k month" +%Y-%m)"
         if [ -f "$d/notary_certificate_$amount.pem" ]; then
-            verify_cert "$d/notary_certificate_$amount.pem" "$(info_for "$amount" "$year-01-01 00:00:00")"
+            verify_cert "$d/notary_certificate_$amount.pem" "$(info_for "$amount" "$qstart-01 00:00:00")"
             # And that its signing key really is that certificate's, before
             # copying the pair into more months.
             rm -rf "$scratch/reuse"
             mkdir -m 700 "$scratch/reuse"
             cp "$d/notary_certificate_$amount.pem" "$scratch/reuse/notary_certificate.pem"
             cp "$d/notary_signing_key_$amount.pem" "$scratch/reuse/notary_signing_key.pem"
-            verify_pair "$scratch/reuse" "the existing $year pair for amount $amount in $d"
+            verify_pair "$scratch/reuse" "the existing $qstart quarter pair for amount $amount in $d"
             rm -rf "$scratch/reuse"
             echo "$d"
             return
@@ -337,7 +349,7 @@ existing_yearly_dir() {
 if [ "$SCHEDULE" = true ]; then
     for ((i = 0; i < MONTHS; i++)); do
         month=$(date -u -d "$START_MONTH-01 +$i month" +%Y-%m)
-        year=${month%-*}
+        qstart=$(quarter_start "$month")
         dir="$NOTARY_DIR/$month"
         if [ -e "$dir" ]; then
             echo "Error: $dir already exists. A schedule run only adds months; start after the last one." >&2
@@ -353,20 +365,20 @@ if [ "$SCHEDULE" = true ]; then
         done
 
         reused=0
-        for amount in ${YEARLY_AMOUNTS[@]+"${YEARLY_AMOUNTS[@]}"}; do
-            src=$(existing_yearly_dir "$year" "$amount")
+        for amount in ${QUARTERLY_AMOUNTS[@]+"${QUARTERLY_AMOUNTS[@]}"}; do
+            src=$(existing_quarterly_dir "$qstart" "$amount")
             if [ -n "$src" ]; then
                 cp -p "$src/notary_signing_key_$amount.pem" "$src/notary_certificate_$amount.pem" "$partial/"
                 reused=$((reused + 1))
             else
-                generate_pair "$partial" "$amount" "$year-01-01 00:00:00"
+                generate_pair "$partial" "$amount" "$qstart-01 00:00:00"
             fi
         done
 
         mv "$partial" "$dir"
         partial=""
         [ -f "$policy_file" ] || echo "$policy" >"$policy_file"
-        echo "$month: ${#AMOUNTS[@]} monthly and ${#YEARLY_AMOUNTS[@]} yearly notary keypairs ($reused yearly reused from earlier in $year)"
+        echo "$month: ${#AMOUNTS[@]} monthly and ${#QUARTERLY_AMOUNTS[@]} quarterly notary keypairs ($reused reused from earlier in the quarter)"
     done
 else
     for amount in "${AMOUNTS[@]}"; do
