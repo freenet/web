@@ -8,10 +8,18 @@
 #   Single set (default): one keypair per amount, dated now, written flat into
 #   --notary-dir as notary_{certificate,signing_key}_{amount}.pem.
 #
-#   Monthly schedule (--start-month YYYY-MM --months N): one set per calendar
-#   month, each dated the 1st of that month at 00:00:00 UTC and written to
-#   --notary-dir/YYYY-MM/. This lets the master key stay offline for years:
-#   generate the schedule once, then roll the API onto each month's set.
+#   Schedule (--start-month YYYY-MM --months N): one complete set per calendar
+#   month, written to --notary-dir/YYYY-MM/. This lets the master key stay
+#   offline for years: generate the schedule once, and the API picks the
+#   current month's directory.
+#
+#   In a schedule, --amounts tiers are dated monthly (the 1st of the month,
+#   00:00:00 UTC) and --yearly-amounts tiers are dated yearly (1 January): one
+#   keypair per year, copied into each of that year's month directories. The
+#   date is visible to anyone who verifies a ghost key, so it partitions each
+#   tier's anonymity set. Only tiers with plenty of donors per month can afford
+#   a monthly date; on a tier with one or two donors a month, the date would
+#   let whoever holds the payment records link a ghost key to its donor.
 #
 # Every generated pair is checked before the script moves on: the certificate
 # must verify against the master verifying key (by default the Freenet master
@@ -27,8 +35,11 @@
 
 set -euo pipefail
 
-# Must match the tiers in hugo-site/themes/freenet/layouts/shortcodes/stripe-donation-form.html
+# Together these must cover the tiers in
+# hugo-site/themes/freenet/layouts/shortcodes/stripe-donation-form.html
 DEFAULT_AMOUNTS=(1 5 20 50 100 500 2500 10000)
+DEFAULT_SCHEDULE_MONTHLY_AMOUNTS=(1 5)
+DEFAULT_SCHEDULE_YEARLY_AMOUNTS=(20 50 100 500 2500 10000)
 TODAYS_DATE=$(date +%Y%m%d)
 DEFAULT_NOTARY_DIR="$HOME/code/freenet/keys/mnt/ghostkey-${TODAYS_DATE}/notaries"
 OVERWRITE=false
@@ -36,7 +47,8 @@ OVERWRITE=false
 usage() {
     echo "Usage: $0 --master-key <master_signing_key_file> [--notary-dir <notary_dir>]" >&2
     echo "          [--amounts <amount1> <amount2> ...] [--overwrite]" >&2
-    echo "          [--start-month YYYY-MM --months N] [--master-verifying-key <file>]" >&2
+    echo "          [--start-month YYYY-MM --months N [--yearly-amounts <amount1> ...]]" >&2
+    echo "          [--master-verifying-key <file>]" >&2
     exit 1
 }
 
@@ -44,6 +56,9 @@ MASTER_KEY_FILE=""
 MASTER_VERIFYING_KEY_FILE=""
 NOTARY_DIR="$DEFAULT_NOTARY_DIR"
 AMOUNTS=()
+AMOUNTS_SET=false
+YEARLY_AMOUNTS=()
+YEARLY_AMOUNTS_SET=false
 START_MONTH=""
 MONTHS=""
 
@@ -68,8 +83,17 @@ while [ $# -gt 0 ]; do
             ;;
         --amounts)
             shift
+            AMOUNTS_SET=true
             while [[ $# -gt 0 && ! "$1" =~ ^-- ]]; do
                 AMOUNTS+=("$1")
+                shift
+            done
+            ;;
+        --yearly-amounts)
+            shift
+            YEARLY_AMOUNTS_SET=true
+            while [[ $# -gt 0 && ! "$1" =~ ^-- ]]; do
+                YEARLY_AMOUNTS+=("$1")
                 shift
             done
             ;;
@@ -97,10 +121,6 @@ if [ -z "$MASTER_KEY_FILE" ]; then
     usage
 fi
 
-if [ ${#AMOUNTS[@]} -eq 0 ]; then
-    AMOUNTS=("${DEFAULT_AMOUNTS[@]}")
-fi
-
 if [ ! -f "$MASTER_KEY_FILE" ]; then
     echo "Error: Master signing key file not found: $MASTER_KEY_FILE" >&2
     exit 1
@@ -110,6 +130,28 @@ if [ -n "$START_MONTH" ] || [ -n "$MONTHS" ]; then
     if ! [[ "$START_MONTH" =~ ^[0-9]{4}-(0[1-9]|1[0-2])$ ]] || ! [[ "$MONTHS" =~ ^[1-9][0-9]*$ ]]; then
         echo "Error: --start-month YYYY-MM and --months N (N >= 1) must be given together." >&2
         usage
+    fi
+    if [ "$AMOUNTS_SET" = false ]; then
+        AMOUNTS=("${DEFAULT_SCHEDULE_MONTHLY_AMOUNTS[@]}")
+    fi
+    if [ "$YEARLY_AMOUNTS_SET" = false ]; then
+        YEARLY_AMOUNTS=("${DEFAULT_SCHEDULE_YEARLY_AMOUNTS[@]}")
+    fi
+    for a in "${AMOUNTS[@]}"; do
+        for y in "${YEARLY_AMOUNTS[@]}"; do
+            if [ "$a" = "$y" ]; then
+                echo "Error: amount $a is in both --amounts and --yearly-amounts." >&2
+                exit 1
+            fi
+        done
+    done
+else
+    if [ "$YEARLY_AMOUNTS_SET" = true ]; then
+        echo "Error: --yearly-amounts only applies with --start-month/--months." >&2
+        usage
+    fi
+    if [ "$AMOUNTS_SET" = false ]; then
+        AMOUNTS=("${DEFAULT_AMOUNTS[@]}")
     fi
 fi
 
@@ -136,74 +178,109 @@ chmod 700 "$NOTARY_DIR"
 scratch=$(mktemp -d -p "$NOTARY_DIR" .verify.XXXXXX)
 trap 'rm -rf "$scratch"' EXIT
 
-# generate_set <dir> <created: "YYYY-MM-DD HH:MM:SS">
-generate_set() {
-    local dir="$1" created="$2"
-    mkdir -p "$dir"
-    chmod 700 "$dir"
+make_dir() {
+    mkdir -p "$1"
+    chmod 700 "$1"
+}
 
-    for amount in "${AMOUNTS[@]}"; do
-        # NOTE: the JSON key "delegate-key-created" is baked into the cert `info`
-        # field of every donation ever minted and is parsed by the ghostkeys Vault
-        # UI (and Harvest) as "YYYY-MM-DD HH:MM:SS". DO NOT
-        # rename it or we lose backward compatibility with every historical ghost
-        # key in the wild. See freenet/web#24.
-        local info="{\"action\":\"freenet-donation\",\"amount\":$amount,\"delegate-key-created\":\"$created\"}"
-
-        local signing_key_file="$dir/notary_signing_key_$amount.pem"
-        local cert_file="$dir/notary_certificate_$amount.pem"
-
-        if [ -f "$signing_key_file" ] || [ -f "$cert_file" ]; then
-            if [ "$OVERWRITE" = false ]; then
-                echo "Error: Output files already exist for amount $amount in $dir. Use --overwrite to replace." >&2
-                exit 1
-            fi
-        fi
-
-        rm -rf "$scratch/notary" "$scratch/ghost"
-        if ! "$GHOSTKEY" generate-notary \
-            --master-signing-key "$MASTER_KEY_FILE" \
-            --info "$info" \
-            --output-dir "$scratch/notary" \
-            --ignore-permissions >/dev/null 2>&1; then
-            echo "Error: Failed to generate notary key for amount $amount ($dir)" >&2
+# Refuse to clobber an existing pair unless --overwrite.
+check_target() {
+    local dir="$1" amount="$2"
+    if [ -f "$dir/notary_signing_key_$amount.pem" ] || [ -f "$dir/notary_certificate_$amount.pem" ]; then
+        if [ "$OVERWRITE" = false ]; then
+            echo "Error: Output files already exist for amount $amount in $dir. Use --overwrite to replace." >&2
             exit 1
         fi
+    fi
+}
 
-        local verified
-        if ! verified=$("$GHOSTKEY" verify-notary "${VERIFY_ARGS[@]}" \
-            --notary-certificate "$scratch/notary/notary_certificate.pem" 2>&1); then
-            echo "Error: notary certificate for amount $amount does not verify against the master verifying key:" >&2
-            echo "$verified" >&2
-            exit 1
-        fi
-        if ! grep -qxF "Info: $info" <<<"$verified"; then
-            echo "Error: notary certificate for amount $amount has unexpected info:" >&2
-            echo "$verified" >&2
-            exit 1
-        fi
+# generate_pair <dir> <amount> <created: "YYYY-MM-DD HH:MM:SS">
+generate_pair() {
+    local dir="$1" amount="$2" created="$3"
+    # NOTE: the JSON key "delegate-key-created" is baked into the cert `info`
+    # field of every donation ever minted and is parsed by the ghostkeys Vault
+    # UI (and Harvest) as "YYYY-MM-DD HH:MM:SS". DO NOT rename it or we lose
+    # backward compatibility with every historical ghost key in the wild.
+    # See freenet/web#24.
+    local info="{\"action\":\"freenet-donation\",\"amount\":$amount,\"delegate-key-created\":\"$created\"}"
 
-        if ! "$GHOSTKEY" generate-ghost-key --notary-dir "$scratch/notary" \
-            --output-dir "$scratch/ghost" >/dev/null 2>&1 \
-            || ! "$GHOSTKEY" verify-ghost-key "${VERIFY_ARGS[@]}" \
-                --ghost-certificate "$scratch/ghost/ghost_key_certificate.pem" >/dev/null 2>&1; then
-            echo "Error: a ghost key issued by the new notary for amount $amount does not verify" >&2
-            exit 1
-        fi
+    check_target "$dir" "$amount"
 
-        mv "$scratch/notary/notary_signing_key.pem" "$signing_key_file"
-        mv "$scratch/notary/notary_certificate.pem" "$cert_file"
-        chmod 600 "$signing_key_file" "$cert_file"
-    done
+    rm -rf "$scratch/notary" "$scratch/ghost"
+    if ! "$GHOSTKEY" generate-notary \
+        --master-signing-key "$MASTER_KEY_FILE" \
+        --info "$info" \
+        --output-dir "$scratch/notary" \
+        --ignore-permissions >/dev/null 2>&1; then
+        echo "Error: Failed to generate notary key for amount $amount ($dir)" >&2
+        exit 1
+    fi
+
+    local verified
+    if ! verified=$("$GHOSTKEY" verify-notary "${VERIFY_ARGS[@]}" \
+        --notary-certificate "$scratch/notary/notary_certificate.pem" 2>&1); then
+        echo "Error: notary certificate for amount $amount does not verify against the master verifying key:" >&2
+        echo "$verified" >&2
+        exit 1
+    fi
+    if ! grep -qxF "Info: $info" <<<"$verified"; then
+        echo "Error: notary certificate for amount $amount has unexpected info:" >&2
+        echo "$verified" >&2
+        exit 1
+    fi
+
+    if ! "$GHOSTKEY" generate-ghost-key --notary-dir "$scratch/notary" \
+        --output-dir "$scratch/ghost" >/dev/null 2>&1 \
+        || ! "$GHOSTKEY" verify-ghost-key "${VERIFY_ARGS[@]}" \
+            --ghost-certificate "$scratch/ghost/ghost_key_certificate.pem" >/dev/null 2>&1; then
+        echo "Error: a ghost key issued by the new notary for amount $amount does not verify" >&2
+        exit 1
+    fi
+
+    mv "$scratch/notary/notary_signing_key.pem" "$dir/notary_signing_key_$amount.pem"
+    mv "$scratch/notary/notary_certificate.pem" "$dir/notary_certificate_$amount.pem"
+    chmod 600 "$dir/notary_signing_key_$amount.pem" "$dir/notary_certificate_$amount.pem"
+}
+
+# copy_pair <from_dir> <to_dir> <amount>
+copy_pair() {
+    local from="$1" to="$2" amount="$3"
+    check_target "$to" "$amount"
+    cp -p "$from/notary_signing_key_$amount.pem" "$from/notary_certificate_$amount.pem" "$to/"
 }
 
 if [ -n "$START_MONTH" ]; then
+    yearly_year=""
+    yearly_dir=""
     for ((i = 0; i < MONTHS; i++)); do
         month=$(date -u -d "$START_MONTH-01 +$i month" +%Y-%m)
-        generate_set "$NOTARY_DIR/$month" "$month-01 00:00:00"
-        echo "$month: ${#AMOUNTS[@]} notary keypairs generated and verified"
+        year=${month%-*}
+        dir="$NOTARY_DIR/$month"
+        make_dir "$dir"
+
+        for amount in "${AMOUNTS[@]}"; do
+            generate_pair "$dir" "$amount" "$month-01 00:00:00"
+        done
+
+        # One yearly keypair, generated in the first month of the year that the
+        # schedule reaches and copied into the rest.
+        if [ "$year" != "$yearly_year" ]; then
+            for amount in "${YEARLY_AMOUNTS[@]}"; do
+                generate_pair "$dir" "$amount" "$year-01-01 00:00:00"
+            done
+            yearly_year="$year"
+            yearly_dir="$dir"
+        else
+            for amount in "${YEARLY_AMOUNTS[@]}"; do
+                copy_pair "$yearly_dir" "$dir" "$amount"
+            done
+        fi
+
+        echo "$month: $(( ${#AMOUNTS[@]} + ${#YEARLY_AMOUNTS[@]} )) notary keypairs in place (${#AMOUNTS[@]} monthly, ${#YEARLY_AMOUNTS[@]} yearly)"
     done
 else
-    generate_set "$NOTARY_DIR" "$(date -u +"%Y-%m-%d %H:%M:%S")"
+    for amount in "${AMOUNTS[@]}"; do
+        generate_pair "$NOTARY_DIR" "$amount" "$(date -u +"%Y-%m-%d %H:%M:%S")"
+    done
     echo "${#AMOUNTS[@]} notary keypairs generated and verified in $NOTARY_DIR"
 fi
