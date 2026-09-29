@@ -24,6 +24,7 @@ use crate::handle_sign_cert::{
 };
 use crate::invite;
 use crate::invite_pow::{PowChallenge, PowChallengeResponse, PowError, PowManager};
+use crate::payment_claim::is_payment_intent_id;
 use crate::rate_limit::{
     AggregateBucket, RateLimiter, DEFAULT_GLOBAL_INVITES_PER_HOUR, GLOBAL_WINDOW_MINUTES,
     MAX_INVITES_PER_WINDOW,
@@ -148,6 +149,12 @@ async fn sign_certificate_route(
                 CertificateError::PaymentNotSuccessful => {
                     Err((StatusCode::BAD_REQUEST, Json(ErrorResponse {
                         error: "Payment not successful. Please check your payment details and try again.".to_string(),
+                        status: StatusCode::BAD_REQUEST.as_u16(),
+                    })))
+                },
+                CertificateError::InvalidPaymentIntentId => {
+                    Err((StatusCode::BAD_REQUEST, Json(ErrorResponse {
+                        error: "Invalid payment reference".to_string(),
                         status: StatusCode::BAD_REQUEST.as_u16(),
                     })))
                 },
@@ -310,6 +317,11 @@ async fn update_donation(
 ) -> Result<Json<DonationResponse>, DonationError> {
     info!("Received update-donation request: {:?}", request);
 
+    // Accept only well-formed PaymentIntent ids, before any Stripe call.
+    if !is_payment_intent_id(&request.payment_intent_id) {
+        return Err(DonationError::InvalidCurrency);
+    }
+
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(&secret_key);
 
@@ -350,6 +362,11 @@ async fn check_payment_status_route(
         "Received check-payment-status request for PaymentIntent ID: {}",
         payment_intent_id
     );
+
+    // Accept only well-formed PaymentIntent ids, before any Stripe call.
+    if !is_payment_intent_id(&payment_intent_id) {
+        return Err(DonationError::InvalidCurrency);
+    }
 
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(&secret_key);
@@ -1109,5 +1126,55 @@ mod invite_handler_tests {
             "Test Room".to_string(),
         );
         assert_eq!(state.global_bucket.current(), 1);
+    }
+}
+
+#[cfg(test)]
+mod payment_intent_id_route_tests {
+    use super::*;
+
+    const MALFORMED: [&str; 5] = ["", "pi_", "pi_abc-def", "pi_abc def", "cus_123"];
+
+    /// The format check runs before STRIPE_SECRET_KEY is read, so a malformed
+    /// id is a 400 here without Stripe being configured or contacted.
+    #[tokio::test]
+    async fn update_donation_refuses_malformed_ids() {
+        for id in MALFORMED {
+            let result = update_donation(Json(UpdateDonationRequest {
+                payment_intent_id: id.to_string(),
+                amount: 100,
+            }))
+            .await;
+            let status = match result {
+                Ok(_) => panic!("{id:?} was accepted by update-donation"),
+                Err(e) => e.into_response().status(),
+            };
+            assert_eq!(status, StatusCode::BAD_REQUEST, "{id:?}");
+        }
+    }
+
+    #[tokio::test]
+    async fn check_payment_status_refuses_malformed_ids() {
+        for id in MALFORMED {
+            let status = match check_payment_status_route(Path(id.to_string())).await {
+                Ok(_) => panic!("{id:?} was accepted by check-payment-status"),
+                Err(e) => e.into_response().status(),
+            };
+            assert_eq!(status, StatusCode::BAD_REQUEST, "{id:?}");
+        }
+    }
+
+    #[tokio::test]
+    async fn sign_certificate_route_maps_malformed_ids_to_400() {
+        let request: SignCertificateRequest = serde_json::from_value(serde_json::json!({
+            "payment_intent_id": "pi_abc-def",
+            "blinded_ghost_key_base64": "",
+        }))
+        .unwrap();
+        let (status, Json(body)) = sign_certificate_route(Json(request))
+            .await
+            .expect_err("a malformed id was accepted");
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert_eq!(body.error, "Invalid payment reference");
     }
 }

@@ -137,6 +137,16 @@ pub(crate) async fn claim(payment_intent_id: &str) -> ClaimGuard {
     }
 }
 
+/// Whether `id` is a well-formed PaymentIntent id: `pi_` followed by one or
+/// more ASCII alphanumerics.
+///
+/// Callers check this before taking a claim or making any Stripe call, so
+/// that only well-formed PaymentIntent ids are ever accepted.
+pub(crate) fn is_payment_intent_id(id: &str) -> bool {
+    id.strip_prefix("pi_")
+        .is_some_and(|rest| !rest.is_empty() && rest.bytes().all(|b| b.is_ascii_alphanumeric()))
+}
+
 /// Whether a specific PaymentIntent currently has a live entry.
 ///
 /// Tests assert on individual keys rather than on the size of the map:
@@ -163,6 +173,29 @@ mod tests {
     use std::sync::atomic::{AtomicUsize, Ordering};
 
     use super::*;
+
+    #[test]
+    fn well_formed_payment_intent_ids_are_accepted() {
+        for id in ["pi_1", "pi_3PqRsTuVwXyZ0123456789ab", "pi_ABCdef123"] {
+            assert!(is_payment_intent_id(id), "{id:?} should be accepted");
+        }
+    }
+
+    #[test]
+    fn malformed_payment_intent_ids_are_rejected() {
+        for id in [
+            "",
+            "pi_",
+            "pi_abc-def",
+            "pi_abc def",
+            "pi_abc_def",
+            "cus_123",
+            "PI_123",
+            "pi123",
+        ] {
+            assert!(!is_payment_intent_id(id), "{id:?} should be rejected");
+        }
+    }
 
     /// The property the whole module exists for: two concurrent claims on one
     /// PaymentIntent never overlap. Without the lock both tasks observe
