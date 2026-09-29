@@ -402,6 +402,13 @@ pub struct NotaryCertificateResponse {
     pub notary_certificate_base64: String,
 }
 
+/// `pi_` followed by one or more ASCII alphanumerics, the shape of a Stripe
+/// PaymentIntent id.
+fn is_payment_intent_id(id: &str) -> bool {
+    id.strip_prefix("pi_")
+        .is_some_and(|rest| !rest.is_empty() && rest.bytes().all(|b| b.is_ascii_alphanumeric()))
+}
+
 /// The notary certificate a PaymentIntent was quoted, which is the one the
 /// donor must blind against. The success page asks for it instead of trusting
 /// localStorage, which every tab shares and which may hold a later quote, from
@@ -413,7 +420,12 @@ async fn notary_certificate_route(
     let client = Client::new(&secret_key);
 
     // A malformed or unknown id is the caller's problem, not a server error,
-    // and this endpoint is unauthenticated: 404, logged quietly.
+    // and this endpoint is unauthenticated: 404, logged quietly. The id ends up
+    // in a Stripe API path and PaymentIntentId::from_str only checks the
+    // prefix, so accept nothing but pi_ followed by alphanumerics.
+    if !is_payment_intent_id(&payment_intent_id) {
+        return Err(DonationError::NotFound("Payment not found"));
+    }
     let payment_intent_id = PaymentIntentId::from_str(&payment_intent_id)
         .map_err(|_| DonationError::NotFound("Payment not found"))?;
     // Only Stripe saying "no such PaymentIntent" is a 404; an outage or a bad
@@ -769,6 +781,24 @@ pub fn get_invite_routes(state: InviteState) -> Router {
         .route("/create-invite", post(create_room_invite))
         .with_state(state)
         .layer(cors)
+}
+
+#[cfg(test)]
+mod notary_certificate_route_tests {
+    #[test]
+    fn only_plain_payment_intent_ids_reach_stripe() {
+        assert!(super::is_payment_intent_id("pi_3PxYz0ABCdef123"));
+        for bad in [
+            "pi_",
+            "pi_x/../../customers/cus_1",
+            "pi_x%2F..",
+            "pi_abc?expand=x",
+            "cus_123",
+            "",
+        ] {
+            assert!(!super::is_payment_intent_id(bad), "{bad:?} accepted");
+        }
+    }
 }
 
 #[cfg(test)]

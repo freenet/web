@@ -6,22 +6,28 @@
 #   publish_notary_window.sh <schedule-dir> <notary-dir> <owner> [months-ahead]
 #
 # <schedule-dir> holds the full schedule from generate_notary_keys.sh and must
-# be root-only. Only months up to <months-ahead> (default 1) past the current
-# UTC month are published, so a compromise of the API process exposes the
-# current and next month's notary keys, not the whole schedule.
+# be private to the caller, down a path nobody else can rewrite. Only months up
+# to <months-ahead> (default 1) past the current UTC month are published, so a
+# compromise of the API process exposes the current and next month's notary
+# keys, not the whole schedule.
 #
-# The API's user owns <notary-dir> and can rename anything in it, so nothing
-# is staged there: each month is copied and given to <owner> inside
-# <schedule-dir>/.staging, where that user cannot reach, then renamed into
-# <notary-dir> in one step. That is why both must be on one filesystem. No
-# chmod is run (cp -a keeps the generator's 700/600 modes), because chmod
-# follows symlinks. A month that is already published is never touched:
-# donations quoted from it may still be in checkout, and replacing its keys
-# would break them after the charge.
+# The API's user owns <notary-dir> and can rename or replace anything on the
+# path to it, so:
+#   - nothing is staged there: each month is copied, given private modes and
+#     handed to <owner> inside <schedule-dir>/.staging, which that user cannot
+#     reach;
+#   - <notary-dir> is pinned once (cd -P) and afterwards addressed only as ".";
+#   - the month is renamed in with mv --no-copy, which fails rather than fall
+#     back to a copy (and its path-following syscalls) if the rename cannot be
+#     done in one step, e.g. across filesystems or bind mounts.
+# A month that is already published is never touched: donations quoted from it
+# may still be in checkout, and replacing its keys would break them after the
+# charge.
 #
 # NOTARY_WINDOW_NOW=YYYY-MM overrides the current month, for tests.
 
 set -euo pipefail
+unset CDPATH
 
 if [ $# -lt 3 ] || [ $# -gt 4 ]; then
     echo "Usage: $0 <schedule-dir> <notary-dir> <owner> [months-ahead]" >&2
@@ -35,6 +41,8 @@ if ! [[ "$ahead" =~ ^[0-9]+$ ]]; then
     echo "Error: months-ahead must be a whole number" >&2
     exit 1
 fi
+owner_uid=$(id -u "${owner%%:*}")
+
 for d in "$schedule" "$notary"; do
     if [ ! -d "$d" ]; then
         echo "Error: $d is not a directory" >&2
@@ -42,24 +50,33 @@ for d in "$schedule" "$notary"; do
     fi
 done
 
-# The schedule holds every future key and the lock and staging live in it, so
-# it must really be private to whoever runs this (root, in production).
+# The schedule holds every future key, and the lock and staging live in it, so
+# it must be private to the caller (root, in production), and so must every
+# directory above it: otherwise its owner could swap the path out from under us.
 schedule=$(cd -P -- "$schedule" && pwd)
 if [ "$(stat -c '%u %a' "$schedule")" != "$(id -u) 700" ]; then
     echo "Error: $schedule must be owned by $(id -un) with mode 700" >&2
     exit 1
 fi
+d="$schedule"
+while [ "$d" != / ]; do
+    d=$(dirname "$d")
+    read -r uid mode <<<"$(stat -c '%u %a' "$d")"
+    # Writable by group or others is only acceptable with the sticky bit
+    # (like /tmp), where nobody else can rename our entries.
+    if { [ "$uid" != 0 ] && [ "$uid" != "$(id -u)" ]; } ||
+        { (((8#$mode & 8#022) != 0)) && (((8#$mode & 8#1000) == 0)); }; then
+        echo "Error: $d (above $schedule) is owned or writable by someone else" >&2
+        exit 1
+    fi
+done
 
-# The owner of <notary-dir> can swap any path that leads to it, including for
-# a symlink onto another filesystem, where mv would silently fall back to a
-# copy that follows symlinks. So pin the directory itself once, check that
-# pinned directory, and address it only as "." from here on.
 cd -P -- "$notary"
 if [ "$(stat -c %d .)" != "$(stat -c %d "$schedule")" ]; then
-    echo "Error: $notary and $schedule must be on the same filesystem, so a month is renamed into place atomically" >&2
+    echo "Error: $notary and $schedule must be on the same filesystem, so a month can be renamed into place" >&2
     exit 1
 fi
-if [ "$(stat -c %U .)" != "${owner%%:*}" ]; then
+if [ "$(stat -c %u .)" != "$owner_uid" ]; then
     echo "Error: $notary is not owned by ${owner%%:*}" >&2
     exit 1
 fi
@@ -83,9 +100,12 @@ for src in "$schedule"/[0-9][0-9][0-9][0-9]-[0-9][0-9]; do
         continue
     fi
     rm -rf "${staging:?}/$month"
-    cp -a "$src" "$staging/$month"
+    # Contents only, not modes, ACLs or xattrs from wherever the schedule has
+    # been; staging is unreachable to <owner>, so setting modes here is safe.
+    cp -R --preserve=timestamps "$src" "$staging/$month"
+    chmod -R u=rwX,go= "$staging/$month"
     chown -R "$owner" "$staging/$month"
-    mv -T "$staging/$month" "./$month"
+    mv --no-copy -T "$staging/$month" "./$month"
     echo "published $month"
     published=$((published + 1))
 done

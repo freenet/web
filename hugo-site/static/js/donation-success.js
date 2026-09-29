@@ -176,23 +176,23 @@ async function fetchQuotedNotaryCertificate(paymentIntentId) {
     // Bounded, so a hung request falls back instead of leaving the page
     // spinning. AbortController rather than AbortSignal.timeout, which older
     // browsers lack (it would throw and silently skip this fetch every time).
+    // The timer covers the body as well as the headers.
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 20000);
-    let response;
     try {
-      response = await fetch(
+      const response = await fetch(
         `${apiUrl}/notary-certificate/${encodeURIComponent(paymentIntentId)}`,
         { signal: controller.signal }
       );
+      if (!response.ok) {
+        console.warn("Could not fetch quoted notary certificate:", response.status);
+        return null;
+      }
+      const data = await response.json();
+      return data.notary_certificate_base64 || null;
     } finally {
       clearTimeout(timer);
     }
-    if (!response.ok) {
-      console.warn("Could not fetch quoted notary certificate:", response.status);
-      return null;
-    }
-    const data = await response.json();
-    return data.notary_certificate_base64 || null;
   } catch (error) {
     console.warn("Could not fetch quoted notary certificate:", error);
     return null;
