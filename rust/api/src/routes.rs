@@ -18,7 +18,7 @@ use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
 
-use crate::delegates::{current_notary, NOTARY_PERIOD_METADATA_KEY};
+use crate::delegates::{current_notary, quoted_notary, NOTARY_PERIOD_METADATA_KEY};
 use crate::handle_sign_cert::{
     sign_certificate, CertificateError, SignCertificateRequest, SignCertificateResponse,
 };
@@ -149,6 +149,12 @@ async fn sign_certificate_route(
                     Err((StatusCode::BAD_REQUEST, Json(ErrorResponse {
                         error: "Payment not successful. Please check your payment details and try again.".to_string(),
                         status: StatusCode::BAD_REQUEST.as_u16(),
+                    })))
+                },
+                CertificateError::NotaryMismatch => {
+                    Err((StatusCode::CONFLICT, Json(ErrorResponse {
+                        error: "This page prepared your key against a different notary certificate than your payment was quoted. Reload the page to try again; your donation has not been used.".to_string(),
+                        status: StatusCode::CONFLICT.as_u16(),
                     })))
                 },
                 CertificateError::CertificateAlreadySigned => {
@@ -385,6 +391,44 @@ async fn check_payment_status_route(
             "Payment not successful".to_string(),
         ))
     }
+}
+
+#[derive(Serialize)]
+pub struct NotaryCertificateResponse {
+    pub notary_certificate_base64: String,
+}
+
+/// The notary certificate a PaymentIntent was quoted, which is the one the
+/// donor must blind against. The success page asks for it instead of trusting
+/// localStorage, which every tab shares and which may hold a later quote, from
+/// another checkout, for a different month's key.
+async fn notary_certificate_route(
+    Path(payment_intent_id): Path<String>,
+) -> Result<Json<NotaryCertificateResponse>, DonationError> {
+    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
+    let client = Client::new(&secret_key);
+
+    let payment_intent_id = PaymentIntentId::from_str(&payment_intent_id)
+        .map_err(|_| DonationError::OtherError("invalid PaymentIntent id".to_string()))?;
+    let intent = stripe::PaymentIntent::retrieve(&client, &payment_intent_id, &[])
+        .await
+        .map_err(DonationError::StripeError)?;
+
+    let notary = quoted_notary(
+        (intent.amount / 100) as u64,
+        intent
+            .metadata
+            .get(NOTARY_PERIOD_METADATA_KEY)
+            .map(String::as_str),
+    )
+    .map_err(|e| {
+        error!("Error getting quoted notary for {}: {:?}", intent.id, e);
+        DonationError::OtherError("Error getting notary".to_string())
+    })?;
+
+    Ok(Json(NotaryCertificateResponse {
+        notary_certificate_base64: notary.certificate.to_base64().unwrap(),
+    }))
 }
 
 // ============================================================================
@@ -688,6 +732,10 @@ pub fn get_routes() -> Router {
         .route(
             "/check-payment-status/:payment_intent_id",
             get(check_payment_status_route),
+        )
+        .route(
+            "/notary-certificate/:payment_intent_id",
+            get(notary_certificate_route),
         )
         .layer(CorsLayer::permissive())
 }

@@ -101,11 +101,12 @@ fn pick_scheme(dir: &Path, amount: u64) -> NamingScheme {
 /// PaymentIntent metadata key recording which notary period a donation was
 /// quoted from: `YYYY-MM`, or absent for the flat per-amount files.
 ///
-/// The browser blinds its ghost key against the notary certificate it was
-/// handed at `/create-donation` (or `/update-donation`), before the card is
-/// charged. `/sign-certificate` must sign with that same pair, not whichever is
-/// current by then, or a donation straddling a month boundary is charged and
-/// gets a signature that does not unblind.
+/// A donation's certificate is fixed when it is quoted (`/create-donation`,
+/// `/update-donation`), but the ghost key is blinded and signed only after the
+/// card is charged, possibly in another month. The success page blinds against
+/// this quoted certificate (fetched from `/notary-certificate/{id}`), so
+/// `/sign-certificate` must sign with the same pair, not whichever is current by
+/// then, or the donor is charged for a signature that does not unblind.
 pub(crate) const NOTARY_PERIOD_METADATA_KEY: &str = "notary_period";
 
 /// A notary pair, and the period directory it came from (`None` for the flat
@@ -374,6 +375,38 @@ mod tests {
             assert_eq!(n.certificate.payload.info, "flat");
             assert_pair_matches(&n);
         }
+    }
+
+    #[test]
+    fn quote_then_sign_after_rollover_uses_the_same_pair() {
+        // The protocol invariant end to end: the period current_notary records
+        // at quote time, fed back to quoted_notary after the month has turned,
+        // yields the very certificate the donor was quoted.
+        let dir = tempdir().unwrap();
+        write_pair(&dir.path().join("2026-10"), 5, "2026-10");
+        write_pair(&dir.path().join("2026-11"), 5, "2026-11");
+
+        let last_second = chrono::Utc
+            .with_ymd_and_hms(2026, 10, 31, 23, 59, 59)
+            .unwrap();
+        let quoted = current_notary_in(dir.path(), 5, last_second).unwrap();
+        assert_eq!(quoted.period.as_deref(), Some("2026-10"));
+
+        let first_second = chrono::Utc.with_ymd_and_hms(2026, 11, 1, 0, 0, 0).unwrap();
+        assert_eq!(
+            current_notary_in(dir.path(), 5, first_second)
+                .unwrap()
+                .period
+                .as_deref(),
+            Some("2026-11")
+        );
+
+        let signed = quoted_notary_in(dir.path(), 5, quoted.period.as_deref()).unwrap();
+        assert_eq!(
+            signed.certificate.to_base64().unwrap(),
+            quoted.certificate.to_base64().unwrap()
+        );
+        assert_pair_matches(&signed);
     }
 
     #[test]
