@@ -69,6 +69,15 @@ sudo mv /home/gkapi/bin/ghostkey-api.rollback-<stamp> /home/gkapi/bin/ghostkey-a
 sudo systemctl restart gkapi
 ```
 
+**Once a notary schedule month is live, do not roll back to a binary that predates the
+schedule** (anything before freenet/web#192). That binary ignores `notary_period` and signs
+with the flat files, so every donation quoted from a month directory and not yet signed is
+charged and gets a signature that does not unblind. The signing call succeeds, so the
+PaymentIntent stays marked `certificate_signed` and the donor cannot retry. If it happens
+anyway: roll forward, then find the affected PaymentIntents in Stripe (metadata
+`notary_period` set and `certificate_signed` = `true`, after the rollback time) and clear
+`certificate_signed` on each so the donors can reload the success page.
+
 ## Notary keys and the monthly schedule
 
 The notary directory (`--notary-dir`, `/home/gkapi/delegate-keys` on nova) holds one
@@ -79,38 +88,100 @@ still read). The certificate's info string carries the amount and a date,
 
 To keep that date current without taking the master key out of storage every month, the
 directory can also hold a schedule: one subdirectory per month, `YYYY-MM/`, each a complete
-set of tiers. Generate it with the master key mounted, in one session:
+set of tiers.
 
-```bash
-rust/cli/generate_notary_keys.sh --master-key <master_signing_key.pem> \
-  --notary-dir <output-dir> --start-month 2026-10 --months 120
-```
-
-By default $1 and $5 are dated monthly and $20 and up are dated yearly, because the date
-partitions each tier's anonymity set and the higher tiers see too few donors a month for a
-monthly date to be safe (see the script header). The script verifies every pair against the
-compiled-in Freenet master key before writing it.
-
-How the API uses it:
+### How the API uses it
 
 - **Quoting** (`/create-donation`, `/update-donation`) uses the newest `YYYY-MM/` that is not
   in the future, or the flat files if there is none, and records which on the PaymentIntent
   as `notary_period` metadata. If the current month is missing it logs an error and keeps
   issuing from the newest earlier month, so a schedule that runs out degrades to a stale
-  date, not an outage. If the chosen month lacks a tier, that tier fails.
-- **Signing** (`/sign-certificate`) uses exactly the pair the PaymentIntent was quoted from,
-  never whatever is current by then. The browser blinds against the certificate it was
-  quoted, before the card is charged, so signing with any other pair would charge the donor
-  for a key that does not verify. A PaymentIntent with no `notary_period` (quoted from the
-  flat files, including everything before the schedule existed) signs with the flat files.
+  date, not an outage. If the chosen month lacks a tier, quoting that tier fails, before
+  any charge.
+- **Blinding** happens on the success page after the charge, possibly in a later month.
+  The page fetches the certificate its PaymentIntent was quoted
+  (`GET /notary-certificate/{payment_intent_id}`) rather than trusting localStorage, which
+  every tab shares.
+- **Signing** (`/sign-certificate`) uses exactly the pair the PaymentIntent was quoted
+  from, never whatever is current by then, and refuses (409, before marking the payment
+  spent) if the client says it blinded against a different certificate. A PaymentIntent
+  with no `notary_period` (quoted from the flat files, including everything before the
+  schedule existed) signs with the flat files.
 
-Operationally, that means:
+So a month directory, and the flat files, must never be **deleted or replaced** while a
+donation quoted from it could still be in checkout: that breaks the donation after the
+charge. Keep past months; they are small. Never regenerate into a live directory.
 
-- **Do not delete a month directory, or the flat files, while a donation quoted from it
-  could still be in checkout.** Removing one only breaks those in-flight donations, but it
-  breaks them after the charge. Keep past months; they are small.
-- Installing a schedule is a copy into the notary directory
-  (`sudo cp -a <output-dir>/20?? /home/gkapi/delegate-keys/`, then
-  `sudo chown -R gkapi:gkapi` and keep modes `700`/`600`). No restart is needed; the files
-  are read per request.
-- Keep the generated schedule on the encrypted master-key drive as well. It is the backup.
+### Generating (master key mounted, one session)
+
+```bash
+rust/cli/generate_notary_keys.sh --master-key <master_signing_key.pem> \
+  --notary-dir <drive>/notary-schedule --start-month 2026-10 --months 120
+```
+
+By default $1 and $5 are dated monthly and $20 and up are dated yearly, because the date
+partitions each tier's anonymity set and the higher tiers see too few donors a month for a
+monthly date to be safe (see the script header). The script verifies every pair against the
+compiled-in Freenet master key, builds each month in a hidden directory before renaming it
+into place, refuses to touch an existing month, and reuses a year's yearly pairs when
+extending a schedule mid-year. `rust/cli/test_notary_schedule.sh` tests it (CI runs it).
+To extend later, run it again with `--start-month` just after the last month.
+
+Keep the output on the encrypted master-key drive. It is the backup.
+
+### Installing on nova: a rolling window
+
+Do not copy the whole schedule into the API's directory. If the API process were
+compromised, every future month's notary key would leak with it, and forged ghost keys
+dated years ahead would be indistinguishable from real ones. Instead keep the schedule
+root-only and let a daily timer publish the current and next month:
+
+```bash
+# once, from the mounted drive
+sudo install -d -m 700 -o root -g root /var/lib/gkapi-notary-schedule
+sudo cp -a <drive>/notary-schedule/20??-?? /var/lib/gkapi-notary-schedule/
+sudo chown -R root:root /var/lib/gkapi-notary-schedule
+sudo install -m 755 rust/api/publish_notary_window.sh /usr/local/sbin/publish-notary-window
+```
+
+`/etc/systemd/system/gkapi-notary-window.service`:
+
+```ini
+[Unit]
+Description=Publish the next months of the ghost key notary schedule to gkapi
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/publish-notary-window /var/lib/gkapi-notary-schedule /home/gkapi/delegate-keys gkapi:gkapi 1
+```
+
+`/etc/systemd/system/gkapi-notary-window.timer`:
+
+```ini
+[Unit]
+Description=Daily ghost key notary schedule publish
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl start gkapi-notary-window.service   # publish now; check its output
+sudo systemctl enable --now gkapi-notary-window.timer
+```
+
+The publisher never replaces a published month, and it stages each month in a hidden
+directory, so the API never sees a partial one. It exits non-zero if the schedule has no
+directory for the current month, and warns when 12 or fewer months remain; both show in
+`systemctl status gkapi-notary-window` and the journal. No gkapi restart is needed; the
+files are read per request.
+
+**Order matters on first rollout:** deploy the binary from #192 first and let it run on the
+flat files, and only then enable the timer. A binary that predates the schedule never reads
+the month directories, and rolling back to one after a month is live breaks in-flight
+donations (see Rollback).

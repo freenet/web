@@ -11,15 +11,22 @@
 #   Schedule (--start-month YYYY-MM --months N): one complete set per calendar
 #   month, written to --notary-dir/YYYY-MM/. This lets the master key stay
 #   offline for years: generate the schedule once, and the API picks the
-#   current month's directory.
+#   current month's directory (see rust/api/README.md for installing it).
 #
 #   In a schedule, --amounts tiers are dated monthly (the 1st of the month,
 #   00:00:00 UTC) and --yearly-amounts tiers are dated yearly (1 January): one
-#   keypair per year, copied into each of that year's month directories. The
-#   date is visible to anyone who verifies a ghost key, so it partitions each
-#   tier's anonymity set. Only tiers with plenty of donors per month can afford
-#   a monthly date; on a tier with one or two donors a month, the date would
-#   let whoever holds the payment records link a ghost key to its donor.
+#   keypair per year, shared by all of that year's month directories. The date
+#   is visible to anyone who verifies a ghost key, so it partitions each tier's
+#   anonymity set. Only tiers with plenty of donors per month can afford a
+#   monthly date; on a tier with one or two donors a month, the date would let
+#   whoever holds the payment records link a ghost key to its donor.
+#
+#   A schedule run only ever adds months. An existing month is an error (it may
+#   be live, and replacing its keys would break donations quoted from it), and
+#   a year that already has a month in --notary-dir reuses that month's yearly
+#   keypairs instead of minting a second set, so a schedule can be extended
+#   later without splitting a year's anonymity set. Each month is built in a
+#   hidden directory and renamed into place only when complete.
 #
 # Every generated pair is checked before the script moves on: the certificate
 # must verify against the master verifying key (by default the Freenet master
@@ -126,10 +133,16 @@ if [ ! -f "$MASTER_KEY_FILE" ]; then
     exit 1
 fi
 
+SCHEDULE=false
 if [ -n "$START_MONTH" ] || [ -n "$MONTHS" ]; then
+    SCHEDULE=true
     if ! [[ "$START_MONTH" =~ ^[0-9]{4}-(0[1-9]|1[0-2])$ ]] || ! [[ "$MONTHS" =~ ^[1-9][0-9]*$ ]]; then
         echo "Error: --start-month YYYY-MM and --months N (N >= 1) must be given together." >&2
         usage
+    fi
+    if [ "$OVERWRITE" = true ]; then
+        echo "Error: --overwrite is not supported with a schedule; months are only ever added." >&2
+        exit 1
     fi
     if [ "$AMOUNTS_SET" = false ]; then
         AMOUNTS=("${DEFAULT_SCHEDULE_MONTHLY_AMOUNTS[@]}")
@@ -137,14 +150,6 @@ if [ -n "$START_MONTH" ] || [ -n "$MONTHS" ]; then
     if [ "$YEARLY_AMOUNTS_SET" = false ]; then
         YEARLY_AMOUNTS=("${DEFAULT_SCHEDULE_YEARLY_AMOUNTS[@]}")
     fi
-    for a in "${AMOUNTS[@]}"; do
-        for y in "${YEARLY_AMOUNTS[@]}"; do
-            if [ "$a" = "$y" ]; then
-                echo "Error: amount $a is in both --amounts and --yearly-amounts." >&2
-                exit 1
-            fi
-        done
-    done
 else
     if [ "$YEARLY_AMOUNTS_SET" = true ]; then
         echo "Error: --yearly-amounts only applies with --start-month/--months." >&2
@@ -155,13 +160,34 @@ else
     fi
 fi
 
+# The API looks pairs up by the amount formatted as an integer, and the amount
+# is interpolated into the certificate's JSON, so only plain positive integers.
+ALL_AMOUNTS=(${AMOUNTS[@]+"${AMOUNTS[@]}"} ${YEARLY_AMOUNTS[@]+"${YEARLY_AMOUNTS[@]}"})
+if [ ${#ALL_AMOUNTS[@]} -eq 0 ]; then
+    echo "Error: no amounts to generate." >&2
+    exit 1
+fi
+for a in "${ALL_AMOUNTS[@]}"; do
+    if ! [[ "$a" =~ ^[1-9][0-9]*$ ]]; then
+        echo "Error: invalid amount '$a' (whole dollars, no leading zeros)." >&2
+        exit 1
+    fi
+done
+if [ "$(printf '%s\n' "${ALL_AMOUNTS[@]}" | sort | uniq -d)" != "" ]; then
+    echo "Error: an amount is listed more than once (across --amounts and --yearly-amounts)." >&2
+    exit 1
+fi
+
 VERIFY_ARGS=()
 if [ -n "$MASTER_VERIFYING_KEY_FILE" ]; then
     VERIFY_ARGS=(--master-verifying-key "$MASTER_VERIFYING_KEY_FILE")
 fi
 
 # Build once and call the binary directly: a schedule is thousands of calls.
+# The first build shows any compiler errors; the second is a no-op that reports
+# the binary's path.
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cargo build --release --quiet --manifest-path "$script_dir/Cargo.toml" --bin ghostkey
 GHOSTKEY=$(cargo build --release --quiet --manifest-path "$script_dir/Cargo.toml" --bin ghostkey \
     --message-format=json | jq -r 'select(.executable != null) | .executable')
 if [ ! -x "$GHOSTKEY" ]; then
@@ -170,17 +196,27 @@ if [ ! -x "$GHOSTKEY" ]; then
 fi
 export NO_COLOR=1
 
+ghostkey_verify() {
+    "$GHOSTKEY" "$1" ${VERIFY_ARGS[@]+"${VERIFY_ARGS[@]}"} "${@:2}"
+}
+
 mkdir -p "$NOTARY_DIR"
 chmod 700 "$NOTARY_DIR"
 
 # Holds copies of signing keys during the pair check, so keep it inside the
 # (protected) output directory rather than /tmp.
 scratch=$(mktemp -d -p "$NOTARY_DIR" .verify.XXXXXX)
-trap 'rm -rf "$scratch"' EXIT
+partial=""
+trap 'rm -rf "$scratch" ${partial:+"$partial"}' EXIT
 
-make_dir() {
-    mkdir -p "$1"
-    chmod 700 "$1"
+info_for() {
+    local amount="$1" created="$2"
+    # NOTE: the JSON key "delegate-key-created" is baked into the cert `info`
+    # field of every donation ever minted and is parsed by the ghostkeys Vault
+    # UI (and Harvest) as "YYYY-MM-DD HH:MM:SS". DO NOT rename it or we lose
+    # backward compatibility with every historical ghost key in the wild.
+    # See freenet/web#24.
+    echo "{\"action\":\"freenet-donation\",\"amount\":$amount,\"delegate-key-created\":\"$created\"}"
 }
 
 # Refuse to clobber an existing pair unless --overwrite.
@@ -194,15 +230,26 @@ check_target() {
     fi
 }
 
+# Fail unless <cert> verifies against the master key with exactly <info>.
+verify_cert() {
+    local cert="$1" info="$2" verified
+    if ! verified=$(ghostkey_verify verify-notary --notary-certificate "$cert" 2>&1); then
+        echo "Error: $cert does not verify against the master verifying key:" >&2
+        echo "$verified" >&2
+        exit 1
+    fi
+    if ! grep -qxF "Info: $info" <<<"$verified"; then
+        echo "Error: $cert has unexpected info (wanted $info):" >&2
+        echo "$verified" >&2
+        exit 1
+    fi
+}
+
 # generate_pair <dir> <amount> <created: "YYYY-MM-DD HH:MM:SS">
 generate_pair() {
     local dir="$1" amount="$2" created="$3"
-    # NOTE: the JSON key "delegate-key-created" is baked into the cert `info`
-    # field of every donation ever minted and is parsed by the ghostkeys Vault
-    # UI (and Harvest) as "YYYY-MM-DD HH:MM:SS". DO NOT rename it or we lose
-    # backward compatibility with every historical ghost key in the wild.
-    # See freenet/web#24.
-    local info="{\"action\":\"freenet-donation\",\"amount\":$amount,\"delegate-key-created\":\"$created\"}"
+    local info
+    info=$(info_for "$amount" "$created")
 
     check_target "$dir" "$amount"
 
@@ -216,22 +263,11 @@ generate_pair() {
         exit 1
     fi
 
-    local verified
-    if ! verified=$("$GHOSTKEY" verify-notary "${VERIFY_ARGS[@]}" \
-        --notary-certificate "$scratch/notary/notary_certificate.pem" 2>&1); then
-        echo "Error: notary certificate for amount $amount does not verify against the master verifying key:" >&2
-        echo "$verified" >&2
-        exit 1
-    fi
-    if ! grep -qxF "Info: $info" <<<"$verified"; then
-        echo "Error: notary certificate for amount $amount has unexpected info:" >&2
-        echo "$verified" >&2
-        exit 1
-    fi
+    verify_cert "$scratch/notary/notary_certificate.pem" "$info"
 
     if ! "$GHOSTKEY" generate-ghost-key --notary-dir "$scratch/notary" \
         --output-dir "$scratch/ghost" >/dev/null 2>&1 \
-        || ! "$GHOSTKEY" verify-ghost-key "${VERIFY_ARGS[@]}" \
+        || ! ghostkey_verify verify-ghost-key \
             --ghost-certificate "$scratch/ghost/ghost_key_certificate.pem" >/dev/null 2>&1; then
         echo "Error: a ghost key issued by the new notary for amount $amount does not verify" >&2
         exit 1
@@ -242,41 +278,52 @@ generate_pair() {
     chmod 600 "$dir/notary_signing_key_$amount.pem" "$dir/notary_certificate_$amount.pem"
 }
 
-# copy_pair <from_dir> <to_dir> <amount>
-copy_pair() {
-    local from="$1" to="$2" amount="$3"
-    check_target "$to" "$amount"
-    cp -p "$from/notary_signing_key_$amount.pem" "$from/notary_certificate_$amount.pem" "$to/"
+# The completed month directory of <year> already holding the yearly pair for
+# <amount>, if any. Verified, so a month generated under a different policy
+# (say, this amount dated monthly) is an error rather than silently shared.
+existing_yearly_dir() {
+    local year="$1" amount="$2" d
+    for d in "$NOTARY_DIR/$year"-[0-9][0-9]; do
+        if [ -f "$d/notary_certificate_$amount.pem" ]; then
+            verify_cert "$d/notary_certificate_$amount.pem" "$(info_for "$amount" "$year-01-01 00:00:00")"
+            echo "$d"
+            return
+        fi
+    done
 }
 
-if [ -n "$START_MONTH" ]; then
-    yearly_year=""
-    yearly_dir=""
+if [ "$SCHEDULE" = true ]; then
     for ((i = 0; i < MONTHS; i++)); do
         month=$(date -u -d "$START_MONTH-01 +$i month" +%Y-%m)
         year=${month%-*}
         dir="$NOTARY_DIR/$month"
-        make_dir "$dir"
-
-        for amount in "${AMOUNTS[@]}"; do
-            generate_pair "$dir" "$amount" "$month-01 00:00:00"
-        done
-
-        # One yearly keypair, generated in the first month of the year that the
-        # schedule reaches and copied into the rest.
-        if [ "$year" != "$yearly_year" ]; then
-            for amount in "${YEARLY_AMOUNTS[@]}"; do
-                generate_pair "$dir" "$amount" "$year-01-01 00:00:00"
-            done
-            yearly_year="$year"
-            yearly_dir="$dir"
-        else
-            for amount in "${YEARLY_AMOUNTS[@]}"; do
-                copy_pair "$yearly_dir" "$dir" "$amount"
-            done
+        if [ -e "$dir" ]; then
+            echo "Error: $dir already exists. A schedule run only adds months; start after the last one." >&2
+            exit 1
         fi
 
-        echo "$month: $(( ${#AMOUNTS[@]} + ${#YEARLY_AMOUNTS[@]} )) notary keypairs in place (${#AMOUNTS[@]} monthly, ${#YEARLY_AMOUNTS[@]} yearly)"
+        partial="$NOTARY_DIR/.$month.partial"
+        rm -rf "$partial"
+        mkdir -m 700 "$partial"
+
+        for amount in ${AMOUNTS[@]+"${AMOUNTS[@]}"}; do
+            generate_pair "$partial" "$amount" "$month-01 00:00:00"
+        done
+
+        reused=0
+        for amount in ${YEARLY_AMOUNTS[@]+"${YEARLY_AMOUNTS[@]}"}; do
+            src=$(existing_yearly_dir "$year" "$amount")
+            if [ -n "$src" ]; then
+                cp -p "$src/notary_signing_key_$amount.pem" "$src/notary_certificate_$amount.pem" "$partial/"
+                reused=$((reused + 1))
+            else
+                generate_pair "$partial" "$amount" "$year-01-01 00:00:00"
+            fi
+        done
+
+        mv "$partial" "$dir"
+        partial=""
+        echo "$month: ${#AMOUNTS[@]} monthly and ${#YEARLY_AMOUNTS[@]} yearly notary keypairs ($reused yearly reused from earlier in $year)"
     done
 else
     for amount in "${AMOUNTS[@]}"; do

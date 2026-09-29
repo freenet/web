@@ -43,7 +43,9 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: rust
+          workspaces: |
+            rust
+            rust/cli
 
       - name: Formatting
         working-directory: rust
@@ -63,3 +65,10 @@ jobs:
       - name: Test
         working-directory: rust
         run: cargo test -p ghostkey-api
+
+      # generate_notary_keys.sh mints years of notary keys in one master-key
+      # session, and a mistake in it (say, a second "yearly" key for a year)
+      # is only found after the keys are in use. Runs against a throwaway
+      # master key.
+      - name: Notary schedule generator
+        run: bash rust/cli/test_notary_schedule.sh
