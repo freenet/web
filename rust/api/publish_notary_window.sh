@@ -35,8 +35,32 @@ if ! [[ "$ahead" =~ ^[0-9]+$ ]]; then
     echo "Error: months-ahead must be a whole number" >&2
     exit 1
 fi
-if [ "$(stat -c %d "$schedule")" != "$(stat -c %d "$notary")" ]; then
-    echo "Error: $schedule and $notary must be on the same filesystem, so a month is renamed into place atomically" >&2
+for d in "$schedule" "$notary"; do
+    if [ ! -d "$d" ]; then
+        echo "Error: $d is not a directory" >&2
+        exit 1
+    fi
+done
+
+# The schedule holds every future key and the lock and staging live in it, so
+# it must really be private to whoever runs this (root, in production).
+schedule=$(cd -P -- "$schedule" && pwd)
+if [ "$(stat -c '%u %a' "$schedule")" != "$(id -u) 700" ]; then
+    echo "Error: $schedule must be owned by $(id -un) with mode 700" >&2
+    exit 1
+fi
+
+# The owner of <notary-dir> can swap any path that leads to it, including for
+# a symlink onto another filesystem, where mv would silently fall back to a
+# copy that follows symlinks. So pin the directory itself once, check that
+# pinned directory, and address it only as "." from here on.
+cd -P -- "$notary"
+if [ "$(stat -c %d .)" != "$(stat -c %d "$schedule")" ]; then
+    echo "Error: $notary and $schedule must be on the same filesystem, so a month is renamed into place atomically" >&2
+    exit 1
+fi
+if [ "$(stat -c %U .)" != "${owner%%:*}" ]; then
+    echo "Error: $notary is not owned by ${owner%%:*}" >&2
     exit 1
 fi
 
@@ -55,13 +79,13 @@ for src in "$schedule"/[0-9][0-9][0-9][0-9]-[0-9][0-9]; do
     [ -d "$src" ] || continue
     month=$(basename "$src")
     # YYYY-MM compares correctly as a string.
-    if [[ "$month" > "$last" ]] || [ -e "$notary/$month" ] || [ -L "$notary/$month" ]; then
+    if [[ "$month" > "$last" ]] || [ -e "./$month" ] || [ -L "./$month" ]; then
         continue
     fi
     rm -rf "${staging:?}/$month"
     cp -a "$src" "$staging/$month"
     chown -R "$owner" "$staging/$month"
-    mv -T "$staging/$month" "$notary/$month"
+    mv -T "$staging/$month" "./$month"
     echo "published $month"
     published=$((published + 1))
 done

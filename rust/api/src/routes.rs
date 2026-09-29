@@ -416,15 +416,16 @@ async fn notary_certificate_route(
     // and this endpoint is unauthenticated: 404, logged quietly.
     let payment_intent_id = PaymentIntentId::from_str(&payment_intent_id)
         .map_err(|_| DonationError::NotFound("Payment not found"))?;
-    let intent = stripe::PaymentIntent::retrieve(&client, &payment_intent_id, &[])
-        .await
-        .map_err(|e| {
-            warn!(
-                "notary-certificate: cannot retrieve {}: {:?}",
-                payment_intent_id, e
-            );
-            DonationError::NotFound("Payment not found")
-        })?;
+    // Only Stripe saying "no such PaymentIntent" is a 404; an outage or a bad
+    // key stays a logged server error.
+    let intent = match stripe::PaymentIntent::retrieve(&client, &payment_intent_id, &[]).await {
+        Ok(intent) => intent,
+        Err(stripe::StripeError::Stripe(e)) if e.http_status == 404 => {
+            warn!("notary-certificate: no PaymentIntent {}", payment_intent_id);
+            return Err(DonationError::NotFound("Payment not found"));
+        }
+        Err(e) => return Err(DonationError::StripeError(e)),
+    };
 
     let notary = quoted_notary(
         (intent.amount / 100) as u64,

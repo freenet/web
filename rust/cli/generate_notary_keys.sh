@@ -219,15 +219,13 @@ if [ "$SCHEDULE" = true ]; then
     sorted() { printf '%s\n' "$@" | sort -n | tr '\n' ' '; }
     policy="monthly: $(sorted ${AMOUNTS[@]+"${AMOUNTS[@]}"})| yearly: $(sorted ${YEARLY_AMOUNTS[@]+"${YEARLY_AMOUNTS[@]}"})"
     policy_file="$NOTARY_DIR/.schedule-policy"
-    if [ -f "$policy_file" ]; then
-        if [ "$(cat "$policy_file")" != "$policy" ]; then
-            echo "Error: this schedule was generated with policy '$(cat "$policy_file")';" >&2
-            echo "       this run asks for '$policy'. Pass the same --amounts/--yearly-amounts." >&2
-            exit 1
-        fi
-    else
-        echo "$policy" >"$policy_file"
+    if [ -f "$policy_file" ] && [ "$(cat "$policy_file")" != "$policy" ]; then
+        echo "Error: this schedule was generated with policy '$(cat "$policy_file")';" >&2
+        echo "       this run asks for '$policy'. Pass the same --amounts/--yearly-amounts." >&2
+        exit 1
     fi
+    # Recorded once the first month is in place (below), so a run that fails
+    # outright does not pin whatever it was given.
 fi
 
 # Holds copies of signing keys during the pair check, so keep it inside the
@@ -350,6 +348,7 @@ if [ "$SCHEDULE" = true ]; then
 
         mv "$partial" "$dir"
         partial=""
+        [ -f "$policy_file" ] || echo "$policy" >"$policy_file"
         echo "$month: ${#AMOUNTS[@]} monthly and ${#YEARLY_AMOUNTS[@]} yearly notary keypairs ($reused yearly reused from earlier in $year)"
     done
 else

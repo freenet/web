@@ -81,6 +81,14 @@ check "yearly to monthly is refused" "! run --start-month 2027-04 --months 1 --a
 check "monthly to yearly is refused" "! run --start-month 2027-04 --months 1 --amounts 1 --yearly-amounts 5 20 50 100 500 2500 10000"
 check "refused policy change leaves no month directory" "[ ! -e $D/2027-04 ]"
 
+# A first run that fails outright does not pin its policy.
+F="$tmp/failed-first"
+check "failed first run" \
+    "! bash $GEN --master-key $tmp/master/master_signing_key.pem --notary-dir $F --start-month 2027-01 --months 1 --amounts 1 >$tmp/out 2>&1"
+check "failed first run records no policy" "[ ! -e $F/.schedule-policy ]"
+check "a corrected retry with other amounts is accepted" \
+    "bash $GEN ${MASTER[*]} --notary-dir $F --start-month 2027-01 --months 1 >$tmp/out 2>&1 && [ -f $F/.schedule-policy ]"
+
 # Belt and braces for a schedule without a policy file: a year whose existing
 # month dated a yearly tier some other way is an error, not silently shared.
 # (February: a January monthly date would equal the yearly one.)
@@ -111,6 +119,16 @@ check "published month is never replaced" \
 check "window advances with the month" "publish 2027-01 && [ -d $L/2027-02 ] && [ ! -e $L/2027-03 ]"
 ln -s /nonexistent "$L/2027-03"
 check "a planted symlink is neither followed nor replaced" "publish 2027-02 && [ -L $L/2027-03 ]"
+# The notary directory's owner can swap its path for a symlink onto another
+# filesystem, where mv would fall back to a copy that follows symlinks.
+shm=$(mktemp -d -p /dev/shm)
+ln -s "$shm" "$tmp/live-elsewhere"
+check "notary dir on another filesystem via symlink is refused" \
+    "! NOTARY_WINDOW_NOW=2027-01 bash $PUB $D $tmp/live-elsewhere $me >$tmp/pub 2>&1 && grep -q 'same filesystem' $tmp/pub && [ -z \"\$(ls -A $shm)\" ]"
+rm -rf "$shm"
+chmod 755 "$D"
+check "a schedule that is not private is refused" "! publish 2027-01 && grep -q 'mode 700' $tmp/pub"
+chmod 700 "$D"
 check "warns when 12 or fewer months remain" "publish 2027-01 && grep -q 'WARNING: the schedule has 3 months left' $tmp/pub"
 check "month missing from the schedule fails loudly" "! publish 2029-06 && grep -q 'no 2029-06' $tmp/pub"
 check "no publishing directories left" "[ -z \"\$(find $L -maxdepth 1 -name '.*' ! -name . )\" ]"
