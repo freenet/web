@@ -182,10 +182,12 @@ fn client_blinded_against(
 
 /// Whether `client_cert` (base64, as the API handed it out) is `notary`'s
 /// certificate. Compares the notary verifying key, which is what the client
-/// blinds against.
+/// blinds against. Something that does not parse is not it: the answer is the
+/// same retryable refusal as any other mismatch.
 fn same_notary(client_cert: &str, notary: &Notary) -> Result<bool, CertificateError> {
-    let client_cert = NotaryCertificateV1::from_base64(client_cert)
-        .map_err(|e| CertificateError::MiscError(format!("invalid notary certificate: {}", e)))?;
+    let Ok(client_cert) = NotaryCertificateV1::from_base64(client_cert) else {
+        return Ok(false);
+    };
     let der = |k: &blind_rsa_signatures::PublicKey| {
         k.to_der()
             .map_err(|e| CertificateError::MiscError(e.to_string()))
@@ -377,7 +379,7 @@ mod tests {
 
         assert!(super::same_notary(&quoted_b64, &quoted).unwrap());
         assert!(!super::same_notary(&other_b64, &quoted).unwrap());
-        assert!(super::same_notary("not a certificate", &quoted).is_err());
+        assert!(!super::same_notary("not a certificate", &quoted).unwrap());
     }
 
     #[test]

@@ -62,6 +62,7 @@ usage() {
 MASTER_KEY_FILE=""
 MASTER_VERIFYING_KEY_FILE=""
 NOTARY_DIR="$DEFAULT_NOTARY_DIR"
+NOTARY_DIR_SET=false
 AMOUNTS=()
 AMOUNTS_SET=false
 YEARLY_AMOUNTS=()
@@ -81,11 +82,13 @@ while [ $# -gt 0 ]; do
             ;;
         --notary-dir)
             NOTARY_DIR="$2"
+            NOTARY_DIR_SET=true
             shift 2
             ;;
         --delegate-dir)
             echo "warning: --delegate-dir is deprecated, use --notary-dir (freenet/web#24)" >&2
             NOTARY_DIR="$2"
+            NOTARY_DIR_SET=true
             shift 2
             ;;
         --amounts)
@@ -139,6 +142,12 @@ if [ -n "$START_MONTH" ] || [ -n "$MONTHS" ]; then
     if ! [[ "$START_MONTH" =~ ^[0-9]{4}-(0[1-9]|1[0-2])$ ]] || ! [[ "$MONTHS" =~ ^[1-9][0-9]*$ ]]; then
         echo "Error: --start-month YYYY-MM and --months N (N >= 1) must be given together." >&2
         usage
+    fi
+    # The default directory is named after today's date, so a later extension
+    # run would start an empty schedule and mint a second set of yearly keys.
+    if [ "$NOTARY_DIR_SET" = false ]; then
+        echo "Error: a schedule needs an explicit --notary-dir (the same one every run)." >&2
+        exit 1
     fi
     if [ "$OVERWRITE" = true ]; then
         echo "Error: --overwrite is not supported with a schedule; months are only ever added." >&2

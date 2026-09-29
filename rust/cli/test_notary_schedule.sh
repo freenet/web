@@ -67,6 +67,8 @@ check "zero-padded --months is refused" "! run --start-month 2027-04 --months 08
 check "invalid amount is refused" "! run --start-month 2027-04 --months 1 --amounts 05"
 check "duplicate amount is refused" "! run --start-month 2027-04 --months 1 --amounts 5 --yearly-amounts 5"
 check "invalid month is refused" "! run --start-month 2027-13 --months 1"
+check "schedule without --notary-dir is refused" \
+    "! bash $GEN --master-key $tmp/master/master_signing_key.pem --start-month 2027-04 --months 1 >$tmp/out 2>&1 && grep -q 'explicit --notary-dir' $tmp/out"
 
 # Wrong master key (no --master-verifying-key: checked against the real
 # Freenet key) fails and leaves no month behind.
@@ -107,6 +109,8 @@ check "rerun is a no-op" "publish 2026-12 && grep -q '^0 published' $tmp/pub"
 check "published month is never replaced" \
     "[ \"\$(stat -c %Y $L/2027-01/notary_certificate_5.pem)\" = \"\$(date -d 2000-01-01 +%s)\" ]"
 check "window advances with the month" "publish 2027-01 && [ -d $L/2027-02 ] && [ ! -e $L/2027-03 ]"
+ln -s /nonexistent "$L/2027-03"
+check "a planted symlink is neither followed nor replaced" "publish 2027-02 && [ -L $L/2027-03 ]"
 check "warns when 12 or fewer months remain" "publish 2027-01 && grep -q 'WARNING: the schedule has 3 months left' $tmp/pub"
 check "month missing from the schedule fails loudly" "! publish 2029-06 && grep -q 'no 2029-06' $tmp/pub"
 check "no publishing directories left" "[ -z \"\$(find $L -maxdepth 1 -name '.*' ! -name . )\" ]"

@@ -76,7 +76,7 @@ charged and gets a signature that does not unblind. The signing call succeeds, s
 PaymentIntent stays marked `certificate_signed` and the donor cannot retry. If it happens
 anyway, roll forward, then clear `certificate_signed` only on the PaymentIntents of donors
 who report that key generation failed (the success page shows the error; the PaymentIntent
-id is in its URL), so they can reload it. Do not clear it in bulk on every PaymentIntent
+id is in its URL), then tell each of them to reload that success page. Do not clear it in bulk on every PaymentIntent
 with `notary_period`: the server cannot tell which signatures failed to unblind, and a
 donor whose key worked would be able to mint a second one.
 

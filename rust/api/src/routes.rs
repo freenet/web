@@ -163,9 +163,11 @@ async fn sign_certificate_route(
                         status: StatusCode::CONFLICT.as_u16(),
                     })))
                 },
-                CertificateError::KeyError(msg) => {
+                CertificateError::KeyError(_) => {
+                    // The detail (server paths, metadata values) is logged
+                    // above; the client only needs to know it was ours.
                     Err((StatusCode::INTERNAL_SERVER_ERROR, Json(ErrorResponse {
-                        error: format!("Key error: {}", msg),
+                        error: "The server could not load its signing key. Your donation has not been used; please try again later.".to_string(),
                         status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
                     })))
                 },
@@ -183,6 +185,7 @@ async fn sign_certificate_route(
 #[derive(Debug)]
 pub enum DonationError {
     InvalidCurrency,
+    NotFound(&'static str),
     StripeError(stripe::StripeError),
     EnvError(std::env::VarError),
     OtherError(String),
@@ -192,6 +195,7 @@ impl IntoResponse for DonationError {
     fn into_response(self) -> axum::response::Response {
         let (status, error_message) = match self {
             DonationError::InvalidCurrency => (StatusCode::BAD_REQUEST, "Invalid currency"),
+            DonationError::NotFound(what) => (StatusCode::NOT_FOUND, what),
             DonationError::StripeError(e) => {
                 error!("Stripe error: {:?}", e);
                 (StatusCode::INTERNAL_SERVER_ERROR, "Stripe error occurred")
@@ -408,11 +412,19 @@ async fn notary_certificate_route(
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(&secret_key);
 
+    // A malformed or unknown id is the caller's problem, not a server error,
+    // and this endpoint is unauthenticated: 404, logged quietly.
     let payment_intent_id = PaymentIntentId::from_str(&payment_intent_id)
-        .map_err(|_| DonationError::OtherError("invalid PaymentIntent id".to_string()))?;
+        .map_err(|_| DonationError::NotFound("Payment not found"))?;
     let intent = stripe::PaymentIntent::retrieve(&client, &payment_intent_id, &[])
         .await
-        .map_err(DonationError::StripeError)?;
+        .map_err(|e| {
+            warn!(
+                "notary-certificate: cannot retrieve {}: {:?}",
+                payment_intent_id, e
+            );
+            DonationError::NotFound("Payment not found")
+        })?;
 
     let notary = quoted_notary(
         (intent.amount / 100) as u64,

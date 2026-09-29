@@ -5,15 +5,19 @@
 #
 #   publish_notary_window.sh <schedule-dir> <notary-dir> <owner> [months-ahead]
 #
-# <schedule-dir> holds the full schedule from generate_notary_keys.sh and
-# should be readable by root only. Only months up to <months-ahead> (default 1)
-# past the current UTC month are published, so a compromise of the API process
-# exposes the current and next month's notary keys, not the whole schedule.
+# <schedule-dir> holds the full schedule from generate_notary_keys.sh and must
+# be root-only. Only months up to <months-ahead> (default 1) past the current
+# UTC month are published, so a compromise of the API process exposes the
+# current and next month's notary keys, not the whole schedule.
 #
-# Each month is copied to a hidden directory in <notary-dir>, given to <owner>,
-# then renamed into place, so the API never sees a partial month. A month that
-# is already published is never touched: donations quoted from it may still be
-# in checkout, and replacing its keys would break them after the charge.
+# The API's user owns <notary-dir> and can rename anything in it, so nothing
+# is staged there: each month is copied and given to <owner> inside
+# <schedule-dir>/.staging, where that user cannot reach, then renamed into
+# <notary-dir> in one step. That is why both must be on one filesystem. No
+# chmod is run (cp -a keeps the generator's 700/600 modes), because chmod
+# follows symlinks. A month that is already published is never touched:
+# donations quoted from it may still be in checkout, and replacing its keys
+# would break them after the charge.
 #
 # NOTARY_WINDOW_NOW=YYYY-MM overrides the current month, for tests.
 
@@ -31,6 +35,17 @@ if ! [[ "$ahead" =~ ^[0-9]+$ ]]; then
     echo "Error: months-ahead must be a whole number" >&2
     exit 1
 fi
+if [ "$(stat -c %d "$schedule")" != "$(stat -c %d "$notary")" ]; then
+    echo "Error: $schedule and $notary must be on the same filesystem, so a month is renamed into place atomically" >&2
+    exit 1
+fi
+
+# One run at a time: an overlapping manual run and timer run would share staging.
+exec 9>"$schedule/.lock"
+flock -n 9 || { echo "Error: another publish is running" >&2; exit 1; }
+
+staging="$schedule/.staging"
+[ -d "$staging" ] || mkdir -m 700 "$staging"
 
 now="${NOTARY_WINDOW_NOW:-$(date -u +%Y-%m)}"
 last=$(date -u -d "$now-01 +$ahead month" +%Y-%m)
@@ -40,19 +55,18 @@ for src in "$schedule"/[0-9][0-9][0-9][0-9]-[0-9][0-9]; do
     [ -d "$src" ] || continue
     month=$(basename "$src")
     # YYYY-MM compares correctly as a string.
-    if [[ "$month" > "$last" ]] || [ -e "$notary/$month" ]; then
+    if [[ "$month" > "$last" ]] || [ -e "$notary/$month" ] || [ -L "$notary/$month" ]; then
         continue
     fi
-    partial="$notary/.$month.publishing"
-    rm -rf "$partial"
-    cp -a "$src" "$partial"
-    chown -R "$owner" "$partial"
-    chmod 700 "$partial"
-    chmod 600 "$partial"/*
-    mv "$partial" "$notary/$month"
+    rm -rf "${staging:?}/$month"
+    cp -a "$src" "$staging/$month"
+    chown -R "$owner" "$staging/$month"
+    mv -T "$staging/$month" "$notary/$month"
     echo "published $month"
     published=$((published + 1))
 done
+
+rmdir "$staging" 2>/dev/null || true
 
 remaining=$(find "$schedule" -mindepth 1 -maxdepth 1 -type d -name '[0-9][0-9][0-9][0-9]-[0-9][0-9]' -printf '%f\n' |
     awk -v now="$now" '$0 >= now' | wc -l)
