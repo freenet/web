@@ -81,7 +81,13 @@ impl Drop for Registration {
         let mut map = claim_locks();
         let Some(entry) = map.get_mut(&self.payment_intent_id) else {
             // Unreachable: an entry is only removed when its count reaches
-            // zero, and this registration is still counted.
+            // zero, and this registration is still counted. Logged as well as
+            // asserted so a release build reports the broken invariant rather
+            // than silently carrying on.
+            log::error!(
+                "payment claim entry missing for a live registration ({})",
+                self.payment_intent_id
+            );
             debug_assert!(false, "claim entry missing for a live registration");
             return;
         };
@@ -94,11 +100,12 @@ impl Drop for Registration {
 
 /// Exclusive claim on one PaymentIntent, held for as long as the guard lives.
 pub(crate) struct ClaimGuard {
-    // Field order is load-bearing: fields drop in declaration order, so the
-    // mutex is released before the registration is withdrawn. The other way
-    // round, withdrawing the last registration would remove the entry while
-    // this mutex was still locked, and a newcomer could create a fresh mutex
-    // for the same PaymentIntent and take it before this one was released.
+    // Fields drop in declaration order, so the mutex is released before the
+    // registration is withdrawn, and an entry only disappears once its mutex
+    // is free. The other order would not break exclusion, since by the time a
+    // guard is dropped its holder's critical section is over, but a newcomer
+    // could then get a fresh mutex for the same PaymentIntent while the old
+    // holder was still running its destructor. This order is the tidy one.
     _guard: OwnedMutexGuard<()>,
     _registration: Registration,
 }
@@ -139,6 +146,15 @@ pub(crate) async fn claim(payment_intent_id: &str) -> ClaimGuard {
 #[cfg(test)]
 fn is_tracked(payment_intent_id: &str) -> bool {
     claim_locks().contains_key(payment_intent_id)
+}
+
+/// How many requests are registered against a PaymentIntent: its holder plus
+/// every queued waiter, or 0 if it has no entry.
+#[cfg(test)]
+fn claimants(payment_intent_id: &str) -> usize {
+    claim_locks()
+        .get(payment_intent_id)
+        .map_or(0, |entry| entry.claimants)
 }
 
 #[cfg(test)]
@@ -247,8 +263,16 @@ mod tests {
             is_tracked("pi_handoff")
         });
 
-        // Give the waiter time to queue behind the held claim.
-        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+        // Wait until the waiter has actually registered behind the held claim
+        // rather than sleeping and hoping it has. The bound only exists to
+        // turn a lost waiter into a failure instead of a hang.
+        tokio::time::timeout(std::time::Duration::from_secs(10), async {
+            while claimants("pi_handoff") < 2 {
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .expect("the waiter never registered behind the held claim");
         assert!(
             is_tracked("pi_handoff"),
             "entry vanished while a waiter was queued, so the waiter is now \
