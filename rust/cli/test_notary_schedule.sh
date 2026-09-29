@@ -107,6 +107,7 @@ check "rerun is a no-op" "publish 2026-12 && grep -q '^0 published' $tmp/pub"
 check "published month is never replaced" \
     "[ \"\$(stat -c %Y $L/2027-01/notary_certificate_5.pem)\" = \"\$(date -d 2000-01-01 +%s)\" ]"
 check "window advances with the month" "publish 2027-01 && [ -d $L/2027-02 ] && [ ! -e $L/2027-03 ]"
+check "warns when 12 or fewer months remain" "publish 2027-01 && grep -q 'WARNING: the schedule has 3 months left' $tmp/pub"
 check "month missing from the schedule fails loudly" "! publish 2029-06 && grep -q 'no 2029-06' $tmp/pub"
 check "no publishing directories left" "[ -z \"\$(find $L -maxdepth 1 -name '.*' ! -name . )\" ]"
 
