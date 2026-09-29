@@ -18,7 +18,7 @@ use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
 
-use crate::delegates::get_notary;
+use crate::delegates::{current_notary, NOTARY_PERIOD_METADATA_KEY};
 use crate::handle_sign_cert::{
     sign_certificate, CertificateError, SignCertificateRequest, SignCertificateResponse,
 };
@@ -225,8 +225,20 @@ async fn create_donation(
 
     let currency = Currency::USD;
 
+    let amount_dollars = request.amount / 100;
+
+    // Quote the current notary and record which one on the PaymentIntent, so
+    // /sign-certificate signs with the pair this certificate belongs to.
+    let notary = current_notary(amount_dollars as u64).map_err(|e| {
+        error!("Error getting notary: {:?}", e);
+        DonationError::OtherError("Error getting notary".to_string())
+    })?;
+
     let mut metadata = HashMap::new();
     metadata.insert("donation_type".to_string(), "freenet".to_string());
+    if let Some(period) = &notary.period {
+        metadata.insert(NOTARY_PERIOD_METADATA_KEY.to_string(), period.clone());
+    }
 
     let params = stripe::CreatePaymentIntent {
         amount: request.amount,
@@ -274,14 +286,7 @@ async fn create_donation(
 
     info!("Payment intent created successfully");
 
-    let amount_dollars = request.amount / 100;
-
-    let (notary_certificate, _) = get_notary(amount_dollars as u64).map_err(|e| {
-        error!("Error getting notary: {:?}", e);
-        DonationError::OtherError("Error getting notary".to_string())
-    })?;
-
-    let cert_base64 = notary_certificate.to_base64().unwrap();
+    let cert_base64 = notary.certificate.to_base64().unwrap();
 
     match intent.client_secret {
         Some(secret) => Ok(Json(DonationResponse {
@@ -315,8 +320,25 @@ async fn update_donation(
 
     let payment_intent_id = PaymentIntentId::from_str(&request.payment_intent_id)
         .map_err(|_| DonationError::InvalidCurrency)?;
+
+    let amount_dollars = request.amount / 100;
+
+    // The browser replaces its stored certificate with the one returned here,
+    // so re-quote and re-record the period in the same update as the amount.
+    // An empty value deletes the key, i.e. the flat files.
+    let notary = current_notary(amount_dollars as u64).map_err(|e| {
+        error!("Error getting notary: {:?}", e);
+        DonationError::OtherError("Error getting notary".to_string())
+    })?;
+    let mut metadata = HashMap::new();
+    metadata.insert(
+        NOTARY_PERIOD_METADATA_KEY.to_string(),
+        notary.period.clone().unwrap_or_default(),
+    );
+
     let params = stripe::UpdatePaymentIntent {
         amount: Some(request.amount),
+        metadata: Some(metadata),
         ..Default::default()
     };
 
@@ -326,14 +348,7 @@ async fn update_donation(
 
     info!("Payment intent updated successfully");
 
-    let amount_dollars = request.amount / 100;
-
-    let (notary_certificate, _) = get_notary(amount_dollars as u64).map_err(|e| {
-        error!("Error getting notary: {:?}", e);
-        DonationError::OtherError("Error getting notary".to_string())
-    })?;
-
-    let cert_base64 = notary_certificate.to_base64().unwrap();
+    let cert_base64 = notary.certificate.to_base64().unwrap();
 
     Ok(Json(DonationResponse {
         client_secret: updated_intent.client_secret.unwrap_or_default(),

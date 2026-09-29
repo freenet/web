@@ -7,7 +7,7 @@ use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 
 use ghostkey_lib::armorable::Armorable;
 
-use crate::delegates::sign_with_notary_key;
+use crate::delegates::{quoted_notary, sign_with_notary_key, Notary, NOTARY_PERIOD_METADATA_KEY};
 pub use crate::errors::CertificateError;
 
 #[derive(Debug, Deserialize)]
@@ -108,6 +108,19 @@ pub async fn sign_certificate(
             CertificateError::MiscError(e.to_string())
         })?;
 
+    let amount_cents = pi.amount as u64;
+    let amount_dollars = amount_cents / 100;
+
+    // Sign with the pair this donation was quoted from, which is the one the
+    // browser blinded against, not whichever is current now. Loaded before
+    // marking the PaymentIntent spent, so a missing key cannot consume it.
+    let notary = quoted_notary(
+        amount_dollars,
+        pi.metadata
+            .get(NOTARY_PERIOD_METADATA_KEY)
+            .map(String::as_str),
+    )?;
+
     // Mark the payment intent as used for certificate signing
     let mut metadata = HashMap::new();
     metadata.insert("certificate_signed".to_string(), "true".to_string());
@@ -120,10 +133,7 @@ pub async fn sign_certificate(
     // Sign the certificate
     log::info!("Payment intent verified successfully");
 
-    let amount_cents = pi.amount as u64;
-    let amount_dollars = amount_cents / 100;
-
-    match sign_marked_payment(&blinded_ghostkey, amount_dollars, amount_cents) {
+    match sign_marked_payment(&blinded_ghostkey, &notary, amount_cents) {
         Ok(response) => Ok(response),
         Err(e) => {
             // The PaymentIntent is marked spent but no certificate came out of
@@ -144,17 +154,17 @@ pub async fn sign_certificate(
 /// validation steps and undo the mark for exactly that case.
 fn sign_marked_payment(
     blinded_ghostkey: &BlindedMessage,
-    amount_dollars: u64,
+    notary: &Notary,
     amount_cents: u64,
 ) -> Result<SignCertificateResponse, CertificateError> {
-    let blind_signature = sign_with_notary_key(blinded_ghostkey, amount_dollars).map_err(|e| {
-        log::error!("Error in sign_with_notary_key: {:?}", e);
-        e
-    })?;
+    let blind_signature =
+        sign_with_notary_key(blinded_ghostkey, &notary.signing_key).map_err(|e| {
+            log::error!("Error in sign_with_notary_key: {:?}", e);
+            e
+        })?;
 
-    let (notary_certificate, _) = crate::delegates::get_notary(amount_dollars)?;
-
-    let cert_base64 = notary_certificate
+    let cert_base64 = notary
+        .certificate
         .to_base64()
         .map_err(|e| CertificateError::MiscError(e.to_string()))?;
 
