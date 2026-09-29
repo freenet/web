@@ -1,10 +1,15 @@
 {{ define "main" }}
-  <div class="container{{ if .IsSection }} is-section-page{{ else }} is-prose{{ end }}">
+  {{/* The wide shell exists for the child-page card grid. A section with no
+       child pages (try, uninstall, ...) is just an article, and in the wide
+       shell its capped paragraphs sit beside full-width code blocks and
+       alerts, which reads as hard-wrapped text. */}}
+  <div class="container{{ if and .IsSection .Pages }} is-section-page{{ else }} is-prose{{ end }}">
     <h1 class="title">{{ .Title }}</h1>
     {{ if .IsSection }}
       <div class="content page-intro">
         {{ .Content }}
       </div>
+      {{ if .Pages }}
       <div class="page-list{{ if not .Params.list_child_pages }} is-grid{{ end }}">
         {{ range .Pages }}
           <section class="child-entry">
@@ -25,6 +30,7 @@
           </section>
         {{ end }}
       </div>
+      {{ end }}
     {{ else }}
       {{ if eq .Section "news" }}
         {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}

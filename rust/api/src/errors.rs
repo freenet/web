@@ -10,6 +10,9 @@ pub enum CertificateError {
     /// The client blinded against a different notary certificate than the one
     /// its PaymentIntent was quoted, so a signature would not unblind.
     NotaryMismatch,
+    /// The request's PaymentIntent id is not well-formed, or the PaymentIntent
+    /// Stripe returned is not the one requested.
+    InvalidPaymentIntentId,
     Base64Error(base64::DecodeError),
     KeyError(String),
     ParseIdError(stripe::ParseIdError),
@@ -27,6 +30,7 @@ impl std::fmt::Display for CertificateError {
             CertificateError::NotaryMismatch => {
                 write!(f, "Notary certificate does not match this payment")
             }
+            CertificateError::InvalidPaymentIntentId => write!(f, "Invalid payment reference"),
             CertificateError::Base64Error(e) => write!(f, "Base64 decoding error: {}", e),
             CertificateError::KeyError(e) => write!(f, "Key error: {}", e),
             CertificateError::ParseIdError(e) => write!(f, "Parse ID error: {}", e),
