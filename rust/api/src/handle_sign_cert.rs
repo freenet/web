@@ -126,18 +126,15 @@ pub async fn sign_certificate(
             .map(String::as_str),
     )?;
 
-    // If the client says which certificate it blinded against, refuse a
-    // mismatch now, while the donation can still be retried. Signing anyway
-    // would spend it on a signature that cannot unblind.
-    if let Some(client_cert) = &request.notary_certificate_base64 {
-        if !same_notary(client_cert, &notary)? {
-            log::error!(
-                "PaymentIntent {} was blinded against a different notary certificate \
-                 than it was quoted; refusing before marking it spent",
-                pi.id
-            );
-            return Err(CertificateError::NotaryMismatch);
-        }
+    // Refuse a mismatch now, while the donation can still be retried. Signing
+    // anyway would spend it on a signature that cannot unblind.
+    if !client_blinded_against(request.notary_certificate_base64.as_deref(), &notary)? {
+        log::error!(
+            "PaymentIntent {} was blinded against a different or unstated notary \
+             certificate than it was quoted; refusing before marking it spent",
+            pi.id
+        );
+        return Err(CertificateError::NotaryMismatch);
     }
 
     // Mark the payment intent as used for certificate signing
@@ -163,6 +160,23 @@ pub async fn sign_certificate(
             release_certificate_mark(&client, &pi.id).await;
             Err(e)
         }
+    }
+}
+
+/// Whether the client's blinded key can be signed with `notary`, given the
+/// certificate the client says it blinded against.
+///
+/// A client that does not say is success-page JS cached from before this check,
+/// which blinds against shared localStorage. That is tolerated for a flat-file
+/// quote (one certificate per tier, as it always was), but a scheduled quote
+/// rotates, so such a client must reload first.
+fn client_blinded_against(
+    client_cert: Option<&str>,
+    notary: &Notary,
+) -> Result<bool, CertificateError> {
+    match client_cert {
+        Some(cert) => same_notary(cert, notary),
+        None => Ok(notary.period.is_none()),
     }
 }
 
@@ -364,5 +378,23 @@ mod tests {
         assert!(super::same_notary(&quoted_b64, &quoted).unwrap());
         assert!(!super::same_notary(&other_b64, &quoted).unwrap());
         assert!(super::same_notary("not a certificate", &quoted).is_err());
+    }
+
+    #[test]
+    fn unstated_certificate_is_only_tolerated_for_flat_quotes() {
+        use super::Armorable;
+        let flat = notary("flat");
+        let mut scheduled = notary("2026-10");
+        scheduled.period = Some("2026-10".to_string());
+        let scheduled_b64 = scheduled.certificate.to_base64().unwrap();
+        let flat_b64 = flat.certificate.to_base64().unwrap();
+
+        // Old cached JS sends nothing: fine on a flat quote, refused (before
+        // the mark, so retryable) on a scheduled one.
+        assert!(super::client_blinded_against(None, &flat).unwrap());
+        assert!(!super::client_blinded_against(None, &scheduled).unwrap());
+        // New JS states it: accepted exactly when it matches.
+        assert!(super::client_blinded_against(Some(&scheduled_b64), &scheduled).unwrap());
+        assert!(!super::client_blinded_against(Some(&flat_b64), &scheduled).unwrap());
     }
 }

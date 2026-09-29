@@ -74,12 +74,20 @@ check "wrong master key is refused" \
     "! bash $GEN --master-key $tmp/master/master_signing_key.pem --notary-dir $D --start-month 2027-04 --months 1 >$tmp/out 2>&1"
 check "failed run leaves no month directory" "[ ! -e $D/2027-04 ]"
 
-# A year whose existing month dated a yearly tier some other way is an error,
-# not silently shared.
+# Changing the dating policy of an existing schedule is refused, both ways.
+check "yearly to monthly is refused" "! run --start-month 2027-04 --months 1 --amounts 1 5 20 --yearly-amounts 50 100 500 2500 10000"
+check "monthly to yearly is refused" "! run --start-month 2027-04 --months 1 --amounts 1 --yearly-amounts 5 20 50 100 500 2500 10000"
+check "refused policy change leaves no month directory" "[ ! -e $D/2027-04 ]"
+
+# Belt and braces for a schedule without a policy file: a year whose existing
+# month dated a yearly tier some other way is an error, not silently shared.
 # (February: a January monthly date would equal the yearly one.)
-check "tier dated monthly in 2028-02" "run --start-month 2028-02 --months 1 --amounts 20 --yearly-amounts"
-check "policy conflict is refused" "! run --start-month 2028-03 --months 1"
-check "policy conflict leaves no month directory" "[ ! -e $D/2028-03 ]"
+P="$tmp/nopolicy"
+runp() { bash "$GEN" "${MASTER[@]}" --notary-dir "$P" "$@" >"$tmp/out" 2>&1; }
+check "tier dated monthly in 2028-02" "runp --start-month 2028-02 --months 1 --amounts 20 --yearly-amounts"
+rm -f "$P/.schedule-policy"
+check "conflicting existing month is refused" "! runp --start-month 2028-03 --months 1"
+check "conflict leaves no month directory" "[ ! -e $P/2028-03 ]"
 
 # publish_notary_window.sh: the rolling window the API actually reads.
 PUB="$script_dir/../api/publish_notary_window.sh"
@@ -102,7 +110,7 @@ check "window advances with the month" "publish 2027-01 && [ -d $L/2027-02 ] && 
 check "month missing from the schedule fails loudly" "! publish 2029-06 && grep -q 'no 2029-06' $tmp/pub"
 check "no publishing directories left" "[ -z \"\$(find $L -maxdepth 1 -name '.*' ! -name . )\" ]"
 
-check "no scratch or partial directories left" "[ -z \"\$(find $D -maxdepth 1 -name '.*' ! -name . )\" ]"
+check "no scratch or partial directories left" "[ -z \"\$(find $D $P -maxdepth 1 -type d -name '.*')\" ]"
 check "signing keys are private" "[ -z \"\$(find $D -name 'notary_signing_key_*' ! -perm 600)\" ]"
 
 echo "$pass passed, $fail failed"

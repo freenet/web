@@ -203,6 +203,24 @@ ghostkey_verify() {
 mkdir -p "$NOTARY_DIR"
 chmod 700 "$NOTARY_DIR"
 
+# A schedule keeps one dating policy for its whole life. Moving a tier between
+# monthly and yearly part-way would split that tier's anonymity set, so the
+# first run records the policy and later runs must match it.
+if [ "$SCHEDULE" = true ]; then
+    sorted() { printf '%s\n' "$@" | sort -n | tr '\n' ' '; }
+    policy="monthly: $(sorted ${AMOUNTS[@]+"${AMOUNTS[@]}"})| yearly: $(sorted ${YEARLY_AMOUNTS[@]+"${YEARLY_AMOUNTS[@]}"})"
+    policy_file="$NOTARY_DIR/.schedule-policy"
+    if [ -f "$policy_file" ]; then
+        if [ "$(cat "$policy_file")" != "$policy" ]; then
+            echo "Error: this schedule was generated with policy '$(cat "$policy_file")';" >&2
+            echo "       this run asks for '$policy'. Pass the same --amounts/--yearly-amounts." >&2
+            exit 1
+        fi
+    else
+        echo "$policy" >"$policy_file"
+    fi
+fi
+
 # Holds copies of signing keys during the pair check, so keep it inside the
 # (protected) output directory rather than /tmp.
 scratch=$(mktemp -d -p "$NOTARY_DIR" .verify.XXXXXX)

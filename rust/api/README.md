@@ -74,9 +74,11 @@ schedule** (anything before freenet/web#192). That binary ignores `notary_period
 with the flat files, so every donation quoted from a month directory and not yet signed is
 charged and gets a signature that does not unblind. The signing call succeeds, so the
 PaymentIntent stays marked `certificate_signed` and the donor cannot retry. If it happens
-anyway: roll forward, then find the affected PaymentIntents in Stripe (metadata
-`notary_period` set and `certificate_signed` = `true`, after the rollback time) and clear
-`certificate_signed` on each so the donors can reload the success page.
+anyway, roll forward, then clear `certificate_signed` only on the PaymentIntents of donors
+who report that key generation failed (the success page shows the error; the PaymentIntent
+id is in its URL), so they can reload it. Do not clear it in bulk on every PaymentIntent
+with `notary_period`: the server cannot tell which signatures failed to unblind, and a
+donor whose key worked would be able to mint a second one.
 
 ## Notary keys and the monthly schedule
 

@@ -173,7 +173,11 @@ function generateTestCertificate() {
 async function fetchQuotedNotaryCertificate(paymentIntentId) {
   try {
     const apiUrl = window.ghostkeyApiUrl;
-    const response = await fetch(`${apiUrl}/notary-certificate/${encodeURIComponent(paymentIntentId)}`);
+    // Bounded, so a hung request falls back instead of leaving the page spinning.
+    const response = await fetch(
+      `${apiUrl}/notary-certificate/${encodeURIComponent(paymentIntentId)}`,
+      { signal: AbortSignal.timeout(20000) }
+    );
     if (!response.ok) {
       console.warn("Could not fetch quoted notary certificate:", response.status);
       return null;
