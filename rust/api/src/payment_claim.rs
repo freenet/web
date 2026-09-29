@@ -27,61 +27,106 @@ use std::sync::{Arc, LazyLock, Mutex};
 
 use tokio::sync::{Mutex as AsyncMutex, OwnedMutexGuard};
 
+/// One PaymentIntent's lock plus the number of requests that currently hold
+/// or are waiting for it.
+struct ClaimEntry {
+    lock: Arc<AsyncMutex<()>>,
+    /// Requests registered against this entry: the holder plus every queued
+    /// waiter. Only ever read or written under the `CLAIM_LOCKS` lock.
+    claimants: usize,
+}
+
 /// Live locks, keyed by PaymentIntent id.
 ///
-/// Entries are removed when the last guard for a key is dropped (see
-/// `ClaimGuard::drop`), so the map is bounded by the number of in-flight
-/// requests rather than by the number of PaymentIntents ever seen. That
-/// bound is the point: the lock is taken before the PaymentIntent is known to
-/// exist, so without cleanup an unauthenticated caller could grow this map
-/// without limit by posting garbage ids.
-static CLAIM_LOCKS: LazyLock<Mutex<HashMap<String, Arc<AsyncMutex<()>>>>> =
+/// Entries are removed when their last claimant goes away, whether it held
+/// the lock or was cancelled while still waiting for it (see `Registration`),
+/// so the map is bounded by the number of in-flight requests rather than by
+/// the number of PaymentIntents ever seen. That bound is the point: the lock
+/// is taken before the PaymentIntent is known to exist, so without cleanup an
+/// unauthenticated caller could grow this map without limit by posting
+/// garbage ids.
+///
+/// The claimant count is kept explicitly rather than inferred from
+/// `Arc::strong_count` on the lock. tokio's `OwnedMutexGuard` releases the
+/// mutex before it drops its own `Arc`, so in that gap a waiter on another
+/// thread can acquire, finish and look at the count while the previous
+/// holder's reference is still live. Each side then sees someone else still
+/// using the entry, nobody removes it, and it leaks for good.
+static CLAIM_LOCKS: LazyLock<Mutex<HashMap<String, ClaimEntry>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
+
+/// Locks the claim map, recovering from poison.
+///
+/// A poisoned map lock only means some other thread panicked while holding
+/// it. Every critical section below leaves the map structurally sound at each
+/// step, and refusing to clean up would leak, so recover rather than
+/// propagate.
+fn claim_locks() -> std::sync::MutexGuard<'static, HashMap<String, ClaimEntry>> {
+    CLAIM_LOCKS.lock().unwrap_or_else(|e| e.into_inner())
+}
+
+/// One request's registration as a claimant of a PaymentIntent's entry.
+///
+/// Created in `claim` in the same critical section that increments the
+/// count, before anything is awaited, and withdrawn on drop. Because it is an
+/// ordinary local until the lock is acquired, a request whose `claim` future
+/// is dropped while still queued (axum drops the handler future when the
+/// client disconnects) still withdraws, and so cannot leak the entry.
+struct Registration {
+    payment_intent_id: String,
+}
+
+impl Drop for Registration {
+    fn drop(&mut self) {
+        let mut map = claim_locks();
+        let Some(entry) = map.get_mut(&self.payment_intent_id) else {
+            // Unreachable: an entry is only removed when its count reaches
+            // zero, and this registration is still counted.
+            debug_assert!(false, "claim entry missing for a live registration");
+            return;
+        };
+        entry.claimants -= 1;
+        if entry.claimants == 0 {
+            map.remove(&self.payment_intent_id);
+        }
+    }
+}
 
 /// Exclusive claim on one PaymentIntent, held for as long as the guard lives.
 pub(crate) struct ClaimGuard {
-    payment_intent_id: String,
-    // Dropped after `Drop::drop` runs, which is what makes the strong_count
-    // arithmetic there work out.
+    // Field order is load-bearing: fields drop in declaration order, so the
+    // mutex is released before the registration is withdrawn. The other way
+    // round, withdrawing the last registration would remove the entry while
+    // this mutex was still locked, and a newcomer could create a fresh mutex
+    // for the same PaymentIntent and take it before this one was released.
     _guard: OwnedMutexGuard<()>,
-}
-
-impl Drop for ClaimGuard {
-    fn drop(&mut self) {
-        // A poisoned map lock only means some other thread panicked while
-        // holding it; the map itself is still structurally sound, and refusing
-        // to clean up would leak. Recover rather than propagate.
-        let mut map = CLAIM_LOCKS.lock().unwrap_or_else(|e| e.into_inner());
-
-        if let Some(lock) = map.get(&self.payment_intent_id) {
-            // Two references means the map and this guard, so nobody else is
-            // holding or waiting and the entry can go. Three or more means a
-            // waiter has already cloned the Arc and must keep contending on
-            // this same mutex, so leave it in place.
-            if Arc::strong_count(lock) == 2 {
-                map.remove(&self.payment_intent_id);
-            }
-        }
-    }
+    _registration: Registration,
 }
 
 /// Wait until no other in-process request is signing against this
 /// PaymentIntent, then take the claim.
 pub(crate) async fn claim(payment_intent_id: &str) -> ClaimGuard {
-    let lock = {
-        let mut map = CLAIM_LOCKS.lock().unwrap_or_else(|e| e.into_inner());
-        map.entry(payment_intent_id.to_string())
-            .or_insert_with(|| Arc::new(AsyncMutex::new(())))
-            .clone()
+    let payment_intent_id = payment_intent_id.to_string();
+    let (lock, registration) = {
+        let mut map = claim_locks();
+        let entry = map
+            .entry(payment_intent_id.clone())
+            .or_insert_with(|| ClaimEntry {
+                lock: Arc::new(AsyncMutex::new(())),
+                claimants: 0,
+            });
+        entry.claimants += 1;
+        (Arc::clone(&entry.lock), Registration { payment_intent_id })
     };
 
     // Awaited with the map lock released, so a slow claim on one PaymentIntent
-    // never blocks claims on others.
+    // never blocks claims on others. If this future is dropped here,
+    // `registration` is dropped with it and the count comes back down.
     let guard = lock.lock_owned().await;
 
     ClaimGuard {
-        payment_intent_id: payment_intent_id.to_string(),
         _guard: guard,
+        _registration: registration,
     }
 }
 
@@ -93,14 +138,12 @@ pub(crate) async fn claim(payment_intent_id: &str) -> ClaimGuard {
 /// what every other test in this module happens to be doing at that instant.
 #[cfg(test)]
 fn is_tracked(payment_intent_id: &str) -> bool {
-    CLAIM_LOCKS
-        .lock()
-        .unwrap_or_else(|e| e.into_inner())
-        .contains_key(payment_intent_id)
+    claim_locks().contains_key(payment_intent_id)
 }
 
 #[cfg(test)]
 mod tests {
+    use std::future::Future;
     use std::sync::atomic::{AtomicUsize, Ordering};
 
     use super::*;
@@ -218,6 +261,67 @@ mod tests {
         assert!(
             !is_tracked("pi_handoff"),
             "entry outlived the last guard for this key"
+        );
+    }
+
+    /// axum drops a handler's future when the client disconnects, which can
+    /// happen while the request is still queued behind another claim. The
+    /// abandoned waiter never gets a guard, so it has to withdraw on its own
+    /// or its key is never reclaimed.
+    #[tokio::test]
+    async fn cancelled_waiter_does_not_leak_its_key() {
+        let held = claim("pi_cancelled_waiter").await;
+
+        // The first poll registers the waiter and then parks it behind
+        // `held`; the timeout then drops the still-queued future.
+        let abandoned = tokio::time::timeout(
+            std::time::Duration::from_millis(20),
+            claim("pi_cancelled_waiter"),
+        )
+        .await;
+        assert!(
+            abandoned.is_err(),
+            "the waiter acquired a claim that was still held"
+        );
+        assert!(
+            is_tracked("pi_cancelled_waiter"),
+            "entry vanished while its holder was still live"
+        );
+
+        drop(held);
+        assert!(
+            !is_tracked("pi_cancelled_waiter"),
+            "a waiter cancelled while queued stranded its entry after the \
+             holder released, so abandoned requests grow the map without bound"
+        );
+
+        // The key is still usable afterwards.
+        drop(claim("pi_cancelled_waiter").await);
+        assert!(!is_tracked("pi_cancelled_waiter"));
+    }
+
+    /// The same, for a waiter cancelled after the holder has already gone and
+    /// before it was ever polled again: it must still be the one to clean up.
+    #[tokio::test]
+    async fn waiter_cancelled_after_holder_released_does_not_leak() {
+        let held = claim("pi_cancelled_late").await;
+
+        let mut waiter = Box::pin(claim("pi_cancelled_late"));
+        // Poll once so it registers and queues, then release the holder
+        // without ever polling the waiter again.
+        let first_poll =
+            std::future::poll_fn(|cx| std::task::Poll::Ready(waiter.as_mut().poll(cx))).await;
+        assert!(first_poll.is_pending());
+        drop(held);
+        assert!(
+            is_tracked("pi_cancelled_late"),
+            "entry vanished while a waiter was still registered"
+        );
+
+        drop(waiter);
+        assert!(
+            !is_tracked("pi_cancelled_late"),
+            "a waiter cancelled after the holder released stranded its entry"
         );
     }
 }
