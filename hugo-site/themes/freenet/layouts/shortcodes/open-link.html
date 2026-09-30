@@ -154,18 +154,25 @@
     border-top: 1px solid var(--border);
   }
 
-  .open-maker-result-row {
-    display: flex;
-    gap: 0.5rem;
-    align-items: stretch;
-  }
-
-  .open-maker-result-row .open-maker-input {
-    flex: 1 1 auto;
-  }
-
-  .open-maker-result-row .button {
-    flex: 0 0 auto;
+  /* The generated link is shown in full, wrapping onto as many lines as it
+     needs (like Harvest's own share box), rather than truncated in a
+     single-line field -- someone sharing a link should be able to see
+     exactly what they're about to send. */
+  .open-maker-output {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    background-color: var(--surface);
+    color: var(--text-strong);
+    font-family: var(--font-code, monospace);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    resize: vertical;
+    overflow-wrap: break-word;
+    margin-bottom: 0.75rem;
   }
 
   .open-maker-error {
@@ -244,10 +251,8 @@
 
     <div id="open-maker-result" class="open-maker-result" style="display: none">
       <label class="open-maker-label" for="open-maker-output">Share this link</label>
-      <div class="open-maker-result-row">
-        <input id="open-maker-output" class="open-maker-input" type="text" readonly />
-        <button id="open-maker-copy" class="button" type="button">Copy</button>
-      </div>
+      <textarea id="open-maker-output" class="open-maker-output" readonly rows="2"></textarea>
+      <button id="open-maker-copy" class="button" type="button">Copy</button>
     </div>
 
     <p class="open-link-note">
@@ -293,7 +298,7 @@
             >Use in your browser</a
           >
           <p class="open-link-note">
-            No install. Runs on a shared demo computer, so it may be slow or busy sometimes -- try
+            No install. Runs on a shared demo computer, so it may be slow or busy sometimes. Try
             again in a minute, or install your own.
           </p>
         </div>
@@ -579,11 +584,11 @@
     // entirely on your own computer" is true without overclaiming for every
     // option at once.
     var LEDE_DEFAULT =
-      "Someone shared a link to an app on Freenet with you. Freenet is a peer-to-peer network -- " +
-      "nothing about it is sent to freenet.org, and opening it can run entirely on your own computer.";
+      "Someone shared a link to an app on Freenet with you. Freenet is a peer-to-peer network. " +
+      "Nothing about it is sent to freenet.org, and opening it can run entirely on your own computer.";
     var LEDE_MAKER =
       "Paste a Freenet link below to turn it into one that works for anyone. Freenet is a " +
-      "peer-to-peer network -- nothing you paste here is sent to freenet.org, and the link can " +
+      "peer-to-peer network. Nothing you paste here is sent to freenet.org, and the link can " +
       "open entirely on the other person's own computer.";
 
     function show(stateId) {
@@ -790,8 +795,15 @@
         parts.rest;
 
       // textContent/value only -- same rule as everywhere else on this page.
-      document.getElementById("open-maker-output").value = shareUrl;
+      var outputEl = document.getElementById("open-maker-output");
+      outputEl.value = shareUrl;
       resultEl.style.display = "";
+      // Grow the box to fit the whole link with no scrollbar or clipped
+      // line, whatever the link's length or the viewport's width -- must
+      // happen after `display` is set, since a hidden element always
+      // measures a zero scrollHeight.
+      outputEl.style.height = "auto";
+      outputEl.style.height = outputEl.scrollHeight + "px";
     }
 
     var makerViaRadios = document.querySelectorAll('input[name="open-maker-via"]');
@@ -820,6 +832,11 @@
           button.textContent = original;
         }, 2000);
       });
+    });
+    // A click-to-select-all fallback for anyone who'd rather copy manually
+    // than trust the button (or whose browser blocks clipboard access).
+    document.getElementById("open-maker-output").addEventListener("click", function () {
+      this.select();
     });
   })();
 </script>
