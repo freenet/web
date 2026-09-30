@@ -174,9 +174,17 @@
     margin: 0.5rem 0 0 0 !important;
   }
 
+  .open-maker-input.has-error {
+    border-color: #b3261e;
+  }
+
   @media (prefers-color-scheme: dark) {
     .open-maker-error {
       color: #ff8a80;
+    }
+
+    .open-maker-input.has-error {
+      border-color: #ff8a80;
     }
   }
 </style>
@@ -197,12 +205,6 @@
   </div>
 
   <div id="open-link-missing" class="open-link-state" style="display: none">
-    <h2>Make a share link</h2>
-    <p>
-      Paste any Freenet link below and get one back that works for anyone -- with or without Freenet
-      installed.
-    </p>
-
     <div class="open-maker-field">
       <label class="open-maker-label" for="open-maker-input">Your link</label>
       <input
@@ -211,7 +213,7 @@
         type="text"
         autocomplete="off"
         spellcheck="false"
-        placeholder="http://127.0.0.1:7509/v1/contract/web/... or freenet:... or freenet.org/open#..."
+        placeholder="Paste your Freenet link here"
       />
     </div>
 
@@ -226,15 +228,15 @@
         For anyone: opens in their browser on our demo computer (best for small audiences)
       </label>
     </fieldset>
-    <p class="open-link-note">
+    <p id="open-maker-browser-note" class="open-link-note" style="display: none">
       Browser links all run on one shared demo computer, so they suit occasional or small-audience
-      sharing for now, not a high-traffic post (<a
+      sharing for now, not a high-traffic post.
+      <a
         href="https://github.com/freenet/freenet-core/issues/5773"
         target="_blank"
         rel="noopener noreferrer"
-        >freenet-core#5773</a
+        >We're working on scaling this up.</a
       >
-      tracks scaling this up).
     </p>
 
     <button id="open-maker-generate" class="button is-primary" type="button">Make the link</button>
@@ -569,13 +571,20 @@
     // fragment, which is now the share-link-making tool. Swapped by text
     // content only -- both strings are fixed literals, never derived from
     // user input.
+    // Deliberately does NOT say "it runs on your own computer, not ours" as
+    // an unqualified claim: one of the four ways to open a link (Use in your
+    // browser) runs on a peer WE host, not the visitor's computer, and
+    // stating the opposite two inches above that option's own honest caveat
+    // read as a direct contradiction in the round-3 critique. "Can run
+    // entirely on your own computer" is true without overclaiming for every
+    // option at once.
     var LEDE_DEFAULT =
       "Someone shared a link to an app on Freenet with you. Freenet is a peer-to-peer network -- " +
-      "nothing about it is sent to freenet.org, and it runs on your own computer, not ours.";
+      "nothing about it is sent to freenet.org, and opening it can run entirely on your own computer.";
     var LEDE_MAKER =
       "Paste a Freenet link below to turn it into one that works for anyone. Freenet is a " +
-      "peer-to-peer network -- nothing you paste here is sent to freenet.org, and any app it " +
-      "opens runs on your own computer, not ours.";
+      "peer-to-peer network -- nothing you paste here is sent to freenet.org, and the link can " +
+      "open entirely on the other person's own computer.";
 
     function show(stateId) {
       var states = ["open-link-missing", "open-link-invalid", "open-link-valid"];
@@ -585,6 +594,18 @@
       var lede = document.getElementById("open-link-lede");
       if (lede) {
         lede.textContent = stateId === "open-link-missing" ? LEDE_MAKER : LEDE_DEFAULT;
+      }
+      // The page's own <h1> (set from front matter, so fixed HTML) reads
+      // "Open a Freenet link" -- wrong heading for the one state where
+      // nobody's opening anything, they're making a link to send. There is
+      // no id on it (it's shared markup in themes/freenet/layouts/_default/
+      // single.html), so this is the one place this file reaches slightly
+      // outside its own shortcode; `h1.title` is specific enough on this
+      // page (exactly one such heading) to do it safely.
+      var pageHeading = document.querySelector("h1.title");
+      if (pageHeading) {
+        pageHeading.textContent =
+          stateId === "open-link-missing" ? "Make a share link" : "Open a Freenet link";
       }
       // The small-print "Make a share link" pointer is pointless (and a bit
       // circular) while already looking at that exact tool.
@@ -715,17 +736,31 @@
       return { candidate: s, viaHint: null };
     }
 
+    // The "runs on a shared demo computer" caveat only applies to the "for
+    // anyone" choice -- showing it unconditionally (as an earlier round did)
+    // reads as a warning about an option the visitor didn't even pick when
+    // "already run Freenet" is selected.
+    function updateMakerViaNote() {
+      var browserRadio = document.querySelector('input[name="open-maker-via"][value="browser"]');
+      var note = document.getElementById("open-maker-browser-note");
+      if (browserRadio && note) {
+        note.style.display = browserRadio.checked ? "" : "none";
+      }
+    }
+
     function generateShareLink() {
-      var input = document.getElementById("open-maker-input").value;
+      var inputEl = document.getElementById("open-maker-input");
       var errorEl = document.getElementById("open-maker-error");
       var resultEl = document.getElementById("open-maker-result");
       errorEl.style.display = "none";
       resultEl.style.display = "none";
+      inputEl.classList.remove("has-error");
 
-      var parsed = parsePastedLink(input);
+      var parsed = parsePastedLink(inputEl.value);
       if (!parsed) {
         errorEl.textContent = "Paste a Freenet link first.";
         errorEl.style.display = "";
+        inputEl.classList.add("has-error");
         return;
       }
 
@@ -736,12 +771,14 @@
           "That doesn't look like a valid Freenet link. Paste the full address, including " +
           "everything after the # (or after v1/contract/web/).";
         errorEl.style.display = "";
+        inputEl.classList.add("has-error");
         return;
       }
 
       if (parsed.viaHint === "browser") {
         var browserRadio = document.querySelector('input[name="open-maker-via"][value="browser"]');
         if (browserRadio) browserRadio.checked = true;
+        updateMakerViaNote();
       }
 
       var chosenVia = document.querySelector('input[name="open-maker-via"]:checked').value;
@@ -757,9 +794,21 @@
       resultEl.style.display = "";
     }
 
+    var makerViaRadios = document.querySelectorAll('input[name="open-maker-via"]');
+    for (var mvr = 0; mvr < makerViaRadios.length; mvr++) {
+      makerViaRadios[mvr].addEventListener("change", updateMakerViaNote);
+    }
+    updateMakerViaNote(); // starts hidden: "already run Freenet" is checked by default
+
     document.getElementById("open-maker-generate").addEventListener("click", generateShareLink);
     document.getElementById("open-maker-input").addEventListener("keydown", function (e) {
       if (e.key === "Enter") generateShareLink();
+    });
+    // Clear a stale error the moment the visitor starts fixing their input,
+    // rather than leaving it displayed against new, potentially-valid text.
+    document.getElementById("open-maker-input").addEventListener("input", function () {
+      document.getElementById("open-maker-error").style.display = "none";
+      this.classList.remove("has-error");
     });
     document.getElementById("open-maker-copy").addEventListener("click", function () {
       var output = document.getElementById("open-maker-output");
