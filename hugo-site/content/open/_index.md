@@ -8,11 +8,14 @@ draft: false
 layout: "single"
 ---
 
-This link opens an app on Freenet, a peer-to-peer network -- it runs on your own computer, not ours.
+<p id="open-link-lede">
+Someone shared a link to an app on Freenet with you. Freenet is a peer-to-peer network --
+nothing about it is sent to freenet.org, and it runs on your own computer, not ours.
+</p>
 
 {{< open-link >}}
 
 <p class="open-link-devnote">
-Building a Freenet app? You can make links like this too.
-<a href="/build/manual/share-links/">See how it works &rarr;</a>
+<span id="open-link-devnote-maker">Building a Freenet app, or already have a link?
+<a href="/open/">Make a share link</a>, or </span><a href="/build/manual/share-links/">see how it works &rarr;</a>.
 </p>

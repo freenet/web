@@ -94,6 +94,91 @@
   .open-link-idline code {
     font-size: 0.75rem;
   }
+
+  .open-maker-field {
+    margin-bottom: 1rem;
+  }
+
+  .open-maker-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-strong);
+    margin-bottom: 0.35rem;
+  }
+
+  .open-maker-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    background-color: var(--surface);
+    color: var(--text-strong);
+    font-family: var(--font-code, monospace);
+    font-size: 0.85rem;
+  }
+
+  .open-maker-choice {
+    border: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+  }
+
+  .open-maker-choice legend {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-strong);
+    padding: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .open-maker-choice label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 0.6rem;
+    cursor: pointer;
+  }
+
+  .open-maker-choice input[type="radio"] {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  .open-maker-result {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .open-maker-result-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .open-maker-result-row .open-maker-input {
+    flex: 1 1 auto;
+  }
+
+  .open-maker-result-row .button {
+    flex: 0 0 auto;
+  }
+
+  .open-maker-error {
+    color: #b3261e;
+    font-size: 0.85rem;
+    margin: 0.5rem 0 0 0 !important;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .open-maker-error {
+      color: #ff8a80;
+    }
+  }
 </style>
 <noscript>
   <style>
@@ -112,12 +197,61 @@
   </div>
 
   <div id="open-link-missing" class="open-link-state" style="display: none">
-    <h2>No link yet</h2>
+    <h2>Make a share link</h2>
     <p>
-      This page opens links to apps on Freenet. If you followed a share link and landed here with
-      nothing after the <code>#</code>, the full link probably wasn't copied.
+      Paste any Freenet link below and get one back that works for anyone -- with or without Freenet
+      installed.
     </p>
-    <a class="button" href="/quickstart/">Get Freenet</a>
+
+    <div class="open-maker-field">
+      <label class="open-maker-label" for="open-maker-input">Your link</label>
+      <input
+        id="open-maker-input"
+        class="open-maker-input"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="http://127.0.0.1:7509/v1/contract/web/... or freenet:... or freenet.org/open#..."
+      />
+    </div>
+
+    <fieldset class="open-maker-choice">
+      <legend>Who is this for?</legend>
+      <label>
+        <input type="radio" name="open-maker-via" value="local" checked />
+        For people who already run Freenet (default)
+      </label>
+      <label>
+        <input type="radio" name="open-maker-via" value="browser" />
+        For anyone: opens in their browser on our demo computer (best for small audiences)
+      </label>
+    </fieldset>
+    <p class="open-link-note">
+      Browser links all run on one shared demo computer, so they suit occasional or small-audience
+      sharing for now, not a high-traffic post (<a
+        href="https://github.com/freenet/freenet-core/issues/5773"
+        target="_blank"
+        rel="noopener noreferrer"
+        >freenet-core#5773</a
+      >
+      tracks scaling this up).
+    </p>
+
+    <button id="open-maker-generate" class="button is-primary" type="button">Make the link</button>
+    <p id="open-maker-error" class="open-maker-error" style="display: none"></p>
+
+    <div id="open-maker-result" class="open-maker-result" style="display: none">
+      <label class="open-maker-label" for="open-maker-output">Share this link</label>
+      <div class="open-maker-result-row">
+        <input id="open-maker-output" class="open-maker-input" type="text" readonly />
+        <button id="open-maker-copy" class="button" type="button">Copy</button>
+      </div>
+    </div>
+
+    <p class="open-link-note">
+      Don't have a link, or don't have Freenet yet?
+      <a href="/quickstart/">Get Freenet</a>.
+    </p>
   </div>
 
   <div id="open-link-invalid" class="open-link-state" style="display: none">
@@ -156,7 +290,10 @@
           <a id="open-link-try" class="button" href="#" target="_blank" rel="noopener noreferrer"
             >Use in your browser</a
           >
-          <p class="open-link-note">No install. Runs on a peer we host, not yours.</p>
+          <p class="open-link-note">
+            No install. Runs on a shared demo computer, so it may be slow or busy sometimes -- try
+            again in a minute, or install your own.
+          </p>
         </div>
         <div class="open-link-option" id="open-link-opt-scheme">
           <a id="open-link-scheme" class="button" href="#">Open in Freenet</a>
@@ -426,10 +563,34 @@
       primarySlot.appendChild(primaryNode);
     }
 
+    // The top lede (outside this shortcode, in content/open/_index.md) reads
+    // as "someone shared a link with you" by default, which is backwards for
+    // the one state where nobody shared anything: visiting /open with no
+    // fragment, which is now the share-link-making tool. Swapped by text
+    // content only -- both strings are fixed literals, never derived from
+    // user input.
+    var LEDE_DEFAULT =
+      "Someone shared a link to an app on Freenet with you. Freenet is a peer-to-peer network -- " +
+      "nothing about it is sent to freenet.org, and it runs on your own computer, not ours.";
+    var LEDE_MAKER =
+      "Paste a Freenet link below to turn it into one that works for anyone. Freenet is a " +
+      "peer-to-peer network -- nothing you paste here is sent to freenet.org, and any app it " +
+      "opens runs on your own computer, not ours.";
+
     function show(stateId) {
       var states = ["open-link-missing", "open-link-invalid", "open-link-valid"];
       for (var i = 0; i < states.length; i++) {
         document.getElementById(states[i]).style.display = states[i] === stateId ? "" : "none";
+      }
+      var lede = document.getElementById("open-link-lede");
+      if (lede) {
+        lede.textContent = stateId === "open-link-missing" ? LEDE_MAKER : LEDE_DEFAULT;
+      }
+      // The small-print "Make a share link" pointer is pointless (and a bit
+      // circular) while already looking at that exact tool.
+      var devnoteMaker = document.getElementById("open-link-devnote-maker");
+      if (devnoteMaker) {
+        devnoteMaker.style.display = stateId === "open-link-missing" ? "none" : "";
       }
     }
 
@@ -495,5 +656,121 @@
     // now rather than waiting is what makes `?via=browser`'s redirect a real
     // "skip the page", not "show the page, then redirect".
     processFragment();
+
+    // ---- "Make a share link" tool (the no-fragment state) --------------
+    //
+    // Turns any Freenet link a visitor already has into one that opens for
+    // anyone. Entirely client-side: no fetch, no XHR, nothing sent anywhere.
+    // Reuses the exact same parseContractId/validateRest/splitFragment used
+    // above for the real page, so this never becomes a second, independently
+    // drifting copy of the security-critical validation logic.
+    //
+    // Deliberately does NOT accept an author-supplied display label/title --
+    // arbitrary text that freenet.org would show to a link's eventual
+    // visitor is a phishing vector ("Free iPhone - Claim Now", styled to
+    // look like a button). The only thing this tool ever echoes back is the
+    // validated, normalized link itself.
+
+    // Recognizes every shape a Freenet link can already come in and reduces
+    // it to the same "id+rest" shape `location.hash` would give the main
+    // page above -- the id immediately followed by whatever path/query/app-
+    // fragment came after it, verbatim. Tried in order; case-insensitive.
+    function parsePastedLink(raw) {
+      var s = (raw || "").trim();
+      if (s.length === 0) return null;
+      var m;
+
+      // An existing freenet.org/open share link (with or without ?via=,
+      // with or without a scheme/www). A `via=browser` already on it is
+      // carried over as a hint for which radio to preselect.
+      m = s.match(/^(?:https?:\/\/)?(?:www\.)?freenet\.org\/open\/?(\?[^#]*)?#(.+)$/i);
+      if (m) {
+        var viaHint = null;
+        if (m[1]) {
+          var viaMatch = m[1].match(/[?&]via=([a-zA-Z]+)/);
+          if (viaMatch) viaHint = viaMatch[1].toLowerCase();
+        }
+        return { candidate: m[2], viaHint: viaHint };
+      }
+
+      // A local peer's own webapp URL: any port, v1 or v2 (identical routes).
+      m = s.match(/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\/v[12]\/contract\/web\/(.+)$/i);
+      if (m) return { candidate: m[1], viaHint: null };
+
+      // The hosted demo peer's own copy of the same URL shape -- if you
+      // already have one of these, you were already using browser mode.
+      m = s.match(/^https?:\/\/try\.freenet\.org\/v[12]\/contract\/web\/(.+)$/i);
+      if (m) return { candidate: m[1], viaHint: "browser" };
+
+      // freenet://<id>/... (authority form).
+      m = s.match(/^freenet:\/\/(.+)$/i);
+      if (m) return { candidate: m[1], viaHint: null };
+
+      // freenet:<id>/... (opaque form) -- tried after the "//" form above so
+      // it can't swallow it first.
+      m = s.match(/^freenet:(.+)$/i);
+      if (m) return { candidate: m[1], viaHint: null };
+
+      // Already bare "<id>/<rest...>", e.g. pasted just the part after a '#'.
+      return { candidate: s, viaHint: null };
+    }
+
+    function generateShareLink() {
+      var input = document.getElementById("open-maker-input").value;
+      var errorEl = document.getElementById("open-maker-error");
+      var resultEl = document.getElementById("open-maker-result");
+      errorEl.style.display = "none";
+      resultEl.style.display = "none";
+
+      var parsed = parsePastedLink(input);
+      if (!parsed) {
+        errorEl.textContent = "Paste a Freenet link first.";
+        errorEl.style.display = "";
+        return;
+      }
+
+      var parts = splitFragment(parsed.candidate);
+      var contractId = parseContractId(parts.id);
+      if (!contractId || !validateRest(parts.rest)) {
+        errorEl.textContent =
+          "That doesn't look like a valid Freenet link. Paste the full address, including " +
+          "everything after the # (or after v1/contract/web/).";
+        errorEl.style.display = "";
+        return;
+      }
+
+      if (parsed.viaHint === "browser") {
+        var browserRadio = document.querySelector('input[name="open-maker-via"][value="browser"]');
+        if (browserRadio) browserRadio.checked = true;
+      }
+
+      var chosenVia = document.querySelector('input[name="open-maker-via"]:checked').value;
+      var shareUrl =
+        "https://freenet.org/open" +
+        (chosenVia === "browser" ? "?via=browser" : "") +
+        "#" +
+        contractId +
+        parts.rest;
+
+      // textContent/value only -- same rule as everywhere else on this page.
+      document.getElementById("open-maker-output").value = shareUrl;
+      resultEl.style.display = "";
+    }
+
+    document.getElementById("open-maker-generate").addEventListener("click", generateShareLink);
+    document.getElementById("open-maker-input").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") generateShareLink();
+    });
+    document.getElementById("open-maker-copy").addEventListener("click", function () {
+      var output = document.getElementById("open-maker-output");
+      var button = this;
+      navigator.clipboard.writeText(output.value).then(function () {
+        var original = button.textContent;
+        button.textContent = "Copied!";
+        setTimeout(function () {
+          button.textContent = original;
+        }, 2000);
+      });
+    });
   })();
 </script>

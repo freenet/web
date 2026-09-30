@@ -8,6 +8,11 @@ Any Freenet app can be linked to from outside Freenet -- a chat message, an emai
 a link that works whether or not the person clicking it has Freenet installed. Every app uses the
 same page, [freenet.org/open](/open/), instead of a per-app landing page.
 
+Don't want to build the URL by hand? Visit [freenet.org/open](/open/) with nothing after it (no `#`)
+and it doubles as a small tool: paste any Freenet link -- your app's own local link, a `freenet:` or
+`freenet://` link, or an existing freenet.org/open link -- pick who it's for, and copy the result.
+It runs entirely in your browser; nothing you paste is sent anywhere.
+
 ---
 
 ## The format
@@ -52,7 +57,9 @@ to click, not a row of equally-weighted unknowns. The four possible buttons are:
   peer (`http://127.0.0.1:7509/v1/contract/web/<contract-id>/...`), for anyone who already has
   Freenet installed and running.
 - **Use in your browser** -- the same target on `try.freenet.org`, a peer we host, for anyone who
-  wants to look without installing anything.
+  wants to look without installing anything. It's a single shared demo peer, so it can be slow or
+  busy under load -- see the `?via=browser` section below for the tradeoff this implies for
+  higher-traffic sharing.
 - **Open in Freenet** -- `freenet:<contract-id>/<path>...`, which the visitor's own Freenet opens on
   their local peer. The handler
   ([freenet-core#5726](https://github.com/freenet/freenet-core/issues/5726)) ships in the first
@@ -63,7 +70,8 @@ to click, not a row of equally-weighted unknowns. The four possible buttons are:
 - **Get Freenet** -- the [install guide](/quickstart/).
 
 An invalid or truncated fragment shows a "this link looks broken" message instead of guessing at
-one.
+one. Visiting `/open/` with no fragment at all shows the link-making tool described above instead of
+a dead end.
 
 ## Choosing the primary button: `?via=`
 
@@ -80,7 +88,10 @@ https://freenet.org/open?via=browser#<contract-id>/<path>?<query>#<app-fragment>
   `https://` page and always reachable, so no separate landing page is needed to explain it. Plain
   https is not the `freenet:` scheme, so this redirect doesn't need a user gesture, and it only
   fires once the fragment has already validated -- an invalid link never redirects, it shows the
-  normal "looks broken" page instead. This is what the Facebook-audience case above wants.
+  normal "looks broken" page instead. This is what the Facebook-audience case above wants. Since
+  `try.freenet.org` is one shared peer, this suits occasional or small-audience sharing rather than
+  a high-traffic post -- [freenet-core#5773](https://github.com/freenet/freenet-core/issues/5773)
+  tracks scaling it up.
 - **`?via=local`** -- same as no `via` at all (spelled out for clarity in a generated link): **Open
   on this computer** stays the primary button.
 - **`?via=app`** -- makes **Open in Freenet** the primary button instead. Only worth setting if you
