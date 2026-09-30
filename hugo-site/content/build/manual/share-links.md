@@ -10,8 +10,11 @@ same page, [freenet.org/open](/open/), instead of a per-app landing page.
 
 Don't want to build the URL by hand? Visit [freenet.org/open](/open/) with nothing after it (no
 `#`), and it doubles as a small tool. Paste any Freenet link: your app's own local link, a
-`freenet:` or `freenet://` link, or an existing freenet.org/open link. Pick who it's for, and copy
-the result. It runs entirely in your browser; nothing you paste is sent anywhere.
+`try.freenet.org` link, a `freenet:` or `freenet://` link, or an existing freenet.org/open link.
+Pick who it's for, and copy the result. It runs entirely in your browser; nothing you paste is sent
+anywhere. Pasting a `try.freenet.org` link, or an existing freenet.org/open link that already has
+`?via=browser`, pre-selects "for anyone" as a convenience; every other input defaults to "for people
+who already run Freenet" until you choose otherwise.
 
 ---
 

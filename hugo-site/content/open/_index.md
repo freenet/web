@@ -8,6 +8,9 @@ draft: false
 layout: "single"
 ---
 
+<!-- Kept identical to the JS constant LEDE_DEFAULT in open-link.html (theme
+     shortcode) -- that copy is what the script restores this text to on
+     every state except the share-link maker tool. Change both together. -->
 <p id="open-link-lede">
 Someone shared a link to an app on Freenet with you. Freenet is a peer-to-peer network.
 Nothing about it is sent to freenet.org, and opening it can run entirely on your own computer.

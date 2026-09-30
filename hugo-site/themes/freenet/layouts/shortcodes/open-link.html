@@ -493,10 +493,12 @@
       return { id: raw.slice(0, i), rest: raw.slice(i) };
     }
 
-    // The three fixed destination prefixes. Every href this page ever sets
-    // is one of these three literals plus the validated id/rest -- nothing
-    // here is ever derived from the fragment or the query string, so
-    // neither can redirect anywhere else.
+    // The three fixed destination prefixes for OPENING a link. Every href
+    // this page ever sets for opening (as opposed to the share-link maker
+    // tool further down, which builds a fourth, freenet.org/open URL from
+    // these same validated pieces) is one of these three literals plus the
+    // validated id/rest -- nothing here is ever derived from the fragment or
+    // the query string, so neither can redirect anywhere else.
     function buildLocalUrl(id, rest) {
       return "http://127.0.0.1:7509/v1/contract/web/" + id + rest;
     }
@@ -575,7 +577,10 @@
     // the one state where nobody shared anything: visiting /open with no
     // fragment, which is now the share-link-making tool. Swapped by text
     // content only -- both strings are fixed literals, never derived from
-    // user input.
+    // user input. LEDE_DEFAULT below is a plain copy of the static text in
+    // _index.md's `#open-link-lede` paragraph (needed as a JS string so it
+    // can be restored after LEDE_MAKER); if you're changing the wording of
+    // one, change the other to match.
     // Deliberately does NOT say "it runs on your own computer, not ours" as
     // an unqualified claim: one of the four ways to open a link (Use in your
     // browser) runs on a peer WE host, not the visitor's computer, and
@@ -640,18 +645,6 @@
         return;
       }
 
-      // `?via=browser` skips the page entirely: a link author whose audience
-      // doesn't run Freenet can send them straight to the hosted demo
-      // without a click. This is a plain https destination (not the
-      // freenet: scheme), so a script-driven navigation is allowed without a
-      // user gesture. It only fires once the link has already validated --
-      // an invalid link always shows the normal "looks broken" page instead
-      // of redirecting anywhere.
-      if (viaParam === "browser") {
-        window.location.replace(buildTryUrl(contractId, parts.rest));
-        return;
-      }
-
       // textContent only -- the fragment is attacker-controlled and must
       // never be written into the DOM as HTML. The full id is shown (not a
       // truncated slice) so a viewer can actually compare it against the
@@ -664,23 +657,69 @@
       // link to somewhere else.
       document.getElementById("open-link-scheme").href = buildSchemeUrl(contractId, parts.rest);
       document.getElementById("open-link-local").href = buildLocalUrl(contractId, parts.rest);
-      document.getElementById("open-link-try").href = buildTryUrl(contractId, parts.rest);
+      var tryUrl = buildTryUrl(contractId, parts.rest);
+      document.getElementById("open-link-try").href = tryUrl;
 
       layoutButtons(primaryOptionIdForVia(viaParam));
 
+      // Populate and show the normal page BEFORE calling location.replace()
+      // below, rather than redirecting first and rendering never. This does
+      // NOT fix the visible symptom of a slow or unreachable try.freenet.org
+      // -- verified: once `location.replace` is called, Chromium tears down
+      // this document's rendering immediately regardless of what was drawn a
+      // moment earlier (a blank tab while the navigation is pending, or its
+      // own network-error page if it fails outright; nothing reverts to
+      // this page either way). That failure mode is standard browser
+      // behavior for ANY navigation to a slow or down destination --
+      // clicking the ordinary "Use in your browser" button hits the exact
+      // same limitation, since it's a normal link to the same host, and
+      // this page already discloses try.freenet.org can be "slow or busy
+      // sometimes". Fixing it for real would mean a network reachability
+      // check before redirecting, which trades away the "no network request
+      // of its own" property for a rare case. What this ordering DOES buy:
+      // if the redirect is ever skipped or blocked by something outside
+      // normal navigation (an extension, a future browser policy), the
+      // visitor is left looking at a fully-populated, working page instead
+      // of a card with a validated id but no href on any button.
       show("open-link-valid");
+
+      // `?via=browser` skips the page entirely: a link author whose audience
+      // doesn't run Freenet can send them straight to the hosted demo
+      // without a click. This is a plain https destination (not the
+      // freenet: scheme), so a script-driven navigation is allowed without a
+      // user gesture. It only fires once the link has already validated --
+      // an invalid link always shows the normal "looks broken" page instead
+      // of redirecting anywhere. Guarded by `redirected` because this
+      // function runs both immediately and again on DOMContentLoaded (see
+      // below); without the guard a slow-loading page could call
+      // `location.replace` a second time while the first navigation is
+      // still in flight.
+      if (viaParam === "browser" && !redirected) {
+        redirected = true;
+        window.location.replace(tryUrl);
+      }
     }
+
+    var redirected = false;
 
     document.addEventListener("DOMContentLoaded", processFragment);
     // Re-run if the fragment changes without a full page load (e.g. a
     // visitor edits the address bar in place), so the buttons never point
     // somewhere other than what the page currently displays.
     window.addEventListener("hashchange", processFragment);
-    // Also run immediately: this script tag sits after all the markup it
-    // touches, so that markup is already parsed and in the DOM by the time
-    // this line runs, even though DOMContentLoaded hasn't fired yet. Running
-    // now rather than waiting is what makes `?via=browser`'s redirect a real
-    // "skip the page", not "show the page, then redirect".
+    // Also run immediately: this script tag sits after all the markup its
+    // OWN shortcode renders, so that markup (everything inside the
+    // `open-link` div, above this script block) is already parsed and in
+    // the DOM by the time this line runs, even though DOMContentLoaded
+    // hasn't fired yet. Running
+    // now rather than waiting is what makes `?via=browser`'s redirect fire
+    // as early as possible. One thing this line is NOT: proof that every id
+    // this file's JS looks up already exists -- `open-link-devnote-maker`
+    // lives in content/open/_index.md, outside this shortcode and after it
+    // in the page, so it does not exist yet on this first call. `show()`
+    // guards that lookup with `if (devnoteMaker)` for exactly this reason;
+    // the DOMContentLoaded call above is what actually applies it, once the
+    // rest of the page has parsed.
     processFragment();
 
     // ---- "Make a share link" tool (the no-fragment state) --------------
@@ -703,6 +742,11 @@
     // fragment came after it, verbatim. Tried in order; case-insensitive.
     function parsePastedLink(raw) {
       var s = (raw || "").trim();
+      // A visitor copying "everything after the #" (as the error message
+      // itself suggests) very often includes the '#' -- selecting from the
+      // address bar naturally starts there. None of the recognized prefixes
+      // below begin with '#', so stripping one leading '#' is unambiguous.
+      if (s.charAt(0) === "#") s = s.slice(1);
       if (s.length === 0) return null;
       var m;
 
@@ -780,7 +824,13 @@
         return;
       }
 
-      if (parsed.viaHint === "browser") {
+      // The pasted link's own hint is only a SUGGESTION for the first link
+      // pasted in this session. Once a visitor has deliberately clicked
+      // either radio themselves, that choice sticks for whatever they paste
+      // next -- otherwise pasting a try.freenet.org link after manually
+      // choosing "already run Freenet" would silently snap back to
+      // "for anyone" on every subsequent generate.
+      if (parsed.viaHint === "browser" && !makerViaUserChosen) {
         var browserRadio = document.querySelector('input[name="open-maker-via"][value="browser"]');
         if (browserRadio) browserRadio.checked = true;
         updateMakerViaNote();
@@ -798,17 +848,46 @@
       var outputEl = document.getElementById("open-maker-output");
       outputEl.value = shareUrl;
       resultEl.style.display = "";
-      // Grow the box to fit the whole link with no scrollbar or clipped
-      // line, whatever the link's length or the viewport's width -- must
-      // happen after `display` is set, since a hidden element always
-      // measures a zero scrollHeight.
-      outputEl.style.height = "auto";
-      outputEl.style.height = outputEl.scrollHeight + "px";
+      resizeMakerOutput();
     }
+
+    // Grows the output box to fit the whole link with no scrollbar or
+    // clipped line, whatever the link's length or the viewport's width.
+    // `scrollHeight` excludes the border, so a border-box element with any
+    // border needs it added back or the box ends up a couple of pixels too
+    // short and a scrollbar appears anyway. No-ops while the result is
+    // hidden (a hidden element always measures a zero scrollHeight, so
+    // there is nothing correct to size to yet).
+    function resizeMakerOutput() {
+      var outputEl = document.getElementById("open-maker-output");
+      if (document.getElementById("open-maker-result").style.display === "none") return;
+      outputEl.style.height = "auto";
+      var borders = outputEl.offsetHeight - outputEl.clientHeight;
+      outputEl.style.height = outputEl.scrollHeight + borders + "px";
+    }
+    // The link wraps onto more or fewer lines as the viewport changes width
+    // (e.g. a phone rotated after the link was generated), so keep the box
+    // sized to it rather than leaving it fit to whatever width happened to
+    // be current at generate time.
+    window.addEventListener("resize", resizeMakerOutput);
+
+    // True once a visitor has clicked either "who is this for" radio
+    // themselves, as opposed to it being set programmatically from a pasted
+    // link's own hint (see `viaHint` above). A `change` event only fires on
+    // genuine user interaction, never on a script setting `.checked`, so
+    // this can't be tripped by the hint itself.
+    var makerViaUserChosen = false;
 
     var makerViaRadios = document.querySelectorAll('input[name="open-maker-via"]');
     for (var mvr = 0; mvr < makerViaRadios.length; mvr++) {
-      makerViaRadios[mvr].addEventListener("change", updateMakerViaNote);
+      makerViaRadios[mvr].addEventListener("change", function () {
+        makerViaUserChosen = true;
+        updateMakerViaNote();
+        // A link already generated for the OTHER audience is now wrong for
+        // the newly-selected one; hide it rather than leave a mismatched
+        // link sitting there looking current.
+        document.getElementById("open-maker-result").style.display = "none";
+      });
     }
     updateMakerViaNote(); // starts hidden: "already run Freenet" is checked by default
 
@@ -825,13 +904,37 @@
     document.getElementById("open-maker-copy").addEventListener("click", function () {
       var output = document.getElementById("open-maker-output");
       var button = this;
-      navigator.clipboard.writeText(output.value).then(function () {
-        var original = button.textContent;
-        button.textContent = "Copied!";
+      // Always restore the fixed label "Copy", never whatever text happened
+      // to be showing at click time -- reading it back would leave the
+      // button stuck on "Copied!" forever if clicked again inside the
+      // 2-second window, since the second click's own restore then fires
+      // with "Copied!" as its "original".
+      function showFeedback(text) {
+        button.textContent = text;
         setTimeout(function () {
-          button.textContent = original;
+          button.textContent = "Copy";
         }, 2000);
-      });
+      }
+      // `navigator.clipboard` doesn't exist at all outside a secure context
+      // (plain http, e.g. reaching this page's dev server by LAN IP) --
+      // calling `.writeText` on it would throw synchronously, not reject a
+      // promise, so it needs its own check rather than relying on `.catch`.
+      if (!navigator.clipboard) {
+        output.select();
+        showFeedback("Press Ctrl+C");
+        return;
+      }
+      navigator.clipboard.writeText(output.value).then(
+        function () {
+          showFeedback("Copied!");
+        },
+        function () {
+          // Permission denied or otherwise refused -- fall back to
+          // select-and-manual-copy instead of failing silently.
+          output.select();
+          showFeedback("Press Ctrl+C");
+        },
+      );
     });
     // A click-to-select-all fallback for anyone who'd rather copy manually
     // than trust the button (or whose browser blocks clipboard access).
