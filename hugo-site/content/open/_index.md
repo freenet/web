@@ -8,9 +8,7 @@ draft: false
 layout: "single"
 ---
 
-Freenet is a peer-to-peer network: apps and the data behind them live across many computers instead
-of one company's servers. A link like the one that brought you here points to something on Freenet
--- a chat room, a shop, a file. Opening it runs the app on your own computer, not on ours.
+This link opens an app on Freenet, a peer-to-peer network -- it runs on your own computer, not ours.
 
 {{< open-link >}}
 
