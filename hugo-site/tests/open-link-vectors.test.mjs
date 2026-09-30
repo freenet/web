@@ -22,17 +22,42 @@ if (!match) throw new Error("no <script> block in open-link.html");
 // Run the page script with a stub DOM, then drive processFragment() the way
 // the browser does: set location.hash, fire DOMContentLoaded, read the state
 // and the button hrefs it produced.
+//
+// The stub only needs to be complete enough that the REAL page script runs
+// to completion without throwing -- it does not need to be a faithful DOM.
+// The page has grown UI-layout code (layoutButtons(), the share-link maker
+// tool's event wiring) that this test doesn't care about and never exercises
+// meaningfully, but which the script still executes on every load. Each time
+// the page starts calling a DOM method this stub doesn't have, add a no-op
+// stand-in for it here rather than changing the page to avoid calling it --
+// the assertions below (display state + button hrefs) are unaffected either
+// way, since they never depend on classList/appendChild/querySelector output.
 function runPage(hash) {
   const elements = {};
-  const el = (id) =>
-    (elements[id] ??= { id, style: {}, textContent: "", href: "#" });
+  function makeElement(id) {
+    return {
+      id,
+      style: {},
+      textContent: "",
+      href: "#",
+      value: "",
+      checked: false,
+      classList: { add() {}, remove() {}, contains: () => false },
+      addEventListener() {},
+      appendChild() {},
+      querySelector: () => makeElement(`${id}::child`),
+    };
+  }
+  const el = (id) => (elements[id] ??= makeElement(id));
   const listeners = {};
   const document = {
     getElementById: el,
     addEventListener: (ev, fn) => (listeners[ev] = fn),
+    querySelector: () => makeElement("document::query"),
+    querySelectorAll: () => [],
   };
   const window = {
-    location: { hash },
+    location: { hash, search: "" },
     addEventListener: () => {},
   };
   vm.runInNewContext(match[1], { document, window });
@@ -43,9 +68,7 @@ function runPage(hash) {
   return { shown, el };
 }
 
-const { vectors } = JSON.parse(
-  readFileSync(join(here, "share-link-vectors.json"), "utf8"),
-);
+const { vectors } = JSON.parse(readFileSync(join(here, "share-link-vectors.json"), "utf8"));
 let failures = 0;
 for (const v of vectors) {
   const { shown, el } = runPage("#" + v.raw);
@@ -62,8 +85,7 @@ for (const v of vectors) {
     const rest = v.local_path.slice("/v1/contract/web/".length);
     if (local !== want) problem = `local button ${local} != ${want}`;
     else if (tryIt !== wantTry) problem = `try button ${tryIt} != ${wantTry}`;
-    else if (scheme !== "freenet:" + rest)
-      problem = `scheme button ${scheme} != freenet:${rest}`;
+    else if (scheme !== "freenet:" + rest) problem = `scheme button ${scheme} != freenet:${rest}`;
   }
   if (problem) {
     failures++;
