@@ -161,8 +161,7 @@
         <div class="open-link-option" id="open-link-opt-scheme">
           <a id="open-link-scheme" class="button" href="#">Open in Freenet</a>
           <p class="open-link-note">
-            Needs a Freenet release newer than 0.2.139 (it registers freenet: links). If nothing
-            happens, try another option here instead.
+            Needs a recent Freenet install. If nothing happens, try another option here instead.
           </p>
         </div>
         <div class="open-link-option" id="open-link-opt-quickstart">
@@ -172,9 +171,13 @@
           </p>
         </div>
       </div>
-    </details>
 
-    <p class="open-link-idline">Link target: <code id="open-link-id"></code></p>
+      <!-- Not hidden, but not in the default view either: an unexplained
+           random-looking string is exactly the pattern a wary first-time
+           visitor has learned to distrust (a phishing page's "verification
+           code"). Anyone who wants to check it can open this disclosure. -->
+      <p class="open-link-idline">Link target: <code id="open-link-id"></code></p>
+    </details>
   </div>
 
   <noscript>
