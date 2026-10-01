@@ -58,7 +58,11 @@ function runPage({ hash = "", search = "" } = {}) {
       _fire(ev) {
         (elListeners[ev] || []).forEach((fn) => fn({}));
       },
-      appendChild() {},
+      // Records the last node moved here, so a test can see which option
+      // layoutButtons() put in the primary slot.
+      appendChild(node) {
+        this.lastAppended = node;
+      },
       querySelector: () => makeElement(`${id}::child`),
     };
   }
@@ -97,20 +101,31 @@ function runPage({ hash = "", search = "" } = {}) {
         : [],
   };
   let replacedTo = null;
+  const windowListeners = {};
   const window = {
     location: { hash, search, replace: (url) => (replacedTo = url) },
-    addEventListener: () => {},
+    addEventListener: (ev, fn) => (windowListeners[ev] = fn),
   };
   vm.runInNewContext(match[1], { document, window, URLSearchParams });
   listeners.DOMContentLoaded();
-  const shown = ["open-link-missing", "open-link-invalid", "open-link-valid"].find(
-    (id) => el(id).style.display === "",
-  );
+  const currentState = () =>
+    ["open-link-missing", "open-link-invalid", "open-link-valid"].find(
+      (id) => el(id).style.display === "",
+    );
 
   return {
-    shown,
+    shown: currentState(),
     el,
-    replacedTo,
+    get replacedTo() {
+      return replacedTo;
+    },
+    // Changes the fragment in place and fires hashchange, as editing the
+    // address bar would. Returns the state shown afterwards.
+    navigate(newHash) {
+      window.location.hash = newHash;
+      windowListeners.hashchange();
+      return currentState();
+    },
     // Drives the share-link maker tool exactly as a click would: fill the
     // input, fire the generate button's click listener, read back the
     // result. Only meaningful when `shown === "open-link-missing"`, i.e.
@@ -224,7 +239,103 @@ for (const v of vectors) {
 }
 console.log(`${makerCases} maker vectors, ${makerFailures} failures`);
 
-failures += viaFailures + makerFailures;
+// --- Local-only apps (the Ghost Key vault): no try.freenet.org option, a
+// note saying why instead, no ?via=browser redirect, and no browser link from
+// the maker. Driven through a hashchange to an ordinary id too, since every
+// one of these must be reset when the page moves off the vault. ---
+const VAULT = "DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N";
+const OTHER = "6FzSeAUKcqJrveKyU8RJgGKc5jRB1Z2juvxXtwTA4Em9";
+let localOnlyFailures = 0;
+{
+  const check = (cond, what) => {
+    if (!cond) {
+      localOnlyFailures++;
+      console.error(`FAIL local-only: ${what}`);
+    }
+  };
+  const tryHidden = (el) => el("open-link-opt-try").style.display === "none";
+  const noteShown = (el) =>
+    el("open-link-local-only").style.display === "" &&
+    el("open-link-local-only").textContent.length > 0;
+
+  const page = runPage({ hash: "#" + VAULT + "/" });
+  check(page.shown === "open-link-valid", `vault link showed ${page.shown}`);
+  check(tryHidden(page.el), "try option visible for the vault");
+  check(noteShown(page.el), "no local-only note for the vault");
+  check(
+    page.el("open-link-local").href === `http://127.0.0.1:7509/v1/contract/web/${VAULT}/`,
+    `vault local button ${page.el("open-link-local").href}`,
+  );
+  check(page.navigate("#" + OTHER + "/") === "open-link-valid", "other id not valid");
+  check(!tryHidden(page.el), "try option still hidden after leaving the vault");
+  check(
+    page.el("open-link-local-only").style.display === "none",
+    "note still shown after leaving the vault",
+  );
+  check(!tryHidden(runPage({ hash: "#" + OTHER + "/" }).el), "try option hidden for an ordinary id");
+
+  // ?via=browser must not send the vault to try.freenet.org, but must still
+  // redirect an ordinary id reached by hashchange from it.
+  const via = runPage({ hash: "#" + VAULT + "/", search: "?via=browser" });
+  check(via.replacedTo === null, `via=browser redirected the vault to ${via.replacedTo}`);
+  check(noteShown(via.el), "no local-only note for the vault under via=browser");
+  // The hidden try option must not become the primary: that leaves an empty
+  // primary slot.
+  const primaryOf = (el) => el("open-link-primary-slot").lastAppended?.id;
+  check(
+    primaryOf(via.el) === "open-link-opt-local",
+    `via=browser primary for the vault is ${primaryOf(via.el)}`,
+  );
+  via.navigate("#" + OTHER + "/");
+  check(
+    primaryOf(via.el) === "open-link-opt-try",
+    `via=browser primary after leaving the vault is ${primaryOf(via.el)}`,
+  );
+  check(
+    via.replacedTo === `https://try.freenet.org/v1/contract/web/${OTHER}/`,
+    `via=browser after leaving the vault redirected to ${via.replacedTo}`,
+  );
+
+  // Maker: a try.freenet.org link preselects "for anyone". For the vault the
+  // result must be the default link with the reason shown; for an ordinary id
+  // it must stay a browser link with no note.
+  const maker = runPage({});
+  const vaultOut = maker.runMaker(`https://try.freenet.org/v1/contract/web/${VAULT}/`);
+  check(
+    vaultOut.output === `https://freenet.org/open#${VAULT}/`,
+    `maker made ${vaultOut.output} for the vault`,
+  );
+  check(
+    maker.el("open-maker-local-only").style.display === "" &&
+      maker.el("open-maker-local-only").textContent.length > 0,
+    "maker shows no reason for refusing a vault browser link",
+  );
+  const otherOut = maker.runMaker(`https://try.freenet.org/v1/contract/web/${OTHER}/`);
+  check(
+    otherOut.output === `https://freenet.org/open?via=browser#${OTHER}/`,
+    `maker made ${otherOut.output} for an ordinary id`,
+  );
+  check(
+    maker.el("open-maker-local-only").style.display === "none",
+    "maker reason still shown for an ordinary id",
+  );
+
+  // "Already run Freenet" (the default) gives the vault the default link and
+  // no note: there is nothing to explain.
+  const localMaker = runPage({});
+  const localOut = localMaker.runMaker(VAULT + "/");
+  check(
+    localOut.output === `https://freenet.org/open#${VAULT}/`,
+    `maker made ${localOut.output} for the vault with the default choice`,
+  );
+  check(
+    localMaker.el("open-maker-local-only").style.display === "none",
+    "maker reason shown for the vault with the default choice",
+  );
+}
+console.log(`local-only checks, ${localOnlyFailures} failures`);
+
+failures += viaFailures + makerFailures + localOnlyFailures;
 if (vectors.length < 40) {
   console.error("vector file looks truncated");
   process.exit(1);

@@ -62,11 +62,13 @@ click, not a row of equally-weighted unknowns. The four possible buttons are:
 - **Use in your browser**: the same target on `try.freenet.org`, a peer we host, for anyone who
   wants to look without installing anything. It's a single shared demo peer, so it can be slow or
   busy under load. See the `?via=browser` section below for the tradeoff this implies for
-  higher-traffic sharing.
+  higher-traffic sharing. Apps that hold keys a visitor should keep on their own peer, currently
+  just the Ghost Key vault, get a note saying so instead of this button; the list is `LOCAL_ONLY`
+  in `open-link.html`.
 - **Open in Freenet**: `freenet:<contract-id>/<path>...`, which the visitor's own Freenet opens on
   their local peer. The handler
-  ([freenet-core#5726](https://github.com/freenet/freenet-core/issues/5726)) ships in the first
-  release after 0.2.139, so until peers have updated, this button stays in "Other ways to open"
+  ([freenet-core#5726](https://github.com/freenet/freenet-core/issues/5726)) first shipped in
+  0.2.140, so until peers have updated, this button stays in "Other ways to open"
   rather than being the default primary. The link has no `//`: in `freenet://<contract-id>` the
   case-sensitive contract id would be the URL's host, which some desktops lowercase before the
   handler sees it. (The handler accepts both forms.)
@@ -94,11 +96,13 @@ https://freenet.org/open?via=browser#<contract-id>/<path>?<query>#<app-fragment>
   normal "looks broken" page instead. This is what the Facebook-audience case above wants. Since
   `try.freenet.org` is one shared peer, this suits occasional or small-audience sharing rather than
   a high-traffic post. [freenet-core#5773](https://github.com/freenet/freenet-core/issues/5773)
-  tracks scaling it up.
+  tracks scaling it up. A `LOCAL_ONLY` app (the Ghost Key vault) never redirects: the page shows
+  **Open on this computer** with a note explaining why, and the link-making tool won't produce a
+  `?via=browser` link for it.
 - **`?via=local`**: same as no `via` at all (spelled out for clarity in a generated link). **Open on
   this computer** stays the primary button.
 - **`?via=app`**: makes **Open in Freenet** the primary button instead. Only worth setting if you
-  know your audience is already on a release newer than 0.2.139; on an older release the button
+  know your audience is already on 0.2.140 or newer; on an older release the button
   simply won't do anything, same as today.
 - Anything else, or no `via` at all, falls back to the default above. Old links you've already
   shared are completely unaffected.

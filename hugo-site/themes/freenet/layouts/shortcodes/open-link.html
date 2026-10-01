@@ -252,6 +252,7 @@
     <div id="open-maker-result" class="open-maker-result" style="display: none">
       <label class="open-maker-label" for="open-maker-output">Share this link</label>
       <textarea id="open-maker-output" class="open-maker-output" readonly rows="2"></textarea>
+      <p id="open-maker-local-only" class="open-link-note" style="display: none"></p>
       <button id="open-maker-copy" class="button" type="button">Copy</button>
     </div>
 
@@ -275,16 +276,17 @@
          default, or by ?via=) is MOVED here, not cloned, so its real id,
          href and click behavior come with it. See layoutButtons(). -->
     <div id="open-link-primary-slot" class="open-link-primary"></div>
+    <p id="open-link-local-only" class="open-link-note" style="display: none"></p>
 
     <details id="open-link-more" class="open-link-more">
       <summary>Other ways to open</summary>
       <div id="open-link-more-list" class="open-link-buttons">
         <!-- "Open on this computer" is the default primary (highlighted)
-             button until the freenet: link handler (freenet-core#5726,
-             merged in freenet-core#5753) has shipped in a release and peers
-             have auto-updated to it -- until then, "Open in Freenet" does
-             nothing for most visitors. Swap the default in
-             primaryOptionIdForVia() below once that's no longer true. -->
+             button until peers have auto-updated to a release with the
+             freenet: link handler (freenet-core#5726, first shipped in
+             0.2.140). Until then "Open in Freenet" does nothing for a
+             visitor on an older release. Swap the default in
+             primaryOptionIdForVia() below once most peers have it. -->
         <div class="open-link-option" id="open-link-opt-local">
           <a id="open-link-local" class="button" href="#" target="_blank" rel="noopener noreferrer"
             >Open on this computer</a
@@ -342,6 +344,19 @@
       return map;
     })();
     var CONTRACT_KEY_BYTES = 32;
+
+    // Apps that hold keys a visitor should keep on their own peer. For these
+    // the "Use in your browser" option is replaced by the reason, ?via=browser
+    // does not redirect, and the share-link maker never makes a browser link:
+    // try.freenet.org is for trying Freenet out, and anything stored there
+    // lives on a peer we host. Keyed by the app's web container id, so a
+    // re-key of the app must update its entry here too.
+    var LOCAL_ONLY = Object.create(null);
+    // Ghost Key vault (freenet/ghostkeys, published-contract/contract-id.txt).
+    LOCAL_ONLY["DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N"] =
+      "This is the Ghost Key vault, so open it on your own peer. " +
+      "try.freenet.org is for trying Freenet out, and a Ghost Key kept there lives on a " +
+      "peer we host instead of your computer.";
     // A genuine 32-byte id encodes to at most 44 base58 characters; 64 is a
     // generous ceiling above that. Rejecting anything longer before decoding
     // keeps a pasted wall of text from making this page do O(n^2) bignum
@@ -660,7 +675,19 @@
       var tryUrl = buildTryUrl(contractId, parts.rest);
       document.getElementById("open-link-try").href = tryUrl;
 
-      layoutButtons(primaryOptionIdForVia(viaParam));
+      // Set both ways every time: hashchange can move between a local-only
+      // app and any other.
+      var localOnly = LOCAL_ONLY[contractId];
+      document.getElementById("open-link-opt-try").style.display = localOnly ? "none" : "";
+      var localOnlyNote = document.getElementById("open-link-local-only");
+      localOnlyNote.textContent = localOnly || "";
+      localOnlyNote.style.display = localOnly ? "" : "none";
+
+      // A local-only app never gets the hidden try option as its primary,
+      // whatever ?via= asked for.
+      var primaryId = primaryOptionIdForVia(viaParam);
+      if (localOnly && primaryId === "open-link-opt-try") primaryId = "open-link-opt-local";
+      layoutButtons(primaryId);
 
       // Populate and show the normal page BEFORE calling location.replace()
       // below, rather than redirecting first and rendering never. This does
@@ -694,7 +721,7 @@
       // below); without the guard a slow-loading page could call
       // `location.replace` a second time while the first navigation is
       // still in flight.
-      if (viaParam === "browser" && !redirected) {
+      if (viaParam === "browser" && !localOnly && !redirected) {
         redirected = true;
         window.location.replace(tryUrl);
       }
@@ -837,9 +864,16 @@
       }
 
       var chosenVia = document.querySelector('input[name="open-maker-via"]:checked').value;
+      // A local-only app gets the default link whatever was chosen, and the
+      // reason is shown with it: /open would refuse the browser redirect
+      // for it anyway.
+      var localOnly = LOCAL_ONLY[contractId];
+      var makerLocalOnly = document.getElementById("open-maker-local-only");
+      makerLocalOnly.textContent = localOnly && chosenVia === "browser" ? localOnly : "";
+      makerLocalOnly.style.display = localOnly && chosenVia === "browser" ? "" : "none";
       var shareUrl =
         "https://freenet.org/open" +
-        (chosenVia === "browser" ? "?via=browser" : "") +
+        (chosenVia === "browser" && !localOnly ? "?via=browser" : "") +
         "#" +
         contractId +
         parts.rest;

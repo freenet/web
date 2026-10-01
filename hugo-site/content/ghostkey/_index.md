@@ -14,6 +14,7 @@ hold a scarce, donation-backed identity, without ever learning who you are.
 <div class="gk-cta gk-cta-hero">
 <a href="/ghostkey/create/" class="funding-donate-button">Get a Ghost Key</a>
 <p class="gk-cta-note">$1 minimum. Freenet Project Inc is a 501(c)(3) nonprofit.</p>
+<p class="gk-cta-note">Already have one? <a href="/open/#DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N/">Open your vault</a>.</p>
 </div>
 
 ## The short version
@@ -206,15 +207,19 @@ new node later.
 
 ### Opening your vault
 
-If you have a Freenet node running on this computer, your Ghost Keys are here:
+Your Ghost Keys live in the vault on your own Freenet peer:
 
 <div class="gk-cta">
-<a href="http://localhost:7509/v1/contract/web/DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N/" class="funding-donate-button">Open your Ghost Key vault</a>
-<p class="gk-cta-note">Requires a Freenet node running on this computer. The link will not resolve otherwise.</p>
+<a href="/open/#DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N/" class="funding-donate-button">Open your Ghost Key vault</a>
+<p class="gk-cta-note">Opens the vault on the Freenet peer running on this computer. No peer yet? <a href="/quickstart/">Install Freenet</a> first.</p>
 </div>
 
-That address is your own machine, not a website — the vault runs inside your node, and the page is
-served locally. Bookmark it if you use Ghost Keys regularly.
+The vault runs inside your peer, not on a website, so its address is on your own machine:
+[`http://127.0.0.1:7509/v1/contract/web/DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N/`](http://127.0.0.1:7509/v1/contract/web/DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N/).
+Bookmark it if you use Ghost Keys regularly.
+
+Keep your Ghost Keys on your own peer rather than on [try.freenet.org](/try/). That hosted peer is
+for trying Freenet out, and a key kept there lives on a machine we run instead of yours.
 
 For developers, everything is open source:
 
