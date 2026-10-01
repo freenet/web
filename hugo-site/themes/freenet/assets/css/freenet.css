@@ -111,7 +111,7 @@
        heading and body move together. --measure is the per-block fallback for
        prose inside a full-width layout (the homepage), where the container has
        to stay wide for the hero and the card grid. --breakout is how far
-       tables, code blocks and figures may extend past the column. */
+       figures may extend past the column. */
     --measure-container: 42rem;
     --measure-content: calc(var(--measure-container) - 2rem); /* less .container padding */
     --breakout: 52rem;
