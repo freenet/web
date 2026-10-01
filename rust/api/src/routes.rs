@@ -18,12 +18,13 @@ use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use stripe::{Client, Currency, PaymentIntent, PaymentIntentId};
 
-use crate::delegates::get_notary;
+use crate::delegates::{current_notary, quoted_notary, NOTARY_PERIOD_METADATA_KEY};
 use crate::handle_sign_cert::{
     sign_certificate, CertificateError, SignCertificateRequest, SignCertificateResponse,
 };
 use crate::invite;
 use crate::invite_pow::{PowChallenge, PowChallengeResponse, PowError, PowManager};
+use crate::payment_claim::is_payment_intent_id;
 use crate::rate_limit::{
     AggregateBucket, RateLimiter, DEFAULT_GLOBAL_INVITES_PER_HOUR, GLOBAL_WINDOW_MINUTES,
     MAX_INVITES_PER_WINDOW,
@@ -151,15 +152,29 @@ async fn sign_certificate_route(
                         status: StatusCode::BAD_REQUEST.as_u16(),
                     })))
                 },
+                CertificateError::NotaryMismatch => {
+                    Err((StatusCode::CONFLICT, Json(ErrorResponse {
+                        error: "This page prepared your key against a different notary certificate than your payment was quoted. Reload the page to try again; your donation has not been used.".to_string(),
+                        status: StatusCode::CONFLICT.as_u16(),
+                    })))
+                },
+                CertificateError::InvalidPaymentIntentId => {
+                    Err((StatusCode::BAD_REQUEST, Json(ErrorResponse {
+                        error: "Invalid payment reference".to_string(),
+                        status: StatusCode::BAD_REQUEST.as_u16(),
+                    })))
+                },
                 CertificateError::CertificateAlreadySigned => {
                     Err((StatusCode::CONFLICT, Json(ErrorResponse {
                         error: "Certificate has already been signed for this payment.".to_string(),
                         status: StatusCode::CONFLICT.as_u16(),
                     })))
                 },
-                CertificateError::KeyError(msg) => {
+                CertificateError::KeyError(_) => {
+                    // The detail (server paths, metadata values) is logged
+                    // above; the client only needs to know it was ours.
                     Err((StatusCode::INTERNAL_SERVER_ERROR, Json(ErrorResponse {
-                        error: format!("Key error: {}", msg),
+                        error: "The server could not load its signing key. Your donation has not been used; please try again later.".to_string(),
                         status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
                     })))
                 },
@@ -176,7 +191,9 @@ async fn sign_certificate_route(
 
 #[derive(Debug)]
 pub enum DonationError {
-    InvalidCurrency,
+    /// The request's PaymentIntent id is not well-formed.
+    InvalidPaymentIntentId,
+    NotFound(&'static str),
     StripeError(stripe::StripeError),
     EnvError(std::env::VarError),
     OtherError(String),
@@ -185,7 +202,10 @@ pub enum DonationError {
 impl IntoResponse for DonationError {
     fn into_response(self) -> axum::response::Response {
         let (status, error_message) = match self {
-            DonationError::InvalidCurrency => (StatusCode::BAD_REQUEST, "Invalid currency"),
+            DonationError::InvalidPaymentIntentId => {
+                (StatusCode::BAD_REQUEST, "Invalid payment reference")
+            }
+            DonationError::NotFound(what) => (StatusCode::NOT_FOUND, what),
             DonationError::StripeError(e) => {
                 error!("Stripe error: {:?}", e);
                 (StatusCode::INTERNAL_SERVER_ERROR, "Stripe error occurred")
@@ -225,8 +245,20 @@ async fn create_donation(
 
     let currency = Currency::USD;
 
+    let amount_dollars = request.amount / 100;
+
+    // Quote the current notary and record which one on the PaymentIntent, so
+    // /sign-certificate signs with the pair this certificate belongs to.
+    let notary = current_notary(amount_dollars as u64).map_err(|e| {
+        error!("Error getting notary: {:?}", e);
+        DonationError::OtherError("Error getting notary".to_string())
+    })?;
+
     let mut metadata = HashMap::new();
     metadata.insert("donation_type".to_string(), "freenet".to_string());
+    if let Some(period) = &notary.period {
+        metadata.insert(NOTARY_PERIOD_METADATA_KEY.to_string(), period.clone());
+    }
 
     let params = stripe::CreatePaymentIntent {
         amount: request.amount,
@@ -274,14 +306,7 @@ async fn create_donation(
 
     info!("Payment intent created successfully");
 
-    let amount_dollars = request.amount / 100;
-
-    let (notary_certificate, _) = get_notary(amount_dollars as u64).map_err(|e| {
-        error!("Error getting notary: {:?}", e);
-        DonationError::OtherError("Error getting notary".to_string())
-    })?;
-
-    let cert_base64 = notary_certificate.to_base64().unwrap();
+    let cert_base64 = notary.certificate.to_base64().unwrap();
 
     match intent.client_secret {
         Some(secret) => Ok(Json(DonationResponse {
@@ -310,13 +335,35 @@ async fn update_donation(
 ) -> Result<Json<DonationResponse>, DonationError> {
     info!("Received update-donation request: {:?}", request);
 
+    // Accept only well-formed PaymentIntent ids, before any Stripe call.
+    if !is_payment_intent_id(&request.payment_intent_id) {
+        return Err(DonationError::InvalidPaymentIntentId);
+    }
+
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(&secret_key);
 
     let payment_intent_id = PaymentIntentId::from_str(&request.payment_intent_id)
-        .map_err(|_| DonationError::InvalidCurrency)?;
+        .map_err(|_| DonationError::InvalidPaymentIntentId)?;
+
+    let amount_dollars = request.amount / 100;
+
+    // The browser replaces its stored certificate with the one returned here,
+    // so re-quote and re-record the period in the same update as the amount.
+    // An empty value deletes the key, i.e. the flat files.
+    let notary = current_notary(amount_dollars as u64).map_err(|e| {
+        error!("Error getting notary: {:?}", e);
+        DonationError::OtherError("Error getting notary".to_string())
+    })?;
+    let mut metadata = HashMap::new();
+    metadata.insert(
+        NOTARY_PERIOD_METADATA_KEY.to_string(),
+        notary.period.clone().unwrap_or_default(),
+    );
+
     let params = stripe::UpdatePaymentIntent {
         amount: Some(request.amount),
+        metadata: Some(metadata),
         ..Default::default()
     };
 
@@ -326,14 +373,7 @@ async fn update_donation(
 
     info!("Payment intent updated successfully");
 
-    let amount_dollars = request.amount / 100;
-
-    let (notary_certificate, _) = get_notary(amount_dollars as u64).map_err(|e| {
-        error!("Error getting notary: {:?}", e);
-        DonationError::OtherError("Error getting notary".to_string())
-    })?;
-
-    let cert_base64 = notary_certificate.to_base64().unwrap();
+    let cert_base64 = notary.certificate.to_base64().unwrap();
 
     Ok(Json(DonationResponse {
         client_secret: updated_intent.client_secret.unwrap_or_default(),
@@ -351,11 +391,16 @@ async fn check_payment_status_route(
         payment_intent_id
     );
 
+    // Accept only well-formed PaymentIntent ids, before any Stripe call.
+    if !is_payment_intent_id(&payment_intent_id) {
+        return Err(DonationError::InvalidPaymentIntentId);
+    }
+
     let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
     let client = Client::new(&secret_key);
 
     let payment_intent_id = PaymentIntentId::from_str(&payment_intent_id)
-        .map_err(|_| DonationError::InvalidCurrency)?;
+        .map_err(|_| DonationError::InvalidPaymentIntentId)?;
 
     let intent = stripe::PaymentIntent::retrieve(&client, &payment_intent_id, &[])
         .await
@@ -370,6 +415,57 @@ async fn check_payment_status_route(
             "Payment not successful".to_string(),
         ))
     }
+}
+
+#[derive(Serialize)]
+pub struct NotaryCertificateResponse {
+    pub notary_certificate_base64: String,
+}
+
+/// The notary certificate a PaymentIntent was quoted, which is the one the
+/// donor must blind against. The success page asks for it instead of trusting
+/// localStorage, which every tab shares and which may hold a later quote, from
+/// another checkout, for a different month's key.
+async fn notary_certificate_route(
+    Path(payment_intent_id): Path<String>,
+) -> Result<Json<NotaryCertificateResponse>, DonationError> {
+    // Accept only well-formed PaymentIntent ids, before any Stripe call. A
+    // malformed or unknown id is the caller's problem, not a server error, and
+    // this endpoint is unauthenticated: 404, not an error log.
+    if !is_payment_intent_id(&payment_intent_id) {
+        return Err(DonationError::NotFound("Payment not found"));
+    }
+
+    let secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(DonationError::EnvError)?;
+    let client = Client::new(&secret_key);
+    let payment_intent_id = PaymentIntentId::from_str(&payment_intent_id)
+        .map_err(|_| DonationError::NotFound("Payment not found"))?;
+    // Only Stripe saying "no such PaymentIntent" is a 404; an outage or a bad
+    // key stays a logged server error.
+    let intent = match stripe::PaymentIntent::retrieve(&client, &payment_intent_id, &[]).await {
+        Ok(intent) => intent,
+        Err(stripe::StripeError::Stripe(e)) if e.http_status == 404 => {
+            warn!("notary-certificate: no PaymentIntent {}", payment_intent_id);
+            return Err(DonationError::NotFound("Payment not found"));
+        }
+        Err(e) => return Err(DonationError::StripeError(e)),
+    };
+
+    let notary = quoted_notary(
+        (intent.amount / 100) as u64,
+        intent
+            .metadata
+            .get(NOTARY_PERIOD_METADATA_KEY)
+            .map(String::as_str),
+    )
+    .map_err(|e| {
+        error!("Error getting quoted notary for {}: {:?}", intent.id, e);
+        DonationError::OtherError("Error getting notary".to_string())
+    })?;
+
+    Ok(Json(NotaryCertificateResponse {
+        notary_certificate_base64: notary.certificate.to_base64().unwrap(),
+    }))
 }
 
 // ============================================================================
@@ -673,6 +769,10 @@ pub fn get_routes() -> Router {
         .route(
             "/check-payment-status/:payment_intent_id",
             get(check_payment_status_route),
+        )
+        .route(
+            "/notary-certificate/:payment_intent_id",
+            get(notary_certificate_route),
         )
         .layer(CorsLayer::permissive())
 }
@@ -1109,5 +1209,80 @@ mod invite_handler_tests {
             "Test Room".to_string(),
         );
         assert_eq!(state.global_bucket.current(), 1);
+    }
+}
+
+#[cfg(test)]
+mod payment_intent_id_route_tests {
+    use super::*;
+
+    const MALFORMED: [&str; 5] = ["", "pi_", "pi_abc-def", "pi_abc def", "cus_123"];
+
+    /// The status and `error` message a DonationError is sent to the client as.
+    async fn rendered(e: DonationError) -> (StatusCode, String) {
+        let response = e.into_response();
+        let status = response.status();
+        let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        let body: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+        (status, body["error"].as_str().unwrap().to_string())
+    }
+
+    /// The format check runs before STRIPE_SECRET_KEY is read, so a malformed
+    /// id is a 400 here without Stripe being configured or contacted.
+    #[tokio::test]
+    async fn update_donation_refuses_malformed_ids() {
+        for id in MALFORMED {
+            let result = update_donation(Json(UpdateDonationRequest {
+                payment_intent_id: id.to_string(),
+                amount: 100,
+            }))
+            .await;
+            let error = match result {
+                Ok(_) => panic!("{id:?} was accepted by update-donation"),
+                Err(e) => rendered(e).await,
+            };
+            assert_eq!(
+                error,
+                (
+                    StatusCode::BAD_REQUEST,
+                    "Invalid payment reference".to_string()
+                ),
+                "{id:?}"
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn check_payment_status_refuses_malformed_ids() {
+        for id in MALFORMED {
+            let error = match check_payment_status_route(Path(id.to_string())).await {
+                Ok(_) => panic!("{id:?} was accepted by check-payment-status"),
+                Err(e) => rendered(e).await,
+            };
+            assert_eq!(
+                error,
+                (
+                    StatusCode::BAD_REQUEST,
+                    "Invalid payment reference".to_string()
+                ),
+                "{id:?}"
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn sign_certificate_route_maps_malformed_ids_to_400() {
+        let request: SignCertificateRequest = serde_json::from_value(serde_json::json!({
+            "payment_intent_id": "pi_abc-def",
+            "blinded_ghost_key_base64": "",
+        }))
+        .unwrap();
+        let (status, Json(body)) = sign_certificate_route(Json(request))
+            .await
+            .expect_err("a malformed id was accepted");
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert_eq!(body.error, "Invalid payment reference");
     }
 }

@@ -6,14 +6,19 @@ use serde::{Deserialize, Serialize};
 use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 
 use ghostkey_lib::armorable::Armorable;
+use ghostkey_lib::notary_certificate::NotaryCertificateV1;
 
-use crate::delegates::sign_with_notary_key;
+use crate::delegates::{quoted_notary, sign_with_notary_key, Notary, NOTARY_PERIOD_METADATA_KEY};
 pub use crate::errors::CertificateError;
 
 #[derive(Debug, Deserialize)]
 pub struct SignCertificateRequest {
     payment_intent_id: String,
     blinded_ghost_key_base64: String,
+    /// The notary certificate the client blinded against. Optional because
+    /// browser JS cached from before this field existed does not send it.
+    #[serde(default)]
+    notary_certificate_base64: Option<String>,
 }
 
 /// HTTP response for successful certificate signing.
@@ -41,6 +46,13 @@ pub async fn sign_certificate(
     );
     log::debug!("Current working directory: {:?}", std::env::current_dir());
     log::debug!("HOME environment variable: {:?}", std::env::var("HOME"));
+
+    // Accept only well-formed PaymentIntent ids. Checked first, before any
+    // other work is done for the request.
+    if !crate::payment_claim::is_payment_intent_id(&request.payment_intent_id) {
+        log::warn!("Rejected sign-certificate request with a malformed PaymentIntent id");
+        return Err(CertificateError::InvalidPaymentIntentId);
+    }
 
     let stripe_secret_key = std::env::var("STRIPE_SECRET_KEY").map_err(|e| {
         log::error!("Environment variable STRIPE_SECRET_KEY not found: {}", e);
@@ -78,6 +90,15 @@ pub async fn sign_certificate(
     log::info!("Retrieved PaymentIntent: {:?}", pi);
     log::info!("PaymentIntent status: {:?}", pi.status);
 
+    // Require the retrieved PaymentIntent to be the one requested.
+    if pi.id.as_str() != request.payment_intent_id {
+        log::error!(
+            "Retrieved PaymentIntent {} does not match the requested id",
+            pi.id
+        );
+        return Err(CertificateError::InvalidPaymentIntentId);
+    }
+
     match pi.status {
         PaymentIntentStatus::Succeeded => {
             // Proceed with certificate signing
@@ -108,6 +129,30 @@ pub async fn sign_certificate(
             CertificateError::MiscError(e.to_string())
         })?;
 
+    let amount_cents = pi.amount as u64;
+    let amount_dollars = amount_cents / 100;
+
+    // Sign with the pair this donation was quoted from (see
+    // NOTARY_PERIOD_METADATA_KEY), not whichever is current now. Loaded before
+    // marking the PaymentIntent spent, so a missing key cannot consume it.
+    let notary = quoted_notary(
+        amount_dollars,
+        pi.metadata
+            .get(NOTARY_PERIOD_METADATA_KEY)
+            .map(String::as_str),
+    )?;
+
+    // Refuse a mismatch now, while the donation can still be retried. Signing
+    // anyway would spend it on a signature that cannot unblind.
+    if !client_blinded_against(request.notary_certificate_base64.as_deref(), &notary)? {
+        log::error!(
+            "PaymentIntent {} was blinded against a different or unstated notary \
+             certificate than it was quoted; refusing before marking it spent",
+            pi.id
+        );
+        return Err(CertificateError::NotaryMismatch);
+    }
+
     // Mark the payment intent as used for certificate signing
     let mut metadata = HashMap::new();
     metadata.insert("certificate_signed".to_string(), "true".to_string());
@@ -120,10 +165,7 @@ pub async fn sign_certificate(
     // Sign the certificate
     log::info!("Payment intent verified successfully");
 
-    let amount_cents = pi.amount as u64;
-    let amount_dollars = amount_cents / 100;
-
-    match sign_marked_payment(&blinded_ghostkey, amount_dollars, amount_cents) {
+    match sign_marked_payment(&blinded_ghostkey, &notary, amount_cents) {
         Ok(response) => Ok(response),
         Err(e) => {
             // The PaymentIntent is marked spent but no certificate came out of
@@ -137,6 +179,39 @@ pub async fn sign_certificate(
     }
 }
 
+/// Whether the client's blinded key can be signed with `notary`, given the
+/// certificate the client says it blinded against.
+///
+/// A client that does not say is success-page JS cached from before this check,
+/// which blinds against shared localStorage. That is tolerated for a flat-file
+/// quote (one certificate per tier, as it always was), but a scheduled quote
+/// rotates, so such a client must reload first.
+fn client_blinded_against(
+    client_cert: Option<&str>,
+    notary: &Notary,
+) -> Result<bool, CertificateError> {
+    match client_cert {
+        Some(cert) => same_notary(cert, notary),
+        None => Ok(notary.period.is_none()),
+    }
+}
+
+/// Whether `client_cert` (base64, as the API handed it out) is `notary`'s
+/// certificate. Compares the notary verifying key, which is what the client
+/// blinds against. Something that does not parse is not it: the answer is the
+/// same retryable refusal as any other mismatch.
+fn same_notary(client_cert: &str, notary: &Notary) -> Result<bool, CertificateError> {
+    let Ok(client_cert) = NotaryCertificateV1::from_base64(client_cert) else {
+        return Ok(false);
+    };
+    let der = |k: &blind_rsa_signatures::PublicKey| {
+        k.to_der()
+            .map_err(|e| CertificateError::MiscError(e.to_string()))
+    };
+    Ok(der(&client_cert.payload.notary_verifying_key)?
+        == der(&notary.certificate.payload.notary_verifying_key)?)
+}
+
 /// Produce the signed certificate for a PaymentIntent that has already been
 /// marked as spent.
 ///
@@ -144,17 +219,17 @@ pub async fn sign_certificate(
 /// validation steps and undo the mark for exactly that case.
 fn sign_marked_payment(
     blinded_ghostkey: &BlindedMessage,
-    amount_dollars: u64,
+    notary: &Notary,
     amount_cents: u64,
 ) -> Result<SignCertificateResponse, CertificateError> {
-    let blind_signature = sign_with_notary_key(blinded_ghostkey, amount_dollars).map_err(|e| {
-        log::error!("Error in sign_with_notary_key: {:?}", e);
-        e
-    })?;
+    let blind_signature =
+        sign_with_notary_key(blinded_ghostkey, &notary.signing_key).map_err(|e| {
+            log::error!("Error in sign_with_notary_key: {:?}", e);
+            e
+        })?;
 
-    let (notary_certificate, _) = crate::delegates::get_notary(amount_dollars)?;
-
-    let cert_base64 = notary_certificate
+    let cert_base64 = notary
+        .certificate
         .to_base64()
         .map_err(|e| CertificateError::MiscError(e.to_string()))?;
 
@@ -221,6 +296,31 @@ mod tests {
         squeeze(production)
     }
 
+    /// A missing notary pair or a mismatched client certificate has to fail
+    /// before the payment is marked, while the donor can still retry.
+    #[test]
+    fn notary_is_loaded_and_checked_before_the_payment_is_marked_spent() {
+        let source = production_source();
+
+        let load_at = source
+            .find(&squeeze("let notary = quoted_notary("))
+            .expect("sign_certificate no longer loads the quoted notary");
+        let check_at = source
+            .find(&squeeze("return Err(CertificateError::NotaryMismatch);"))
+            .expect("sign_certificate no longer refuses a notary mismatch");
+        let mark_at = source
+            .find(&squeeze(
+                r#"metadata.insert("certificate_signed".to_string(), "true".to_string());"#,
+            ))
+            .expect("the certificate_signed mark has moved or been renamed");
+
+        assert!(
+            load_at < mark_at && check_at < mark_at,
+            "a missing notary pair or a mismatched client certificate must fail \
+             BEFORE certificate_signed is set, while the donor can still retry"
+        );
+    }
+
     /// The claim has to be taken before the flag is read, not after. Taking it
     /// afterwards leaves exactly the read-check-write window it exists to
     /// close, and nothing else in the test suite would notice: the happy path
@@ -263,6 +363,74 @@ mod tests {
         );
     }
 
+    /// The id format check has to run before the claim and before the first
+    /// Stripe call, not somewhere later in the function.
+    #[test]
+    fn payment_intent_id_is_checked_before_the_claim_and_stripe() {
+        let source = production_source();
+
+        let check_at = source
+            .find(&squeeze(
+                "payment_claim::is_payment_intent_id(&request.payment_intent_id)",
+            ))
+            .expect("sign_certificate no longer checks the PaymentIntent id format");
+        let claim_at = source
+            .find(&squeeze("payment_claim::claim(&request.payment_intent_id)"))
+            .expect("sign_certificate no longer claims the PaymentIntent at all");
+        let retrieve_at = source
+            .find(&squeeze("PaymentIntent::retrieve("))
+            .expect("the PaymentIntent retrieval has moved or been renamed");
+
+        assert!(
+            check_at < claim_at,
+            "the PaymentIntent id format must be checked before the claim is taken"
+        );
+        assert!(
+            check_at < retrieve_at,
+            "the PaymentIntent id format must be checked before calling Stripe"
+        );
+    }
+
+    /// The retrieved PaymentIntent must be compared with the requested id
+    /// before the PaymentIntent is marked as spent.
+    #[test]
+    fn retrieved_payment_intent_is_matched_before_it_is_marked() {
+        let source = production_source();
+
+        let match_at = source
+            .find(&squeeze("if pi.id.as_str() != request.payment_intent_id {"))
+            .expect("sign_certificate no longer checks the retrieved PaymentIntent id");
+        let mark_at = source
+            .find(&squeeze(
+                r#"metadata.insert("certificate_signed".to_string(), "true".to_string());"#,
+            ))
+            .expect("the certificate_signed mark has moved or been renamed");
+
+        assert!(
+            match_at < mark_at,
+            "the retrieved PaymentIntent must be matched against the requested \
+             id before it is marked as spent"
+        );
+    }
+
+    /// Malformed ids are refused without needing Stripe at all: the check runs
+    /// before STRIPE_SECRET_KEY is even read, so this stays hermetic.
+    #[tokio::test]
+    async fn malformed_payment_intent_ids_are_refused() {
+        for id in ["", "pi_", "pi_abc-def", "pi_abc def", "cus_123"] {
+            let result = super::sign_certificate(super::SignCertificateRequest {
+                payment_intent_id: id.to_string(),
+                blinded_ghost_key_base64: String::new(),
+                notary_certificate_base64: None,
+            })
+            .await;
+            assert!(
+                matches!(result, Err(super::CertificateError::InvalidPaymentIntentId)),
+                "{id:?} was not refused as an invalid payment reference: {result:?}"
+            );
+        }
+    }
+
     /// A signing failure after the mark is set must clear it, or the donor is
     /// charged and permanently unable to retry.
     #[test]
@@ -274,5 +442,47 @@ mod tests {
             "signing failures must clear certificate_signed, otherwise a \
              transient failure burns the donation"
         );
+    }
+
+    fn notary(info: &str) -> super::Notary {
+        let master = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
+        let (certificate, signing_key) =
+            super::NotaryCertificateV1::new(&master, &info.to_string()).unwrap();
+        super::Notary {
+            certificate,
+            signing_key,
+            period: None,
+        }
+    }
+
+    #[test]
+    fn same_notary_compares_the_key_the_client_blinded_against() {
+        use super::Armorable;
+        let quoted = notary("quoted");
+        let other = notary("other");
+        let quoted_b64 = quoted.certificate.to_base64().unwrap();
+        let other_b64 = other.certificate.to_base64().unwrap();
+
+        assert!(super::same_notary(&quoted_b64, &quoted).unwrap());
+        assert!(!super::same_notary(&other_b64, &quoted).unwrap());
+        assert!(!super::same_notary("not a certificate", &quoted).unwrap());
+    }
+
+    #[test]
+    fn unstated_certificate_is_only_tolerated_for_flat_quotes() {
+        use super::Armorable;
+        let flat = notary("flat");
+        let mut scheduled = notary("2026-10");
+        scheduled.period = Some("2026-10".to_string());
+        let scheduled_b64 = scheduled.certificate.to_base64().unwrap();
+        let flat_b64 = flat.certificate.to_base64().unwrap();
+
+        // Old cached JS sends nothing: fine on a flat quote, refused (before
+        // the mark, so retryable) on a scheduled one.
+        assert!(super::client_blinded_against(None, &flat).unwrap());
+        assert!(!super::client_blinded_against(None, &scheduled).unwrap());
+        // New JS states it: accepted exactly when it matches.
+        assert!(super::client_blinded_against(Some(&scheduled_b64), &scheduled).unwrap());
+        assert!(!super::client_blinded_against(Some(&flat_b64), &scheduled).unwrap());
     }
 }

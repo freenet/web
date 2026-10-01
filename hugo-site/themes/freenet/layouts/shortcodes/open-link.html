@@ -48,6 +48,152 @@
     font-size: 0.85rem;
     color: var(--text);
   }
+
+  /* The one big, obvious button. Everything else -- including the button
+     that would otherwise sit here -- lives in the collapsed disclosure
+     below, per the "what would Mom click, arriving from a Facebook post"
+     test: one clear action, not a row of equally-weighted unknowns. */
+  .open-link-primary {
+    margin-bottom: 0.25rem;
+  }
+
+  .open-link-primary-btn {
+    font-size: 1.1rem !important;
+    padding: 1rem 1.25rem !important;
+  }
+
+  .open-link-more {
+    margin-top: 0.5rem;
+  }
+
+  .open-link-more > summary {
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text);
+    padding: 0.35rem 0;
+  }
+
+  .open-link-more[open] > summary {
+    margin-bottom: 0.75rem;
+  }
+
+  .open-link-more .open-link-buttons {
+    margin-top: 0.25rem;
+  }
+
+  /* Small print, not hidden -- a curious or technical visitor can still see
+     exactly what this link points to, but it's not the first (or tenth)
+     thing a first-time visitor's eye lands on. */
+  .open-link-idline {
+    margin: 1rem 0 0 0 !important;
+    font-size: 0.75rem;
+    color: var(--text);
+    opacity: 0.75;
+  }
+
+  .open-link-idline code {
+    font-size: 0.75rem;
+  }
+
+  .open-maker-field {
+    margin-bottom: 1rem;
+  }
+
+  .open-maker-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-strong);
+    margin-bottom: 0.35rem;
+  }
+
+  .open-maker-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    background-color: var(--surface);
+    color: var(--text-strong);
+    font-family: var(--font-code, monospace);
+    font-size: 0.85rem;
+  }
+
+  .open-maker-choice {
+    border: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+  }
+
+  .open-maker-choice legend {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-strong);
+    padding: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .open-maker-choice label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 0.6rem;
+    cursor: pointer;
+  }
+
+  .open-maker-choice input[type="radio"] {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  .open-maker-result {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* The generated link is shown in full, wrapping onto as many lines as it
+     needs (like Harvest's own share box), rather than truncated in a
+     single-line field -- someone sharing a link should be able to see
+     exactly what they're about to send. */
+  .open-maker-output {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    background-color: var(--surface);
+    color: var(--text-strong);
+    font-family: var(--font-code, monospace);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    resize: vertical;
+    overflow-wrap: break-word;
+    margin-bottom: 0.75rem;
+  }
+
+  .open-maker-error {
+    color: #b3261e;
+    font-size: 0.85rem;
+    margin: 0.5rem 0 0 0 !important;
+  }
+
+  .open-maker-input.has-error {
+    border-color: #b3261e;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .open-maker-error {
+      color: #ff8a80;
+    }
+
+    .open-maker-input.has-error {
+      border-color: #ff8a80;
+    }
+  }
 </style>
 <noscript>
   <style>
@@ -66,12 +212,54 @@
   </div>
 
   <div id="open-link-missing" class="open-link-state" style="display: none">
-    <h2>No link yet</h2>
-    <p>
-      This page opens links to apps on Freenet. If you followed a share link and landed here with
-      nothing after the <code>#</code>, the full link probably wasn't copied.
+    <div class="open-maker-field">
+      <label class="open-maker-label" for="open-maker-input">Your link</label>
+      <input
+        id="open-maker-input"
+        class="open-maker-input"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Paste your Freenet link here"
+      />
+    </div>
+
+    <fieldset class="open-maker-choice">
+      <legend>Who is this for?</legend>
+      <label>
+        <input type="radio" name="open-maker-via" value="local" checked />
+        For people who already run Freenet (default)
+      </label>
+      <label>
+        <input type="radio" name="open-maker-via" value="browser" />
+        For anyone: opens in their browser on our demo computer (best for small audiences)
+      </label>
+    </fieldset>
+    <p id="open-maker-browser-note" class="open-link-note" style="display: none">
+      Browser links all run on one shared demo computer, so they suit occasional or small-audience
+      sharing for now, not a high-traffic post.
+      <a
+        href="https://github.com/freenet/freenet-core/issues/5773"
+        target="_blank"
+        rel="noopener noreferrer"
+        >We're working on scaling this up.</a
+      >
     </p>
-    <a class="button" href="/quickstart/">Get Freenet</a>
+
+    <button id="open-maker-generate" class="button is-primary" type="button">Make the link</button>
+    <p id="open-maker-error" class="open-maker-error" style="display: none"></p>
+
+    <div id="open-maker-result" class="open-maker-result" style="display: none">
+      <label class="open-maker-label" for="open-maker-output">Share this link</label>
+      <textarea id="open-maker-output" class="open-maker-output" readonly rows="2"></textarea>
+      <p id="open-maker-local-only" class="open-link-note" style="display: none"></p>
+      <button id="open-maker-copy" class="button" type="button">Copy</button>
+    </div>
+
+    <p class="open-link-note">
+      Don't have a link, or don't have Freenet yet?
+      <a href="/quickstart/">Get Freenet</a>.
+    </p>
   </div>
 
   <div id="open-link-invalid" class="open-link-state" style="display: none">
@@ -84,57 +272,58 @@
   </div>
 
   <div id="open-link-valid" class="open-link-state" style="display: none">
-    <h2>Open this link</h2>
-    <p>This link points to a Freenet app: <code id="open-link-id"></code></p>
+    <!-- Populated by JS: whichever option below is picked as primary (by
+         default, or by ?via=) is MOVED here, not cloned, so its real id,
+         href and click behavior come with it. See layoutButtons(). -->
+    <div id="open-link-primary-slot" class="open-link-primary"></div>
+    <p id="open-link-local-only" class="open-link-note" style="display: none"></p>
 
-    <div class="open-link-buttons">
-      <!-- "Open on this computer" is the primary (highlighted, first) button
-           until the freenet: link handler (freenet-core#5726, merged in
-           freenet-core#5753) has shipped in a release and peers have
-           auto-updated to it -- until then, "Open in Freenet" below does
-           nothing for most visitors. Swap the `is-primary` class and the
-           button order back to lead with "Open in Freenet" after that. -->
-      <div class="open-link-option">
-        <a
-          id="open-link-local"
-          class="button is-primary"
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
-          >Open on this computer</a
-        >
-        <p class="open-link-note">
-          Use this if Freenet is already installed and running on this computer.
-        </p>
+    <details id="open-link-more" class="open-link-more">
+      <summary>Other ways to open</summary>
+      <div id="open-link-more-list" class="open-link-buttons">
+        <!-- "Open on this computer" is the default primary (highlighted)
+             button until peers have auto-updated to a release with the
+             freenet: link handler (freenet-core#5726, first shipped in
+             0.2.140). Until then "Open in Freenet" does nothing for a
+             visitor on an older release. Swap the default in
+             primaryOptionIdForVia() below once most peers have it. -->
+        <div class="open-link-option" id="open-link-opt-local">
+          <a id="open-link-local" class="button" href="#" target="_blank" rel="noopener noreferrer"
+            >Open on this computer</a
+          >
+          <p class="open-link-note">
+            Use this if Freenet is already installed and running on this computer.
+          </p>
+        </div>
+        <div class="open-link-option" id="open-link-opt-try">
+          <a id="open-link-try" class="button" href="#" target="_blank" rel="noopener noreferrer"
+            >Use in your browser</a
+          >
+          <p class="open-link-note">
+            No install. Runs on a shared demo computer, so it may be slow or busy sometimes. Try
+            again in a minute, or install your own.
+          </p>
+        </div>
+        <div class="open-link-option" id="open-link-opt-scheme">
+          <a id="open-link-scheme" class="button" href="#">Open in Freenet</a>
+          <p class="open-link-note">
+            Needs a recent Freenet install. If nothing happens, try another option here instead.
+          </p>
+        </div>
+        <div class="open-link-option" id="open-link-opt-quickstart">
+          <a class="button" href="/quickstart/">Get Freenet</a>
+          <p class="open-link-note">
+            Install your own peer. Free, and it only takes a couple of minutes.
+          </p>
+        </div>
       </div>
-      <div id="open-link-try-option" class="open-link-option">
-        <a id="open-link-try" class="button" href="#" target="_blank" rel="noopener noreferrer"
-          >Use in your browser</a
-        >
-        <p class="open-link-note">No install. Runs on a peer we host, not yours.</p>
-      </div>
-      <p id="open-link-local-only" class="open-link-note" style="display: none"></p>
-      <!-- HIDDEN until a Freenet release registers the freenet: link handler
-           (freenet-core#5726, merged in #5753 after 0.2.139 was cut). No
-           release has it yet, so the button only produced "no app can open
-           this link". The JS still fills in its href and the vector test
-           still checks it. TO RE-ENABLE once that release is out: delete
-           style="display: none" below, then see the comment above about
-           making this the primary button once peers have auto-updated. -->
-      <div id="open-link-scheme-option" class="open-link-option" style="display: none">
-        <a id="open-link-scheme" class="button" href="#">Open in Freenet</a>
-        <p class="open-link-note">
-          Opens it in the Freenet installed on this computer. If nothing happens, your Freenet may
-          be older than this feature: try the options above instead.
-        </p>
-      </div>
-      <div class="open-link-option">
-        <a class="button" href="/quickstart/">Get Freenet</a>
-        <p class="open-link-note">
-          Install your own peer. Free, and it only takes a couple of minutes.
-        </p>
-      </div>
-    </div>
+
+      <!-- Not hidden, but not in the default view either: an unexplained
+           random-looking string is exactly the pattern a wary first-time
+           visitor has learned to distrust (a phishing page's "verification
+           code"). Anyone who wants to check it can open this disclosure. -->
+      <p class="open-link-idline">Link target: <code id="open-link-id"></code></p>
+    </details>
   </div>
 
   <noscript>
@@ -157,7 +346,8 @@
     var CONTRACT_KEY_BYTES = 32;
 
     // Apps that hold keys a visitor should keep on their own peer. For these
-    // the "Use in your browser" button is replaced by the reason:
+    // the "Use in your browser" option is replaced by the reason, ?via=browser
+    // does not redirect, and the share-link maker never makes a browser link:
     // try.freenet.org is for trying Freenet out, and anything stored there
     // lives on a peer we host. Keyed by the app's web container id, so a
     // re-key of the app must update its entry here too.
@@ -318,10 +508,135 @@
       return { id: raw.slice(0, i), rest: raw.slice(i) };
     }
 
+    // The three fixed destination prefixes for OPENING a link. Every href
+    // this page ever sets for opening (as opposed to the share-link maker
+    // tool further down, which builds a fourth, freenet.org/open URL from
+    // these same validated pieces) is one of these three literals plus the
+    // validated id/rest -- nothing here is ever derived from the fragment or
+    // the query string, so neither can redirect anywhere else.
+    function buildLocalUrl(id, rest) {
+      return "http://127.0.0.1:7509/v1/contract/web/" + id + rest;
+    }
+    function buildTryUrl(id, rest) {
+      return "https://try.freenet.org/v1/contract/web/" + id + rest;
+    }
+    function buildSchemeUrl(id, rest) {
+      // No `//`: in `freenet://<id>` the case-sensitive id is the URL host,
+      // which some desktops lowercase before the handler sees it. The
+      // handler accepts both forms; this is the one that round-trips.
+      return "freenet:" + id + rest;
+    }
+
+    // `?via=` is a link-author HINT read from the QUERY STRING, not the
+    // fragment -- unlike the fragment, the query string is sent to
+    // freenet.org's server (it'll show up in access logs), but it only ever
+    // carries this one word, never the target: the contract id and path
+    // stay in the fragment exactly as before, so freenet.org still never
+    // learns what a visitor opens. Anything other than the three known
+    // values (including no `via` at all) falls back to today's default, so
+    // an old or malformed link keeps working exactly as it always has.
+    function getViaParam() {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var v = (params.get("via") || "").toLowerCase();
+        if (v === "browser" || v === "local" || v === "app") return v;
+      } catch (e) {
+        // Malformed query string, or no URLSearchParams support -- fall
+        // back to the default rather than failing the whole page.
+      }
+      return null;
+    }
+    var viaParam = getViaParam();
+
+    var CANONICAL_OPTION_ORDER = [
+      "open-link-opt-local",
+      "open-link-opt-try",
+      "open-link-opt-scheme",
+      "open-link-opt-quickstart",
+    ];
+
+    function primaryOptionIdForVia(via) {
+      if (via === "app") return "open-link-opt-scheme";
+      // "browser" normally never reaches here -- processFragment() redirects
+      // before rendering the page at all (see below) -- but map it anyway as
+      // a sane fallback rather than falling through to a default that
+      // contradicts what the link author asked for.
+      if (via === "browser") return "open-link-opt-try";
+      return "open-link-opt-local"; // default, and via=local spelled out
+    }
+
+    // Moves whichever option the primary should be OUT of the "Other ways to
+    // open" list and into the always-visible primary slot -- a real DOM move,
+    // not a clone, so the id/href/click behavior travels with it and there is
+    // never a duplicate-id button on the page. Rebuilds the "more" list into
+    // canonical order first, so re-running this on a hashchange never leaves
+    // ordering from a previous ?via= value behind.
+    function layoutButtons(primaryId) {
+      var moreList = document.getElementById("open-link-more-list");
+      var primarySlot = document.getElementById("open-link-primary-slot");
+
+      for (var i = 0; i < CANONICAL_OPTION_ORDER.length; i++) {
+        var node = document.getElementById(CANONICAL_OPTION_ORDER[i]);
+        var anchor = node.querySelector("a");
+        anchor.classList.remove("is-primary", "open-link-primary-btn");
+        moreList.appendChild(node);
+      }
+
+      var primaryNode = document.getElementById(primaryId);
+      primaryNode.querySelector("a").classList.add("is-primary", "open-link-primary-btn");
+      primarySlot.appendChild(primaryNode);
+    }
+
+    // The top lede (outside this shortcode, in content/open/_index.md) reads
+    // as "someone shared a link with you" by default, which is backwards for
+    // the one state where nobody shared anything: visiting /open with no
+    // fragment, which is now the share-link-making tool. Swapped by text
+    // content only -- both strings are fixed literals, never derived from
+    // user input. LEDE_DEFAULT below is a plain copy of the static text in
+    // _index.md's `#open-link-lede` paragraph (needed as a JS string so it
+    // can be restored after LEDE_MAKER); if you're changing the wording of
+    // one, change the other to match.
+    // Deliberately does NOT say "it runs on your own computer, not ours" as
+    // an unqualified claim: one of the four ways to open a link (Use in your
+    // browser) runs on a peer WE host, not the visitor's computer, and
+    // stating the opposite two inches above that option's own honest caveat
+    // read as a direct contradiction in the round-3 critique. "Can run
+    // entirely on your own computer" is true without overclaiming for every
+    // option at once.
+    var LEDE_DEFAULT =
+      "Someone shared a link to an app on Freenet with you. Freenet is a peer-to-peer network. " +
+      "Nothing about it is sent to freenet.org, and opening it can run entirely on your own computer.";
+    var LEDE_MAKER =
+      "Paste a Freenet link below to turn it into one that works for anyone. Freenet is a " +
+      "peer-to-peer network. Nothing you paste here is sent to freenet.org, and the link can " +
+      "open entirely on the other person's own computer.";
+
     function show(stateId) {
       var states = ["open-link-missing", "open-link-invalid", "open-link-valid"];
       for (var i = 0; i < states.length; i++) {
         document.getElementById(states[i]).style.display = states[i] === stateId ? "" : "none";
+      }
+      var lede = document.getElementById("open-link-lede");
+      if (lede) {
+        lede.textContent = stateId === "open-link-missing" ? LEDE_MAKER : LEDE_DEFAULT;
+      }
+      // The page's own <h1> (set from front matter, so fixed HTML) reads
+      // "Open a Freenet link" -- wrong heading for the one state where
+      // nobody's opening anything, they're making a link to send. There is
+      // no id on it (it's shared markup in themes/freenet/layouts/_default/
+      // single.html), so this is the one place this file reaches slightly
+      // outside its own shortcode; `h1.title` is specific enough on this
+      // page (exactly one such heading) to do it safely.
+      var pageHeading = document.querySelector("h1.title");
+      if (pageHeading) {
+        pageHeading.textContent =
+          stateId === "open-link-missing" ? "Make a share link" : "Open a Freenet link";
+      }
+      // The small-print "Make a share link" pointer is pointless (and a bit
+      // circular) while already looking at that exact tool.
+      var devnoteMaker = document.getElementById("open-link-devnote-maker");
+      if (devnoteMaker) {
+        devnoteMaker.style.display = stateId === "open-link-missing" ? "none" : "";
       }
     }
 
@@ -355,30 +670,310 @@
       // The scheme and host are always this fixed literal, never derived
       // from the fragment, so nothing in `rest` can turn these into a
       // link to somewhere else.
-      // The authority-less form: in "freenet://<id>" the case-sensitive id is
-      // the URL host, which some desktops lowercase (Qt/KDE) before the
-      // handler sees it. The freenet-core handler accepts both forms.
-      document.getElementById("open-link-scheme").href = "freenet:" + contractId + parts.rest;
-      document.getElementById("open-link-local").href =
-        "http://127.0.0.1:7509/v1/contract/web/" + contractId + parts.rest;
-      document.getElementById("open-link-try").href =
-        "https://try.freenet.org/v1/contract/web/" + contractId + parts.rest;
+      document.getElementById("open-link-scheme").href = buildSchemeUrl(contractId, parts.rest);
+      document.getElementById("open-link-local").href = buildLocalUrl(contractId, parts.rest);
+      var tryUrl = buildTryUrl(contractId, parts.rest);
+      document.getElementById("open-link-try").href = tryUrl;
 
       // Set both ways every time: hashchange can move between a local-only
       // app and any other.
       var localOnly = LOCAL_ONLY[contractId];
-      document.getElementById("open-link-try-option").style.display = localOnly ? "none" : "";
+      document.getElementById("open-link-opt-try").style.display = localOnly ? "none" : "";
       var localOnlyNote = document.getElementById("open-link-local-only");
       localOnlyNote.textContent = localOnly || "";
       localOnlyNote.style.display = localOnly ? "" : "none";
 
+      // A local-only app never gets the hidden try option as its primary,
+      // whatever ?via= asked for.
+      var primaryId = primaryOptionIdForVia(viaParam);
+      if (localOnly && primaryId === "open-link-opt-try") primaryId = "open-link-opt-local";
+      layoutButtons(primaryId);
+
+      // Populate and show the normal page BEFORE calling location.replace()
+      // below, rather than redirecting first and rendering never. This does
+      // NOT fix the visible symptom of a slow or unreachable try.freenet.org
+      // -- verified: once `location.replace` is called, Chromium tears down
+      // this document's rendering immediately regardless of what was drawn a
+      // moment earlier (a blank tab while the navigation is pending, or its
+      // own network-error page if it fails outright; nothing reverts to
+      // this page either way). That failure mode is standard browser
+      // behavior for ANY navigation to a slow or down destination --
+      // clicking the ordinary "Use in your browser" button hits the exact
+      // same limitation, since it's a normal link to the same host, and
+      // this page already discloses try.freenet.org can be "slow or busy
+      // sometimes". Fixing it for real would mean a network reachability
+      // check before redirecting, which trades away the "no network request
+      // of its own" property for a rare case. What this ordering DOES buy:
+      // if the redirect is ever skipped or blocked by something outside
+      // normal navigation (an extension, a future browser policy), the
+      // visitor is left looking at a fully-populated, working page instead
+      // of a card with a validated id but no href on any button.
       show("open-link-valid");
+
+      // `?via=browser` skips the page entirely: a link author whose audience
+      // doesn't run Freenet can send them straight to the hosted demo
+      // without a click. This is a plain https destination (not the
+      // freenet: scheme), so a script-driven navigation is allowed without a
+      // user gesture. It only fires once the link has already validated --
+      // an invalid link always shows the normal "looks broken" page instead
+      // of redirecting anywhere. Guarded by `redirected` because this
+      // function runs both immediately and again on DOMContentLoaded (see
+      // below); without the guard a slow-loading page could call
+      // `location.replace` a second time while the first navigation is
+      // still in flight.
+      if (viaParam === "browser" && !localOnly && !redirected) {
+        redirected = true;
+        window.location.replace(tryUrl);
+      }
     }
+
+    var redirected = false;
 
     document.addEventListener("DOMContentLoaded", processFragment);
     // Re-run if the fragment changes without a full page load (e.g. a
     // visitor edits the address bar in place), so the buttons never point
     // somewhere other than what the page currently displays.
     window.addEventListener("hashchange", processFragment);
+    // Also run immediately: this script tag sits after all the markup its
+    // OWN shortcode renders, so that markup (everything inside the
+    // `open-link` div, above this script block) is already parsed and in
+    // the DOM by the time this line runs, even though DOMContentLoaded
+    // hasn't fired yet. Running
+    // now rather than waiting is what makes `?via=browser`'s redirect fire
+    // as early as possible. One thing this line is NOT: proof that every id
+    // this file's JS looks up already exists -- `open-link-devnote-maker`
+    // lives in content/open/_index.md, outside this shortcode and after it
+    // in the page, so it does not exist yet on this first call. `show()`
+    // guards that lookup with `if (devnoteMaker)` for exactly this reason;
+    // the DOMContentLoaded call above is what actually applies it, once the
+    // rest of the page has parsed.
+    processFragment();
+
+    // ---- "Make a share link" tool (the no-fragment state) --------------
+    //
+    // Turns any Freenet link a visitor already has into one that opens for
+    // anyone. Entirely client-side: no fetch, no XHR, nothing sent anywhere.
+    // Reuses the exact same parseContractId/validateRest/splitFragment used
+    // above for the real page, so this never becomes a second, independently
+    // drifting copy of the security-critical validation logic.
+    //
+    // Deliberately does NOT accept an author-supplied display label/title --
+    // arbitrary text that freenet.org would show to a link's eventual
+    // visitor is a phishing vector ("Free iPhone - Claim Now", styled to
+    // look like a button). The only thing this tool ever echoes back is the
+    // validated, normalized link itself.
+
+    // Recognizes every shape a Freenet link can already come in and reduces
+    // it to the same "id+rest" shape `location.hash` would give the main
+    // page above -- the id immediately followed by whatever path/query/app-
+    // fragment came after it, verbatim. Tried in order; case-insensitive.
+    function parsePastedLink(raw) {
+      var s = (raw || "").trim();
+      // A visitor copying "everything after the #" (as the error message
+      // itself suggests) very often includes the '#' -- selecting from the
+      // address bar naturally starts there. None of the recognized prefixes
+      // below begin with '#', so stripping one leading '#' is unambiguous.
+      if (s.charAt(0) === "#") s = s.slice(1);
+      if (s.length === 0) return null;
+      var m;
+
+      // An existing freenet.org/open share link (with or without ?via=,
+      // with or without a scheme/www). A `via=browser` already on it is
+      // carried over as a hint for which radio to preselect.
+      m = s.match(/^(?:https?:\/\/)?(?:www\.)?freenet\.org\/open\/?(\?[^#]*)?#(.+)$/i);
+      if (m) {
+        var viaHint = null;
+        if (m[1]) {
+          var viaMatch = m[1].match(/[?&]via=([a-zA-Z]+)/);
+          if (viaMatch) viaHint = viaMatch[1].toLowerCase();
+        }
+        return { candidate: m[2], viaHint: viaHint };
+      }
+
+      // A local peer's own webapp URL: any port, v1 or v2 (identical routes).
+      m = s.match(/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\/v[12]\/contract\/web\/(.+)$/i);
+      if (m) return { candidate: m[1], viaHint: null };
+
+      // The hosted demo peer's own copy of the same URL shape -- if you
+      // already have one of these, you were already using browser mode.
+      m = s.match(/^https?:\/\/try\.freenet\.org\/v[12]\/contract\/web\/(.+)$/i);
+      if (m) return { candidate: m[1], viaHint: "browser" };
+
+      // freenet://<id>/... (authority form).
+      m = s.match(/^freenet:\/\/(.+)$/i);
+      if (m) return { candidate: m[1], viaHint: null };
+
+      // freenet:<id>/... (opaque form) -- tried after the "//" form above so
+      // it can't swallow it first.
+      m = s.match(/^freenet:(.+)$/i);
+      if (m) return { candidate: m[1], viaHint: null };
+
+      // Already bare "<id>/<rest...>", e.g. pasted just the part after a '#'.
+      return { candidate: s, viaHint: null };
+    }
+
+    // The "runs on a shared demo computer" caveat only applies to the "for
+    // anyone" choice -- showing it unconditionally (as an earlier round did)
+    // reads as a warning about an option the visitor didn't even pick when
+    // "already run Freenet" is selected.
+    function updateMakerViaNote() {
+      var browserRadio = document.querySelector('input[name="open-maker-via"][value="browser"]');
+      var note = document.getElementById("open-maker-browser-note");
+      if (browserRadio && note) {
+        note.style.display = browserRadio.checked ? "" : "none";
+      }
+    }
+
+    function generateShareLink() {
+      var inputEl = document.getElementById("open-maker-input");
+      var errorEl = document.getElementById("open-maker-error");
+      var resultEl = document.getElementById("open-maker-result");
+      errorEl.style.display = "none";
+      resultEl.style.display = "none";
+      inputEl.classList.remove("has-error");
+
+      var parsed = parsePastedLink(inputEl.value);
+      if (!parsed) {
+        errorEl.textContent = "Paste a Freenet link first.";
+        errorEl.style.display = "";
+        inputEl.classList.add("has-error");
+        return;
+      }
+
+      var parts = splitFragment(parsed.candidate);
+      var contractId = parseContractId(parts.id);
+      if (!contractId || !validateRest(parts.rest)) {
+        errorEl.textContent =
+          "That doesn't look like a valid Freenet link. Paste the full address, including " +
+          "everything after the # (or after v1/contract/web/).";
+        errorEl.style.display = "";
+        inputEl.classList.add("has-error");
+        return;
+      }
+
+      // The pasted link's own hint is only a SUGGESTION for the first link
+      // pasted in this session. Once a visitor has deliberately clicked
+      // either radio themselves, that choice sticks for whatever they paste
+      // next -- otherwise pasting a try.freenet.org link after manually
+      // choosing "already run Freenet" would silently snap back to
+      // "for anyone" on every subsequent generate.
+      if (parsed.viaHint === "browser" && !makerViaUserChosen) {
+        var browserRadio = document.querySelector('input[name="open-maker-via"][value="browser"]');
+        if (browserRadio) browserRadio.checked = true;
+        updateMakerViaNote();
+      }
+
+      var chosenVia = document.querySelector('input[name="open-maker-via"]:checked').value;
+      // A local-only app gets the default link whatever was chosen, and the
+      // reason is shown with it: /open would refuse the browser redirect
+      // for it anyway.
+      var localOnly = LOCAL_ONLY[contractId];
+      var makerLocalOnly = document.getElementById("open-maker-local-only");
+      makerLocalOnly.textContent = localOnly && chosenVia === "browser" ? localOnly : "";
+      makerLocalOnly.style.display = localOnly && chosenVia === "browser" ? "" : "none";
+      var shareUrl =
+        "https://freenet.org/open" +
+        (chosenVia === "browser" && !localOnly ? "?via=browser" : "") +
+        "#" +
+        contractId +
+        parts.rest;
+
+      // textContent/value only -- same rule as everywhere else on this page.
+      var outputEl = document.getElementById("open-maker-output");
+      outputEl.value = shareUrl;
+      resultEl.style.display = "";
+      resizeMakerOutput();
+    }
+
+    // Grows the output box to fit the whole link with no scrollbar or
+    // clipped line, whatever the link's length or the viewport's width.
+    // `scrollHeight` excludes the border, so a border-box element with any
+    // border needs it added back or the box ends up a couple of pixels too
+    // short and a scrollbar appears anyway. No-ops while the result is
+    // hidden (a hidden element always measures a zero scrollHeight, so
+    // there is nothing correct to size to yet).
+    function resizeMakerOutput() {
+      var outputEl = document.getElementById("open-maker-output");
+      if (document.getElementById("open-maker-result").style.display === "none") return;
+      outputEl.style.height = "auto";
+      var borders = outputEl.offsetHeight - outputEl.clientHeight;
+      outputEl.style.height = outputEl.scrollHeight + borders + "px";
+    }
+    // The link wraps onto more or fewer lines as the viewport changes width
+    // (e.g. a phone rotated after the link was generated), so keep the box
+    // sized to it rather than leaving it fit to whatever width happened to
+    // be current at generate time.
+    window.addEventListener("resize", resizeMakerOutput);
+
+    // True once a visitor has clicked either "who is this for" radio
+    // themselves, as opposed to it being set programmatically from a pasted
+    // link's own hint (see `viaHint` above). A `change` event only fires on
+    // genuine user interaction, never on a script setting `.checked`, so
+    // this can't be tripped by the hint itself.
+    var makerViaUserChosen = false;
+
+    var makerViaRadios = document.querySelectorAll('input[name="open-maker-via"]');
+    for (var mvr = 0; mvr < makerViaRadios.length; mvr++) {
+      makerViaRadios[mvr].addEventListener("change", function () {
+        makerViaUserChosen = true;
+        updateMakerViaNote();
+        // A link already generated for the OTHER audience is now wrong for
+        // the newly-selected one; hide it rather than leave a mismatched
+        // link sitting there looking current.
+        document.getElementById("open-maker-result").style.display = "none";
+      });
+    }
+    updateMakerViaNote(); // starts hidden: "already run Freenet" is checked by default
+
+    document.getElementById("open-maker-generate").addEventListener("click", generateShareLink);
+    document.getElementById("open-maker-input").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") generateShareLink();
+    });
+    // Clear a stale error the moment the visitor starts fixing their input,
+    // rather than leaving it displayed against new, potentially-valid text.
+    document.getElementById("open-maker-input").addEventListener("input", function () {
+      document.getElementById("open-maker-error").style.display = "none";
+      this.classList.remove("has-error");
+    });
+    document.getElementById("open-maker-copy").addEventListener("click", function () {
+      var output = document.getElementById("open-maker-output");
+      var button = this;
+      // Always restore the fixed label "Copy", never whatever text happened
+      // to be showing at click time -- reading it back would leave the
+      // button stuck on "Copied!" forever if clicked again inside the
+      // 2-second window, since the second click's own restore then fires
+      // with "Copied!" as its "original".
+      function showFeedback(text) {
+        button.textContent = text;
+        setTimeout(function () {
+          button.textContent = "Copy";
+        }, 2000);
+      }
+      // `navigator.clipboard` doesn't exist at all outside a secure context
+      // (plain http, e.g. reaching this page's dev server by LAN IP) --
+      // calling `.writeText` on it would throw synchronously, not reject a
+      // promise, so it needs its own check rather than relying on `.catch`.
+      if (!navigator.clipboard) {
+        output.select();
+        showFeedback("Press Ctrl+C");
+        return;
+      }
+      navigator.clipboard.writeText(output.value).then(
+        function () {
+          showFeedback("Copied!");
+        },
+        function () {
+          // Permission denied or otherwise refused -- fall back to
+          // select-and-manual-copy instead of failing silently.
+          output.select();
+          showFeedback("Press Ctrl+C");
+        },
+      );
+    });
+    // A click-to-select-all fallback for anyone who'd rather copy manually
+    // than trust the button (or whose browser blocks clipboard access).
+    document.getElementById("open-maker-output").addEventListener("click", function () {
+      this.select();
+    });
   })();
 </script>
