@@ -102,7 +102,7 @@ https://freenet.org/open?via=browser#<contract-id>/<path>?<query>#<app-fragment>
 - **`?via=local`**: same as no `via` at all (spelled out for clarity in a generated link). **Open on
   this computer** stays the primary button.
 - **`?via=app`**: makes **Open in Freenet** the primary button instead. Only worth setting if you
-  know your audience is already on a release newer than 0.2.139; on an older release the button
+  know your audience is already on 0.2.140 or newer; on an older release the button
   simply won't do anything, same as today.
 - Anything else, or no `via` at all, falls back to the default above. Old links you've already
   shared are completely unaffected.

@@ -58,7 +58,11 @@ function runPage({ hash = "", search = "" } = {}) {
       _fire(ev) {
         (elListeners[ev] || []).forEach((fn) => fn({}));
       },
-      appendChild() {},
+      // Records the last node moved here, so a test can see which option
+      // layoutButtons() put in the primary slot.
+      appendChild(node) {
+        this.lastAppended = node;
+      },
       querySelector: () => makeElement(`${id}::child`),
     };
   }
@@ -275,7 +279,18 @@ let localOnlyFailures = 0;
   const via = runPage({ hash: "#" + VAULT + "/", search: "?via=browser" });
   check(via.replacedTo === null, `via=browser redirected the vault to ${via.replacedTo}`);
   check(noteShown(via.el), "no local-only note for the vault under via=browser");
+  // The hidden try option must not become the primary: that leaves an empty
+  // primary slot.
+  const primaryOf = (el) => el("open-link-primary-slot").lastAppended?.id;
+  check(
+    primaryOf(via.el) === "open-link-opt-local",
+    `via=browser primary for the vault is ${primaryOf(via.el)}`,
+  );
   via.navigate("#" + OTHER + "/");
+  check(
+    primaryOf(via.el) === "open-link-opt-try",
+    `via=browser primary after leaving the vault is ${primaryOf(via.el)}`,
+  );
   check(
     via.replacedTo === `https://try.freenet.org/v1/contract/web/${OTHER}/`,
     `via=browser after leaving the vault redirected to ${via.replacedTo}`,
@@ -303,6 +318,19 @@ let localOnlyFailures = 0;
   check(
     maker.el("open-maker-local-only").style.display === "none",
     "maker reason still shown for an ordinary id",
+  );
+
+  // "Already run Freenet" (the default) gives the vault the default link and
+  // no note: there is nothing to explain.
+  const localMaker = runPage({});
+  const localOut = localMaker.runMaker(VAULT + "/");
+  check(
+    localOut.output === `https://freenet.org/open#${VAULT}/`,
+    `maker made ${localOut.output} for the vault with the default choice`,
+  );
+  check(
+    localMaker.el("open-maker-local-only").style.display === "none",
+    "maker reason shown for the vault with the default choice",
   );
 }
 console.log(`local-only checks, ${localOnlyFailures} failures`);

@@ -211,7 +211,7 @@ Your Ghost Keys live in the vault on your own Freenet peer:
 
 <div class="gk-cta">
 <a href="/open/#DLog47hEsrtuGT4N5XCeMBG45m4n1aWM89tBZXue2E1N/" class="funding-donate-button">Open your Ghost Key vault</a>
-<p class="gk-cta-note">Opens the vault on the Freenet peer running on this computer, or shows you how to install one.</p>
+<p class="gk-cta-note">Opens the vault on the Freenet peer running on this computer. No peer yet? <a href="/quickstart/">Install Freenet</a> first.</p>
 </div>
 
 The vault runs inside your peer, not on a website, so its address is on your own machine:
