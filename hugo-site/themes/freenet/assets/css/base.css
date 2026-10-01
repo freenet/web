@@ -401,17 +401,12 @@ pre code {
     }
 }
 
-/* Tables, code blocks and figures are read by scanning rather than line by
-   line, and a text-width column squeezes them: function signatures wrap
-   mid-argument, columns collapse. Let them extend symmetrically past the
-   column once the window has room to give. Below 1024px they stay in the
-   column and scroll, because breaking out would push them off-screen. */
+/* Figures extend symmetrically past the text column once the window has
+   room to give. Tables and code blocks stay in the column, aligned with the
+   text, and scroll if a line is too long: wider blocks beside the text made
+   the page edges look uneven. Below 1024px figures stay in the column too,
+   because breaking out would push them off-screen. */
 @media screen and (min-width: 1024px) {
-    .container.is-prose .content > table,
-    .container.is-prose .content > pre,
-    /* Hugo wraps every highlighted fence in <div class="highlight">, so the
-       bare `> pre` above never matched a fenced code block. */
-    .container.is-prose .content > .highlight,
     .container.is-prose .content > figure {
         margin-inline: calc((var(--measure-content) - var(--breakout)) / 2);
         width: var(--breakout);
@@ -793,7 +788,10 @@ a.navbar-item:focus {
 .content p:not(:last-child),
 .content pre:not(:last-child),
 .content table:not(:last-child),
-.content ul:not(:last-child) {
+.content ul:not(:last-child),
+/* A fenced code block is a <pre> wrapped in <div class="highlight">, so the
+   <pre> is always a last child and the rule above never spaces it. */
+.content .highlight:not(:last-child) {
     margin-bottom: 1em;
 }
 
