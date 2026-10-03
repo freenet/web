@@ -42,7 +42,7 @@ jobs:
           cargo install -f wasm-bindgen-cli
 
       - name: Install Chromedriver
-        uses: nanasess/setup-chromedriver@v2
+        uses: nanasess/setup-chromedriver@v3
 
       - name: Run integration tests
         run: |
