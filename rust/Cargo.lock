@@ -1124,7 +1124,7 @@ dependencies = [
  "hmac",
  "log",
  "rand 0.8.5",
- "rand_core 0.6.4",
+ "rand_core 0.10.1",
  "reqwest",
  "rmp-serde",
  "rustls",
