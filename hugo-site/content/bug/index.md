@@ -77,9 +77,8 @@ website rather than by the vault, so [report those here](https://github.com/free
 Each keeps its own list: [Delta](https://github.com/freenet/delta/issues/new),
 [Mail](https://github.com/freenet/mail/issues/new),
 [freenet-git](https://github.com/freenet/freenet-git/issues/new),
-[Raven](https://github.com/freenet/raven/issues/new),
-[Atlas](https://github.com/freenet/atlas/issues/new) and
-[Harvest](https://github.com/freenet/harvest/issues/new). The [apps page](/apps/) says what each one
+[Raven](https://github.com/freenet/raven/issues/new) and
+[Atlas](https://github.com/freenet/atlas/issues/new). The [apps page](/apps/) says what each one
 does, if you're not sure which you were using, and [every tracker](#every-project) is listed further
 down this page.
 
@@ -110,7 +109,6 @@ Each name opens that project's open issues, so you can check whether yours is al
 | [raven](https://github.com/freenet/raven/issues)                                             | Live social feed                       |
 | [freenet-agent-skills](https://github.com/freenet/freenet-agent-skills/issues)               | Skills for AI coding agents            |
 | [freenet-stdlib](https://github.com/freenet/freenet-stdlib/issues)                           | Contract and delegate library          |
-| [harvest](https://github.com/freenet/harvest/issues)                                         | Peer-to-peer marketplace               |
 | [freenet-wiki](https://github.com/freenet/freenet-wiki/issues)                               | Decentralized wiki                     |
 | [replay-channel](https://github.com/freenet/replay-channel/issues)                           | Rust broadcast-channel library         |
 | [freenet-scaffold](https://github.com/freenet/freenet-scaffold/issues)                       | Mergeable contract state crate         |
