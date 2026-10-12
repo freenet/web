@@ -57,8 +57,6 @@ Decentralized marketplace for peer-to-peer commerce. Anonymous,
 donation-backed identities paired with a blind-signature feedback mechanism
 provide accountability without a central operator. Early design.
 
-→ [github.com/freenet/harvest](https://github.com/freenet/harvest)
-
 ### Atlas {#atlas}
 
 Decentralized discovery layer: a framework for publishing signed metadata
