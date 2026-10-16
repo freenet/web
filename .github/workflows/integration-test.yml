@@ -33,7 +33,8 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: install
-          args: --debug cargo-make
+          # --locked: every zip 2.x was yanked 2026-10-16; cargo-make ^0.37 needs zip ^2.
+          args: --debug --locked cargo-make
 
       - name: Install wasm-pack and wasm-bindgen-cli
         run: |

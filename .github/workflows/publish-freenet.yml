@@ -29,7 +29,8 @@ jobs:
           extended: true
 
       - name: Install cargo-make
-        run: cargo install --debug cargo-make
+        # --locked: every zip 2.x was yanked 2026-10-16; cargo-make ^0.37 needs zip ^2.
+        run: cargo install --debug --locked cargo-make
 
       # Refresh build-time content for the same reason the link check below
       # exists: this publishes the same *content* as deploy.yml, and without
