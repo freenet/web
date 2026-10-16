@@ -62,7 +62,7 @@ jobs:
       # the daily scheduled run hits this cache every time.
       - name: Cache WebAssembly files
         id: cache-wasm
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: hugo-site/static/wasm
           key: ${{ runner.os }}-wasm-${{ hashFiles('rust/gkwasm/**', 'rust/gklib/**') }}
