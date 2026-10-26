@@ -402,8 +402,8 @@
    the content instead of the framework: at 1024px the container is ~992px and
    the screenshot column ~460px, the same width it renders at on a 1280px
    window today. Below that it stacks, and the screenshot sits under the copy so
-   the headline, both CTAs and the caveat are all reachable without scrolling
-   past a tall image. */
+   the headline and both CTAs are reachable without scrolling past a tall
+   image. */
 @media screen and (max-width: 1023px) {
     .hero-grid {
         grid-template-columns: minmax(0, 1fr);
@@ -1327,8 +1327,8 @@ picture.app-screenshot img {
    limitations section, and at the end.
 
    Deliberately NOT reusing the homepage .cta-row: its margins are tuned to the
-   homepage hero, which sits badly in the middle of a prose page. Same visual language, no positional
-   assumptions.
+   homepage hero, which sits badly in the middle of a prose page. Same visual
+   language, no positional assumptions.
 
    The note under the button carries the price and the nonprofit status. Both
    belong here rather than in the button label: the reader should know what the
