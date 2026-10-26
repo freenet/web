@@ -97,8 +97,16 @@
         color: #f5f5f5;
     }
 
+    /* Muted fill and a neutral shadow: the light-scheme #0066CC gradient and
+       its blue glow read as neon on the dark ground. */
     .invite-container .invite-btn-primary {
-        box-shadow: 0 4px 14px rgba(0, 102, 204, 0.3);
+        background: linear-gradient(135deg, #2e65a0 0%, #2a5180 100%);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+
+    .invite-container .invite-btn-primary:hover {
+        background: linear-gradient(135deg, #3d71aa 0%, #2e65a0 100%);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
     }
 
     .invite-container .invite-link-btn {
