@@ -43,7 +43,7 @@ your private data moves across from our peer in a single click.</p>
       <source srcset="/images/river-screenshot-dark.png"
               media="(prefers-color-scheme: dark)" width="1800" height="886">
       <img src="/images/river-screenshot-light.png"
-           alt="A live River chat room, the Freenet room, showing a room list, a conversation and a member list"
+           alt="A River chat room showing a room list, a conversation with reactions and a member list"
            width="1800" height="886" fetchpriority="high" decoding="async">
     </picture>
   </a>
