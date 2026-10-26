@@ -373,7 +373,7 @@ waitForD3().then(() => {
             .attr('y', d => y(d.y) + 5)
             .text((d, i) => i === 0 ? 'Small World' : 'Random')
             .attr('font-size', '12px')
-            .attr('fill', (d, i) => i === 0 ? SWC_BLUE.base : SWC_BLUE.emph);
+            .attr('fill', SWC_BLUE.text);
 
 
     }

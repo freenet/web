@@ -1,10 +1,14 @@
 // Diagram colours: blues matched to the logo, with the site's muted accent
 // in the dark scheme (the logo's old full-saturation blue glowed on the dark
 // ground). Emphasis moves away from the background in both schemes and reads
-// as text there (>= 9.7:1); text is the site's heading colour.
+// as text there (>= 9.7:1); text is the site's heading colour. The request
+// path is green; its light-scheme values are darker, since the bright green
+// was 1.6:1 on white.
 const SWR_BLUE = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ? { base: '#79a7d6', emph: '#c0dbf4', rgb: '121, 167, 214', text: '#ebecf0' }
-    : { base: '#3a7bcb', emph: '#1d4176', rgb: '58, 123, 203', text: '#2e333d' };
+    ? { base: '#79a7d6', emph: '#c0dbf4', rgb: '121, 167, 214', text: '#ebecf0',
+        path: 'rgba(0, 204, 0, 0.6)', pathRim: '#00cc00' }
+    : { base: '#3a7bcb', emph: '#1d4176', rgb: '58, 123, 203', text: '#2e333d',
+        path: 'rgba(0, 128, 0, 0.8)', pathRim: '#006600' };
 
 // Wait for D3.js to be available
 function waitForD3() {
@@ -103,7 +107,7 @@ async function initVisualization() {
         // Draw the complete path up to current segment
         if (currentPath.length > 1) {
             // Draw the completed segments
-            ctx.strokeStyle = 'rgba(0, 204, 0, 0.6)'; // Using semi-transparent green
+            ctx.strokeStyle = SWR_BLUE.path;
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(currentPath[0].x, currentPath[0].y);
@@ -124,7 +128,7 @@ async function initVisualization() {
             const y = start.y + (end.y - start.y) * animationProgress;
             
             ctx.fillStyle = '#008800'; // Darker green
-            ctx.strokeStyle = '#00cc00'; // Bright green
+            ctx.strokeStyle = SWR_BLUE.pathRim;
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, 2 * Math.PI);
             ctx.fill();
