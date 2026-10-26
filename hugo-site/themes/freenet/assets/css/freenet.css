@@ -180,7 +180,7 @@
 
 #latest-news-container li:hover {
     background-color: rgba(0, 127, 255, 0.05);
-    border-left-color: var(--color-primary);
+    border-left-color: var(--accent-text);
 }
 
 #latest-news-container li strong {

@@ -1,3 +1,11 @@
+// Diagram blues, matched to the logo. The dark scheme uses the site's muted
+// accent instead: the logo's mid blue at full saturation glowed on the dark
+// ground. Emphasis gets lighter in dark and darker in light, so it always
+// moves away from the background.
+const SWR_BLUE = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ? { base: '#79a7d6', emph: '#9dc0e2', rgb: '121, 167, 214' }
+    : { base: '#3a7bcb', emph: '#26569f', rgb: '58, 123, 203' };
+
 // Wait for D3.js to be available
 function waitForD3() {
     return new Promise((resolve) => {
@@ -84,7 +92,7 @@ async function initVisualization() {
         ctx.clearRect(0, 0, width, height);
 
         // Draw links
-        ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)'; // Using semi-transparent blue
+        ctx.strokeStyle = `rgba(${SWR_BLUE.rgb}, 0.3)`;
         links.forEach(link => {
             ctx.beginPath();
             ctx.moveTo(link.source.x, link.source.y);
@@ -126,16 +134,16 @@ async function initVisualization() {
         // Draw nodes
         peers.forEach(peer => {
             if (peer === sourceNode) {
-                ctx.fillStyle = '#007FFF'; // Bright blue
-                ctx.strokeStyle = '#0052cc'; // Darker blue
+                ctx.fillStyle = SWR_BLUE.base;
+                ctx.strokeStyle = SWR_BLUE.emph;
                 ctx.lineWidth = 2;
             } else if (peer === targetNode) {
-                ctx.fillStyle = '#007FFF'; // Bright blue
-                ctx.strokeStyle = '#0052cc'; // Darker blue
+                ctx.fillStyle = SWR_BLUE.base;
+                ctx.strokeStyle = SWR_BLUE.emph;
                 ctx.lineWidth = 2;
             } else {
-                ctx.fillStyle = '#007FFF'; // Bright blue
-                ctx.strokeStyle = 'rgba(0, 82, 204, 0.2)'; // Dark blue with transparency
+                ctx.fillStyle = SWR_BLUE.base;
+                ctx.strokeStyle = `rgba(${SWR_BLUE.rgb}, 0.2)`;
                 ctx.lineWidth = 1;
             }
             ctx.beginPath();
@@ -251,7 +259,7 @@ async function initVisualization() {
         animationProgress = 0;
 
         // Draw the complete path immediately
-        ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)'; // Lighter blue for complete path
+        ctx.strokeStyle = `rgba(${SWR_BLUE.rgb}, 0.3)`;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(path[0].x, path[0].y);

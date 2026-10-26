@@ -1,3 +1,11 @@
+// Diagram blues, matched to the logo. The dark scheme uses the site's muted
+// accent instead: the logo's mid blue at full saturation glowed on the dark
+// ground. Emphasis gets lighter in dark and darker in light, so it always
+// moves away from the background.
+const SWS_BLUE = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ? { base: '#79a7d6', emph: '#9dc0e2', rgb: '121, 167, 214' }
+    : { base: '#3a7bcb', emph: '#26569f', rgb: '58, 123, 203' };
+
 // Wait for D3.js to be available
 function waitForD3() {
     return new Promise((resolve) => {
@@ -109,7 +117,7 @@ waitForD3().then(() => {
         const renderStep = Math.max(1, Math.floor(peers.length / renderLimit));
         
         // Draw a subset of links
-        ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)';
+        ctx.strokeStyle = `rgba(${SWS_BLUE.rgb}, 0.3)`;
         links.forEach((link, i) => {
             if (i % renderStep === 0) {
                 ctx.beginPath();
@@ -120,7 +128,7 @@ waitForD3().then(() => {
         });
 
         // Draw a subset of nodes
-        ctx.fillStyle = '#007FFF';
+        ctx.fillStyle = SWS_BLUE.base;
         peers.forEach((peer, i) => {
             if (i % renderStep === 0) {
                 ctx.beginPath();
@@ -130,7 +138,7 @@ waitForD3().then(() => {
         });
 
         // Show network size and connection count
-        ctx.fillStyle = '#007FFF';
+        ctx.fillStyle = SWS_BLUE.base;
         ctx.textAlign = 'center';
         ctx.font = '14px Arial';
         ctx.fillText(`Network Size: ${numPeers} nodes`, width/2, height - 10);
@@ -317,7 +325,7 @@ waitForD3().then(() => {
         // Create elements that will be updated
         pathElement = chartG.append('path')
             .attr('fill', 'none')
-            .attr('stroke', '#007FFF')
+            .attr('stroke', SWS_BLUE.base)
             .attr('stroke-width', 1.5);
             
         pointElements = chartG.append('g')
@@ -346,7 +354,7 @@ waitForD3().then(() => {
             .attr('cx', d => xScale(d.numPeers))
             .attr('cy', d => yScale(d.pathLength))
             .attr('r', 3)
-            .style('fill', '#007FFF');
+            .style('fill', SWS_BLUE.base);
             
         points.exit().remove();
 

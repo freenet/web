@@ -1,3 +1,11 @@
+// Diagram blues, matched to the logo. The dark scheme uses the site's muted
+// accent instead: the logo's mid blue at full saturation glowed on the dark
+// ground. Emphasis gets lighter in dark and darker in light, so it always
+// moves away from the background.
+const SWC_BLUE = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ? { base: '#79a7d6', emph: '#9dc0e2', rgb: '121, 167, 214' }
+    : { base: '#3a7bcb', emph: '#26569f', rgb: '58, 123, 203' };
+
 // Wait for D3.js to be available
 function waitForD3() {
     return new Promise((resolve) => {
@@ -190,14 +198,14 @@ waitForD3().then(() => {
             ctx.beginPath();
             ctx.moveTo(source.x, source.y);
             ctx.lineTo(target.x, target.y);
-            ctx.strokeStyle = 'rgba(0, 127, 255, 0.1)';
+            ctx.strokeStyle = `rgba(${SWC_BLUE.rgb}, 0.1)`;
             ctx.stroke();
         });
         
         // Draw path if exists
         if (path) {
             ctx.beginPath();
-            ctx.strokeStyle = '#007FFF';
+            ctx.strokeStyle = SWC_BLUE.base;
             ctx.lineWidth = 2;
             for (let i = 0; i < path.length - 1; i++) {
                 const source = network.nodes[path[i]];
@@ -214,8 +222,8 @@ waitForD3().then(() => {
             ctx.beginPath();
             ctx.arc(node.x, node.y, 2, 0, 2 * Math.PI);
             ctx.fillStyle = path && (path[0] === i || path[path.length - 1] === i) 
-                ? '#0052cc' 
-                : '#007FFF';
+                ? SWC_BLUE.emph 
+                : SWC_BLUE.base;
             ctx.fill();
         });
     }
