@@ -230,8 +230,7 @@
 
 /* Outlined secondary CTA. Same size and hit target as .cta-button so the River
    entry point reads as a real choice rather than a footnote, but hollow rather
-   than filled so Install stays the primary action. The hosted-demo caveat lives
-   in .cta-note directly beneath, not in the button label.
+   than filled so Install stays the primary action.
 
    This supersedes an earlier bare-text-link .cta-secondary, which was kept
    deliberately subordinate so the self-hosted path stayed front and center.
@@ -262,17 +261,6 @@
     text-decoration: none;
 }
 
-/* Caveat under the CTA row: the browser option runs on a peer we host, so the
-   visitor's keys live with us. Quiet, but present, so the homepage never
-   implies the browser option is as self-sufficient as your own peer. */
-.cta-note {
-    margin: -2.25rem 0 3.25rem 0;
-    max-width: 34rem;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #64748b;
-}
-
 @media (prefers-color-scheme: dark) {
     .cta-secondary-btn {
         color: #79a7d6 !important;
@@ -282,10 +270,6 @@
     .cta-secondary-btn:hover {
         border-color: #79a7d6;
         background: rgba(121, 167, 214, 0.1);
-    }
-
-    .cta-note {
-        color: #94a3b8;
     }
 }
 
@@ -427,7 +411,7 @@
         align-items: start;
     }
 
-    .cta-note {
+    .cta-row {
         margin-bottom: 0;
     }
 }
@@ -1342,9 +1326,8 @@ picture.app-screenshot img {
 /* Ghost Key call to action, used on /ghostkey/ at the top, after the
    limitations section, and at the end.
 
-   Deliberately NOT reusing the homepage .cta-row/.cta-note pair: those carry a
-   negative top margin tuned to sit under the homepage hero, which collapses
-   badly in the middle of a prose page. Same visual language, no positional
+   Deliberately NOT reusing the homepage .cta-row: its margins are tuned to the
+   homepage hero, which sits badly in the middle of a prose page. Same visual language, no positional
    assumptions.
 
    The note under the button carries the price and the nonprofit status. Both

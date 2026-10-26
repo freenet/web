@@ -22,11 +22,6 @@ in the middle.
   <a href="/try/" class="cta-secondary-btn">Open River in your&nbsp;browser&nbsp;→</a>
 </div>
 
-<p class="cta-note">The browser version is the real River on the real Freenet network. You're just
-borrowing a peer we run instead of one on your own machine, so your keys live with us. Installing
-your own peer takes a few seconds on Windows, macOS or Linux, keeps your data on your hardware, and
-your private data moves across from our peer in a single click.</p>
-
 </div>
 
 <div class="hero-shot">
