@@ -1,10 +1,10 @@
-// Diagram blues, matched to the logo. The dark scheme uses the site's muted
-// accent instead: the logo's mid blue at full saturation glowed on the dark
-// ground. Emphasis gets lighter in dark and darker in light, so it always
-// moves away from the background.
+// Diagram colours: blues matched to the logo, with the site's muted accent
+// in the dark scheme (the logo's old full-saturation blue glowed on the dark
+// ground). Emphasis moves away from the background in both schemes and reads
+// as text there (>= 9.7:1); text is the site's heading colour.
 const SWC_BLUE = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ? { base: '#79a7d6', emph: '#9dc0e2', rgb: '121, 167, 214' }
-    : { base: '#3a7bcb', emph: '#26569f', rgb: '58, 123, 203' };
+    ? { base: '#79a7d6', emph: '#c0dbf4', rgb: '121, 167, 214', text: '#ebecf0' }
+    : { base: '#3a7bcb', emph: '#1d4176', rgb: '58, 123, 203', text: '#2e333d' };
 
 // Wait for D3.js to be available
 function waitForD3() {
@@ -329,7 +329,7 @@ waitForD3().then(() => {
             .attr('transform', `translate(0,${height})`)
             .call(d3.axisBottom(x))
             .append('text')
-            .attr('fill', '#000')
+            .attr('fill', SWC_BLUE.text)
             .attr('x', width / 2)
             .attr('y', 35)
             .attr('text-anchor', 'middle')
@@ -338,7 +338,7 @@ waitForD3().then(() => {
         svg.append('g')
             .call(d3.axisLeft(y))
             .append('text')
-            .attr('fill', '#000')
+            .attr('fill', SWC_BLUE.text)
             .attr('transform', 'rotate(-90)')
             .attr('y', -45)
             .attr('x', -height / 2)
@@ -364,7 +364,7 @@ waitForD3().then(() => {
             .attr('cx', d => x(d.x))
             .attr('cy', d => y(d.y))
             .attr('r', 6)
-            .attr('fill', (d, i) => i === 0 ? '#4292c6' : '#08519c')
+            .attr('fill', (d, i) => i === 0 ? SWC_BLUE.base : SWC_BLUE.emph)
             .style('opacity', 0.80);
 
         // Add labels
@@ -373,7 +373,7 @@ waitForD3().then(() => {
             .attr('y', d => y(d.y) + 5)
             .text((d, i) => i === 0 ? 'Small World' : 'Random')
             .attr('font-size', '12px')
-            .attr('fill', (d, i) => i === 0 ? '#4292c6' : '#08519c');
+            .attr('fill', (d, i) => i === 0 ? SWC_BLUE.base : SWC_BLUE.emph);
 
 
     }
