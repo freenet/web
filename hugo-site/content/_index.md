@@ -63,7 +63,7 @@ decentralized group chat with no company in the middle.
 
 [Try River in your browser →](/try/)
 
-[What River is →](/river/)
+[Learn about River →](/river/)
 
 </div>
 

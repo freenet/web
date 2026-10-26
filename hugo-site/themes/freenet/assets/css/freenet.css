@@ -133,6 +133,13 @@
     /* #0066CC measures only 2.96:1 against --surface, failing SC 1.4.11 for a
        focus indicator. The accent gives 7.10 on the ground and 6.53 on cards. */
     --focus-ring: #79a7d6;
+    /* Button fill under white text. #0066CC was the last high-chroma blue left
+       on the dark ground (OKLCH C 0.177 against the accent's 0.085), so solid
+       buttons glowed beside everything else. Same hue, about 0.11 chroma;
+       white text holds 6.03:1, and 5.07:1 on the hover, which lifts rather
+       than darkens because darker would sink into the ground. */
+    --color-primary: #2e65a0;
+    --color-primary-hover: #3d71aa;
     /* Was declared only in the light scheme, so base.css painted a near-white
        #f1f2f4 under near-white text on a keyboard-focused navbar item: 1.05:1,
        which made the wordmark vanish on Tab. */
@@ -172,8 +179,8 @@
 }
 
 #latest-news-container li:hover {
-    background-color: rgba(0, 127, 255, 0.05);
-    border-left-color: var(--color-primary);
+    background-color: rgba(58, 123, 203, 0.06);
+    border-left-color: var(--accent-text);
 }
 
 #latest-news-container li strong {
@@ -656,7 +663,7 @@ p.page-end-spacer {
 
     /* Dark mode news section */
     #latest-news-container li:hover {
-        background-color: rgba(0, 127, 255, 0.1);
+        background-color: rgba(121, 167, 214, 0.1);
     }
 
     #latest-news-container li strong {

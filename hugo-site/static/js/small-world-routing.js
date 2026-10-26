@@ -1,3 +1,15 @@
+// Diagram colours: blues matched to the logo, with the site's muted accent
+// in the dark scheme (the logo's old full-saturation blue glowed on the dark
+// ground). Emphasis moves away from the background in both schemes and reads
+// as text there (>= 9.7:1); text is the site's heading colour. The request
+// path is green; its light-scheme values are darker, since the bright green
+// was 1.6:1 on white.
+const SWR_BLUE = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ? { base: '#79a7d6', emph: '#c0dbf4', rgb: '121, 167, 214', text: '#ebecf0',
+        path: 'rgba(0, 204, 0, 0.6)', pathRim: '#00cc00' }
+    : { base: '#3a7bcb', emph: '#1d4176', rgb: '58, 123, 203', text: '#2e333d',
+        path: 'rgba(0, 128, 0, 0.8)', pathRim: '#006600' };
+
 // Wait for D3.js to be available
 function waitForD3() {
     return new Promise((resolve) => {
@@ -84,7 +96,7 @@ async function initVisualization() {
         ctx.clearRect(0, 0, width, height);
 
         // Draw links
-        ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)'; // Using semi-transparent blue
+        ctx.strokeStyle = `rgba(${SWR_BLUE.rgb}, 0.3)`;
         links.forEach(link => {
             ctx.beginPath();
             ctx.moveTo(link.source.x, link.source.y);
@@ -95,7 +107,7 @@ async function initVisualization() {
         // Draw the complete path up to current segment
         if (currentPath.length > 1) {
             // Draw the completed segments
-            ctx.strokeStyle = 'rgba(0, 204, 0, 0.6)'; // Using semi-transparent green
+            ctx.strokeStyle = SWR_BLUE.path;
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(currentPath[0].x, currentPath[0].y);
@@ -116,7 +128,7 @@ async function initVisualization() {
             const y = start.y + (end.y - start.y) * animationProgress;
             
             ctx.fillStyle = '#008800'; // Darker green
-            ctx.strokeStyle = '#00cc00'; // Bright green
+            ctx.strokeStyle = SWR_BLUE.pathRim;
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, 2 * Math.PI);
             ctx.fill();
@@ -126,16 +138,16 @@ async function initVisualization() {
         // Draw nodes
         peers.forEach(peer => {
             if (peer === sourceNode) {
-                ctx.fillStyle = '#007FFF'; // Bright blue
-                ctx.strokeStyle = '#0052cc'; // Darker blue
+                ctx.fillStyle = SWR_BLUE.base;
+                ctx.strokeStyle = SWR_BLUE.emph;
                 ctx.lineWidth = 2;
             } else if (peer === targetNode) {
-                ctx.fillStyle = '#007FFF'; // Bright blue
-                ctx.strokeStyle = '#0052cc'; // Darker blue
+                ctx.fillStyle = SWR_BLUE.base;
+                ctx.strokeStyle = SWR_BLUE.emph;
                 ctx.lineWidth = 2;
             } else {
-                ctx.fillStyle = '#007FFF'; // Bright blue
-                ctx.strokeStyle = 'rgba(0, 82, 204, 0.2)'; // Dark blue with transparency
+                ctx.fillStyle = SWR_BLUE.base;
+                ctx.strokeStyle = `rgba(${SWR_BLUE.rgb}, 0.2)`;
                 ctx.lineWidth = 1;
             }
             ctx.beginPath();
@@ -146,7 +158,7 @@ async function initVisualization() {
 
         // Add labels for source and target
         ctx.font = '14px Arial';
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = SWR_BLUE.text;
         
         function positionLabel(node) {
             // Calculate angle relative to center
@@ -251,7 +263,7 @@ async function initVisualization() {
         animationProgress = 0;
 
         // Draw the complete path immediately
-        ctx.strokeStyle = 'rgba(0, 127, 255, 0.3)'; // Lighter blue for complete path
+        ctx.strokeStyle = `rgba(${SWR_BLUE.rgb}, 0.3)`;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(path[0].x, path[0].y);

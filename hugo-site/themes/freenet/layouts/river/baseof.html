@@ -167,6 +167,12 @@
     .rv-btn-oncolor{ background:#fff; color:#0066CC!important; }
     .rv-btn-oncolor:hover{ color:#004C99!important; }
     .rv-btn-ghost-oncolor{ background:transparent; border-color:rgba(255,255,255,.55); color:#fff!important; }
+    /* The #0066CC panel is the largest high-chroma block on the dark page; mute it. */
+    @media (prefers-color-scheme: dark){
+      .rv-final-box{ background:linear-gradient(135deg,#2e65a0,#2a5180); }
+      .rv-btn-oncolor{ color:#2e65a0!important; }
+      .rv-btn-oncolor:hover{ color:#2a5180!important; }
+    }
 
     @media (prefers-reduced-motion: reduce){ .river-page *{ transition:none!important; } }
     </style>
