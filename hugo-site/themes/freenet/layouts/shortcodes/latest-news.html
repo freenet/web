@@ -1,11 +1,27 @@
 {{ $tag := .Get "tag" | default "front-page" }}
 {{ $includeReleases := .Get "include-releases" | default "false" }}
 {{ $limit := int (.Get "limit" | default 5) }}
+{{ $videoCount := int (.Get "videos" | default 0) }}
 {{ $newsSection := .Site.GetPage "/about/news" }}
 {{ $news := $newsSection.RegularPages }}
 {{ $news := where $news "Params.tags" "intersect" (slice $tag) }}
 {{ $sortedNews := sort $news "Date" "desc" }}
-{{ $displayNews := cond (gt $limit 0) (first $limit $sortedNews) $sortedNews }}
+
+{{/*
+  videos="N" merges the N newest uploads from hugo-site/data/youtube_videos.json
+  (refreshed from the channel feed on every CI build) into the list by date.
+  Their dates are passed through as the strings fetch-youtube-videos.py wrote,
+  never parsed with Hugo date functions: see youtube-video-grid.html for why.
+*/}}
+{{ $videoItems := slice }}
+{{ if gt $videoCount 0 }}
+  {{ $videos := slice }}
+  {{ with .Site.Data.youtube_videos }}{{ $videos = .videos | default slice }}{{ end }}
+  {{ if not $videos }}{{ warnf "latest-news: videos=%d but no videos in hugo-site/data/youtube_videos.json" $videoCount }}{{ end }}
+  {{ range first $videoCount $videos }}
+    {{ $videoItems = $videoItems | append (dict "date" .published "dateDisplay" .published_display "title" (printf "Video: %s" .title) "url" (printf "https://www.youtube.com/watch?v=%s" .id) "type" "video") }}
+  {{ end }}
+{{ end }}
 
 {{ if eq $includeReleases "true" }}
   {{/* Build JSON array of static news items for JavaScript */}}
@@ -14,6 +30,7 @@
     {{ $tags := .Params.tags | default slice }}
     {{ $newsItems = $newsItems | append (dict "date" (.Date.Format "2006-01-02T15:04:05Z") "dateDisplay" (.Date.Format "January 2, 2006") "title" .Title "url" .Permalink "tags" $tags "type" "news") }}
   {{ end }}
+  {{ $newsItems = $newsItems | append $videoItems }}
 
   <div id="latest-news-container" data-news-items='{{ $newsItems | jsonify }}' data-limit="{{ $limit }}">
     <p><em>Loading news...</em></p>
@@ -33,6 +50,13 @@
       return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     }
 
+    // Video titles come from the YouTube feed, not from this repo.
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[c]);
+    }
+
     function renderNews(items) {
       // Sort by date descending
       items.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -45,7 +69,7 @@
         // carry a raw ISO timestamp, so fall back to client-side formatting
         // for those.
         const displayDate = item.dateDisplay || formatDate(item.date);
-        html += `<li><strong>${displayDate}</strong> - <a href="${item.url}">${item.title}</a></li>`;
+        html += `<li><strong>${escapeHtml(displayDate)}</strong> - <a href="${escapeHtml(item.url)}">${escapeHtml(item.title)}</a></li>`;
       }
       html += '</ul>';
       container.innerHTML = html;
@@ -77,11 +101,18 @@
   })();
   </script>
 {{ else }}
+  {{- $items := slice }}
+  {{- range $sortedNews }}
+    {{- $items = $items | append (dict "date" (.Date.Format "2006-01-02T15:04:05Z") "dateDisplay" (.Date.Format "January 2, 2006") "title" .Title "url" .Permalink) }}
+  {{- end }}
+  {{- /* ISO 8601 strings sort chronologically. News dates are local time labelled Z, so same-day ordering against videos is approximate. */}}
+  {{- $items = sort ($items | append $videoItems) "date" "desc" }}
+  {{- $displayItems := cond (gt $limit 0) (first $limit $items) $items }}
   <ul>
-    {{ range $displayNews }}
+    {{ range $displayItems }}
       <li>
-        <strong>{{ .Date.Format "January 2, 2006" }}</strong> -
-        <a href="{{ .Permalink }}">{{ .Title }}</a>
+        <strong>{{ .dateDisplay }}</strong> -
+        <a href="{{ .url }}">{{ .title }}</a>
       </li>
     {{ end }}
   </ul>
