@@ -107,7 +107,7 @@ just a few hops, scaling efficiently to millions of peers, no servers required.
 
 ## News
 
-{{< latest-news tag="front-page" include-releases="true" limit="3" >}}
+{{< latest-news tag="front-page" include-releases="true" videos="2" limit="5" >}}
 
 [More news...](/about/news/)
 
