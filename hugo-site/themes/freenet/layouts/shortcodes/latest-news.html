@@ -17,6 +17,7 @@
 {{ if gt $videoCount 0 }}
   {{ $videos := slice }}
   {{ with .Site.Data.youtube_videos }}{{ $videos = .videos | default slice }}{{ end }}
+  {{ if not $videos }}{{ warnf "latest-news: videos=%d but no videos in hugo-site/data/youtube_videos.json" $videoCount }}{{ end }}
   {{ range first $videoCount $videos }}
     {{ $videoItems = $videoItems | append (dict "date" .published "dateDisplay" .published_display "title" (printf "Video: %s" .title) "url" (printf "https://www.youtube.com/watch?v=%s" .id) "type" "video") }}
   {{ end }}
