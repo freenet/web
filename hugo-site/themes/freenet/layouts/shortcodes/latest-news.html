@@ -105,7 +105,7 @@
   {{- range $sortedNews }}
     {{- $items = $items | append (dict "date" (.Date.Format "2006-01-02T15:04:05Z") "dateDisplay" (.Date.Format "January 2, 2006") "title" .Title "url" .Permalink) }}
   {{- end }}
-  {{- /* ISO 8601 strings sort chronologically; only the dropped time-of-day is approximate. */}}
+  {{- /* ISO 8601 strings sort chronologically. News dates are local time labelled Z, so same-day ordering against videos is approximate. */}}
   {{- $items = sort ($items | append $videoItems) "date" "desc" }}
   {{- $displayItems := cond (gt $limit 0) (first $limit $items) $items }}
   <ul>
