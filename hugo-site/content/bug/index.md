@@ -22,16 +22,16 @@ Filing a report on GitHub needs a free GitHub account. If you'd rather not creat
 [our Matrix room](https://matrix.to/#/#freenet-locutus:matrix.org) and someone will file it for you.
 The exception is a security vulnerability, which should never be posted anywhere public (see below).
 
-{{< alert type="warning" >}} **Found a security vulnerability?** Please don't report it anywhere
-public. A public write-up of an unfixed hole tells everyone how to attack the network before there's
-a fix.
+{{< alert type="warning" >}} **Found a security vulnerability?** Please don't open a public issue or
+report it anywhere else public. A public write-up of an unfixed hole tells everyone how to attack
+the network before there's a fix.
 
 Use
 [the freenet-core advisory form](https://github.com/freenet/freenet-core/security/advisories/new)
-even if the bug is in River, Delta or another project; it handles reports for all of them. The form
+even if the bug is in River, Delta or another project. The form takes reports for every project and
 needs a GitHub account. If you don't have one, email Ian at **ian at freenet dot org** (written out
-to deter spam bots). We'll acknowledge your report and work with you on a fix and a coordinated
-disclosure. {{< /alert >}}
+so address scrapers don't pick it up). We'll acknowledge your report and work with you on a fix and
+a coordinated disclosure. {{< /alert >}}
 
 ## What were you using?
 
@@ -66,18 +66,18 @@ Trouble with the Ghostkey Vault: importing a key, backing one up, an app that ca
 → [Report a Ghostkey Vault bug](https://github.com/freenet/ghostkeys/issues/new) ·
 [existing Ghostkey Vault issues](https://github.com/freenet/ghostkeys/issues)
 
-Donations and Ghost Key certificates are handled by this website, not the vault, so report a failed
-donation or a certificate that never arrived [here](https://github.com/freenet/web/issues/new).
+Problems with donations and Ghost Key certificates belong to this website, not the vault, so
+[report them as website bugs](https://github.com/freenet/web/issues/new).
 
 ### One of the other apps
 
-Each has its own tracker: [Delta](https://github.com/freenet/delta/issues/new),
+Each of these apps has its own tracker: [Delta](https://github.com/freenet/delta/issues/new),
 [Mail](https://github.com/freenet/mail/issues/new),
 [freenet-git](https://github.com/freenet/freenet-git/issues/new),
 [Raven](https://github.com/freenet/raven/issues/new) and
 [Atlas](https://github.com/freenet/atlas/issues/new). If you're not sure which one you were using,
-the [apps page](/apps/) describes each. [Every tracker](#every-project) is also listed further down
-this page.
+the [apps page](/apps/) describes what each one does. [Every tracker](#every-project) is also listed
+further down this page.
 
 ### Not sure
 
@@ -139,8 +139,8 @@ freenet service report
 It gathers your version, operating system, recent log entries and configuration, then asks you to
 describe the problem, uploads everything, and prints a short **report code** that looks like
 `X7K2M9`. Put that code in your bug report and the maintainers can pull up everything they need. If
-your node isn't responding, the command waits up to a minute for it before moving on, so the prompt
-may take a while to appear.
+your node isn't responding, the command waits up to a minute for a reply before carrying on, so the
+prompt may take a while to appear.
 
 That upload is more than logs, so it's worth knowing what's in it: your machine's hostname, recent
 log lines, your Freenet configuration file (which includes paths containing your username), and, if
@@ -153,7 +153,7 @@ Your IP address is recorded when the upload is received.
 If you'd rather read all of that before sending it, `freenet service report --local report.json`
 writes the same bundle to a file on your own machine and uploads nothing. You can't upload that
 saved file later, so once you're happy with it, run the command again without `--local` to collect
-and send a fresh copy.
+and send a fresh bundle.
 
 ## Prefer to talk to a person?
 
