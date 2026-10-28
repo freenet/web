@@ -78,9 +78,12 @@ fn with_byte_string_signature(cert: &GhostkeyCertificateV1, len: usize) -> Strin
     ciborium::ser::into_writer(&v, &mut cbor).unwrap();
     use base64::Engine;
     let b64 = base64::engine::general_purpose::STANDARD.encode(&cbor);
-    format!(
+    let pem = format!(
         "-----BEGIN GHOSTKEY_CERTIFICATE_V1-----\n{b64}\n-----END GHOSTKEY_CERTIFICATE_V1-----\n"
-    )
+    );
+    // Under the limit as sent, so the refusal is the canonical-form one.
+    assert!(pem.len() <= ghostkey_verify::MAX_CERTIFICATE_BYTES);
+    pem
 }
 
 /// `cert` with an unknown top-level field holding arrays nested `depth`
