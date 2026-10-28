@@ -39,7 +39,7 @@ base64 = { version = "0.22", default-features = false, features = ["alloc"] }
 ghostkey_lib = { path = "../gklib" }
 blind-rsa-signatures = "=0.15.1"
 ed25519-dalek = { version = "2.1", features = ["rand_core", "serde"] }
-rand = "0.8.5"
+rand = "0.10.3"
 ciborium = "0.2.2"
 # The rsa that blind-rsa-signatures, and so ghostkey_lib, verifies with.
 rsa_08 = { package = "rsa", version = "0.8.2", features = ["sha2"] }
