@@ -1,0 +1,23 @@
+[package]
+name = "ghostkey-verify-wasm-probe"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "CI probe: what linking ghostkey-verify costs a Freenet contract module."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ghostkey-verify = { path = ".." }
+
+# Its own workspace root, so it builds with its own lockfile and profile.
+[workspace]
+
+# Freenet contracts are built for size.
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

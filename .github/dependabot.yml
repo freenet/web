@@ -107,6 +107,33 @@ updates:
           - "minor"
           - "patch"
 
+  # excluded from the /rust workspace, so updated on its own
+  - package-ecosystem: "cargo"
+    directory: "/rust/gkverify"
+    schedule:
+      interval: "monthly"
+    cooldown:
+      default-days: 7
+    # Set explicitly: omitting this caps at 5 and silently withholds the rest.
+    open-pull-requests-limit: 50
+    # `rsa` is deliberately NOT ignored, though it is pinned exactly to a
+    # release candidate and moved by hand (freenet/web#213): an ignore rule
+    # may also hold back its security updates, and an advisory in RSA code
+    # must not wait. Expect PRs proposing newer
+    # candidates for it, and for the `rsa_08` dev-dependency (the same crate
+    # renamed, held at 0.8 to match ghostkey_lib); decide each by hand.
+    ignore:
+      # Dev-dependency pinned to what ghostkey_lib uses, the reference the
+      # differential tests compare against; it moves with gklib.
+      - dependency-name: "blind-rsa-signatures"
+    groups:
+      cargo-rust-gkverify-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
