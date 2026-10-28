@@ -949,19 +949,13 @@ fn largest_notary_key_fits_the_size_limit() {
     );
 }
 
-#[test]
-fn difference_canonical_form_over_the_size_limit() {
-    // An RSA signature sent as a CBOR byte string takes half the space its
-    // canonical array does. A long one fits the limit as sent and not once
-    // re-encoded; ghostkey_lib parses it (and refuses the chain), this crate
-    // refuses it at parse, so every certificate it accepts has a canonical
-    // form it can read back.
+/// A certificate whose RSA signature is a CBOR byte string: half the size of
+/// its canonical array, so it fits MAX_CERTIFICATE_BYTES as sent and not once
+/// re-encoded. Lean otherwise (a one-digit modulus: it only has to parse), so
+/// a genuine certificate fits beside it in one text.
+fn oversized_decoy(c: &Chain) -> Vec<u8> {
     use ciborium::Value;
-    use ghostkey_verify::MAX_CERTIFICATE_BYTES;
-    let c = chain(INFO);
     let mut v: Value = ciborium::de::from_reader(bytes_of(&c.cert).as_slice()).unwrap();
-    // Lean otherwise (a one-digit modulus: it only has to parse), so that a
-    // genuine certificate fits beside it below.
     *field(
         field(
             field(field(&mut v, "delegate"), "payload"),
@@ -973,33 +967,54 @@ fn difference_canonical_form_over_the_size_limit() {
     *field(&mut v, "signature") = Value::Bytes(vec![0xff; 1500]);
     let mut cbor = Vec::new();
     ciborium::ser::into_writer(&v, &mut cbor).unwrap();
+    cbor
+}
+
+fn armour(cbor: &[u8]) -> String {
+    use base64::Engine;
+    format!(
+        "-----BEGIN GHOSTKEY_CERTIFICATE_V1-----\n{}\n-----END GHOSTKEY_CERTIFICATE_V1-----\n",
+        base64::engine::general_purpose::STANDARD.encode(cbor)
+    )
+}
+
+#[test]
+fn difference_canonical_form_over_the_size_limit() {
+    // ghostkey_lib parses the decoy (and refuses the chain); this crate
+    // refuses it at parse, so every certificate it accepts has a canonical
+    // form it can read back.
+    use ghostkey_verify::MAX_CERTIFICATE_BYTES;
+    let c = chain(INFO);
+    let cbor = oversized_decoy(&c);
     assert!(cbor.len() <= MAX_CERTIFICATE_BYTES);
     assert!(GhostkeyCertificateV1::from_bytes(&cbor).is_ok());
     assert_eq!(
         GhostkeyCertificate::from_cbor(&cbor).err(),
         Some(Error::TooLarge)
     );
-    use base64::Engine;
-    let pem = format!(
-        "-----BEGIN GHOSTKEY_CERTIFICATE_V1-----\n{}\n-----END GHOSTKEY_CERTIFICATE_V1-----\n",
-        base64::engine::general_purpose::STANDARD.encode(&cbor)
-    );
+    let pem = armour(&cbor);
     assert!(pem.len() <= MAX_CERTIFICATE_BYTES);
     assert!(GhostkeyCertificateV1::from_armored_string(&pem).is_ok());
     assert_eq!(
         GhostkeyCertificate::from_armored(&pem).err(),
         Some(Error::TooLarge)
     );
+}
 
-    // Followed by a genuine certificate under the unversioned label: the
-    // search stops at the oversized block, where ghostkey_lib also stops
-    // (and fails the chain), rather than going on to accept the second.
+#[test]
+fn difference_oversized_block_stops_the_armour_search() {
+    // The decoy followed by a genuine certificate under the unversioned
+    // label: the search stops at the decoy, where ghostkey_lib also stops,
+    // rather than going on to accept the second.
+    use ghostkey_verify::MAX_CERTIFICATE_BYTES;
+    let c = chain(INFO);
     let genuine = c
         .cert
         .to_armored_string()
         .unwrap()
         .replace("GHOSTKEY_CERTIFICATE_V1", "GHOSTKEY_CERTIFICATE");
-    let both = format!("{pem}{genuine}");
+    assert!(GhostkeyCertificate::from_armored(&genuine).is_ok());
+    let both = format!("{}{genuine}", armour(&oversized_decoy(&c)));
     assert!(both.len() <= MAX_CERTIFICATE_BYTES, "{} bytes", both.len());
     assert!(GhostkeyCertificateV1::from_armored_string(&both)
         .unwrap()

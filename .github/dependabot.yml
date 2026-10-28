@@ -117,8 +117,9 @@ updates:
     # Set explicitly: omitting this caps at 5 and silently withholds the rest.
     open-pull-requests-limit: 50
     # `rsa` is deliberately NOT ignored, though it is pinned exactly to a
-    # release candidate and moved by hand (freenet/web#213): ignoring it would
-    # also silence its security advisories. Expect PRs proposing newer
+    # release candidate and moved by hand (freenet/web#213): an ignore rule
+    # may also hold back its security updates, and an advisory in RSA code
+    # must not wait. Expect PRs proposing newer
     # candidates for it, and for the `rsa_08` dev-dependency (the same crate
     # renamed, held at 0.8 to match ghostkey_lib); decide each by hand.
     ignore:

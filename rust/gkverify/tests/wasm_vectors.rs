@@ -63,6 +63,26 @@ fn native(v: &Vector) -> i64 {
     }
 }
 
+/// `cert` with its RSA signature replaced by a `len`-byte CBOR byte string.
+fn with_byte_string_signature(cert: &GhostkeyCertificateV1, len: usize) -> String {
+    use ciborium::Value;
+    let mut v: Value = ciborium::de::from_reader(cert.to_bytes().unwrap().as_slice()).unwrap();
+    if let Value::Map(m) = &mut v {
+        for (k, val) in m.iter_mut() {
+            if k.as_text() == Some("signature") {
+                *val = Value::Bytes(vec![0xff; len]);
+            }
+        }
+    }
+    let mut cbor = Vec::new();
+    ciborium::ser::into_writer(&v, &mut cbor).unwrap();
+    use base64::Engine;
+    let b64 = base64::engine::general_purpose::STANDARD.encode(&cbor);
+    format!(
+        "-----BEGIN GHOSTKEY_CERTIFICATE_V1-----\n{b64}\n-----END GHOSTKEY_CERTIFICATE_V1-----\n"
+    )
+}
+
 /// `cert` with an unknown top-level field holding arrays nested `depth`
 /// deep, which both decoders skip, up to ciborium's recursion limit.
 fn with_nested_unknown_field(cert: &GhostkeyCertificateV1, depth: usize) -> String {
@@ -273,6 +293,17 @@ fn write_wasm_vectors() {
         sig,
         payload: payload.clone(),
         expect: code(Error::Armor),
+    });
+    // Fits as sent, not once canonical: the RSA signature as a CBOR byte
+    // string, which re-encodes at twice the size. Exercises the computed
+    // armour length on 32-bit usize.
+    vectors.push(Vector {
+        name: "oversized-canonical-form".into(),
+        master: m,
+        cert: with_byte_string_signature(&cert, 2000),
+        sig,
+        payload: payload.clone(),
+        expect: code(Error::TooLarge),
     });
     vectors.push(Vector {
         name: "oversized".into(),

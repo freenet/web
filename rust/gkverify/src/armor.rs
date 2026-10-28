@@ -23,8 +23,9 @@ const READ_LABELS: [&str; 2] = [LABEL, "GHOSTKEY_CERTIFICATE"];
 ///
 /// A block that decodes but whose canonical form is over the size limit stops
 /// the search with [`Error::TooLarge`]: `ghostkey_lib` has no such limit, so
-/// it takes that block (and the chain then fails), and moving on would accept
-/// a later block it never looks at.
+/// it takes that block, and moving on would accept a later block it never
+/// looks at. That block is refused here by design, as the inbox contract's
+/// own size check on the canonical form refuses it there.
 pub(crate) fn decode(armored: &str) -> Result<crate::GhostkeyCertificate, Error> {
     for label in READ_LABELS {
         let begin = format!("-----BEGIN {label}-----");

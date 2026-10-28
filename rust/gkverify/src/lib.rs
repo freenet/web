@@ -26,7 +26,11 @@
 //! including the exact bytes the master key signs (the CBOR re-encoding of the
 //! notary payload), and a differential test suite holds the two together. The
 //! intentional differences all refuse something `ghostkey_lib` accepts and no
-//! genuine certificate contains:
+//! genuine certificate contains. The agreement is between the two as built
+//! against the same versions of `ciborium`, `serde` and `ed25519-dalek`, which
+//! is how the tests build them; both take caret ranges of those crates.
+//!
+//! The differences:
 //!
 //! * Certificates over [`MAX_CERTIFICATE_BYTES`], as given or in canonical
 //!   form, are refused, and so is a weak master key.
