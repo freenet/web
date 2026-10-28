@@ -1,0 +1,86 @@
+# Test the ghostkey-verify crate (rust/gkverify), the verify-only Ghost Key
+# library that Freenet contracts link.
+#
+# Three things a contract depends on, each checked here because nothing else
+# would notice it breaking:
+#   1. It agrees with ghostkey_lib (rust/gklib), which is why gklib changes
+#      run this too.
+#   2. Its dependency tree has no `rand` and no `getrandom`. A new dependency
+#      or feature that pulls either in would build natively and break every
+#      contract built for wasm32-unknown-unknown.
+#   3. Built for wasm32, it imports nothing from the host and verifies real
+#      proofs (bignum code takes a different path on 32-bit limbs).
+name: ghostkey-verify
+
+on:
+  pull_request:
+    paths:
+      - "rust/gkverify/**"
+      - "rust/gklib/**"
+      - ".github/workflows/ghostkey-verify.yml"
+  push:
+    branches: [main]
+    paths:
+      - "rust/gkverify/**"
+      - "rust/gklib/**"
+      - ".github/workflows/ghostkey-verify.yml"
+
+concurrency:
+  group: ghostkey-verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: rust/gkverify
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            rust/gkverify
+            rust/gkverify/wasm-probe
+
+      - name: Formatting
+        run: |
+          cargo fmt -- --check
+          cargo fmt --manifest-path wasm-probe/Cargo.toml -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Test (differential against ghostkey_lib)
+        run: cargo test
+
+      - name: No rand or getrandom in the dependency tree
+        run: |
+          tree=$(cargo tree -e normal,build --target all --prefix none)
+          echo "$tree" | sort -u
+          if echo "$tree" | grep -E '^(rand|getrandom) v'; then
+            echo "::error::rand or getrandom is in ghostkey-verify's dependency tree"
+            exit 1
+          fi
+
+      - name: Build the wasm probe
+        working-directory: rust/gkverify/wasm-probe
+        run: cargo build --release --target wasm32-unknown-unknown
+
+      - name: The wasm module imports nothing
+        run: python3 scripts/check_wasm_imports.py wasm-probe/target/wasm32-unknown-unknown/release/ghostkey_verify_wasm_probe.wasm
+
+      - name: Proofs verify under wasm
+        run: node scripts/run_wasm_vectors.mjs wasm-probe/target/wasm32-unknown-unknown/release/ghostkey_verify_wasm_probe.wasm target/tmp/wasm-vectors
+
+      - name: Package
+        run: cargo package --allow-dirty --no-verify --list
