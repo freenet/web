@@ -17,7 +17,7 @@ linking it imports nothing from the host on its account.
 ```rust
 use ghostkey_verify::{production_master, verify_payload_signature, GhostkeyCertificate};
 
-fn check(cert_pem: &str, scoped_payload: &[u8], signature: &[u8]) -> Result<u64, ghostkey_verify::Error> {
+fn check(cert_pem: &str, scoped_payload: &[u8], signature: &[u8]) -> Result<u64, Box<dyn std::error::Error>> {
     let cert = GhostkeyCertificate::from_armored(cert_pem)?;
     // The cheap Ed25519 check first, so a forged entry never costs an RSA check.
     verify_payload_signature(cert.claimed_ghost_key(), scoped_payload, signature)?;
@@ -25,7 +25,7 @@ fn check(cert_pem: &str, scoped_payload: &[u8], signature: &[u8]) -> Result<u64,
     let info = verified.notary_info()?;
     // Every notary key so far is a donation notary; don't take a future kind for one.
     if info.action != "freenet-donation" {
-        return Err(ghostkey_verify::Error::Info);
+        return Err("not a donation notary".into());
     }
     Ok(info.amount)
 }

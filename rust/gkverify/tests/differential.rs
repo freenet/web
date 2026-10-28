@@ -920,7 +920,8 @@ fn cheap_refusals_come_before_the_chain() {
 
 #[test]
 fn largest_notary_key_fits_the_size_limit() {
-    // A 4096-bit notary key is the largest accepted; its certificate must fit
+    // A 4096-bit notary key is the largest accepted; its certificate, with a
+    // genuine-length info, must fit
     // MAX_CERTIFICATE_BYTES in both forms, or the two limits contradict each
     // other. The RSA signature is the variable part: CBOR spends two bytes on
     // each signature byte of 24 or more, so the bound is checked against the
@@ -959,7 +960,17 @@ fn difference_canonical_form_over_the_size_limit() {
     use ghostkey_verify::MAX_CERTIFICATE_BYTES;
     let c = chain(INFO);
     let mut v: Value = ciborium::de::from_reader(bytes_of(&c.cert).as_slice()).unwrap();
-    *field(&mut v, "signature") = Value::Bytes(vec![0xff; 2200]);
+    // Lean otherwise (a one-digit modulus: it only has to parse), so that a
+    // genuine certificate fits beside it below.
+    *field(
+        field(
+            field(field(&mut v, "delegate"), "payload"),
+            "delegate_verifying_key",
+        ),
+        "n",
+    ) = Value::Array(vec![Value::Integer(1.into())]);
+    *field(field(field(&mut v, "delegate"), "payload"), "info") = Value::Text("x".into());
+    *field(&mut v, "signature") = Value::Bytes(vec![0xff; 1500]);
     let mut cbor = Vec::new();
     ciborium::ser::into_writer(&v, &mut cbor).unwrap();
     assert!(cbor.len() <= MAX_CERTIFICATE_BYTES);
@@ -975,9 +986,78 @@ fn difference_canonical_form_over_the_size_limit() {
     );
     assert!(pem.len() <= MAX_CERTIFICATE_BYTES);
     assert!(GhostkeyCertificateV1::from_armored_string(&pem).is_ok());
-    // Inside the armour the CBOR's refusal surfaces as no block decoding.
     assert_eq!(
         GhostkeyCertificate::from_armored(&pem).err(),
-        Some(Error::Armor)
+        Some(Error::TooLarge)
+    );
+
+    // Followed by a genuine certificate under the unversioned label: the
+    // search stops at the oversized block, where ghostkey_lib also stops
+    // (and fails the chain), rather than going on to accept the second.
+    let genuine = c
+        .cert
+        .to_armored_string()
+        .unwrap()
+        .replace("GHOSTKEY_CERTIFICATE_V1", "GHOSTKEY_CERTIFICATE");
+    let both = format!("{pem}{genuine}");
+    assert!(both.len() <= MAX_CERTIFICATE_BYTES, "{} bytes", both.len());
+    assert!(GhostkeyCertificateV1::from_armored_string(&both)
+        .unwrap()
+        .verify(&Some(c.master.verifying_key()))
+        .is_err());
+    assert_eq!(
+        GhostkeyCertificate::from_armored(&both).err(),
+        Some(Error::TooLarge)
+    );
+}
+
+#[test]
+fn canonical_bound_sits_exactly_at_the_limit() {
+    // Sweep a byte-string RSA signature across the lengths where the input
+    // fits and its canonical armour crosses MAX_CERTIFICATE_BYTES: the
+    // certificate parses exactly when ghostkey_lib's own canonical armour of
+    // it fits. Every parse that succeeds also goes through assert_agree, whose
+    // canonical re-parse check would fail without the bound.
+    use ciborium::Value;
+    use ghostkey_verify::MAX_CERTIFICATE_BYTES;
+    let c = chain(INFO);
+    let master = c.master.verifying_key();
+    let genuine: Value = ciborium::de::from_reader(bytes_of(&c.cert).as_slice()).unwrap();
+    let (mut parsed, mut refused, mut at_limit) = (0, 0, false);
+    // Bytes below 24 take one CBOR byte in an array, the rest two, so mixing
+    // them steps the canonical length one byte at a time and lands on the
+    // limit itself.
+    for len in 900..1500 {
+        for small in [0, len / 2, len] {
+            let mut v = genuine.clone();
+            let mut sig = vec![0x01; small];
+            sig.resize(len, 0xff);
+            *field(&mut v, "signature") = Value::Bytes(sig);
+            let mut cbor = Vec::new();
+            ciborium::ser::into_writer(&v, &mut cbor).unwrap();
+            if cbor.len() > MAX_CERTIFICATE_BYTES {
+                continue;
+            }
+            let canonical = GhostkeyCertificateV1::from_bytes(&cbor)
+                .unwrap()
+                .to_armored_string()
+                .unwrap();
+            let fits = canonical.len() <= MAX_CERTIFICATE_BYTES;
+            at_limit |= canonical.len() == MAX_CERTIFICATE_BYTES;
+            let ours = GhostkeyCertificate::from_cbor(&cbor);
+            assert_eq!(ours.is_ok(), fits, "{len} bytes, {small} small");
+            if fits {
+                parsed += 1;
+                let _ = assert_agree(&cbor, &master);
+            } else {
+                refused += 1;
+                assert_eq!(ours.err(), Some(Error::TooLarge));
+            }
+        }
+    }
+    assert!(at_limit, "no case landed exactly on the limit");
+    assert!(
+        parsed > 10 && refused > 10,
+        "{parsed} parsed, {refused} refused"
     );
 }

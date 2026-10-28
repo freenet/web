@@ -18,7 +18,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use crate::{Error, MAX_NOTARY_KEY_BITS, MIN_NOTARY_KEY_BITS};
 
 /// `ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1`.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub(crate) struct CertificateWire {
     #[serde(rename = "delegate")]
     pub notary: NotaryCertificateWire,
@@ -27,14 +27,14 @@ pub(crate) struct CertificateWire {
 }
 
 /// `ghostkey_lib::notary_certificate::NotaryCertificateV1`.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub(crate) struct NotaryCertificateWire {
     pub payload: NotaryPayloadWire,
     pub signature: Signature,
 }
 
 /// `ghostkey_lib::notary_certificate::NotaryPayload`.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub(crate) struct NotaryPayloadWire {
     #[serde(rename = "delegate_verifying_key")]
     pub notary_key: RsaPublicKeyWire,
@@ -43,19 +43,19 @@ pub(crate) struct NotaryPayloadWire {
 
 /// `blind_rsa_signatures::PublicKey`, a newtype around `rsa` 0.8's
 /// `RsaPublicKey`.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub(crate) struct RsaPublicKeyWire(pub RsaPublicKeyFields);
 
 /// `rsa` 0.8's `RsaPublicKey` with its `serde` feature: `n` and `e` as
 /// `num-bigint-dig` 0.8 `BigUint`s.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub(crate) struct RsaPublicKeyFields {
     pub n: BigUintWire,
     pub e: BigUintWire,
 }
 
 /// `blind_rsa_signatures::Signature`, a newtype around `Vec<u8>`.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub(crate) struct RsaSignatureWire(#[serde(deserialize_with = "bounded_vec")] pub Vec<u8>);
 
 /// Most elements reserved up front for a sequence: room for the 128 digits

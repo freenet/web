@@ -4,7 +4,8 @@ use core::fmt;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum Error {
-    /// The input is over [`crate::MAX_CERTIFICATE_BYTES`].
+    /// The input, or the canonical armoured form of the certificate it holds,
+    /// is over [`crate::MAX_CERTIFICATE_BYTES`].
     TooLarge,
     /// No armoured certificate block decodes.
     Armor,

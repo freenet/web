@@ -15,8 +15,9 @@ use serde::Deserialize;
 
 use crate::Error;
 
-/// A parsed notary `info` string.
+/// A parsed notary `info` string. Made only by [`NotaryInfo::parse`].
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct NotaryInfo {
     /// What the notary witnessed. `"freenet-donation"` for every notary key
     /// issued so far. Not checked here: a caller that means "a donor" should

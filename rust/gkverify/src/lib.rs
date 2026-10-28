@@ -86,6 +86,10 @@ pub const FREENET_MASTER_VERIFYING_KEY: [u8; 32] = [
 ];
 
 /// [`FREENET_MASTER_VERIFYING_KEY`] as a verifying key.
+///
+/// # Panics
+///
+/// Never: the constant is a valid point, which a test checks.
 pub fn production_master() -> VerifyingKey {
     VerifyingKey::from_bytes(&FREENET_MASTER_VERIFYING_KEY)
         .expect("the production master key is a valid point")
@@ -110,7 +114,7 @@ pub const MAX_NOTARY_KEY_BITS: usize = 4096;
 ///
 /// Nothing read from it means anything until [`GhostkeyCertificate::verify`]
 /// succeeds.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GhostkeyCertificate {
     wire: wire::CertificateWire,
 }
@@ -134,7 +138,8 @@ impl GhostkeyCertificate {
     /// spellings. A caller that keys anything by certificate text should
     /// store [`GhostkeyCertificate::to_armored`] instead of its input.
     ///
-    /// Refuses text longer than [`MAX_CERTIFICATE_BYTES`] before parsing.
+    /// Refuses text longer than [`MAX_CERTIFICATE_BYTES`] before parsing, and
+    /// a certificate whose canonical form is longer, as [`Error::TooLarge`].
     pub fn from_armored(armored: &str) -> Result<Self, Error> {
         if armored.len() > MAX_CERTIFICATE_BYTES {
             return Err(Error::TooLarge);
@@ -143,9 +148,13 @@ impl GhostkeyCertificate {
     }
 
     /// Parse a certificate's CBOR encoding, as `ghostkey_lib`'s `from_bytes`
-    /// does. Like it, this ignores bytes after the first CBOR item.
+    /// does. Like it, this ignores bytes after the first CBOR item, so one
+    /// certificate has many encodings: a caller that keys anything by
+    /// certificate bytes should store [`GhostkeyCertificate::to_cbor`] or
+    /// [`GhostkeyCertificate::to_armored`] instead of its input.
     ///
-    /// Refuses more than [`MAX_CERTIFICATE_BYTES`] before parsing.
+    /// Refuses more than [`MAX_CERTIFICATE_BYTES`] before parsing, and a
+    /// certificate whose canonical armoured form is longer after it.
     pub fn from_cbor(bytes: &[u8]) -> Result<Self, Error> {
         if bytes.len() > MAX_CERTIFICATE_BYTES {
             return Err(Error::TooLarge);

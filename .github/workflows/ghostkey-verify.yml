@@ -104,7 +104,10 @@ jobs:
         run: cargo package --allow-dirty
 
   # Holds `rust-version` in Cargo.toml to the truth: it was wrong once, and
-  # only reading the dependencies' manifests showed it.
+  # only reading the dependencies' manifests showed it. With no lockfile and
+  # edition 2021's resolver, it resolves the newest dependencies whatever
+  # their rust-version, so a red weekly run may mean a dependency raised its
+  # MSRV, and this crate's rust-version (or a dependency bound) must follow.
   msrv:
     runs-on: ubuntu-latest
     timeout-minutes: 15

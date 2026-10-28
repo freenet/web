@@ -20,6 +20,11 @@ const READ_LABELS: [&str; 2] = [LABEL, "GHOSTKEY_CERTIFICATE"];
 /// to the END line if there is one, trimmed, with lines starting `-----`
 /// dropped and the rest joined. A block that fails to decode, as base64 or as
 /// a certificate, moves on to the next label.
+///
+/// A block that decodes but whose canonical form is over the size limit stops
+/// the search with [`Error::TooLarge`]: `ghostkey_lib` has no such limit, so
+/// it takes that block (and the chain then fails), and moving on would accept
+/// a later block it never looks at.
 pub(crate) fn decode(armored: &str) -> Result<crate::GhostkeyCertificate, Error> {
     for label in READ_LABELS {
         let begin = format!("-----BEGIN {label}-----");
@@ -38,8 +43,10 @@ pub(crate) fn decode(armored: &str) -> Result<crate::GhostkeyCertificate, Error>
         let Ok(bytes) = STANDARD.decode(base64) else {
             continue;
         };
-        if let Ok(cert) = crate::GhostkeyCertificate::from_cbor(&bytes) {
-            return Ok(cert);
+        match crate::GhostkeyCertificate::from_cbor(&bytes) {
+            Ok(cert) => return Ok(cert),
+            Err(Error::TooLarge) => return Err(Error::TooLarge),
+            Err(_) => continue,
         }
     }
     Err(Error::Armor)
@@ -71,7 +78,7 @@ mod tests {
 
     #[test]
     fn encoded_len_is_encode_len() {
-        for n in 1..600 {
+        for n in 0..=3100 {
             assert_eq!(encoded_len(n), encode(&vec![0xa5; n]).len(), "{n}");
         }
     }
