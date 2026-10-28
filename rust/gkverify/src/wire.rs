@@ -158,9 +158,8 @@ impl BigUintWire {
 }
 
 impl RsaPublicKeyWire {
-    /// The key, if it is within the parameters `blind-rsa-signatures` signs
-    /// with: a 2048 to 4096 bit odd modulus and a public exponent of 3 or
-    /// 65537.
+    /// The key, if it is within the accepted parameters: an odd modulus of
+    /// 2048 to 4096 bits and a public exponent of 3 or 65537.
     pub(crate) fn to_rsa(&self) -> Result<rsa::RsaPublicKey, Error> {
         let RsaPublicKeyFields { n, e } = &self.0;
         let e_ok = matches!(e.digits.as_slice(), [3] | [65537]);

@@ -35,9 +35,11 @@
 //!   blind-signs whatever key it is given, so such certificates can exist.
 //!   `freenet-bitcoin`'s inbox contract makes the same check after
 //!   `ghostkey_lib`'s.
-//! * The notary's RSA key must be 2048 to 4096 bits with public exponent 3 or
-//!   65537, the parameters `blind-rsa-signatures` itself will sign with.
-//!   This bounds the cost of a check.
+//! * The notary's RSA key must have an odd modulus of 2048 to 4096 bits and
+//!   public exponent 3 or 65537: the range `blind-rsa-signatures`' own
+//!   parameter check allows, measured in bits rather than whole bytes. Every
+//!   notary key issued is exactly 2048 bits with e = 65537. This bounds the
+//!   cost of a check.
 //! * An RSA signature must be smaller than the modulus (RFC 8017, 5.2.2).
 //!   `ghostkey_lib` reduces it instead, so it also accepts the signature plus
 //!   a multiple of the modulus when that still fits the modulus length.

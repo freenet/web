@@ -39,7 +39,8 @@ deliberate, and each refuses something no genuine certificate contains:
 - input over `MAX_CERTIFICATE_BYTES` (4 KiB) is refused unparsed;
 - a weak master key, and a certificate for a weak (small-order) ghost key, are
   refused;
-- the notary RSA key must be 2048 to 4096 bits with exponent 3 or 65537;
+- the notary RSA key must have an odd 2048 to 4096 bit modulus and exponent 3
+  or 65537;
 - an RSA signature must be below the modulus.
 
 Payload signatures use Ed25519 `verify_strict`.
