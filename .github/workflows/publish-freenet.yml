@@ -7,6 +7,8 @@ on:
       - 'rust/**'
       - '*.md'
       - 'LICENSE'
+      # CI for rust/gkverify only; nothing it touches is in the site.
+      - '.github/workflows/ghostkey-verify.yml'
   workflow_dispatch:
 
 concurrency:

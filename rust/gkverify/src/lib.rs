@@ -13,7 +13,8 @@
 //!    signature over the raw payload bytes and leaves decoding them to the
 //!    caller, so it does not depend on `freenet-stdlib`.
 //!
-//! This crate is the verification half of [`ghostkey_lib`] and nothing else:
+//! This crate is the verification half of
+//! [`ghostkey_lib`](https://crates.io/crates/ghostkey_lib) and nothing else:
 //! no key generation, no blinding, no randomness. Its dependency tree contains
 //! neither `rand` nor `getrandom`, so it builds for `wasm32-unknown-unknown`
 //! and the module it links into imports nothing from the host on its account.
@@ -27,6 +28,8 @@
 //! intentional differences all refuse something `ghostkey_lib` accepts and no
 //! genuine certificate contains:
 //!
+//! * Certificates over [`MAX_CERTIFICATE_BYTES`] are refused unparsed, and
+//!   so is a weak master key.
 //! * [`GhostkeyCertificate::verify`] refuses a certificate that certifies a
 //!   weak (small-order) ghost key, which anyone can sign for. The notary
 //!   blind-signs whatever key it is given, so such certificates can exist.
@@ -86,6 +89,14 @@ pub fn production_master() -> VerifyingKey {
         .expect("the production master key is a valid point")
 }
 
+/// Largest certificate accepted, in bytes, by [`GhostkeyCertificate::from_armored`]
+/// (of armoured text) and [`GhostkeyCertificate::from_cbor`] (of CBOR).
+///
+/// A genuine certificate is about 1.6 KB armoured; one under a 4096-bit
+/// notary key, the largest accepted, is under 3 KB. The same bound as
+/// freenet-bitcoin's inbox contract, which checks it before parsing.
+pub const MAX_CERTIFICATE_BYTES: usize = 4 * 1024;
+
 /// Smallest notary RSA modulus accepted, in bits.
 pub const MIN_NOTARY_KEY_BITS: usize = 2048;
 /// Largest notary RSA modulus accepted, in bits.
@@ -117,13 +128,23 @@ impl GhostkeyCertificate {
     /// That includes any text around the armour, so one certificate has many
     /// spellings. A caller that keys anything by certificate text should
     /// store [`GhostkeyCertificate::to_armored`] instead of its input.
+    ///
+    /// Refuses text longer than [`MAX_CERTIFICATE_BYTES`] before parsing.
     pub fn from_armored(armored: &str) -> Result<Self, Error> {
+        if armored.len() > MAX_CERTIFICATE_BYTES {
+            return Err(Error::TooLarge);
+        }
         armor::decode(armored)
     }
 
     /// Parse a certificate's CBOR encoding, as `ghostkey_lib`'s `from_bytes`
     /// does. Like it, this ignores bytes after the first CBOR item.
+    ///
+    /// Refuses more than [`MAX_CERTIFICATE_BYTES`] before parsing.
     pub fn from_cbor(bytes: &[u8]) -> Result<Self, Error> {
+        if bytes.len() > MAX_CERTIFICATE_BYTES {
+            return Err(Error::TooLarge);
+        }
         let wire = ciborium::de::from_reader(bytes).map_err(|_| Error::Malformed)?;
         Ok(Self { wire })
     }
@@ -152,12 +173,21 @@ impl GhostkeyCertificate {
     /// Verify the chain from `master` to the ghost key, returning the ghost
     /// key and the notary's `info`.
     ///
-    /// Refuses a certificate for a weak ghost key (see the crate docs).
+    /// `master` is trusted as given: pass [`production_master`] or a key
+    /// from the contract's own parameters, never one read from the input.
+    /// A weak master key, under which anyone could sign notary
+    /// certificates, is refused.
+    ///
+    /// Refuses a certificate for a weak ghost key (see the crate docs). That
+    /// check comes first, so such a certificate never costs an RSA operation.
     pub fn verify(&self, master: &VerifyingKey) -> Result<VerifiedGhostkey, Error> {
-        let info = self.verify_chain(master)?;
+        if master.is_weak() {
+            return Err(Error::WeakMasterKey);
+        }
         if self.wire.verifying_key.is_weak() {
             return Err(Error::WeakGhostKey);
         }
+        let info = self.verify_chain(master)?;
         Ok(VerifiedGhostkey {
             ghost_key: self.wire.verifying_key,
             info,

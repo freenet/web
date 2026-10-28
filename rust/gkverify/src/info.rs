@@ -19,7 +19,8 @@ use crate::Error;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NotaryInfo {
     /// What the notary witnessed. `"freenet-donation"` for every notary key
-    /// issued so far.
+    /// issued so far. Not checked here: a caller that means "a donor" should
+    /// check it, so a future kind of notary is not taken for one.
     pub action: String,
     /// The donation tier, in US dollars.
     pub amount: u64,
@@ -53,7 +54,9 @@ impl NotaryInfo {
     ///
     /// Requires `action` (a string), `amount` (a non-negative integer) and
     /// `delegate-key-created` (a string starting `YYYY-MM-DD`); other fields
-    /// are ignored. Only the date is checked, not the time after it.
+    /// are ignored. Only the date's shape is checked (month 1 to 12, day 1 to
+    /// 31), not the calendar or the time after it. The string is signed by the
+    /// master key, so this is a reader, not a validator.
     pub fn parse(info: &str) -> Result<Self, Error> {
         let json: InfoJson = serde_json::from_str(info).map_err(|_| Error::Info)?;
         let created_month = parse_month(&json.delegate_key_created).ok_or(Error::Info)?;
@@ -141,6 +144,13 @@ mod tests {
             r#"{"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07"}"#,
             r#"{"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07-30T15:39:26"}"#,
             r#"{"action":"freenet-donation","amount":20,"delegate-key-created":"+024-07-30"}"#,
+            r#"{"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07-00 00:00:00"}"#,
+            r#"{"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07-32 00:00:00"}"#,
+            r#"{"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07-30X15:39:26"}"#,
+            r#"{"action":"freenet-donation","amount":20,"delegate-key-created":"２０２４-07-30"}"#,
+            r#"{"action":"freenet-donation","amount":20,"delegate-key-created":"2024-07-3"}"#,
+            r#"{"action":"freenet-donation","amount":18446744073709551616,"delegate-key-created":"2024-07-30"}"#,
+            r#"{"action":"freenet-donation","amount":20,"amount":21,"delegate-key-created":"2024-07-30"}"#,
         ] {
             assert_eq!(NotaryInfo::parse(bad), Err(Error::Info), "{bad}");
         }

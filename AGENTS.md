@@ -57,6 +57,9 @@ prettier --write "hugo-site/**/*.{html,css,js,md}"
 - `rust/gkwasm/`: WebAssembly bindings exposed to the browser via wasm-bindgen
 - `rust/api/`: Axum-based REST API for Ghost Key operations (Stripe integration)
 - `rust/cli/`: CLI for Ghost Key management tasks (published to crates.io as `ghostkey`)
+- `rust/gkverify/`: verify-only Ghost Key chain checking for Freenet contracts (published to
+  crates.io as `ghostkey-verify`). It must stay free of `rand` and `getrandom` and agree with
+  `gklib`; `.github/workflows/ghostkey-verify.yml` checks both
 - `hugo-site/`: Hugo source, theme, and static assets (including WASM output)
 
 ### WebAssembly workflow

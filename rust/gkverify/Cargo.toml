@@ -2,7 +2,7 @@
 name = "ghostkey-verify"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.85"
+rust-version = "1.88"
 description = "Verify-only Ghost Key certificate chains, small enough to link into a Freenet contract: no key generation, no blinding, no RNG."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/freenet/web"
@@ -42,7 +42,7 @@ ed25519-dalek = { version = "2.1", features = ["rand_core", "serde"] }
 rand = "0.8.5"
 ciborium = "0.2.2"
 # The rsa that blind-rsa-signatures, and so ghostkey_lib, verifies with.
-rsa_08 = { package = "rsa", version = "0.8.2" }
+rsa_08 = { package = "rsa", version = "0.8.2", features = ["sha2"] }
 
 # The differential tests run thousands of RSA operations; unoptimized
 # bignum arithmetic would take minutes.

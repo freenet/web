@@ -47,6 +47,14 @@ cargo make integration-test
 ./test_cli_commands.sh          # CLI integration tests exercising certificates
 ```
 
+## Kept in agreement: rust/gkverify
+`rust/gkverify` (`ghostkey-verify`) re-implements this crate's certificate
+parsing and `verify` for Freenet contracts, byte for byte, including the CBOR
+encoding the master key signs. Any change here to the certificate types, their
+serde attributes, the armour, or `verify` must keep it in agreement: its
+differential tests run against this crate (`cd rust/gkverify && cargo test`),
+and CI runs them whenever `rust/gklib/**` changes.
+
 ## Browser Integration
 - `rust/gkwasm/` exposes Ghost Key functionality to the browser (wasm-bindgen).
 - WebAssembly output is copied to `hugo-site/static/wasm/`.

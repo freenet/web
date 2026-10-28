@@ -56,7 +56,39 @@ pub(crate) struct RsaPublicKeyFields {
 
 /// `blind_rsa_signatures::Signature`, a newtype around `Vec<u8>`.
 #[derive(Serialize, Deserialize, Clone)]
-pub(crate) struct RsaSignatureWire(pub Vec<u8>);
+pub(crate) struct RsaSignatureWire(#[serde(deserialize_with = "bounded_vec")] pub Vec<u8>);
+
+/// Most elements reserved up front for a sequence: room for the 128 digits
+/// of a 4096-bit modulus and the 512 bytes of its signature. A longer
+/// sequence still decodes, growing as it goes.
+const MAX_RESERVED: usize = 1024;
+
+/// `Vec<T>`'s `Deserialize`, except that the reservation made from the
+/// length a CBOR header claims is capped at [`MAX_RESERVED`] elements, where
+/// serde's own cap is 1 MiB. A 50-byte input claiming a 2^32-element array
+/// would otherwise reserve 1 MiB before failing, and a contract's linear
+/// memory never shrinks. Accepts exactly the inputs `Vec<T>` accepts.
+fn bounded_vec<'de, D, T>(deserializer: D) -> Result<Vec<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    struct V<T>(core::marker::PhantomData<T>);
+    impl<'de, T: Deserialize<'de>> serde::de::Visitor<'de> for V<T> {
+        type Value = Vec<T>;
+        fn expecting(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+            f.write_str("a sequence")
+        }
+        fn visit_seq<A: serde::de::SeqAccess<'de>>(self, mut seq: A) -> Result<Vec<T>, A::Error> {
+            let mut out = Vec::with_capacity(seq.size_hint().unwrap_or(0).min(MAX_RESERVED));
+            while let Some(item) = seq.next_element()? {
+                out.push(item);
+            }
+            Ok(out)
+        }
+    }
+    deserializer.deserialize_seq(V(core::marker::PhantomData))
+}
 
 /// A `num-bigint-dig` 0.8 `BigUint` built with the `u64_digit` feature, which
 /// `rsa` 0.8 enables.
@@ -74,7 +106,7 @@ pub(crate) struct BigUintWire {
 
 impl<'de> Deserialize<'de> for BigUintWire {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let raw: Vec<u32> = Vec::deserialize(deserializer)?;
+        let raw: Vec<u32> = bounded_vec(deserializer)?;
         let mut digits: Vec<u64> = raw
             .chunks(2)
             .map(|c| match *c {

@@ -36,7 +36,9 @@ re-encoded and mutated certificates, armour variants, and recorded certificates
 (including one under the production master key). The differences are
 deliberate, and each refuses something no genuine certificate contains:
 
-- a certificate for a weak (small-order) ghost key is refused;
+- input over `MAX_CERTIFICATE_BYTES` (4 KiB) is refused unparsed;
+- a weak master key, and a certificate for a weak (small-order) ghost key, are
+  refused;
 - the notary RSA key must be 2048 to 4096 bits with exponent 3 or 65537;
 - an RSA signature must be below the modulus.
 
@@ -44,8 +46,17 @@ Payload signatures use Ed25519 `verify_strict`.
 
 ## Dependencies
 
-`rsa` is the 0.10 release candidate, pinned exactly: the stable 0.9 line pulls
-in `rand` through `num-bigint-dig`'s `prime` feature.
+- `rsa` is the 0.10 release candidate, pinned exactly (`=0.10.0-rc.19`): the
+  stable 0.9 line pulls in `rand` through `num-bigint-dig`'s `prime` feature,
+  and release candidates change API between themselves. Cargo allows one
+  `rsa` 0.10 per build, so a crate that depends on this one cannot also use a
+  different `rsa` 0.10 release. This crate moves to `rsa` 0.10.0 when it is
+  released ([freenet/web#213](https://github.com/freenet/web/issues/213)).
+- Do not enable `rsa`'s `getrandom` feature in a contract: it brings in
+  `getrandom` through feature unification, which this crate cannot prevent.
+- `ed25519-dalek` is 2.x, the version ghostkey-common, freenet-bitcoin and
+  freenet/mail use, and `VerifyingKey` is re-exported from it. Moving to 3.x
+  would be a breaking release.
 
 ## License
 

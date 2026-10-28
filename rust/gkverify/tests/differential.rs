@@ -125,8 +125,10 @@ fn valid_chain_verifies_in_both_and_reencodes_identically() {
 
 #[test]
 fn many_valid_chains_agree() {
-    // Fresh RSA keys each time, so moduli and signatures with leading zero
-    // bytes and high digits of every shape turn up.
+    // Fresh RSA keys each time, so the moduli and signatures vary. A
+    // signature with a leading zero byte turns up in a few percent of runs;
+    // `wrong_rsa_signature_is_refused_by_both` covers the length rule
+    // deterministically.
     for i in 0..8 {
         let info = format!(
             r#"{{"action":"freenet-donation","amount":{i},"delegate-key-created":"2025-0{}-01 00:00:00"}}"#,
@@ -407,6 +409,77 @@ fn field<'a>(v: &'a mut ciborium::Value, name: &str) -> &'a mut ciborium::Value 
         .1
 }
 
+/// A certificate whose notary key is `sk`, with the ghost key signed under
+/// RSA-PSS SHA-384 with salt length `salt`, as no ghostkey_lib code path will
+/// make it: for keys and salts the issuing code never uses.
+fn chain_with_notary_key(sk: &rsa_08::RsaPrivateKey, salt: usize) -> (Vec<u8>, VerifyingKey) {
+    use ghostkey_lib::notary_certificate::NotaryPayload;
+    use rsa_08::signature::{RandomizedSigner, SignatureEncoding};
+    use rsa_08::PublicKeyParts;
+    let master = SigningKey::generate(&mut OsRng);
+    let payload = NotaryPayload {
+        notary_verifying_key: blind_rsa_signatures::PublicKey(sk.to_public_key()),
+        info: INFO.to_string(),
+    };
+    let notary = NotaryCertificateV1 {
+        signature: master.sign(&payload.to_bytes().unwrap()),
+        payload,
+    };
+    let ghost = SigningKey::generate(&mut OsRng).verifying_key();
+    let msg = Armorable::to_bytes(&ghost).unwrap();
+    let signer =
+        rsa_08::pss::SigningKey::<rsa_08::sha2::Sha384>::new_with_salt_len(sk.clone(), salt);
+    let sig = signer.sign_with_rng(&mut OsRng, &msg).to_vec();
+    // Left-pad to the modulus length, as blind-rsa-signatures does.
+    let mut padded = vec![0u8; sk.size() - sig.len()];
+    padded.extend_from_slice(&sig);
+    let cert = GhostkeyCertificateV1 {
+        notary,
+        verifying_key: ghost,
+        signature: RsaSignature(padded),
+    };
+    (bytes_of(&cert), master.verifying_key())
+}
+
+#[test]
+fn any_pss_salt_length_agrees() {
+    // blind-rsa-signatures verifies with the salt length detected from the
+    // signature, whatever its options say; so does this crate. Every
+    // certificate issued so far uses 48.
+    let c = chain(INFO);
+    let sk = c.notary_keypair.sk.0.clone();
+    for salt in [0, 1, 20, 32, 48, 64, 206] {
+        let (bytes, master) = chain_with_notary_key(&sk, salt);
+        assert_eq!(
+            assert_agree(&bytes, &master),
+            Ok(INFO.to_string()),
+            "salt {salt}"
+        );
+    }
+}
+
+#[test]
+fn notary_key_shapes_within_the_limits_agree() {
+    // Modulus lengths that are not a multiple of 8 bits exercise the
+    // encoded-message length arithmetic; e = 3 is the other exponent
+    // blind-rsa-signatures signs with.
+    use rsa_08::BigUint;
+    let keys = [
+        rsa_08::RsaPrivateKey::new(&mut OsRng, 2049).unwrap(),
+        rsa_08::RsaPrivateKey::new(&mut OsRng, 2050).unwrap(),
+        rsa_08::RsaPrivateKey::new(&mut OsRng, 3072).unwrap(),
+        rsa_08::RsaPrivateKey::new_with_exp(&mut OsRng, 2048, &BigUint::from(3u32)).unwrap(),
+    ];
+    for (i, sk) in keys.iter().enumerate() {
+        let (bytes, master) = chain_with_notary_key(sk, 48);
+        assert_eq!(
+            assert_agree(&bytes, &master),
+            Ok(INFO.to_string()),
+            "key {i}"
+        );
+    }
+}
+
 // ---------------------------------------------------------------------------
 // The chain: armour
 // ---------------------------------------------------------------------------
@@ -418,31 +491,43 @@ fn armour_variants_agree() {
     let pem = c.cert.to_armored_string().unwrap();
     let body: String = pem.lines().filter(|l| !l.starts_with("-----")).collect();
 
-    let variants = [
-        pem.clone(),
-        format!("Here is my key:\n\n{pem}\nthanks"),
-        pem.replace('\n', "\r\n"),
-        pem.replace("GHOSTKEY_CERTIFICATE_V1", "GHOSTKEY_CERTIFICATE"),
-        pem.replace("-----END GHOSTKEY_CERTIFICATE_V1-----\n", ""),
-        format!("-----BEGIN GHOSTKEY_CERTIFICATE_V1-----{body}-----END GHOSTKEY_CERTIFICATE_V1-----"),
-        format!("-----BEGIN GHOSTKEY_CERTIFICATE_V1-----\n{body}"),
-        pem.replace('\n', "\n  "),
-        pem.replace("GHOSTKEY_CERTIFICATE_V1", "DELEGATE_CERTIFICATE_V1"),
-        pem.replace("GHOSTKEY_CERTIFICATE_V1", "GHOSTKEY_CERTIFICATE_V2"),
-        format!("{pem}{pem}"),
-        pem.replacen(&body[..10], &body[..9], 1),
-        pem.replace('=', ""),
-        body.clone(),
-        String::new(),
-        // A broken versioned block followed by a good unversioned one: the
-        // second label is tried.
-        format!(
-            "-----BEGIN GHOSTKEY_CERTIFICATE_V1-----\nAAAA\n-----END GHOSTKEY_CERTIFICATE_V1-----\n{}",
-            pem.replace("GHOSTKEY_CERTIFICATE_V1", "GHOSTKEY_CERTIFICATE")
+    let padded = body.contains('=');
+    // (text, whether ghostkey_lib accepts it), each pinned so a change in
+    // either parser shows up as the variant that moved.
+    let variants: Vec<(String, bool)> = vec![
+        (pem.clone(), true),
+        (format!("Here is my key:\n\n{pem}\nthanks"), true),
+        (pem.replace('\n', "\r\n"), true),
+        (pem.replace("GHOSTKEY_CERTIFICATE_V1", "GHOSTKEY_CERTIFICATE"), true),
+        (pem.replace("-----END GHOSTKEY_CERTIFICATE_V1-----\n", ""), true),
+        (
+            format!("-----BEGIN GHOSTKEY_CERTIFICATE_V1-----{body}-----END GHOSTKEY_CERTIFICATE_V1-----"),
+            true,
         ),
+        (format!("-----BEGIN GHOSTKEY_CERTIFICATE_V1-----\n{body}"), true),
+        // Only the first block after the first BEGIN is read.
+        (format!("{pem}{pem}"), true),
+        // A broken versioned block, then a good unversioned one: the second
+        // label is tried.
+        (
+            format!(
+                "-----BEGIN GHOSTKEY_CERTIFICATE_V1-----\nAAAA\n-----END GHOSTKEY_CERTIFICATE_V1-----\n{}",
+                pem.replace("GHOSTKEY_CERTIFICATE_V1", "GHOSTKEY_CERTIFICATE")
+            ),
+            true,
+        ),
+        // Indented lines keep their spaces, which base64 refuses.
+        (pem.replace('\n', "\n  "), false),
+        (pem.replace("GHOSTKEY_CERTIFICATE_V1", "DELEGATE_CERTIFICATE_V1"), false),
+        (pem.replace("GHOSTKEY_CERTIFICATE_V1", "GHOSTKEY_CERTIFICATE_V2"), false),
+        // One base64 character dropped.
+        (pem.replacen(&body[..10], &body[..9], 1), false),
+        // Padding is required; a body that needs none is unchanged by this.
+        (pem.replace('=', ""), !padded),
+        (body.clone(), false),
+        (String::new(), false),
     ];
-    let mut accepted = 0;
-    for (i, text) in variants.iter().enumerate() {
+    for (i, (text, accepted)) in variants.iter().enumerate() {
         let r = GhostkeyCertificateV1::from_armored_string(text)
             .ok()
             .and_then(|c| c.verify(&Some(master)).ok());
@@ -451,18 +536,14 @@ fn armour_variants_agree() {
             .and_then(|c| c.verify(&master).ok())
             .map(|v| v.info);
         assert_eq!(r, o, "variant {i}: {text:?}");
+        assert_eq!(o.is_some(), *accepted, "variant {i}: {text:?}");
         if o.is_some() {
-            accepted += 1;
             let canon = GhostkeyCertificate::from_armored(text)
                 .unwrap()
                 .to_armored();
             assert_eq!(canon, pem, "variant {i} canonicalizes");
         }
     }
-    assert!(
-        (5..variants.len() - 3).contains(&accepted),
-        "{accepted} accepted"
-    );
 }
 
 // ---------------------------------------------------------------------------
@@ -711,4 +792,72 @@ fn difference_rsa_signature_not_reduced() {
         }
     }
     panic!("no signature had room above its modulus");
+}
+
+#[test]
+fn difference_oversized_input() {
+    // ghostkey_lib parses any amount of text around the armour, and ignores
+    // any bytes after the CBOR item; this crate stops at MAX_CERTIFICATE_BYTES.
+    use ghostkey_verify::MAX_CERTIFICATE_BYTES;
+    let c = chain(INFO);
+    let master = c.master.verifying_key();
+    let pem = c.cert.to_armored_string().unwrap();
+    let cbor = bytes_of(&c.cert);
+
+    let fits = format!("{pem}{}", " ".repeat(MAX_CERTIFICATE_BYTES - pem.len()));
+    assert_eq!(fits.len(), MAX_CERTIFICATE_BYTES);
+    assert!(GhostkeyCertificate::from_armored(&fits).is_ok());
+    let over = format!("{fits} ");
+    assert!(GhostkeyCertificateV1::from_armored_string(&over)
+        .unwrap()
+        .verify(&Some(master))
+        .is_ok());
+    assert_eq!(
+        GhostkeyCertificate::from_armored(&over).err(),
+        Some(Error::TooLarge)
+    );
+
+    let mut padded = cbor.clone();
+    padded.resize(MAX_CERTIFICATE_BYTES, 0);
+    assert_eq!(ours(&padded, &master), Ok(INFO.to_string()));
+    padded.push(0);
+    assert_eq!(reference(&padded, &master), Ok(INFO.to_string()));
+    assert_eq!(ours(&padded, &master), Err(Error::TooLarge));
+}
+
+#[test]
+fn difference_weak_master_key() {
+    // Under a small-order master key, the non-strict Ed25519 check that
+    // ghostkey_lib (and this crate, for parity) applies to the notary
+    // certificate accepts a forged signature: R = identity, S = 0. A notary
+    // certificate anyone can make chains to it.
+    let mut identity = [0u8; 32];
+    identity[0] = 1;
+    let weak = VerifyingKey::from_bytes(&identity).unwrap();
+    let c = chain(INFO);
+    let mut cert = c.cert.clone();
+    let mut forged = [0u8; 64];
+    forged[0] = 1;
+    cert.notary.signature = ed25519_dalek::Signature::from_bytes(&forged);
+    let bytes = bytes_of(&cert);
+    assert_eq!(reference(&bytes, &weak), Ok(INFO.to_string()));
+    assert_eq!(ours(&bytes, &weak), Err(Error::WeakMasterKey));
+}
+
+#[test]
+fn difference_notary_key_outside_the_limits() {
+    // ghostkey_lib verifies under any key the master signed. This crate
+    // takes only what blind-rsa-signatures would issue under: 2048 to 4096
+    // bits, e = 3 or 65537.
+    use rsa_08::BigUint;
+    let keys = [
+        rsa_08::RsaPrivateKey::new(&mut OsRng, 1024).unwrap(),
+        rsa_08::RsaPrivateKey::new(&mut OsRng, 2047).unwrap(),
+        rsa_08::RsaPrivateKey::new_with_exp(&mut OsRng, 2048, &BigUint::from(5u32)).unwrap(),
+    ];
+    for (i, sk) in keys.iter().enumerate() {
+        let (bytes, master) = chain_with_notary_key(sk, 48);
+        assert_eq!(reference(&bytes, &master), Ok(INFO.to_string()), "key {i}");
+        assert_eq!(ours(&bytes, &master), Err(Error::NotaryKey), "key {i}");
+    }
 }

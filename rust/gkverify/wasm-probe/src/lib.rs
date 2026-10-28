@@ -18,7 +18,7 @@
 //! node ../scripts/run_wasm_vectors.mjs target/wasm32-unknown-unknown/release/ghostkey_verify_wasm_probe.wasm ../target/tmp/wasm-vectors
 //! ```
 
-use ghostkey_verify::{verify_payload_signature, GhostkeyCertificate, VerifyingKey};
+use ghostkey_verify::{verify_payload_signature, Error, GhostkeyCertificate, VerifyingKey};
 
 /// Reserve `len` bytes for the host to write input into.
 #[no_mangle]
@@ -35,7 +35,7 @@ pub extern "C" fn probe_alloc(len: usize) -> *mut u8 {
 ///
 /// Returns the notary key's creation month shifted left 32 bits when the
 /// chain and the payload signature verify and the info parses; otherwise a
-/// negative code naming the first check that failed.
+/// negative code: -1 to -3 for input framing, else [`code`] of the error.
 ///
 /// # Safety
 ///
@@ -58,11 +58,30 @@ fn verify(input: &[u8]) -> Result<u8, i64> {
 
     let master = VerifyingKey::from_bytes(master.try_into().unwrap()).map_err(|_| -2)?;
     let cert = std::str::from_utf8(cert).map_err(|_| -3)?;
-    let cert = GhostkeyCertificate::from_armored(cert).map_err(|_| -4)?;
-    let verified = cert.verify(&master).map_err(|_| -5)?;
-    verify_payload_signature(&verified.ghost_key, payload, sig).map_err(|_| -6)?;
-    let info = verified.notary_info().map_err(|_| -7)?;
+    let cert = GhostkeyCertificate::from_armored(cert).map_err(code)?;
+    let verified = cert.verify(&master).map_err(code)?;
+    verify_payload_signature(&verified.ghost_key, payload, sig).map_err(code)?;
+    let info = verified.notary_info().map_err(code)?;
     Ok(info.created_month.month)
+}
+
+/// One code per error, so a wasm-only regression that moves a refusal to a
+/// different check shows up. `tests/wasm_vectors.rs` keeps the same table.
+pub fn code(e: Error) -> i64 {
+    match e {
+        Error::TooLarge => -10,
+        Error::Armor => -11,
+        Error::Malformed => -12,
+        Error::WeakMasterKey => -13,
+        Error::NotarySignature => -14,
+        Error::NotaryKey => -15,
+        Error::GhostKeySignature => -16,
+        Error::WeakGhostKey => -17,
+        Error::PayloadSignatureLength => -18,
+        Error::PayloadSignature => -19,
+        Error::Info => -20,
+        _ => -99,
+    }
 }
 
 fn split(input: &[u8], at: usize) -> Result<(&[u8], &[u8]), i64> {

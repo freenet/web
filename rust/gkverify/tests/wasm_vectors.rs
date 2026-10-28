@@ -14,20 +14,35 @@ use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use ghostkey_lib::notary_certificate::NotaryCertificateV1;
 use ghostkey_lib::signed_message::SignedMessage;
 use ghostkey_lib::util::unblinded_rsa_sign;
-use ghostkey_verify::{production_master, verify_payload_signature, GhostkeyCertificate};
+use ghostkey_verify::{production_master, verify_payload_signature, Error, GhostkeyCertificate};
 use rand::rngs::OsRng;
 
 const INFO: &str =
     r#"{"action":"freenet-donation","amount":5,"delegate-key-created":"2026-10-01 00:00:00"}"#;
 
-/// The probe's result: the month, shifted, or the code of the failing step.
+/// The probe's result for a proof that verifies: the month, shifted.
 const OK_OCTOBER: i64 = 10 << 32;
-const CHAIN: i64 = -5;
-const PAYLOAD: i64 = -6;
-const INFO_FORMAT: i64 = -7;
+
+/// The probe's code for each error: the same table as `wasm-probe`'s `code`.
+fn code(e: Error) -> i64 {
+    match e {
+        Error::TooLarge => -10,
+        Error::Armor => -11,
+        Error::Malformed => -12,
+        Error::WeakMasterKey => -13,
+        Error::NotarySignature => -14,
+        Error::NotaryKey => -15,
+        Error::GhostKeySignature => -16,
+        Error::WeakGhostKey => -17,
+        Error::PayloadSignatureLength => -18,
+        Error::PayloadSignature => -19,
+        Error::Info => -20,
+        _ => -99,
+    }
+}
 
 struct Vector {
-    name: &'static str,
+    name: String,
     master: VerifyingKey,
     cert: String,
     sig: [u8; 64],
@@ -37,19 +52,36 @@ struct Vector {
 
 /// What the probe computes, natively.
 fn native(v: &Vector) -> i64 {
-    let Ok(cert) = GhostkeyCertificate::from_armored(&v.cert) else {
-        return -4;
+    let run = || -> Result<u8, Error> {
+        let verified = GhostkeyCertificate::from_armored(&v.cert)?.verify(&v.master)?;
+        verify_payload_signature(&verified.ghost_key, &v.payload, &v.sig)?;
+        Ok(verified.notary_info()?.created_month.month)
     };
-    let Ok(verified) = cert.verify(&v.master) else {
-        return CHAIN;
-    };
-    if verify_payload_signature(&verified.ghost_key, &v.payload, &v.sig).is_err() {
-        return PAYLOAD;
+    match run() {
+        Ok(month) => i64::from(month) << 32,
+        Err(e) => code(e),
     }
-    match verified.notary_info() {
-        Ok(info) => i64::from(info.created_month.month) << 32,
-        Err(_) => INFO_FORMAT,
+}
+
+/// `cert` with an unknown top-level field holding arrays nested `depth`
+/// deep, which both decoders skip, up to ciborium's recursion limit.
+fn with_nested_unknown_field(cert: &GhostkeyCertificateV1, depth: usize) -> String {
+    use ciborium::Value;
+    let mut v: Value = ciborium::de::from_reader(cert.to_bytes().unwrap().as_slice()).unwrap();
+    let mut nested = Value::Array(vec![]);
+    for _ in 0..depth {
+        nested = Value::Array(vec![nested]);
     }
+    if let Value::Map(m) = &mut v {
+        m.push((Value::Text("x".into()), nested));
+    }
+    let mut cbor = Vec::new();
+    ciborium::ser::into_writer(&v, &mut cbor).unwrap();
+    use base64::Engine;
+    let b64 = base64::engine::general_purpose::STANDARD.encode(&cbor);
+    format!(
+        "-----BEGIN GHOSTKEY_CERTIFICATE_V1-----\n{b64}\n-----END GHOSTKEY_CERTIFICATE_V1-----\n"
+    )
 }
 
 #[test]
@@ -86,9 +118,9 @@ fn write_wasm_vectors() {
     let signed = SignedMessage::from_file(&legacy.join("signed_message.bin")).unwrap();
 
     let m = master.verifying_key();
-    let vectors = [
+    let mut vectors = vec![
         Vector {
-            name: "valid",
+            name: "valid".into(),
             master: m,
             cert: pem(&cert),
             sig,
@@ -98,62 +130,115 @@ fn write_wasm_vectors() {
         Vector {
             // The real chain verifies under wasm; the signature is not the
             // ghost key's, whose signing key nobody here has.
-            name: "production-chain",
+            name: "production-chain".into(),
             master: production_master(),
             cert: production,
             sig,
             payload: payload.clone(),
-            expect: PAYLOAD,
+            expect: code(Error::PayloadSignature),
         },
         Vector {
-            name: "legacy-signed-message",
+            name: "legacy-signed-message".into(),
             master: legacy_master,
             cert: signed.certificate.to_armored_string().unwrap(),
             sig: signed.signature.to_bytes(),
             payload: signed.message.clone(),
-            expect: INFO_FORMAT,
+            expect: code(Error::Info),
         },
         Vector {
-            name: "tampered-info",
+            name: "tampered-info".into(),
             master: m,
             cert: pem(&tampered),
             sig,
             payload: payload.clone(),
-            expect: CHAIN,
+            expect: code(Error::NotarySignature),
         },
         Vector {
-            name: "wrong-master",
+            name: "wrong-master".into(),
             master: SigningKey::generate(&mut OsRng).verifying_key(),
             cert: pem(&cert),
             sig,
             payload: payload.clone(),
-            expect: CHAIN,
+            expect: code(Error::NotarySignature),
         },
         Vector {
-            name: "wrong-rsa-signature",
+            name: "wrong-rsa-signature".into(),
             master: m,
             cert: pem(&wrong_rsa),
             sig,
             payload: payload.clone(),
-            expect: CHAIN,
+            expect: code(Error::GhostKeySignature),
         },
         Vector {
-            name: "weak-ghost-key",
+            name: "weak-ghost-key".into(),
             master: m,
             cert: pem(&weak),
             sig,
             payload: payload.clone(),
-            expect: CHAIN,
+            expect: code(Error::WeakGhostKey),
         },
         Vector {
-            name: "wrong-payload",
+            name: "wrong-payload".into(),
             master: m,
             cert: pem(&cert),
             sig,
             payload: b"something else".to_vec(),
-            expect: PAYLOAD,
+            expect: code(Error::PayloadSignature),
         },
     ];
+
+    // More fresh notary keys through the 32-bit-limb arithmetic, whose
+    // behaviour depends on the operands.
+    for i in 2..=5 {
+        let (notary, notary_sk) = NotaryCertificateV1::new(&master, &INFO.to_string()).unwrap();
+        let (cert, ghost) = GhostkeyCertificateV1::new(&notary, &notary_sk);
+        vectors.push(Vector {
+            name: format!("valid-key-{i}"),
+            master: m,
+            cert: pem(&cert),
+            sig: ghost.sign(&payload).to_bytes(),
+            payload: payload.clone(),
+            expect: OK_OCTOBER,
+        });
+    }
+    // Deep nesting in a field both decoders skip: within ciborium's limit it
+    // must verify on wasm's stack, beyond it the certificate is refused.
+    vectors.push(Vector {
+        name: "nested-unknown-field-200".into(),
+        master: m,
+        cert: with_nested_unknown_field(&cert, 200),
+        sig,
+        payload: payload.clone(),
+        expect: OK_OCTOBER,
+    });
+    vectors.push(Vector {
+        name: "nested-unknown-field-300".into(),
+        master: m,
+        cert: with_nested_unknown_field(&cert, 300),
+        sig,
+        payload: payload.clone(),
+        expect: code(Error::Armor),
+    });
+    vectors.push(Vector {
+        name: "oversized".into(),
+        master: m,
+        cert: format!(
+            "{}{}",
+            pem(&cert),
+            " ".repeat(ghostkey_verify::MAX_CERTIFICATE_BYTES)
+        ),
+        sig,
+        payload: payload.clone(),
+        expect: code(Error::TooLarge),
+    });
+    vectors.push(Vector {
+        name: "weak-master".into(),
+        master: weak.verifying_key,
+        cert: pem(&cert),
+        sig,
+        payload: payload.clone(),
+        expect: code(Error::WeakMasterKey),
+    });
 
     let out = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("wasm-vectors");
     std::fs::create_dir_all(&out).unwrap();
