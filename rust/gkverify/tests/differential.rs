@@ -63,7 +63,7 @@ fn reference(bytes: &[u8], master: &VerifyingKey) -> Result<String, ()> {
 /// This crate's verdict on certificate bytes.
 fn ours(bytes: &[u8], master: &VerifyingKey) -> Result<String, Error> {
     let cert = GhostkeyCertificate::from_cbor(bytes)?;
-    cert.verify(master).map(|v| v.info)
+    cert.verify(master).map(|v| v.info().to_string())
 }
 
 /// Both must accept with the same info, or both refuse.
@@ -82,6 +82,15 @@ fn assert_agree(bytes: &[u8], master: &VerifyingKey) -> Result<String, Error> {
         GhostkeyCertificate::from_cbor(bytes),
     ) {
         assert_eq!(r.to_bytes().unwrap(), o.to_cbor(), "re-encodings differ");
+    }
+    // Whatever this crate parses, its canonical forms parse again, to
+    // themselves.
+    if let Ok(cert) = GhostkeyCertificate::from_cbor(bytes) {
+        let pem = cert.to_armored();
+        let again = GhostkeyCertificate::from_armored(&pem).expect("canonical armour parses");
+        assert_eq!(again.to_armored(), pem);
+        let cbor = GhostkeyCertificate::from_cbor(&cert.to_cbor()).expect("canonical CBOR parses");
+        assert_eq!(cbor.to_cbor(), cert.to_cbor());
     }
     o
 }
@@ -111,7 +120,7 @@ fn valid_chain_verifies_in_both_and_reencodes_identically() {
     assert_eq!(ours.claimed_ghost_key(), &c.ghost.verifying_key());
 
     let verified = ours.verify(&master).unwrap();
-    assert_eq!(verified.ghost_key, c.ghost.verifying_key());
+    assert_eq!(verified.ghost_key(), &c.ghost.verifying_key());
     let info = verified.notary_info().unwrap();
     assert_eq!(info.amount, 20);
     assert_eq!(
@@ -391,6 +400,33 @@ fn weird_but_equivalent_encodings_agree() {
     // which is what the notary signed.
     assert_eq!(assert_agree(&encode(&v), &master), Ok(INFO.to_string()));
 
+    // The RSA signature, and the master's Ed25519 signature, as CBOR byte
+    // strings rather than arrays: ciborium hands both decoders the bytes one
+    // by one, and both re-encode them as arrays.
+    let mut v = genuine.clone();
+    let sig = field(&mut v, "signature");
+    let Value::Array(items) = sig.clone() else {
+        panic!("not an array")
+    };
+    *sig = Value::Bytes(
+        items
+            .iter()
+            .map(|i| u8::try_from(i.as_integer().unwrap()).unwrap())
+            .collect(),
+    );
+    assert_eq!(assert_agree(&encode(&v), &master), Ok(INFO.to_string()));
+    let master_sig = field(field(&mut v, "delegate"), "signature");
+    let Value::Array(items) = master_sig.clone() else {
+        panic!("not an array")
+    };
+    *master_sig = Value::Bytes(
+        items
+            .iter()
+            .map(|i| u8::try_from(i.as_integer().unwrap()).unwrap())
+            .collect(),
+    );
+    assert_eq!(assert_agree(&encode(&v), &master), Ok(INFO.to_string()));
+
     // Trailing garbage after the item: both ignore it.
     let mut bytes = encode(&genuine);
     bytes.extend_from_slice(b"trailing");
@@ -534,7 +570,7 @@ fn armour_variants_agree() {
         let o = GhostkeyCertificate::from_armored(text)
             .ok()
             .and_then(|c| c.verify(&master).ok())
-            .map(|v| v.info);
+            .map(|v| v.info().to_string());
         assert_eq!(r, o, "variant {i}: {text:?}");
         assert_eq!(o.is_some(), *accepted, "variant {i}: {text:?}");
         if o.is_some() {
@@ -562,8 +598,8 @@ fn ghostkey_lib_legacy_fixtures_agree() {
         .unwrap();
     let cert = GhostkeyCertificate::from_armored(&pem).unwrap();
     let verified = cert.verify(&master).unwrap();
-    assert_eq!(verified.info, reference);
-    assert_eq!(verified.info, "donation_amount:20");
+    assert_eq!(verified.info(), reference);
+    assert_eq!(verified.info(), "donation_amount:20");
     // The legacy format has no creation date.
     assert_eq!(verified.notary_info(), Err(Error::Info));
     assert_eq!(cert.to_armored(), pem);
@@ -611,8 +647,8 @@ fn production_certificate_agrees() {
         .unwrap();
     let cert = GhostkeyCertificate::from_armored(&pem).unwrap();
     let verified = cert.verify(&production_master()).unwrap();
-    assert_eq!(verified.info, reference);
-    let info = NotaryInfo::parse(&verified.info).unwrap();
+    assert_eq!(verified.info(), reference);
+    let info = NotaryInfo::parse(verified.info()).unwrap();
     assert_eq!(info.action, "freenet-donation");
     assert_eq!(cert.to_armored(), pem);
 
@@ -654,7 +690,7 @@ fn payload_signatures_agree() {
         .unwrap()
         .verify(&c.master.verifying_key())
         .unwrap();
-    let key = verified.ghost_key;
+    let key = *verified.ghost_key();
     // Shaped like a ScopedPayload; the bytes are opaque to the check.
     let payload =
         b"\xa2irequestor\xa1fWebApp\x58\x20AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgpayload\x43abc";
@@ -860,4 +896,88 @@ fn difference_notary_key_outside_the_limits() {
         assert_eq!(reference(&bytes, &master), Ok(INFO.to_string()), "key {i}");
         assert_eq!(ours(&bytes, &master), Err(Error::NotaryKey), "key {i}");
     }
+}
+
+#[test]
+fn cheap_refusals_come_before_the_chain() {
+    // A weak ghost key is refused before any signature is looked at, and a
+    // weak master before that: with every signature broken, those are still
+    // the errors. Moving either check after the chain fails this test.
+    let mut identity = [0u8; 32];
+    identity[0] = 1;
+    let weak = VerifyingKey::from_bytes(&identity).unwrap();
+    let c = chain(INFO);
+    let master = c.master.verifying_key();
+    let mut cert = c.cert.clone();
+    cert.verifying_key = weak;
+    cert.notary.payload.info = "tampered".into();
+    cert.signature = RsaSignature(vec![1; 256]);
+    let bytes = bytes_of(&cert);
+    assert_eq!(ours(&bytes, &master), Err(Error::WeakGhostKey));
+    assert_eq!(ours(&bytes, &weak), Err(Error::WeakMasterKey));
+    assert!(reference(&bytes, &master).is_err());
+}
+
+#[test]
+fn largest_notary_key_fits_the_size_limit() {
+    // A 4096-bit notary key is the largest accepted; its certificate must fit
+    // MAX_CERTIFICATE_BYTES in both forms, or the two limits contradict each
+    // other. The RSA signature is the variable part: CBOR spends two bytes on
+    // each signature byte of 24 or more, so the bound is checked against the
+    // worst case too, not only this signature.
+    use ghostkey_verify::MAX_CERTIFICATE_BYTES;
+    let sk = rsa_08::RsaPrivateKey::new(&mut OsRng, 4096).unwrap();
+    let (bytes, master) = chain_with_notary_key(&sk, 48);
+    assert_eq!(assert_agree(&bytes, &master), Ok(INFO.to_string()));
+    let cert = GhostkeyCertificate::from_cbor(&bytes).unwrap();
+    let pem = cert.to_armored();
+    assert!(pem.len() <= MAX_CERTIFICATE_BYTES, "{} bytes", pem.len());
+    assert_eq!(
+        GhostkeyCertificate::from_armored(&pem).unwrap().to_cbor(),
+        bytes
+    );
+
+    let mut worst = GhostkeyCertificateV1::from_bytes(&bytes).unwrap();
+    worst.signature = RsaSignature(vec![0xff; 512]);
+    let worst = GhostkeyCertificate::from_cbor(&bytes_of(&worst)).unwrap();
+    let worst_pem = worst.to_armored();
+    assert!(
+        worst_pem.len() <= MAX_CERTIFICATE_BYTES,
+        "worst case {} bytes",
+        worst_pem.len()
+    );
+}
+
+#[test]
+fn difference_canonical_form_over_the_size_limit() {
+    // An RSA signature sent as a CBOR byte string takes half the space its
+    // canonical array does. A long one fits the limit as sent and not once
+    // re-encoded; ghostkey_lib parses it (and refuses the chain), this crate
+    // refuses it at parse, so every certificate it accepts has a canonical
+    // form it can read back.
+    use ciborium::Value;
+    use ghostkey_verify::MAX_CERTIFICATE_BYTES;
+    let c = chain(INFO);
+    let mut v: Value = ciborium::de::from_reader(bytes_of(&c.cert).as_slice()).unwrap();
+    *field(&mut v, "signature") = Value::Bytes(vec![0xff; 2200]);
+    let mut cbor = Vec::new();
+    ciborium::ser::into_writer(&v, &mut cbor).unwrap();
+    assert!(cbor.len() <= MAX_CERTIFICATE_BYTES);
+    assert!(GhostkeyCertificateV1::from_bytes(&cbor).is_ok());
+    assert_eq!(
+        GhostkeyCertificate::from_cbor(&cbor).err(),
+        Some(Error::TooLarge)
+    );
+    use base64::Engine;
+    let pem = format!(
+        "-----BEGIN GHOSTKEY_CERTIFICATE_V1-----\n{}\n-----END GHOSTKEY_CERTIFICATE_V1-----\n",
+        base64::engine::general_purpose::STANDARD.encode(&cbor)
+    );
+    assert!(pem.len() <= MAX_CERTIFICATE_BYTES);
+    assert!(GhostkeyCertificateV1::from_armored_string(&pem).is_ok());
+    // Inside the armour the CBOR's refusal surfaces as no block decoding.
+    assert_eq!(
+        GhostkeyCertificate::from_armored(&pem).err(),
+        Some(Error::Armor)
+    );
 }

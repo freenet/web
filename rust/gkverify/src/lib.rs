@@ -28,8 +28,8 @@
 //! intentional differences all refuse something `ghostkey_lib` accepts and no
 //! genuine certificate contains:
 //!
-//! * Certificates over [`MAX_CERTIFICATE_BYTES`] are refused unparsed, and
-//!   so is a weak master key.
+//! * Certificates over [`MAX_CERTIFICATE_BYTES`], as given or in canonical
+//!   form, are refused, and so is a weak master key.
 //! * [`GhostkeyCertificate::verify`] refuses a certificate that certifies a
 //!   weak (small-order) ghost key, which anyone can sign for. The notary
 //!   blind-signs whatever key it is given, so such certificates can exist.
@@ -92,7 +92,9 @@ pub fn production_master() -> VerifyingKey {
 }
 
 /// Largest certificate accepted, in bytes, by [`GhostkeyCertificate::from_armored`]
-/// (of armoured text) and [`GhostkeyCertificate::from_cbor`] (of CBOR).
+/// (of armoured text) and [`GhostkeyCertificate::from_cbor`] (of CBOR), and
+/// the largest canonical armoured form ([`GhostkeyCertificate::to_armored`]) of
+/// any certificate either accepts, so a canonical form always parses again.
 ///
 /// A genuine certificate is about 1.6 KB armoured; one under a 4096-bit
 /// notary key, the largest accepted, is under 3 KB. The same bound as
@@ -114,18 +116,19 @@ pub struct GhostkeyCertificate {
 }
 
 /// What a verified certificate certifies.
+///
+/// Only [`GhostkeyCertificate::verify`] makes one, so holding one means the
+/// chain was checked.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct VerifiedGhostkey {
-    /// The ghost key the chain certifies.
-    pub ghost_key: VerifyingKey,
-    /// The notary certificate's `info` string, exactly as the master key
-    /// signed it. [`NotaryInfo::parse`] reads the current format.
-    pub info: String,
+    ghost_key: VerifyingKey,
+    info: String,
 }
 
 impl GhostkeyCertificate {
     /// Parse a PEM-armoured certificate (`-----BEGIN GHOSTKEY_CERTIFICATE_V1-----`),
-    /// accepting exactly what `ghostkey_lib`'s `from_armored_string` accepts.
+    /// accepting exactly what `ghostkey_lib`'s `from_armored_string` accepts
+    /// apart from the size limit.
     ///
     /// That includes any text around the armour, so one certificate has many
     /// spellings. A caller that keys anything by certificate text should
@@ -148,7 +151,15 @@ impl GhostkeyCertificate {
             return Err(Error::TooLarge);
         }
         let wire = ciborium::de::from_reader(bytes).map_err(|_| Error::Malformed)?;
-        Ok(Self { wire })
+        let cert = Self { wire };
+        // The canonical form can be longer than the input: an RSA signature
+        // sent as a CBOR byte string is written back as an array, up to twice
+        // the size. Bounding the canonical armour makes every accepted
+        // certificate's `to_armored` and `to_cbor` parse again.
+        if armor::encoded_len(cert.to_cbor().len()) > MAX_CERTIFICATE_BYTES {
+            return Err(Error::TooLarge);
+        }
+        Ok(cert)
     }
 
     /// The canonical CBOR encoding: what `ghostkey_lib` would write for this
@@ -180,8 +191,12 @@ impl GhostkeyCertificate {
     /// A weak master key, under which anyone could sign notary
     /// certificates, is refused.
     ///
-    /// Refuses a certificate for a weak ghost key (see the crate docs). That
-    /// check comes first, so such a certificate never costs an RSA operation.
+    /// Refuses a certificate for a weak ghost key (see the crate docs).
+    ///
+    /// The checks run cheapest first, and the first to fail is the error:
+    /// weak master key, weak ghost key, the master's Ed25519 signature, the
+    /// notary key's parameters, then the RSA signature. A weak-key
+    /// certificate never costs an RSA operation.
     pub fn verify(&self, master: &VerifyingKey) -> Result<VerifiedGhostkey, Error> {
         if master.is_weak() {
             return Err(Error::WeakMasterKey);
@@ -214,6 +229,9 @@ impl GhostkeyCertificate {
         //    default options.
         let key = notary.payload.notary_key.to_rsa()?;
         let sig = &self.wire.signature.0;
+        // blind-rsa-signatures' own length rule. rsa 0.10 refuses a wrong
+        // length too, but this is the rule being mirrored, so it is stated
+        // here rather than left to the dependency.
         if sig.len() != rsa::traits::PublicKeyParts::size(&key) {
             return Err(Error::GhostKeySignature);
         }
@@ -247,6 +265,17 @@ pub fn verify_payload_signature(
 }
 
 impl VerifiedGhostkey {
+    /// The ghost key the chain certifies.
+    pub fn ghost_key(&self) -> &VerifyingKey {
+        &self.ghost_key
+    }
+
+    /// The notary certificate's `info` string, exactly as the master key
+    /// signed it. [`VerifiedGhostkey::notary_info`] reads the current format.
+    pub fn info(&self) -> &str {
+        &self.info
+    }
+
     /// [`verify_payload_signature`] under this ghost key.
     pub fn verify_payload_signature(&self, payload: &[u8], signature: &[u8]) -> Result<(), Error> {
         verify_payload_signature(&self.ghost_key, payload, signature)

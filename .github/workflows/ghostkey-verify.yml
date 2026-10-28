@@ -12,7 +12,9 @@
 #      proofs (bignum code takes a different path on 32-bit limbs).
 # No lockfile is committed (the repo ignores Cargo.lock), so each run resolves
 # dependencies as a new downstream contract would. The weekly run catches an
-# upstream release that breaks any of the three without a change here.
+# upstream release that breaks any of the three without a change here. The
+# toolchain is stable, unpinned, for the same reason: a red weekly run can be a
+# new Rust release (a clippy lint, say) rather than a dependency.
 name: ghostkey-verify
 
 on:
@@ -36,7 +38,9 @@ permissions:
 
 concurrency:
   group: ghostkey-verify-${{ github.ref }}
-  cancel-in-progress: true
+  # Superseded PR pushes are cancelled; runs on main are not, so every main
+  # commit gets a result.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
@@ -98,3 +102,25 @@ jobs:
       # crates.io will receive.
       - name: Package
         run: cargo package --allow-dirty
+
+  # Holds `rust-version` in Cargo.toml to the truth: it was wrong once, and
+  # only reading the dependencies' manifests showed it.
+  msrv:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: rust/gkverify
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read rust-version
+        id: msrv
+        run: echo "version=$(sed -n 's/^rust-version = "\(.*\)"/\1/p' Cargo.toml)" >> "$GITHUB_OUTPUT"
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.msrv.outputs.version }}
+          targets: wasm32-unknown-unknown
+      - name: Check the library at its rust-version
+        run: |
+          cargo check --lib
+          cargo check --lib --target wasm32-unknown-unknown

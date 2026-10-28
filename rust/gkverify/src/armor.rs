@@ -45,6 +45,14 @@ pub(crate) fn decode(armored: &str) -> Result<crate::GhostkeyCertificate, Error>
     Err(Error::Armor)
 }
 
+/// The length of [`encode`]'s output for `cbor_len` bytes, without encoding.
+pub(crate) fn encoded_len(cbor_len: usize) -> usize {
+    let base64 = cbor_len.div_ceil(3) * 4;
+    let lines = base64.div_ceil(64);
+    let frame = "-----BEGIN -----\n".len() + "-----END -----\n".len() + 2 * LABEL.len();
+    frame + base64 + lines
+}
+
 /// `Armorable::to_armored_string`: base64 wrapped at 64 columns.
 pub(crate) fn encode(cbor: &[u8]) -> String {
     let base64 = STANDARD.encode(cbor);
@@ -55,4 +63,16 @@ pub(crate) fn encode(cbor: &[u8]) -> String {
     }
     out.push_str(&format!("-----END {LABEL}-----\n"));
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn encoded_len_is_encode_len() {
+        for n in 1..600 {
+            assert_eq!(encoded_len(n), encode(&vec![0xa5; n]).len(), "{n}");
+        }
+    }
 }

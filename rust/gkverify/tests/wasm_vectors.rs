@@ -54,7 +54,7 @@ struct Vector {
 fn native(v: &Vector) -> i64 {
     let run = || -> Result<u8, Error> {
         let verified = GhostkeyCertificate::from_armored(&v.cert)?.verify(&v.master)?;
-        verify_payload_signature(&verified.ghost_key, &v.payload, &v.sig)?;
+        verify_payload_signature(verified.ghost_key(), &v.payload, &v.sig)?;
         Ok(verified.notary_info()?.created_month.month)
     };
     match run() {
@@ -300,6 +300,12 @@ fn write_wasm_vectors() {
     let mut manifest = Vec::new();
     for v in &vectors {
         assert_eq!(native(v), v.expect, "{}: native verdict", v.name);
+        // -99 is the probe's catch-all for an error its table does not name.
+        assert_ne!(
+            v.expect, -99,
+            "{}: an error missing from the code table",
+            v.name
+        );
         let mut bytes = v.master.to_bytes().to_vec();
         bytes.extend_from_slice(&(v.cert.len() as u32).to_le_bytes());
         bytes.extend_from_slice(v.cert.as_bytes());

@@ -60,7 +60,7 @@ fn verify(input: &[u8]) -> Result<u8, i64> {
     let cert = std::str::from_utf8(cert).map_err(|_| -3)?;
     let cert = GhostkeyCertificate::from_armored(cert).map_err(code)?;
     let verified = cert.verify(&master).map_err(code)?;
-    verify_payload_signature(&verified.ghost_key, payload, sig).map_err(code)?;
+    verify_payload_signature(verified.ghost_key(), payload, sig).map_err(code)?;
     let info = verified.notary_info().map_err(code)?;
     Ok(info.created_month.month)
 }

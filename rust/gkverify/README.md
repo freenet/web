@@ -22,7 +22,12 @@ fn check(cert_pem: &str, scoped_payload: &[u8], signature: &[u8]) -> Result<u64,
     // The cheap Ed25519 check first, so a forged entry never costs an RSA check.
     verify_payload_signature(cert.claimed_ghost_key(), scoped_payload, signature)?;
     let verified = cert.verify(&production_master())?;
-    Ok(verified.notary_info()?.amount)
+    let info = verified.notary_info()?;
+    // Every notary key so far is a donation notary; don't take a future kind for one.
+    if info.action != "freenet-donation" {
+        return Err(ghostkey_verify::Error::Info);
+    }
+    Ok(info.amount)
 }
 ```
 
@@ -36,7 +41,8 @@ re-encoded and mutated certificates, armour variants, and recorded certificates
 (including one under the production master key). The differences are
 deliberate, and each refuses something no genuine certificate contains:
 
-- input over `MAX_CERTIFICATE_BYTES` (4 KiB) is refused unparsed;
+- input over `MAX_CERTIFICATE_BYTES` (4 KiB), as given or in canonical form, is
+  refused;
 - a weak master key, and a certificate for a weak (small-order) ghost key, are
   refused;
 - the notary RSA key must have an odd 2048 to 4096 bit modulus and exponent 3

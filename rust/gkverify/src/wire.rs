@@ -247,6 +247,14 @@ mod tests {
         assert_eq!(key(63, 65537).err(), Some(Error::NotaryKey));
         assert_eq!(key(32, 65537).err(), Some(Error::NotaryKey));
         assert_eq!(key(129, 65537).err(), Some(Error::NotaryKey));
+        // 4097 bits: one bit past the largest accepted.
+        let mut n = vec![0x1357_9bdf_u32 | 1; 128];
+        n.push(1);
+        let just_over = RsaPublicKeyWire(RsaPublicKeyFields {
+            n: BigUintWire::from_u32s(&n),
+            e: BigUintWire::from_u32s(&[65537]),
+        });
+        assert_eq!(just_over.to_rsa().err(), Some(Error::NotaryKey));
         for e in [0, 1, 2, 5, 17, 65539] {
             assert_eq!(key(64, e).err(), Some(Error::NotaryKey), "e = {e}");
         }
