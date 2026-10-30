@@ -66,7 +66,7 @@ These are the settings worth knowing about. The names on the left are the `confi
 | `max-number-of-connections` | Peer connections accepted. | `200` |
 | `min-number-of-connections` | Peer connections the node tries to maintain. Lowering this is the single biggest lever on idle bandwidth. | `25` |
 | `total_bandwidth_limit` | Bytes per second across all connections. Unset means no aggregate cap. | unset |
-| `bandwidth_limit` | Bytes per second for a single large transfer. | `3000000` (3 MB/s) |
+| `bandwidth_limit` | Bytes per second per connection, for streamed transfers. It only lowers a connection's rate (by default each connection is paced at 1.25 MB/s, so higher values change nothing); values below 64 KiB/s are raised to that, and 0 means unset. Ignored when `total_bandwidth_limit` is set, which is the setting to use for limiting total upload. | unset |
 
 Note the mixed dashes and underscores. Copy the key names exactly as written above.
 
