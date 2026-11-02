@@ -13,7 +13,11 @@ use std::sync::Mutex;
 use std::time::{Duration as StdDuration, Instant};
 use thiserror::Error;
 
-/// Maximum number of invites allowed per IP within the time window.
+/// Default number of invites allowed per IP within the time window.
+///
+/// Runtime-configurable via `INVITES_PER_IP_PER_DAY`, so a launch can raise it
+/// and put it back without a new binary. This default is what applies when
+/// that is unset.
 ///
 /// Kept deliberately low as an anti-spam measure for the freenet.org/quickstart
 /// flow, which mints invites into the shared "Freenet Official" room. A few
@@ -67,6 +71,7 @@ pub struct RateLimitData {
 pub struct RateLimiter {
     data_path: PathBuf,
     window_hours: i64,
+    max_per_window: usize,
     /// Mutex for thread-safe access to the file
     lock: Mutex<()>,
 }
@@ -81,8 +86,19 @@ impl RateLimiter {
         Self {
             data_path,
             window_hours,
+            max_per_window: MAX_INVITES_PER_WINDOW,
             lock: Mutex::new(()),
         }
+    }
+
+    /// Replace the default per-IP allowance.
+    pub fn with_max_per_window(mut self, max_per_window: usize) -> Self {
+        self.max_per_window = max_per_window;
+        self
+    }
+
+    pub fn max_per_window(&self) -> usize {
+        self.max_per_window
     }
 
     /// Check if an IP is rate limited, and record the access if allowed
@@ -117,7 +133,7 @@ impl RateLimiter {
 
         // Check if IP has reached the limit
         let timestamps = data.invites.entry(ip_str).or_default();
-        if timestamps.len() >= MAX_INVITES_PER_WINDOW {
+        if timestamps.len() >= self.max_per_window {
             return Ok(false); // Rate limited
         }
 
@@ -141,17 +157,22 @@ impl RateLimiter {
 
         if let Some(timestamps) = data.invites.get(&ip_str) {
             // Filter to only valid timestamps within window
-            let valid_timestamps: Vec<_> = timestamps
+            let mut valid_timestamps: Vec<_> = timestamps
                 .iter()
                 .filter_map(|ts| DateTime::parse_from_rfc3339(ts).ok())
                 .map(|t| -> DateTime<Utc> { t.into() })
                 .filter(|t| now - *t < window)
                 .collect();
 
-            // If at limit, return time until oldest expires
-            if valid_timestamps.len() >= MAX_INVITES_PER_WINDOW {
-                if let Some(oldest) = valid_timestamps.iter().min() {
-                    let expires_at = *oldest + window;
+            // If at limit, return the time until the count drops below it.
+            // That is not always the oldest entry: an IP can hold more than
+            // the limit after the limit is lowered, which is how a temporary
+            // raise is rolled back.
+            if valid_timestamps.len() >= self.max_per_window {
+                valid_timestamps.sort_unstable();
+                let index = valid_timestamps.len() - self.max_per_window;
+                if let Some(frees_a_slot) = valid_timestamps.get(index) {
+                    let expires_at = *frees_a_slot + window;
                     let remaining = expires_at - now;
                     return Ok(Some(remaining.num_seconds()));
                 }
@@ -555,6 +576,59 @@ mod tests {
         assert!(
             !limiter.check_and_record(ip).unwrap(),
             "5th invite in window must be rejected"
+        );
+    }
+
+    #[test]
+    fn configured_limit_replaces_the_default_allowance() {
+        let dir = tempdir().unwrap();
+        let limiter =
+            RateLimiter::new(dir.path().join("rate_limits.json"), 24).with_max_per_window(6);
+        let ip = IpAddr::V4(Ipv4Addr::new(203, 0, 113, 8));
+
+        for i in 1..=6 {
+            assert!(
+                limiter.check_and_record(ip).unwrap(),
+                "invite {i} of 6 should be allowed"
+            );
+        }
+        assert!(
+            !limiter.check_and_record(ip).unwrap(),
+            "7th invite in window must be rejected"
+        );
+    }
+
+    /// Lowering the limit after a raise leaves IPs holding more than the new
+    /// limit. They can ask again once enough entries have expired, not when
+    /// the oldest one does.
+    #[test]
+    fn retry_after_counts_down_to_below_the_limit_when_over_it() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("rate_limits.json");
+        let ip = IpAddr::V4(Ipv4Addr::new(203, 0, 113, 9));
+        let now = Utc::now();
+        let hours_ago = [23, 20, 10, 5, 1, 0];
+        let timestamps = hours_ago
+            .iter()
+            .map(|h| (now - Duration::hours(*h)).to_rfc3339())
+            .collect();
+        let data = RateLimitData {
+            invites: HashMap::from([(ip.to_string(), timestamps)]),
+        };
+        fs::write(&path, serde_json::to_string(&data).unwrap()).unwrap();
+
+        let retry = RateLimiter::new(path, 24)
+            .with_max_per_window(4)
+            .get_retry_after(ip)
+            .unwrap()
+            .expect("an IP over the limit must have a retry time");
+
+        // Six held and a limit of 4: the third oldest (10h ago) has to expire,
+        // which is 14h away. The oldest alone would say 1h.
+        let hour = Duration::hours(1).num_seconds();
+        assert!(
+            retry > 13 * hour && retry <= 14 * hour,
+            "expected about 14h, got {retry}s"
         );
     }
 

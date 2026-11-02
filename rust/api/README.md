@@ -80,6 +80,21 @@ id is in its URL), then tell each of them to reload that success page. Do not cl
 with `notary_period`: the server cannot tell which signatures failed to unblind, and a
 donor whose key worked would be able to mint a second one.
 
+## Invite limits
+
+These are set as `Environment=` lines in `/etc/systemd/system/gkapi.service`. Changing one
+needs `sudo systemctl daemon-reload && sudo systemctl restart gkapi`, and no new binary. The
+restart drops any unexpired proof-of-work challenges, and the hourly count is rebuilt from
+`invite_rate_limits.json`.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `GLOBAL_INVITES_PER_HOUR` | 200 | Ceiling across everyone over a sliding hour. 0 disables it. |
+| `INVITES_PER_IP_PER_DAY` | 4 | Allowance for one IP over a sliding 24 hours, 1 to 1000. Phones behind a carrier NAT share one. |
+| `INVITE_POW_DIFFICULTY` | 16 | Base proof-of-work bits. Adds 2 at 90 invites in the hour and 4 at 150. Those thresholds do not move with the ceiling. |
+
+To undo a temporary raise, delete or restore the line and do the same two commands.
+
 ## Notary keys and the monthly schedule
 
 The notary directory (`--notary-dir`, `/home/gkapi/delegate-keys` on nova) holds one

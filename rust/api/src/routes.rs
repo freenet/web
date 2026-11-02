@@ -48,16 +48,21 @@ pub struct InviteState {
 }
 
 impl InviteState {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         rate_limit_file: PathBuf,
         tor_exit_cache: Option<PathBuf>,
         global_invites_per_hour: Option<usize>,
+        invites_per_ip_per_day: Option<usize>,
         pow_base_difficulty: u8,
         room_owner_vk: VerifyingKey,
         inviter_signing_key: SigningKey,
         room_name: String,
     ) -> Self {
-        let rate_limiter = Arc::new(RateLimiter::new(rate_limit_file, 24));
+        let invites_per_ip = invites_per_ip_per_day.unwrap_or(MAX_INVITES_PER_WINDOW);
+        info!("Per-IP invite limit: {invites_per_ip} per 24 hours");
+        let rate_limiter =
+            Arc::new(RateLimiter::new(rate_limit_file, 24).with_max_per_window(invites_per_ip));
         let tor_exits = Arc::new(TorExitList::new(tor_exit_cache));
         let recent_ages = match rate_limiter.recent_events(GLOBAL_WINDOW_MINUTES) {
             // Seed only traffic the new policy would have admitted. Otherwise
@@ -566,6 +571,13 @@ fn get_client_ip(addr: SocketAddr, headers: &HeaderMap) -> IpAddr {
     }
 }
 
+fn per_ip_limit_message(state: &InviteState) -> String {
+    format!(
+        "Rate limited. You can request up to {} invites per 24 hours.",
+        state.rate_limiter.max_per_window()
+    )
+}
+
 fn invite_error(
     status: StatusCode,
     message: impl Into<String>,
@@ -636,9 +648,7 @@ async fn get_invite_challenge(
         Ok(Some(retry_after)) => {
             return Err(invite_error(
                 StatusCode::TOO_MANY_REQUESTS,
-                format!(
-                    "Rate limited. You can request up to {MAX_INVITES_PER_WINDOW} invites per 24 hours."
-                ),
+                per_ip_limit_message(&state),
                 Some(retry_after),
             ));
         }
@@ -717,9 +727,7 @@ async fn create_room_invite(
             );
             return Err(invite_error(
                 StatusCode::TOO_MANY_REQUESTS,
-                format!(
-                    "Rate limited. You can request up to {MAX_INVITES_PER_WINDOW} invites per 24 hours."
-                ),
+                per_ip_limit_message(&state),
                 retry_after,
             ));
         }
@@ -1166,6 +1174,39 @@ mod invite_handler_tests {
         assert_eq!(state.global_bucket.current(), 3);
     }
 
+    /// The configured limit has to reach both handlers and what the refused
+    /// user is told, not only the limiter.
+    #[tokio::test]
+    async fn configured_per_ip_limit_is_enforced_and_reported() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut state = state_with(&dir, &["185.220.101.1"], 100);
+        let limit = MAX_INVITES_PER_WINDOW + 2;
+        state.rate_limiter = Arc::new(
+            RateLimiter::new(dir.path().join("configured.json"), 24).with_max_per_window(limit),
+        );
+
+        for i in 0..limit {
+            assert_eq!(
+                request_proxied(&state, "198.51.100.4").await,
+                StatusCode::OK,
+                "invite {i} of {limit} should be allowed"
+            );
+        }
+        let (status, body) = get_invite_challenge(
+            State(state.clone()),
+            ConnectInfo(addr("127.0.0.1")),
+            proxied("198.51.100.4"),
+        )
+        .await
+        .expect_err("the allowance is used up");
+        assert_eq!(status, StatusCode::TOO_MANY_REQUESTS);
+        assert!(
+            body.error.contains(&format!("up to {limit} invites")),
+            "the refusal must state the configured limit, got: {}",
+            body.error
+        );
+    }
+
     #[tokio::test]
     async fn per_ip_rejection_refunds_global_capacity_and_proof() {
         let dir = tempfile::tempdir().unwrap();
@@ -1203,6 +1244,7 @@ mod invite_handler_tests {
             dir.path().join("rl.json"),
             Some(cache),
             Some(200),
+            None,
             4,
             signing_key.verifying_key(),
             signing_key,
