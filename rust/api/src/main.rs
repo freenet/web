@@ -88,6 +88,9 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
             .unwrap_or("/var/lib/gkapi/tor_exit_list.txt"),
     ));
     let global_invites_per_hour = matches.get_one::<usize>("global-invites-per-hour").copied();
+    let invites_per_ip_per_day = matches
+        .get_one::<u32>("invites-per-ip-per-day")
+        .map(|n| *n as usize);
     let pow_base_difficulty = matches
         .get_one::<u8>("invite-pow-difficulty")
         .copied()
@@ -151,6 +154,7 @@ fn load_invite_config(matches: &clap::ArgMatches) -> Option<InviteState> {
         rate_limit_file,
         tor_exit_cache,
         global_invites_per_hour,
+        invites_per_ip_per_day,
         pow_base_difficulty,
         room_owner_vk,
         inviter_signing_key,
@@ -308,6 +312,14 @@ async fn main() {
                 .env("GLOBAL_INVITES_PER_HOUR")
                 .value_parser(value_parser!(usize))
                 .help("Emergency hourly ceiling across all issued invitations (0 disables)."),
+        )
+        .arg(
+            Arg::new("invites-per-ip-per-day")
+                .long("invites-per-ip-per-day")
+                .value_name("N")
+                .env("INVITES_PER_IP_PER_DAY")
+                .value_parser(value_parser!(u32).range(1..=100))
+                .help("Invitations one IP may receive in 24 hours (default 4)."),
         )
         .arg(
             Arg::new("invite-pow-difficulty")

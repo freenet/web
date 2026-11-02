@@ -80,6 +80,47 @@ id is in its URL), then tell each of them to reload that success page. Do not cl
 with `notary_period`: the server cannot tell which signatures failed to unblind, and a
 donor whose key worked would be able to mint a second one.
 
+## Invite limits
+
+These are set as `Environment=` lines in `/etc/systemd/system/gkapi.service`. Changing one
+needs `sudo systemctl daemon-reload && sudo systemctl restart gkapi`, and no new binary. The
+restart drops any unexpired proof-of-work challenges, and the hourly count is rebuilt from
+`invite_rate_limits.json`. They must go in the unit file: `.env` is read after the arguments
+are parsed, so a value there has no effect.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `GLOBAL_INVITES_PER_HOUR` | 200 | Ceiling across everyone over a sliding hour. 0 disables it. |
+| `INVITES_PER_IP_PER_DAY` | 4 | Allowance for one IP over a sliding 24 hours, 1 to 100. Phones behind a carrier NAT share one. The global ceiling still applies to every invite. |
+| `INVITE_POW_DIFFICULTY` | 16 | Base proof-of-work bits. Adds 2 at 90 invites in the hour and 4 at 150. Those thresholds do not move with the ceiling. |
+
+`INVITES_PER_IP_PER_DAY` needs a build containing freenet/web#227. An older binary ignores the
+variable without complaint, and rolling back to one means the limit is 4 whatever the unit
+says.
+
+**Verify after every restart:**
+
+```bash
+systemctl is-active gkapi
+sudo journalctl -u gkapi _SYSTEMD_INVOCATION_ID=$(systemctl show -p InvocationID --value gkapi) \
+  | grep 'Per-IP invite limit'
+```
+
+The log line is the authority on the limit in force. This command reads only the current run,
+so no line means the binary is too old, or the invite endpoint is not configured.
+
+**A bad or blank value stops the whole service, donations included.** Each variable is parsed
+at startup, so gkapi exits on an invalid value. Under `Restart=always` it then loops every few
+seconds without any alert, so don't rely on the restart command to report it.
+
+**Leave a dated comment beside any raise in the unit file**, saying why and when it should come
+back down, and update the existing comment there that explains the ceiling. A changed
+`INVITES_PER_IP_PER_DAY` is logged as a warning at each start, and nothing else will remind
+anyone.
+
+To undo a temporary raise, delete or restore the line, do the same two commands and verify
+again.
+
 ## Notary keys and the monthly schedule
 
 The notary directory (`--notary-dir`, `/home/gkapi/delegate-keys` on nova) holds one
