@@ -102,12 +102,12 @@ says.
 
 ```bash
 systemctl is-active gkapi
-sudo journalctl -u gkapi -n 50 | grep 'Per-IP invite limit'
+sudo journalctl -u gkapi _SYSTEMD_INVOCATION_ID=$(systemctl show -p InvocationID --value gkapi) \
+  | grep 'Per-IP invite limit'
 ```
 
-The log line is the authority on the limit in force. Check that its timestamp is from this
-restart: an older line means the new process has not started. No line means the binary is too
-old, or the invite endpoint is not configured.
+The log line is the authority on the limit in force. This command reads only the current run,
+so no line means the binary is too old, or the invite endpoint is not configured.
 
 **A bad or blank value stops the whole service, donations included.** Each variable is parsed
 at startup, so gkapi exits on an invalid value. Under `Restart=always` it then loops every few
