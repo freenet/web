@@ -59,10 +59,20 @@ impl InviteState {
         inviter_signing_key: SigningKey,
         room_name: String,
     ) -> Self {
-        let invites_per_ip = invites_per_ip_per_day.unwrap_or(MAX_INVITES_PER_WINDOW);
+        let rate_limiter = Arc::new(
+            RateLimiter::new(rate_limit_file, 24)
+                .with_max_per_window(invites_per_ip_per_day.unwrap_or(MAX_INVITES_PER_WINDOW)),
+        );
+        let invites_per_ip = rate_limiter.max_per_window();
+        if invites_per_ip != MAX_INVITES_PER_WINDOW {
+            warn!(
+                "INVITES_PER_IP_PER_DAY is {invites_per_ip}, not the default of \
+                 {MAX_INVITES_PER_WINDOW}. Remove it from the unit file if this is left over."
+            );
+        }
+        // This wording is a contract: tests/invite_limit_env.rs and the verify
+        // step in rust/api/README.md both match it. Change them together.
         info!("Per-IP invite limit: {invites_per_ip} per 24 hours");
-        let rate_limiter =
-            Arc::new(RateLimiter::new(rate_limit_file, 24).with_max_per_window(invites_per_ip));
         let tor_exits = Arc::new(TorExitList::new(tor_exit_cache));
         let recent_ages = match rate_limiter.recent_events(GLOBAL_WINDOW_MINUTES) {
             // Seed only traffic the new policy would have admitted. Otherwise
@@ -1184,6 +1194,8 @@ mod invite_handler_tests {
         state.rate_limiter = Arc::new(
             RateLimiter::new(dir.path().join("configured.json"), 24).with_max_per_window(limit),
         );
+        // Taken while the allowance remains, to reach create's own refusal.
+        let spare_proof = solve(state.pow.issue(state.global_bucket.current()).challenge);
 
         for i in 0..limit {
             assert_eq!(
@@ -1203,6 +1215,23 @@ mod invite_handler_tests {
         assert!(
             body.error.contains(&format!("up to {limit} invites")),
             "the refusal must state the configured limit, got: {}",
+            body.error
+        );
+
+        let refused = create_room_invite(
+            State(state.clone()),
+            ConnectInfo(addr("127.0.0.1")),
+            proxied("198.51.100.4"),
+            Json(spare_proof),
+        )
+        .await;
+        let Err((status, body)) = refused else {
+            panic!("the allowance is used up, so create must refuse");
+        };
+        assert_eq!(status, StatusCode::TOO_MANY_REQUESTS);
+        assert!(
+            body.error.contains(&format!("up to {limit} invites")),
+            "create's refusal must state the configured limit, got: {}",
             body.error
         );
     }

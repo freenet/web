@@ -2,8 +2,9 @@
 //!
 //! # Why this exists
 //!
-//! gkapi's per-IP invite limit ([`crate::rate_limit::MAX_INVITES_PER_WINDOW`])
-//! is structurally defeated by Tor circuit rotation: every new exit node
+//! gkapi's per-IP invite limit (by default
+//! [`crate::rate_limit::MAX_INVITES_PER_WINDOW`]; the startup log gives the
+//! deployed value) is structurally defeated by Tor circuit rotation: every new exit node
 //! presents a fresh IP, and therefore a fresh bucket.
 //!
 //! Measured from `invite_rate_limits.json` (1728 invites,

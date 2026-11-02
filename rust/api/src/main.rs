@@ -318,7 +318,7 @@ async fn main() {
                 .long("invites-per-ip-per-day")
                 .value_name("N")
                 .env("INVITES_PER_IP_PER_DAY")
-                .value_parser(value_parser!(u32).range(1..=1000))
+                .value_parser(value_parser!(u32).range(1..=100))
                 .help("Invitations one IP may receive in 24 hours (default 4)."),
         )
         .arg(

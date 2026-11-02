@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::{HashMap, VecDeque};
 use std::fs;
+use std::io::Write;
 use std::net::IpAddr;
 use std::path::PathBuf;
 use std::sync::Mutex;
@@ -15,16 +16,16 @@ use thiserror::Error;
 
 /// Default number of invites allowed per IP within the time window.
 ///
-/// Runtime-configurable via `INVITES_PER_IP_PER_DAY`, so a launch can raise it
-/// and put it back without a new binary. This default is what applies when
-/// that is unset.
+/// This is only the default: `INVITES_PER_IP_PER_DAY` overrides it at startup,
+/// so a launch can raise it and put it back without a new binary. The startup
+/// log line `Per-IP invite limit: ...` is the authority on the deployed value.
 ///
-/// Kept deliberately low as an anti-spam measure for the freenet.org/quickstart
+/// The default is kept deliberately low as an anti-spam measure for the freenet.org/quickstart
 /// flow, which mints invites into the shared "Freenet Official" room. A few
 /// invites per day covers legitimate re-invites while still slowing bulk
-/// account creation. Raising this without a matching anti-abuse story re-opens
-/// the vector this limit exists to slow. See
-/// `test_rate_limiter_enforces_four_per_window`.
+/// account creation. Raising it, here or through the environment, without a
+/// matching anti-abuse story re-opens the vector this limit exists to slow. See
+/// `test_rate_limiter_enforces_four_per_window`, which pins the default.
 ///
 /// NOTE: this limit is per-IP and therefore cannot bound an actor who rotates
 /// IPs. The global emergency ceiling and proof of work provide that bound.
@@ -91,9 +92,10 @@ impl RateLimiter {
         }
     }
 
-    /// Replace the default per-IP allowance.
+    /// Replace the default per-IP allowance. At least 1: a limit of 0 could
+    /// refuse every request with no time at which asking again would work.
     pub fn with_max_per_window(mut self, max_per_window: usize) -> Self {
-        self.max_per_window = max_per_window;
+        self.max_per_window = max_per_window.max(1);
         self
     }
 
@@ -228,7 +230,17 @@ impl RateLimiter {
             fs::create_dir_all(parent)?;
         }
         let content = serde_json::to_string_pretty(data)?;
-        fs::write(&self.data_path, content)?;
+
+        // Write to a temporary file and rename it into place, so a process
+        // stopped mid-write leaves the previous file whole. A truncated file
+        // fails to parse, which refuses every invite until it is repaired.
+        // `self.lock` is held by every caller, so one temporary path is enough.
+        let mut temp_path = self.data_path.clone().into_os_string();
+        temp_path.push(".tmp");
+        let mut temp_file = fs::File::create(&temp_path)?;
+        temp_file.write_all(content.as_bytes())?;
+        temp_file.sync_all()?;
+        fs::rename(&temp_path, &self.data_path)?;
         Ok(())
     }
 }
@@ -549,7 +561,9 @@ mod tests {
         assert!(limiter.check_and_record(ip).unwrap());
     }
 
-    /// Pins the deployed anti-spam limit at exactly 4 invites / IP / window.
+    /// Pins the DEFAULT anti-spam limit at exactly 4 invites / IP / window. The
+    /// deployed value can differ: see `INVITES_PER_IP_PER_DAY` and the startup
+    /// log.
     ///
     /// The other tests are parameterized on `MAX_INVITES_PER_WINDOW`, so they
     /// pass at any value and would NOT catch an accidental bump of the
@@ -559,7 +573,7 @@ mod tests {
     fn test_rate_limiter_enforces_four_per_window() {
         assert_eq!(
             MAX_INVITES_PER_WINDOW, 4,
-            "invite anti-spam limit must stay at 4/IP/window; raising it re-opens bulk account creation"
+            "default invite anti-spam limit must stay at 4/IP/window; raising it re-opens bulk account creation"
         );
 
         let dir = tempdir().unwrap();
@@ -598,6 +612,19 @@ mod tests {
         );
     }
 
+    /// Store one IP's invites, given as hours before now.
+    fn write_invites(path: &std::path::Path, ip: IpAddr, hours_ago: &[i64]) {
+        let now = Utc::now();
+        let timestamps = hours_ago
+            .iter()
+            .map(|h| (now - Duration::hours(*h)).to_rfc3339())
+            .collect();
+        let data = RateLimitData {
+            invites: HashMap::from([(ip.to_string(), timestamps)]),
+        };
+        fs::write(path, serde_json::to_string(&data).unwrap()).unwrap();
+    }
+
     /// Lowering the limit after a raise leaves IPs holding more than the new
     /// limit. They can ask again once enough entries have expired, not when
     /// the oldest one does.
@@ -606,16 +633,7 @@ mod tests {
         let dir = tempdir().unwrap();
         let path = dir.path().join("rate_limits.json");
         let ip = IpAddr::V4(Ipv4Addr::new(203, 0, 113, 9));
-        let now = Utc::now();
-        let hours_ago = [23, 20, 10, 5, 1, 0];
-        let timestamps = hours_ago
-            .iter()
-            .map(|h| (now - Duration::hours(*h)).to_rfc3339())
-            .collect();
-        let data = RateLimitData {
-            invites: HashMap::from([(ip.to_string(), timestamps)]),
-        };
-        fs::write(&path, serde_json::to_string(&data).unwrap()).unwrap();
+        write_invites(&path, ip, &[23, 20, 10, 5, 1, 0]);
 
         let retry = RateLimiter::new(path, 24)
             .with_max_per_window(4)
@@ -630,6 +648,78 @@ mod tests {
             retry > 13 * hour && retry <= 14 * hour,
             "expected about 14h, got {retry}s"
         );
+    }
+
+    /// The retry time above is only honest if admission agrees: the request
+    /// is refused until the third oldest entry has aged out, and not after.
+    #[test]
+    fn admission_reopens_when_the_retry_time_says_it_does() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("rate_limits.json");
+        let ip = IpAddr::V4(Ipv4Addr::new(203, 0, 113, 10));
+        let limiter = RateLimiter::new(path.clone(), 24).with_max_per_window(4);
+
+        write_invites(&path, ip, &[23, 20, 10, 5, 1, 0]);
+        assert!(!limiter.check_and_record(ip).unwrap(), "six held");
+
+        write_invites(&path, ip, &[25, 25, 10, 5, 1, 0]);
+        assert!(
+            !limiter.check_and_record(ip).unwrap(),
+            "four still held after the two oldest aged out"
+        );
+
+        write_invites(&path, ip, &[25, 25, 25, 5, 1, 0]);
+        assert!(
+            limiter.check_and_record(ip).unwrap(),
+            "three held after the three oldest aged out"
+        );
+    }
+
+    #[test]
+    fn zero_limit_is_treated_as_one() {
+        let dir = tempdir().unwrap();
+        let limiter =
+            RateLimiter::new(dir.path().join("rate_limits.json"), 24).with_max_per_window(0);
+        let ip = IpAddr::V4(Ipv4Addr::new(203, 0, 113, 11));
+
+        assert_eq!(limiter.max_per_window(), 1);
+        assert!(limiter.check_and_record(ip).unwrap());
+        assert!(!limiter.check_and_record(ip).unwrap());
+        assert!(limiter.get_retry_after(ip).unwrap().is_some());
+    }
+
+    #[test]
+    fn save_leaves_no_temporary_file_behind() {
+        let dir = tempdir().unwrap();
+        let limiter = RateLimiter::new(dir.path().join("rate_limits.json"), 24);
+
+        limiter
+            .check_and_record(IpAddr::V4(Ipv4Addr::new(203, 0, 113, 12)))
+            .unwrap();
+
+        let names: Vec<_> = fs::read_dir(dir.path())
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name())
+            .collect();
+        assert_eq!(names, ["rate_limits.json"]);
+    }
+
+    /// A write that fails part way must not touch the live file. The directory
+    /// in the temporary file's place makes the write fail; writing the live
+    /// file directly would succeed and this would not see an error.
+    #[test]
+    fn failed_save_leaves_the_existing_file_whole() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("rate_limits.json");
+        let ip = IpAddr::V4(Ipv4Addr::new(203, 0, 113, 13));
+        let limiter = RateLimiter::new(path.clone(), 24);
+        assert!(limiter.check_and_record(ip).unwrap());
+        let before = fs::read_to_string(&path).unwrap();
+
+        fs::create_dir(dir.path().join("rate_limits.json.tmp")).unwrap();
+
+        assert!(limiter.check_and_record(ip).is_err());
+        assert_eq!(fs::read_to_string(&path).unwrap(), before);
     }
 
     #[test]
