@@ -288,49 +288,30 @@ If you are in a position to make a larger contribution or grant please
 Yes. The program and its data are stored separately, and the data is the part that grows.
 
 **To store the data on another drive**, copy the data folder there and leave a directory junction
-(a kind of shortcut that programs follow automatically) at the old location. Open Windows
-PowerShell (not as administrator), change the `$new` line to the folder you want on the other drive
-(no trailing `\`), then paste the whole block at once. It stops Freenet, moves the data, and starts Freenet again:
+(a kind of shortcut that programs follow automatically) at the old location. This example uses
+`D:\Freenet\data`; use any folder on a local drive.
 
-```powershell
-$new = "D:\Freenet\data"
-$old = "$env:LOCALAPPDATA\The Freenet Project Inc\Freenet\data"
-freenet service stop
-Start-Sleep 5
-& {
-    $item = Get-Item $old -ErrorAction SilentlyContinue
-    if (-not $item) { Write-Warning "No Freenet data found at $old."; return }
-    if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { Write-Warning "Already moved."; return }
-    if (Get-Process freenet -ErrorAction SilentlyContinue) {
-        Write-Warning "Freenet is still running. Close any Freenet window or installer, wait a minute, and try again."; return
-    }
-    if ((Test-Path $new) -and (Get-ChildItem $new -Force)) {
-        Write-Warning "$new is not empty. Choose a new folder, or delete what an earlier attempt left there."; return
-    }
-    robocopy $old $new /E /R:2 /W:2
-    if ($LASTEXITCODE -ge 4) {
-        Write-Warning "Copy failed; your data is unchanged on C:. Delete $new before trying again."; return
-    }
-    try {
-        Rename-Item $old "data.old" -ErrorAction Stop
-        New-Item -ItemType Junction -Path $old -Target $new -ErrorAction Stop | Out-Null
-        Write-Host "Done. Freenet's data is now in $new."
-    } catch {
-        if (-not (Test-Path $old)) { Rename-Item "$old.old" "data" -ErrorAction SilentlyContinue }
-        if (Test-Path $old) {
-            Write-Warning "Move failed; your data is unchanged on C:. Delete $new before trying again. $_"
-        } else {
-            Write-Warning "Move failed and could not be undone. Your data is in $old.old; rename that folder back to data, then run: freenet service start"
-        }
-    }
-}
-if (Test-Path $old) { freenet service start }
-```
+1. Open Windows PowerShell and stop Freenet:
+   ```powershell
+   freenet service stop
+   ```
+2. Create the folder `D:\Freenet`. Then paste `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`
+   into the File Explorer address bar, and copy the `data` folder into `D:\Freenet`, so that you
+   have `D:\Freenet\data`. Wait for the copy to finish without errors.
+3. Rename the original `data` folder (the one on C:) to `data.old`.
+4. In PowerShell, create the junction:
+   ```powershell
+   New-Item -ItemType Junction -Path "$env:LOCALAPPDATA\The Freenet Project Inc\Freenet\data" -Target "D:\Freenet\data"
+   ```
+   If this shows an error, delete any empty `data` folder it left, rename `data.old` back to
+   `data`, and start Freenet as in step 5. Your data is unchanged.
+5. Start Freenet again:
+   ```powershell
+   freenet service start
+   ```
 
-If `freenet service stop` says Freenet may not be running, that is harmless. Once Freenet is
-running normally again, use File Explorer to delete the `data.old` folder in
-`%LOCALAPPDATA%\The Freenet Project Inc\Freenet` to free the space on C:. Until you delete it,
-`data.old` is also your backup if anything went wrong.
+Once Freenet is running normally, delete `data.old` to free the space on C:. Until then it is your
+backup.
 
 The other drive must be a local drive that is always connected, not a network drive. Your
 configuration and logs stay on C:; they are small. If you later uninstall Freenet, delete the
