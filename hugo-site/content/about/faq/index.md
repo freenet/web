@@ -283,6 +283,34 @@ If you are in a position to make a larger contribution or grant please
 {{< email-protect "gro.teneerf@nai" "email Ian" >}} or reach out to him on
 [𝕏](https://x.com/sanity).
 
+# Can I install Freenet on a drive other than C: on Windows? {#can-i-install-freenet-on-a-drive-other-than-c-on-windows}
+
+Yes. The program and its data are stored separately, and the data is the part that grows.
+
+**To store the data on another drive**, stop Freenet, then move the data folder and point Freenet
+at the new location:
+
+1. Run `freenet service stop`.
+2. Move `%LOCALAPPDATA%\The Freenet Project Inc\Freenet\data` to the new drive, for example
+   `D:\Freenet\data`.
+3. Open `%LOCALAPPDATA%\The Freenet Project Inc\Freenet\config\config.toml` and set the
+   `data_dir` line to the new folder, keeping the single quotes:
+   ```toml
+   data_dir = 'D:\Freenet\data'
+   ```
+4. Run `freenet service start`.
+
+**To put the program itself on another drive**, use the PowerShell installer and set
+`FREENET_INSTALL_DIR` first:
+
+```powershell
+$env:FREENET_INSTALL_DIR = "D:\Freenet\bin"
+irm https://freenet.org/install.ps1 | iex
+```
+
+The downloadable `freenet.exe` always installs the program to `%LOCALAPPDATA%\Freenet\bin`. The
+program is small, so moving it saves little space.
+
 # How do I uninstall Freenet? {#how-do-i-uninstall-freenet}
 
 Run:
