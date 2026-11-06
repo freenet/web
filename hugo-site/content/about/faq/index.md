@@ -297,21 +297,30 @@ $new = "D:\Freenet\data"
 $old = "$env:LOCALAPPDATA\The Freenet Project Inc\Freenet\data"
 freenet service stop
 Start-Sleep 5
-robocopy $old $new /E /COPY:DAT /DCOPY:DAT
-if ($LASTEXITCODE -lt 8) {
-    try {
-        Rename-Item $old "data.old" -ErrorAction Stop
-        New-Item -ItemType Junction -Path $old -Target $new -ErrorAction Stop
-    } catch {
-        if (-not (Test-Path $old)) { Rename-Item "$old.old" "data" }
-        Write-Warning "Move failed; your data was left on C:. $_"
-    }
-} else { Write-Warning "Copy failed; nothing was changed." }
+$item = Get-Item $old -ErrorAction SilentlyContinue
+if (-not $item) { Write-Warning "No Freenet data found at $old." }
+elseif ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { Write-Warning "Already moved." }
+elseif (Get-Process freenet -ErrorAction SilentlyContinue) { Write-Warning "Freenet is still running. Quit it from the tray icon and try again." }
+elseif ((Test-Path $new) -and (Get-ChildItem $new -Force)) { Write-Warning "$new is not empty. Choose an empty or new folder." }
+else {
+    robocopy $old $new /E /R:2 /W:2
+    if ($LASTEXITCODE -lt 4) {
+        try {
+            Rename-Item $old "data.old" -ErrorAction Stop
+            New-Item -ItemType Junction -Path $old -Target $new -ErrorAction Stop | Out-Null
+            Write-Host "Done. Freenet's data is now in $new."
+        } catch {
+            if (-not (Test-Path $old)) { Rename-Item "$old.old" "data" }
+            Write-Warning "Move failed; your data was left on C:. $_"
+        }
+    } else { Write-Warning "Copy failed; nothing was changed." }
+}
 freenet service start
 ```
 
-If `freenet service stop` says Freenet may not be running, that is harmless. Once Freenet is working
-again, delete the `data.old` folder next to the junction to free the space on C:.
+If `freenet service stop` says Freenet may not be running, that is harmless. Once Freenet is
+running normally again, use File Explorer to delete the `data.old` folder in
+`%LOCALAPPDATA%\The Freenet Project Inc\Freenet` to free the space on C:.
 
 The other drive must be a local drive that is always connected, not a network drive. Your
 configuration and logs stay on C:; they are small. If you later uninstall Freenet, delete the
