@@ -283,6 +283,60 @@ If you are in a position to make a larger contribution or grant please
 {{< email-protect "gro.teneerf@nai" "email Ian" >}} or reach out to him on
 [𝕏](https://x.com/sanity).
 
+# Can I install Freenet on a drive other than C: on Windows? {#can-i-install-freenet-on-a-drive-other-than-c-on-windows}
+
+Yes. The program and its data are stored separately, and the data is the part that grows.
+
+**To store the data on another drive**, copy the data folder there and leave a directory junction
+(a kind of shortcut that programs follow automatically) at the old location. This example uses
+`D:\Freenet\data`; use any folder on another internal drive.
+
+1. Open Windows PowerShell and stop Freenet. If it says Freenet may not be running, that is fine.
+   Also close any window where you started Freenet yourself (for example with `freenet network`).
+   ```powershell
+   freenet service stop
+   ```
+2. Create an empty folder `D:\Freenet`. Paste `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`
+   into the File Explorer address bar, and copy the `data` folder into `D:\Freenet`, so that you
+   have `D:\Freenet\data`. If Explorer reports any error or asks to skip a file, delete
+   `D:\Freenet\data` and start again from step 1.
+3. Right-click each of the two `data` folders and choose Properties. Check that the number of
+   files and the size match. If they don't, delete `D:\Freenet\data` and copy again.
+4. Rename the original `data` folder (the one on C:) to `data.old`. If Windows refuses, a file is
+   still in use: close any Explorer window inside `data`, repeat step 1, and try again. Do not
+   continue until the rename works.
+5. In PowerShell, create the junction:
+   ```powershell
+   New-Item -ItemType Junction -Path "$env:LOCALAPPDATA\The Freenet Project Inc\Freenet\data" -Target "D:\Freenet\data"
+   ```
+   Open the new `data` folder on C: in File Explorer. It should show the same contents as
+   `data.old` (such as `contracts` and `db`). If the command showed an error or the folder looks
+   empty, delete the new `data` folder (this removes only the junction), rename `data.old` back to
+   `data`, and start Freenet as in step 6. Your data is unchanged.
+6. Start Freenet again:
+   ```powershell
+   freenet service start
+   ```
+
+Once Freenet is running normally, delete `data.old` to free the space on C:. Until then it is your
+backup.
+
+The other drive must be an internal NTFS drive that is always connected, not a network or USB
+drive. Your configuration and logs stay on C:; they are small. If you later uninstall Freenet,
+delete the folder on the other drive yourself. Editing `data_dir` in `config.toml` does not work at
+the moment, because Freenet ignores that setting and rewrites it ([#6134](https://github.com/freenet/freenet-core/issues/6134)).
+
+**To put the program itself on another drive**, use the PowerShell installer and set
+`FREENET_INSTALL_DIR` first:
+
+```powershell
+$env:FREENET_INSTALL_DIR = "D:\Freenet\bin"
+irm https://freenet.org/install.ps1 | iex
+```
+
+The downloadable `freenet.exe` always installs the program to `%LOCALAPPDATA%\Freenet\bin`. The
+program is small, so moving it saves little space.
+
 # How do I uninstall Freenet? {#how-do-i-uninstall-freenet}
 
 Run:
