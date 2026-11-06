@@ -316,11 +316,15 @@ Start-Sleep 5
         New-Item -ItemType Junction -Path $old -Target $new -ErrorAction Stop | Out-Null
         Write-Host "Done. Freenet's data is now in $new."
     } catch {
-        if (-not (Test-Path $old)) { Rename-Item "$old.old" "data" }
-        Write-Warning "Move failed; your data is unchanged on C:. Delete $new before trying again. $_"
+        if (-not (Test-Path $old)) { Rename-Item "$old.old" "data" -ErrorAction SilentlyContinue }
+        if (Test-Path $old) {
+            Write-Warning "Move failed; your data is unchanged on C:. Delete $new before trying again. $_"
+        } else {
+            Write-Warning "Move failed and could not be undone. Your data is in $old.old; rename that folder back to data, then run: freenet service start"
+        }
     }
 }
-freenet service start
+if (Test-Path $old) { freenet service start }
 ```
 
 If `freenet service stop` says Freenet may not be running, that is harmless. Once Freenet is
