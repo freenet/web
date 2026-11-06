@@ -287,18 +287,26 @@ If you are in a position to make a larger contribution or grant please
 
 Yes. The program and its data are stored separately, and the data is the part that grows.
 
-**To store the data on another drive**, stop Freenet, then move the data folder and point Freenet
-at the new location:
+**To store the data on another drive**, stop Freenet, move the data folder, and leave a directory
+junction in its place so Freenet finds it at the old path. In PowerShell (no administrator rights
+needed):
 
-1. Run `freenet service stop`.
-2. Move `%LOCALAPPDATA%\The Freenet Project Inc\Freenet\data` to the new drive, for example
-   `D:\Freenet\data`.
-3. Open `%LOCALAPPDATA%\The Freenet Project Inc\Freenet\config\config.toml` and set the
-   `data_dir` line to the new folder, keeping the single quotes:
-   ```toml
-   data_dir = 'D:\Freenet\data'
-   ```
-4. Run `freenet service start`.
+```powershell
+freenet service stop
+$old = "$env:LOCALAPPDATA\The Freenet Project Inc\Freenet\data"
+$new = "D:\Freenet\data"
+New-Item -ItemType Directory -Force $new
+try {
+    Copy-Item "$old\*" $new -Recurse -ErrorAction Stop
+    Remove-Item $old -Recurse -Force -ErrorAction Stop
+    New-Item -ItemType Junction -Path $old -Target $new
+} catch { Write-Warning "Move failed: $_" }
+freenet service start
+```
+
+Set `$new` to any folder on the drive you want. If the copy fails, the original folder is left in
+place. Editing `data_dir` in `config.toml` does not work at the moment, because Freenet ignores that
+setting and rewrites it ([#6134](https://github.com/freenet/freenet-core/issues/6134)).
 
 **To put the program itself on another drive**, use the PowerShell installer and set
 `FREENET_INSTALL_DIR` first:
