@@ -288,39 +288,45 @@ If you are in a position to make a larger contribution or grant please
 Yes. The program and its data are stored separately, and the data is the part that grows.
 
 **To store the data on another drive**, copy the data folder there and leave a directory junction
-(a kind of shortcut that programs follow automatically) at the old location. Open PowerShell, set
-`$new` to the folder you want on the other drive, and run this once (no administrator rights
-needed):
+(a kind of shortcut that programs follow automatically) at the old location. Open Windows
+PowerShell (not as administrator), change the `$new` line to the folder you want on the other drive
+(no trailing `\`), then paste the whole block at once. It stops Freenet, moves the data, and starts Freenet again:
 
 ```powershell
 $new = "D:\Freenet\data"
 $old = "$env:LOCALAPPDATA\The Freenet Project Inc\Freenet\data"
 freenet service stop
 Start-Sleep 5
-$item = Get-Item $old -ErrorAction SilentlyContinue
-if (-not $item) { Write-Warning "No Freenet data found at $old." }
-elseif ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { Write-Warning "Already moved." }
-elseif (Get-Process freenet -ErrorAction SilentlyContinue) { Write-Warning "Freenet is still running. Quit it from the tray icon and try again." }
-elseif ((Test-Path $new) -and (Get-ChildItem $new -Force)) { Write-Warning "$new is not empty. Choose an empty or new folder." }
-else {
+& {
+    $item = Get-Item $old -ErrorAction SilentlyContinue
+    if (-not $item) { Write-Warning "No Freenet data found at $old."; return }
+    if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { Write-Warning "Already moved."; return }
+    if (Get-Process freenet -ErrorAction SilentlyContinue) {
+        Write-Warning "Freenet is still running. Close any Freenet window or installer, wait a minute, and try again."; return
+    }
+    if ((Test-Path $new) -and (Get-ChildItem $new -Force)) {
+        Write-Warning "$new is not empty. Choose a new folder, or delete what an earlier attempt left there."; return
+    }
     robocopy $old $new /E /R:2 /W:2
-    if ($LASTEXITCODE -lt 4) {
-        try {
-            Rename-Item $old "data.old" -ErrorAction Stop
-            New-Item -ItemType Junction -Path $old -Target $new -ErrorAction Stop | Out-Null
-            Write-Host "Done. Freenet's data is now in $new."
-        } catch {
-            if (-not (Test-Path $old)) { Rename-Item "$old.old" "data" }
-            Write-Warning "Move failed; your data was left on C:. $_"
-        }
-    } else { Write-Warning "Copy failed; nothing was changed." }
+    if ($LASTEXITCODE -ge 4) {
+        Write-Warning "Copy failed; your data is unchanged on C:. Delete $new before trying again."; return
+    }
+    try {
+        Rename-Item $old "data.old" -ErrorAction Stop
+        New-Item -ItemType Junction -Path $old -Target $new -ErrorAction Stop | Out-Null
+        Write-Host "Done. Freenet's data is now in $new."
+    } catch {
+        if (-not (Test-Path $old)) { Rename-Item "$old.old" "data" }
+        Write-Warning "Move failed; your data is unchanged on C:. Delete $new before trying again. $_"
+    }
 }
 freenet service start
 ```
 
 If `freenet service stop` says Freenet may not be running, that is harmless. Once Freenet is
 running normally again, use File Explorer to delete the `data.old` folder in
-`%LOCALAPPDATA%\The Freenet Project Inc\Freenet` to free the space on C:.
+`%LOCALAPPDATA%\The Freenet Project Inc\Freenet` to free the space on C:. Until you delete it,
+`data.old` is also your backup if anything went wrong.
 
 The other drive must be a local drive that is always connected, not a network drive. Your
 configuration and logs stay on C:; they are small. If you later uninstall Freenet, delete the
