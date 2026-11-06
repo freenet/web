@@ -292,13 +292,14 @@ Yes. The program and its data are stored separately, and the data is the part th
 `D:\Freenet\data`; use any folder on another internal drive.
 
 1. Open Windows PowerShell and stop Freenet. If it says Freenet may not be running, that is fine.
+   Also close any window where you started Freenet yourself (for example with `freenet network`).
    ```powershell
    freenet service stop
    ```
 2. Create an empty folder `D:\Freenet`. Paste `%LOCALAPPDATA%\The Freenet Project Inc\Freenet`
    into the File Explorer address bar, and copy the `data` folder into `D:\Freenet`, so that you
-   have `D:\Freenet\data`. If Explorer reports any error or asks to skip a file, stop and start
-   again from step 1.
+   have `D:\Freenet\data`. If Explorer reports any error or asks to skip a file, delete
+   `D:\Freenet\data` and start again from step 1.
 3. Right-click each of the two `data` folders and choose Properties. Check that the number of
    files and the size match. If they don't, delete `D:\Freenet\data` and copy again.
 4. Rename the original `data` folder (the one on C:) to `data.old`. If Windows refuses, a file is
@@ -308,7 +309,9 @@ Yes. The program and its data are stored separately, and the data is the part th
    ```powershell
    New-Item -ItemType Junction -Path "$env:LOCALAPPDATA\The Freenet Project Inc\Freenet\data" -Target "D:\Freenet\data"
    ```
-   If this shows an error, delete any empty `data` folder it left, rename `data.old` back to
+   Open the new `data` folder on C: in File Explorer. It should show the same contents as
+   `data.old` (such as `contracts` and `db`). If the command showed an error or the folder looks
+   empty, delete the new `data` folder (this removes only the junction), rename `data.old` back to
    `data`, and start Freenet as in step 6. Your data is unchanged.
 6. Start Freenet again:
    ```powershell
