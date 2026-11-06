@@ -287,26 +287,37 @@ If you are in a position to make a larger contribution or grant please
 
 Yes. The program and its data are stored separately, and the data is the part that grows.
 
-**To store the data on another drive**, stop Freenet, move the data folder, and leave a directory
-junction in its place so Freenet finds it at the old path. In PowerShell (no administrator rights
+**To store the data on another drive**, copy the data folder there and leave a directory junction
+(a kind of shortcut that programs follow automatically) at the old location. Open PowerShell, set
+`$new` to the folder you want on the other drive, and run this once (no administrator rights
 needed):
 
 ```powershell
-freenet service stop
-$old = "$env:LOCALAPPDATA\The Freenet Project Inc\Freenet\data"
 $new = "D:\Freenet\data"
-New-Item -ItemType Directory -Force $new
-try {
-    Copy-Item "$old\*" $new -Recurse -ErrorAction Stop
-    Remove-Item $old -Recurse -Force -ErrorAction Stop
-    New-Item -ItemType Junction -Path $old -Target $new
-} catch { Write-Warning "Move failed: $_" }
+$old = "$env:LOCALAPPDATA\The Freenet Project Inc\Freenet\data"
+freenet service stop
+Start-Sleep 5
+robocopy $old $new /E /COPY:DAT /DCOPY:DAT
+if ($LASTEXITCODE -lt 8) {
+    try {
+        Rename-Item $old "data.old" -ErrorAction Stop
+        New-Item -ItemType Junction -Path $old -Target $new -ErrorAction Stop
+    } catch {
+        if (-not (Test-Path $old)) { Rename-Item "$old.old" "data" }
+        Write-Warning "Move failed; your data was left on C:. $_"
+    }
+} else { Write-Warning "Copy failed; nothing was changed." }
 freenet service start
 ```
 
-Set `$new` to any folder on the drive you want. If the copy fails, the original folder is left in
-place. Editing `data_dir` in `config.toml` does not work at the moment, because Freenet ignores that
-setting and rewrites it ([#6134](https://github.com/freenet/freenet-core/issues/6134)).
+If `freenet service stop` says Freenet may not be running, that is harmless. Once Freenet is working
+again, delete the `data.old` folder next to the junction to free the space on C:.
+
+The other drive must be a local drive that is always connected, not a network drive. Your
+configuration and logs stay on C:; they are small. If you later uninstall Freenet, delete the
+folder on the other drive yourself. Editing `data_dir` in `config.toml` does not work at the
+moment, because Freenet ignores that setting and rewrites it
+([#6134](https://github.com/freenet/freenet-core/issues/6134)).
 
 **To put the program itself on another drive**, use the PowerShell installer and set
 `FREENET_INSTALL_DIR` first:
