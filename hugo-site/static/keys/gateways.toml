@@ -28,3 +28,11 @@ public_key = "keys/public.gw2.pem"
 
 [gateways.address]
 hostname = "gw2.freenet.org:31338"
+
+# gw3 — third gateway, on a separate host and network from gw1/gw2, so that
+# bootstrap survives the loss of the gw1/gw2 host. Added 2026-11-08.
+[[gateways]]
+public_key = "keys/public.gw3.pem"
+
+[gateways.address]
+hostname = "gw3.freenet.org:31336"
