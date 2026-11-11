@@ -78,6 +78,9 @@ impl InviteState {
             // Seed only traffic the new policy would have admitted. Otherwise
             // a pre-deploy Tor wave consumes legitimate global headroom even
             // though every equivalent request is blocked after the restart.
+            // The filter matches IPv4 keys and exact-address legacy IPv6 keys
+            // only: IPv6 keys recorded since prefix keying are /64 prefixes,
+            // which never equal a listed exit address.
             Ok(events) => events
                 .into_iter()
                 .filter_map(|(ip, age)| (!tor_exits.is_exit(&ip)).then_some(age))

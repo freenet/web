@@ -46,6 +46,10 @@ pub const GLOBAL_WINDOW_MINUTES: i64 = 60;
 /// are counted once. An IPv4-mapped IPv6 address is first converted to the
 /// IPv4 address it carries, so it is keyed the same as that address.
 ///
+/// A /64 is the usual size of one network, so a larger delegation (for example
+/// a /56) counts as several networks. Other embedded-IPv4 forms (6to4, Teredo,
+/// NAT64 and IPv4-compatible addresses) are keyed as ordinary IPv6 prefixes.
+///
 /// Every read and write of the per-IP store goes through this function. The
 /// result always parses as an [`IpAddr`], which [`RateLimiter::recent_events`]
 /// relies on.
@@ -190,6 +194,10 @@ impl RateLimiter {
     }
 
     /// IPs and ages of recorded invitations still inside `window_minutes`.
+    ///
+    /// IPv6 keys are /64 prefixes, so the address returned for a new event is
+    /// the network address; entries stored before prefix keying are returned
+    /// under their full address.
     ///
     /// Used once at startup to seed the in-memory global ceiling from the
     /// persistent per-IP store. A deploy therefore cannot reset the emergency
@@ -837,7 +845,6 @@ mod tests {
     fn ipv4_key_is_the_plain_address_string() {
         let ip = IpAddr::V4(Ipv4Addr::new(203, 0, 113, 7));
         assert_eq!(rate_limit_key(ip), "203.0.113.7");
-        assert_eq!(rate_limit_key(ip), ip.to_string());
         // An IPv4-mapped IPv6 address (dual-stack listener) is keyed as the
         // IPv4 address, not folded into one shared /64 with every other
         // mapped address.
@@ -890,30 +897,88 @@ mod tests {
     }
 
     #[test]
-    fn old_full_address_ipv6_keys_age_out_and_do_not_count() {
+    fn legacy_ipv6_keys_are_not_merged_and_expire_in_their_window() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("rate_limits.json");
-        let ip = v6("2001:db8:7:8::1");
-        // A file written before prefix keying: a full-address key at the limit,
-        // plus an expired one. Neither matches the prefix key.
+        let legacy = "2001:db8:7:8::10";
+        let prefix = "2001:db8:7:8::";
         let now = Utc::now();
-        let recent: Vec<String> = (0..MAX_INVITES_PER_WINDOW)
-            .map(|_| now.to_rfc3339())
-            .collect();
-        let old: Vec<String> = vec![(now - Duration::hours(30)).to_rfc3339()];
+        let stamps = |hours_ago: i64| -> Vec<String> {
+            (0..MAX_INVITES_PER_WINDOW)
+                .map(|_| (now - Duration::hours(hours_ago)).to_rfc3339())
+                .collect()
+        };
+        let write = |legacy_hours_ago: i64, extra: Option<(String, Vec<String>)>| {
+            let mut invites = HashMap::from([(legacy.to_string(), stamps(legacy_hours_ago))]);
+            invites.extend(extra);
+            let data = RateLimitData { invites };
+            fs::write(&path, serde_json::to_string(&data).unwrap()).unwrap();
+        };
+        let read = || -> RateLimitData {
+            serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap()
+        };
+
+        // A file written before prefix keying: a full-address key at the
+        // limit, still inside its window.
+        write(1, None);
+        let limiter = RateLimiter::new(path.clone(), 24);
+
+        // A different address in the same /64 starts with a fresh allowance.
+        assert!(limiter
+            .get_retry_after(v6("2001:db8:7:8::1"))
+            .unwrap()
+            .is_none());
+        assert!(limiter.check_and_record(v6("2001:db8:7:8::1")).unwrap());
+        let stored = read();
+        assert_eq!(stored.invites[prefix].len(), 1);
+        // The legacy key is untouched while it is inside its window.
+        assert_eq!(stored.invites[legacy].len(), MAX_INVITES_PER_WINDOW);
+
+        // Once the legacy entries are older than the window, the next write
+        // removes that key and keeps the prefix key.
+        write(25, Some((prefix.to_string(), stamps(0)[..1].to_vec())));
+        assert!(limiter.check_and_record(v6("2001:db8:7:8::2")).unwrap());
+        let stored = read();
+        assert!(!stored.invites.contains_key(legacy));
+        assert_eq!(stored.invites[prefix].len(), 2);
+    }
+
+    #[test]
+    fn recent_events_returns_legacy_and_prefix_keys_once_each() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("rate_limits.json");
+        let legacy = "2001:db8:7:8::10";
+        let now = Utc::now();
         let data = RateLimitData {
-            invites: HashMap::from([
-                ("2001:db8:7:8::10".to_string(), recent),
-                ("2001:db8:9:9::1".to_string(), old),
-            ]),
+            invites: HashMap::from([(
+                legacy.to_string(),
+                vec![(now - Duration::minutes(5)).to_rfc3339()],
+            )]),
         };
         fs::write(&path, serde_json::to_string(&data).unwrap()).unwrap();
 
-        let limiter = RateLimiter::new(path.clone(), 24);
-        assert!(limiter.check_and_record(ip).unwrap());
-        let stored: RateLimitData =
-            serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
-        // The expired legacy key was pruned; the file still parses.
-        assert!(!stored.invites.contains_key("2001:db8:9:9::1"));
+        let limiter = RateLimiter::new(path, 24);
+        assert!(limiter.check_and_record(v6("2001:db8:7:8::1")).unwrap());
+
+        let events = limiter.recent_events(60).unwrap();
+        assert_eq!(events.len(), 2, "one event per stored entry: {events:?}");
+        let count = |addr: &str| events.iter().filter(|(ip, _)| *ip == v6(addr)).count();
+        assert_eq!(count(legacy), 1);
+        assert_eq!(count("2001:db8:7:8::"), 1);
+    }
+
+    #[test]
+    fn ipv4_mapped_ipv6_and_plain_ipv4_share_one_limit() {
+        let dir = tempdir().unwrap();
+        let limiter = RateLimiter::new(dir.path().join("rate_limits.json"), 24);
+        let plain = IpAddr::V4(Ipv4Addr::new(203, 0, 113, 30));
+        let mapped = v6("::ffff:203.0.113.30");
+
+        for i in 0..MAX_INVITES_PER_WINDOW {
+            let ip = if i % 2 == 0 { plain } else { mapped };
+            assert!(limiter.check_and_record(ip).unwrap(), "request {i}");
+        }
+        assert!(!limiter.check_and_record(plain).unwrap());
+        assert!(!limiter.check_and_record(mapped).unwrap());
     }
 }
