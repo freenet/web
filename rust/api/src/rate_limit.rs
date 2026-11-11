@@ -4,11 +4,10 @@
 
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use std::collections::{HashMap, VecDeque};
 use std::fs;
 use std::io::Write;
-use std::net::IpAddr;
+use std::net::{IpAddr, Ipv6Addr};
 use std::path::PathBuf;
 use std::sync::Mutex;
 use std::time::{Duration as StdDuration, Instant};
@@ -39,16 +38,25 @@ pub const DEFAULT_GLOBAL_INVITES_PER_HOUR: usize = 200;
 
 pub const GLOBAL_WINDOW_MINUTES: i64 = 60;
 
-/// SHA256 hashes of IPs exempt from rate limiting (for testing)
-const EXEMPT_IP_HASHES: &[&str] =
-    &["0cf75236cce089f9c592bb2b50925c48cbbb4d0f83094b2cd091dda4b53e1a4c"];
-
-/// Check if an IP is exempt from rate limiting
-fn is_exempt(ip: &IpAddr) -> bool {
-    let mut hasher = Sha256::new();
-    hasher.update(ip.to_string().as_bytes());
-    let hash = format!("{:x}", hasher.finalize());
-    EXEMPT_IP_HASHES.contains(&hash.as_str())
+/// The key a client is counted under in the per-IP limiter and in the
+/// persisted file.
+///
+/// IPv4 addresses are keyed by the address itself. IPv6 addresses are keyed by
+/// their /64 prefix (the host bits are zeroed), so all addresses on one network
+/// are counted once. An IPv4-mapped IPv6 address is first converted to the
+/// IPv4 address it carries, so it is keyed the same as that address.
+///
+/// Every read and write of the per-IP store goes through this function. The
+/// result always parses as an [`IpAddr`], which [`RateLimiter::recent_events`]
+/// relies on.
+fn rate_limit_key(ip: IpAddr) -> String {
+    match ip.to_canonical() {
+        IpAddr::V4(v4) => v4.to_string(),
+        IpAddr::V6(v6) => {
+            let prefix = u128::from(v6) & (u128::MAX << 64);
+            Ipv6Addr::from(prefix).to_string()
+        }
+    }
 }
 
 #[derive(Error, Debug)]
@@ -64,7 +72,8 @@ pub enum RateLimitError {
 /// Stored rate limit data
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct RateLimitData {
-    /// Map of IP address string to list of invite timestamps (RFC 3339)
+    /// Map of rate-limit key (see `rate_limit_key`) to list of invite timestamps
+    /// (RFC 3339)
     pub invites: HashMap<String, Vec<String>>,
 }
 
@@ -103,19 +112,15 @@ impl RateLimiter {
         self.max_per_window
     }
 
-    /// Check if an IP is rate limited, and record the access if allowed
+    /// Check if a client is rate limited, and record the access if allowed.
+    /// IPv6 clients are counted per /64 prefix.
     ///
     /// Returns Ok(true) if the request is allowed, Ok(false) if rate limited
     pub fn check_and_record(&self, ip: IpAddr) -> Result<bool, RateLimitError> {
-        // Check exemption first (before acquiring lock)
-        if is_exempt(&ip) {
-            return Ok(true);
-        }
-
         let _guard = self.lock.lock().map_err(|_| RateLimitError::Lock)?;
 
         let mut data = self.load()?;
-        let ip_str = ip.to_string();
+        let ip_str = rate_limit_key(ip);
         let now = Utc::now();
         let window = Duration::hours(self.window_hours);
 
@@ -146,14 +151,14 @@ impl RateLimiter {
         Ok(true)
     }
 
-    /// Get the remaining time until an IP can request again
+    /// Get the remaining time until a client can request again
     ///
     /// Returns None if the IP is not rate limited, Some(seconds) otherwise
     pub fn get_retry_after(&self, ip: IpAddr) -> Result<Option<i64>, RateLimitError> {
         let _guard = self.lock.lock().map_err(|_| RateLimitError::Lock)?;
 
         let data = self.load()?;
-        let ip_str = ip.to_string();
+        let ip_str = rate_limit_key(ip);
         let now = Utc::now();
         let window = Duration::hours(self.window_hours);
 
@@ -620,7 +625,7 @@ mod tests {
             .map(|h| (now - Duration::hours(*h)).to_rfc3339())
             .collect();
         let data = RateLimitData {
-            invites: HashMap::from([(ip.to_string(), timestamps)]),
+            invites: HashMap::from([(rate_limit_key(ip), timestamps)]),
         };
         fs::write(path, serde_json::to_string(&data).unwrap()).unwrap();
     }
@@ -791,5 +796,124 @@ mod tests {
         let retry = limiter.get_retry_after(ip).unwrap();
         assert!(retry.is_some());
         assert!(retry.unwrap() > 0);
+    }
+
+    fn v6(s: &str) -> IpAddr {
+        IpAddr::V6(s.parse::<Ipv6Addr>().unwrap())
+    }
+
+    #[test]
+    fn ipv6_addresses_in_one_slash_64_share_a_limit() {
+        let dir = tempdir().unwrap();
+        let limiter = RateLimiter::new(dir.path().join("rate_limits.json"), 24);
+
+        for i in 0..MAX_INVITES_PER_WINDOW {
+            let ip = v6(&format!("2001:db8:1:2::{:x}", i + 1));
+            assert!(limiter.check_and_record(ip).unwrap(), "request {i}");
+        }
+        // A new address on the same /64, never seen before, is over the limit.
+        let sibling = v6("2001:db8:1:2:aaaa:bbbb:cccc:dddd");
+        assert!(!limiter.check_and_record(sibling).unwrap());
+        assert!(limiter.get_retry_after(sibling).unwrap().is_some());
+    }
+
+    #[test]
+    fn ipv6_addresses_in_different_slash_64s_have_separate_limits() {
+        let dir = tempdir().unwrap();
+        let limiter = RateLimiter::new(dir.path().join("rate_limits.json"), 24);
+
+        for _ in 0..MAX_INVITES_PER_WINDOW {
+            assert!(limiter.check_and_record(v6("2001:db8:1:2::1")).unwrap());
+        }
+        assert!(!limiter.check_and_record(v6("2001:db8:1:2::1")).unwrap());
+
+        // Adjacent /64 (differs in the last bit of the prefix) and a different
+        // /32 are both untouched.
+        assert!(limiter.check_and_record(v6("2001:db8:1:3::1")).unwrap());
+        assert!(limiter.check_and_record(v6("2001:db9:1:2::1")).unwrap());
+    }
+
+    #[test]
+    fn ipv4_key_is_the_plain_address_string() {
+        let ip = IpAddr::V4(Ipv4Addr::new(203, 0, 113, 7));
+        assert_eq!(rate_limit_key(ip), "203.0.113.7");
+        assert_eq!(rate_limit_key(ip), ip.to_string());
+        // An IPv4-mapped IPv6 address (dual-stack listener) is keyed as the
+        // IPv4 address, not folded into one shared /64 with every other
+        // mapped address.
+        assert_eq!(rate_limit_key(v6("::ffff:203.0.113.7")), "203.0.113.7");
+        assert_ne!(
+            rate_limit_key(v6("::ffff:203.0.113.7")),
+            rate_limit_key(v6("::ffff:203.0.113.8"))
+        );
+    }
+
+    #[test]
+    fn ipv6_key_is_the_slash_64_network_address() {
+        assert_eq!(
+            rate_limit_key(v6("2001:db8:1:2:aaaa:bbbb:cccc:dddd")),
+            "2001:db8:1:2::"
+        );
+        // The key stays parseable as an address for `recent_events`.
+        assert!(rate_limit_key(v6("2001:db8:1:2::9"))
+            .parse::<IpAddr>()
+            .is_ok());
+    }
+
+    #[test]
+    fn persisted_file_round_trips_with_ipv4_and_ipv6_keys() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("rate_limits.json");
+        let v4 = IpAddr::V4(Ipv4Addr::new(203, 0, 113, 20));
+        let v6_ip = v6("2001:db8:5:6::77");
+
+        let first = RateLimiter::new(path.clone(), 24);
+        assert!(first.check_and_record(v4).unwrap());
+        assert!(first.check_and_record(v6_ip).unwrap());
+
+        let stored: RateLimitData =
+            serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+        let mut keys: Vec<_> = stored.invites.keys().cloned().collect();
+        keys.sort();
+        assert_eq!(keys, ["2001:db8:5:6::", "203.0.113.20"]);
+
+        // A fresh limiter (a restart) reads the same file and keeps counting.
+        let second = RateLimiter::new(path, 24).with_max_per_window(2);
+        assert!(second.check_and_record(v4).unwrap());
+        assert!(!second.check_and_record(v4).unwrap());
+        assert!(second.check_and_record(v6("2001:db8:5:6::78")).unwrap());
+        assert!(!second.check_and_record(v6("2001:db8:5:6::79")).unwrap());
+
+        let events = second.recent_events(60).unwrap();
+        assert_eq!(events.len(), 4);
+        assert!(events.iter().any(|(ip, _)| *ip == v6("2001:db8:5:6::")));
+    }
+
+    #[test]
+    fn old_full_address_ipv6_keys_age_out_and_do_not_count() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("rate_limits.json");
+        let ip = v6("2001:db8:7:8::1");
+        // A file written before prefix keying: a full-address key at the limit,
+        // plus an expired one. Neither matches the prefix key.
+        let now = Utc::now();
+        let recent: Vec<String> = (0..MAX_INVITES_PER_WINDOW)
+            .map(|_| now.to_rfc3339())
+            .collect();
+        let old: Vec<String> = vec![(now - Duration::hours(30)).to_rfc3339()];
+        let data = RateLimitData {
+            invites: HashMap::from([
+                ("2001:db8:7:8::10".to_string(), recent),
+                ("2001:db8:9:9::1".to_string(), old),
+            ]),
+        };
+        fs::write(&path, serde_json::to_string(&data).unwrap()).unwrap();
+
+        let limiter = RateLimiter::new(path.clone(), 24);
+        assert!(limiter.check_and_record(ip).unwrap());
+        let stored: RateLimitData =
+            serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+        // The expired legacy key was pruned; the file still parses.
+        assert!(!stored.invites.contains_key("2001:db8:9:9::1"));
     }
 }
