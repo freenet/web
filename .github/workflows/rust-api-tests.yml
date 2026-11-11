@@ -4,7 +4,7 @@
 # runs `cargo make build-site` (wasm + hugo only), and `integration-test.yml`
 # is `workflow_dispatch:` only. So a compile error in `rust/api` -- or any
 # failing unit test in it -- would merge green and only surface when someone
-# ran the deploy script on vega.
+# deployed the binary on nova.
 #
 # That gap let a real bug through: adding `reqwest` with `rustls-tls` enabled a
 # second rustls provider feature alongside axum-server's, which made gkapi panic
