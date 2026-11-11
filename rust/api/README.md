@@ -7,8 +7,9 @@ WARNING: This file is publicly readable, do NOT put anything secret in here.
 gkapi runs on **nova** as `gkapi.service` (unit: `/etc/systemd/system/gkapi.service`,
 binary: `/home/gkapi/bin/ghostkey-api`, user `gkapi`). It was migrated from vega on
 2026-08-28. Caddy terminates TLS for `gkapi.freenet.org` and owns ACME (see
-`/etc/caddy/gkapi.caddy`), and proxies to the API on `:8081`. So the binary binds an
-unprivileged port and needs no file capability. The unit file's comments explain why the
+`/etc/caddy/gkapi.caddy`), and proxies to the API on `:8081`. The unit starts the binary
+with `--port 8081`, so it binds an unprivileged port and needs no file capability. The
+per-IP invite limit state is kept in `/var/lib/gkapi/invite_rate_limits.json`. The unit file's comments explain why the
 TLS flags and `setcap` are gone and why the ufw `deny 8081` rule must stay.
 
 ## Deploying gkapi
@@ -19,8 +20,11 @@ fmt, build and test. Merging a change to `rust/api` therefore ships nothing: the
 has to be replaced by hand, and has in the past sat months behind main.
 
 ```bash
-# 1. build on nova, from main, and prove the build contains what you expect
-cd ~/code/freenet/web/main/rust && cargo build --release -p ghostkey-api
+# 1. build on nova from a checkout of the merge commit (not the main/ worktree), and
+#    prove the build contains what you expect
+git -C ~/code/freenet/web/main fetch origin
+git -C ~/code/freenet/web/main worktree add --detach ~/code/scratch/gkapi-deploy <merge-sha>
+cd ~/code/scratch/gkapi-deploy/rust && cargo build --release -p ghostkey-api
 strings target/release/ghostkey-api | grep -c payment_claim   # sanity: expect non-zero
 
 # 2. stage it next to the live binary, then swap with two adjacent renames
@@ -40,8 +44,14 @@ window fails with `status=203/EXEC` and stays down.
 
 ```bash
 systemctl is-active gkapi
+sudo journalctl -u gkapi _SYSTEMD_INVOCATION_ID=$(systemctl show -p InvocationID --value gkapi)
+curl -s http://127.0.0.1:8081/                           # {"message":"Hello, world!"}
 curl -s https://gkapi.freenet.org/                       # {"message":"Hello, world!"}
 ```
+
+The journal for the new run should show `Per-IP invite limit: ...`, `Seeding global invite
+ceiling ...` and `Listening on 0.0.0.0:8081`. The deploy needs no capability or `setcap`
+step.
 
 Then confirm every donation tier still resolves its notary keypair, which is a separate
 failure mode from the binary (see the tier comment in
@@ -62,7 +72,9 @@ done
 
 ### Rollback
 
-Substitute `<stamp>` with the timestamp the deploy printed.
+Substitute `<stamp>` with the timestamp the deploy printed. Moving the rollback binary back
+and restarting is the whole procedure, and the same startup lines and `GET /` checks above
+apply afterwards.
 
 ```bash
 sudo mv /home/gkapi/bin/ghostkey-api.rollback-<stamp> /home/gkapi/bin/ghostkey-api
