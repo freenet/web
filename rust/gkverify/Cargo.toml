@@ -21,7 +21,7 @@ name = "ghostkey_verify"
 # `rand` or `getrandom`: a Freenet contract has no source of randomness, and
 # `getrandom` refuses to build for wasm32-unknown-unknown without one. CI
 # checks this with `cargo tree` (see .github/workflows/ghostkey-verify.yml).
-ed25519-dalek = { version = "2.1", default-features = false, features = ["serde"] }
+ed25519-dalek = { version = "3.0", default-features = false, features = ["serde"] }
 # rsa 0.9 (the newest stable line) is not used because it depends on
 # num-bigint-dig with the `prime` feature, which pulls in `rand`. The 0.10
 # line replaces that with crypto-bigint and needs only `rand_core`, which
@@ -38,7 +38,7 @@ base64 = { version = "0.22", default-features = false, features = ["alloc"] }
 # The reference implementation the differential tests compare against.
 ghostkey_lib = { path = "../gklib" }
 blind-rsa-signatures = "=0.15.1"
-ed25519-dalek = { version = "2.1", features = ["rand_core", "serde"] }
+ed25519-dalek = { version = "3.0", features = ["rand_core", "serde"] }
 rand = "0.8.5"
 ciborium = "0.2.2"
 # The rsa that blind-rsa-signatures, and so ghostkey_lib, verifies with.
