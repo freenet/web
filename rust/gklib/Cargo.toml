@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/freenet/web"
 
 [dependencies]
-curve25519-dalek = { version = "4.1.3", features = ["rand_core", "serde"]}
+curve25519-dalek = { version = "5.0.0", features = ["rand_core", "serde"]}
 ed25519-dalek = { version = "2.1.1", features = ["rand_core", "serde"]}
 base64 = "0.22.1"
 ciborium = "0.2.2"
