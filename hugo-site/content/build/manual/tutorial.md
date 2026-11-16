@@ -75,10 +75,10 @@ A standard web application that connects to the local Freenet Kernel via WebSock
 Freenet is a distributed system where peers may receive updates in different orders. Your contract
 must handle this correctly.
 
-### Commutative Monoids
+### Idempotent Commutative Monoids
 
-Contract state must form a **commutative monoid**: updates can be applied in any order and still
-produce the same final state.
+Contract state must form an **idempotent commutative monoid**: updates can be applied in any
+order, and applying the same update more than once, and still produce the same final state.
 
 <img src="/images/tutorial/commutative-sync.svg" alt="Commutative synchronization between peers" style="max-width: min(560px, 100%);">
 

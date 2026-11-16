@@ -170,8 +170,8 @@ values (or "state"). Specifically, they govern:
 2. **Modification Rules:** Under what circumstances can the value be modified? A contract might
    stipulate that any modification must be signed by a specific key.
 3. **Efficient Synchronization:** How to efficiently synchronize values between peers? Freenet
-   ensures eventual consistency by treating values as commutative monoids, allowing updates in any
-   order while still producing the same result.
+   ensures eventual consistency by treating values as idempotent commutative monoids, allowing
+   updates in any order, or applied more than once, while still producing the same result.
 
 This unique architectural approach makes Freenet a powerful, general-purpose platform for building
 decentralized systems that are scalable and interoperable by default.
