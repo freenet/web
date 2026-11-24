@@ -40,7 +40,7 @@ if (!match) throw new Error("no <script> block in open-link.html");
 // way, since none of them depend on classList/appendChild/querySelector
 // output for anything other than the two "who is this for" radios, which
 // the stub below backs with real shared, mutable state.
-function runPage({ hash = "", search = "" } = {}) {
+function runPage({ hash = "", search = "", fetchImpl } = {}) {
   const elements = {};
   function makeElement(id) {
     const elListeners = {};
@@ -62,6 +62,7 @@ function runPage({ hash = "", search = "" } = {}) {
       // layoutButtons() put in the primary slot.
       appendChild(node) {
         this.lastAppended = node;
+        (this.appended ??= []).push(node);
       },
       querySelector: () => makeElement(`${id}::child`),
     };
@@ -106,7 +107,15 @@ function runPage({ hash = "", search = "" } = {}) {
     location: { hash, search, replace: (url) => (replacedTo = url) },
     addEventListener: (ev, fn) => (windowListeners[ev] = fn),
   };
-  vm.runInNewContext(match[1], { document, window, URLSearchParams });
+  vm.runInNewContext(match[1], {
+    document,
+    window,
+    URLSearchParams,
+    setTimeout,
+    clearTimeout,
+    AbortController,
+    ...(fetchImpl ? { fetch: fetchImpl } : {}),
+  });
   listeners.DOMContentLoaded();
   const currentState = () =>
     ["open-link-missing", "open-link-invalid", "open-link-valid"].find(
@@ -335,6 +344,77 @@ let localOnlyFailures = 0;
 }
 console.log(`local-only checks, ${localOnlyFailures} failures`);
 
+// --- Default layout: hosted demo primary unless a local node answers ------
+let layoutFailures = 0;
+{
+  const check = (cond, what) => {
+    if (!cond) {
+      layoutFailures++;
+      console.error(`FAIL layout: ${what}`);
+    }
+  };
+  const primaryOf = (el) => el("open-link-primary-slot").lastAppended?.id;
+  const secondaryOf = (el) => el("open-link-secondary-slot").lastAppended?.id;
+  const settle = () => new Promise((r) => setTimeout(r, 20));
+  const H = "#" + OTHER + "/?room=abc";
+  const TRY = `https://try.freenet.org/v1/contract/web/${OTHER}/?room=abc`;
+
+  // No fetch at all (old browser / test stub): no-node layout.
+  let p = runPage({ hash: H });
+  check(primaryOf(p.el) === "open-link-opt-try", `no probe: primary ${primaryOf(p.el)}`);
+  check(secondaryOf(p.el) === "open-link-opt-quickstart", `no probe: secondary ${secondaryOf(p.el)}`);
+  check(p.el("open-link-try").href === TRY, `try href ${p.el("open-link-try").href}`);
+  check(
+    p.el("open-link-try").textContent === "Open on try.freenet.org (no install needed)",
+    `try label ${p.el("open-link-try").textContent}`,
+  );
+
+  // Probe refused: stays on the no-node layout.
+  p = runPage({ hash: H, fetchImpl: () => Promise.reject(new Error("refused")) });
+  await settle();
+  check(primaryOf(p.el) === "open-link-opt-try", `refused: primary ${primaryOf(p.el)}`);
+
+  // Probe succeeds: local is primary, hosted demo stays visible, and the
+  // probe only ever asks the fixed loopback address (nothing from the hash).
+  let probed = [];
+  p = runPage({
+    hash: H,
+    fetchImpl: (url) => (probed.push(url), Promise.resolve({})),
+  });
+  await settle();
+  check(primaryOf(p.el) === "open-link-opt-local", `node: primary ${primaryOf(p.el)}`);
+  check(secondaryOf(p.el) === "open-link-opt-try", `node: secondary ${secondaryOf(p.el)}`);
+  check(
+    p.el("open-link-try").textContent === "Use in your browser (try.freenet.org)",
+    `node: try label ${p.el("open-link-try").textContent}`,
+  );
+  check(
+    probed.length === 1 && probed[0] === "http://127.0.0.1:7509/",
+    `probe URLs ${JSON.stringify(probed)}`,
+  );
+
+  // Explicit author hints are never overridden by the probe.
+  p = runPage({ hash: H, search: "?via=app", fetchImpl: () => Promise.resolve({}) });
+  await settle();
+  check(primaryOf(p.el) === "open-link-opt-scheme", `via=app: primary ${primaryOf(p.el)}`);
+
+  // Local-only app: local primary with or without a node, hosted never shown.
+  p = runPage({ hash: "#" + VAULT + "/" });
+  check(primaryOf(p.el) === "open-link-opt-local", `vault: primary ${primaryOf(p.el)}`);
+
+  // A probe that answers after the fragment changed must not re-lay-out for
+  // the old link.
+  let release;
+  p = runPage({ hash: H, fetchImpl: () => new Promise((r) => (release = r)) });
+  p.navigate("#" + VAULT + "/");
+  release({});
+  await settle();
+  check(primaryOf(p.el) === "open-link-opt-local", `stale probe: primary ${primaryOf(p.el)}`);
+  check(secondaryOf(p.el) !== "open-link-opt-try", "stale probe re-showed hosted option");
+}
+console.log(`layout checks, ${layoutFailures} failures`);
+
+failures += layoutFailures;
 failures += viaFailures + makerFailures + localOnlyFailures;
 if (vectors.length < 40) {
   console.error("vector file looks truncated");
