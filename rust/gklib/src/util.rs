@@ -1,9 +1,9 @@
 use ed25519_dalek::*;
-use rand_core::{CryptoRng, OsRng, RngCore};
+use rand_core::{CryptoRng, RngCore};
 
 use crate::armorable::*;
+use crate::blind_rsa::{DefaultRng, SecretKey as RSASigningKey, Signature as RSASignature};
 use crate::errors::GhostkeyError;
-use blind_rsa_signatures::{KeyPair as RSAKeyPair, Options, Signature as RSASignature};
 use serde::{Deserialize, Serialize};
 
 /// Creates a new ECDSA keypair for signing and verification.
@@ -75,30 +75,23 @@ pub fn verify_with_hash<T: Serialize + for<'de> Deserialize<'de> + 'static>(
 /// Signs the given data using the provided RSA signing key, uses blind signature internally
 /// to guarantee compatibility with actual blind signatures, even if it's less efficient.
 pub fn unblinded_rsa_sign(
-    signing_keypair: &RSAKeyPair,
+    signing_key: &RSASigningKey,
     msg: &[u8],
 ) -> Result<RSASignature, Box<GhostkeyError>> {
-    let options = Options::default();
-
-    let blinding_result = signing_keypair
-        .pk
-        .blind(&mut OsRng, msg, false, &options)
+    let public_key = signing_key
+        .public_key()
         .map_err(|e| GhostkeyError::RSAError(e.to_string()))?;
 
-    let blind_sig = signing_keypair
-        .sk
-        .blind_sign(&mut OsRng, &blinding_result.blind_msg, &options)
+    let blinding_result = public_key
+        .blind(&mut DefaultRng, msg)
         .map_err(|e| GhostkeyError::RSAError(e.to_string()))?;
 
-    let sig = signing_keypair
-        .pk
-        .finalize(
-            &blind_sig,
-            &blinding_result.secret,
-            blinding_result.msg_randomizer,
-            msg,
-            &options,
-        )
+    let blind_sig = signing_key
+        .blind_sign(&blinding_result.blind_message)
+        .map_err(|e| GhostkeyError::RSAError(e.to_string()))?;
+
+    let sig = public_key
+        .finalize(&blind_sig, &blinding_result, msg)
         .map_err(|e| GhostkeyError::RSAError(e.to_string()))?;
 
     Ok(sig)
@@ -109,6 +102,7 @@ mod tests {
     use serde::{Deserialize, Serialize};
 
     use super::*;
+    use rand_core::OsRng;
 
     #[derive(Serialize, Deserialize)]
     struct TestData {
@@ -150,13 +144,10 @@ mod tests {
 
     #[test]
     fn test_rsa_sign_and_verify() {
-        let keypair = RSAKeyPair::generate(&mut OsRng, 2048).unwrap();
+        let (pk, sk) = RSASigningKey::generate().unwrap();
         let msg = b"test";
-        let signature = unblinded_rsa_sign(&keypair, msg).unwrap();
-        let is_valid = keypair
-            .pk
-            .verify(&signature, None, msg, &Default::default());
-
-        assert!(is_valid.is_ok());
+        let signature = unblinded_rsa_sign(&sk, msg).unwrap();
+        assert!(pk.verify_signature(&signature, msg).is_ok());
+        assert!(pk.verify_signature(&signature, b"tesu").is_err());
     }
 }

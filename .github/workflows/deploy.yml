@@ -65,7 +65,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: hugo-site/static/wasm
-          key: ${{ runner.os }}-wasm-${{ hashFiles('rust/gkwasm/**', 'rust/gklib/**') }}
+          # rust/Cargo.lock is part of the key because gkwasm is a workspace
+          # member: a lockfile-only dependency bump changes what it builds.
+          key: ${{ runner.os }}-wasm-${{ hashFiles('rust/gkwasm/**', 'rust/gklib/**', 'rust/Cargo.lock') }}
 
       # Decide whether the wasm build is still needed by looking for the two
       # artifacts the site actually loads (see static/js/donation-success.js).

@@ -14,9 +14,12 @@
 
 use std::path::PathBuf;
 
-use blind_rsa_signatures::{KeyPair, Signature as RsaSignature};
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
 use ghostkey_lib::armorable::Armorable;
+use ghostkey_lib::blind_rsa::{
+    DefaultRng, PublicKey as NotaryPublicKey, RawPublicKey, SecretKey as NotarySecretKey,
+    Signature as RsaSignature,
+};
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use ghostkey_lib::notary_certificate::NotaryCertificateV1;
 use ghostkey_lib::signed_message::SignedMessage;
@@ -34,7 +37,7 @@ const INFO: &str =
 /// A complete chain made by `ghostkey_lib` itself.
 struct Chain {
     master: SigningKey,
-    notary_keypair: KeyPair,
+    notary_sk: NotarySecretKey,
     notary: NotaryCertificateV1,
     cert: GhostkeyCertificateV1,
     ghost: SigningKey,
@@ -44,10 +47,9 @@ fn chain(info: &str) -> Chain {
     let master = SigningKey::generate(&mut OsRng);
     let (notary, notary_sk) = NotaryCertificateV1::new(&master, &info.to_string()).unwrap();
     let (cert, ghost) = GhostkeyCertificateV1::new(&notary, &notary_sk);
-    let notary_keypair = KeyPair::new(notary_sk.public_key().unwrap(), notary_sk);
     Chain {
         master,
-        notary_keypair,
+        notary_sk,
         notary,
         cert,
         ghost,
@@ -224,7 +226,7 @@ fn wrong_rsa_signature_is_refused_by_both() {
     // Signed by a different notary key.
     let other = chain(INFO);
     let mut cert = c.cert.clone();
-    cert.signature = unblinded_rsa_sign(&other.notary_keypair, &ghost_bytes).unwrap();
+    cert.signature = unblinded_rsa_sign(&other.notary_sk, &ghost_bytes).unwrap();
     assert_eq!(
         assert_agree(&bytes_of(&cert), &master),
         Err(Error::GhostKeySignature)
@@ -234,7 +236,7 @@ fn wrong_rsa_signature_is_refused_by_both() {
     let mut cert = c.cert.clone();
     let wrong_key = SigningKey::generate(&mut OsRng).verifying_key();
     cert.signature =
-        unblinded_rsa_sign(&c.notary_keypair, &Armorable::to_bytes(&wrong_key).unwrap()).unwrap();
+        unblinded_rsa_sign(&c.notary_sk, &Armorable::to_bytes(&wrong_key).unwrap()).unwrap();
     assert_eq!(
         assert_agree(&bytes_of(&cert), &master),
         Err(Error::GhostKeySignature)
@@ -448,13 +450,11 @@ fn field<'a>(v: &'a mut ciborium::Value, name: &str) -> &'a mut ciborium::Value 
 /// A certificate whose notary key is `sk`, with the ghost key signed under
 /// RSA-PSS SHA-384 with salt length `salt`, as no ghostkey_lib code path will
 /// make it: for keys and salts the issuing code never uses.
-fn chain_with_notary_key(sk: &rsa_08::RsaPrivateKey, salt: usize) -> (Vec<u8>, VerifyingKey) {
+fn chain_with_notary_key(sk: &rsa::PrivateKey, salt: usize) -> (Vec<u8>, VerifyingKey) {
     use ghostkey_lib::notary_certificate::NotaryPayload;
-    use rsa_08::signature::{RandomizedSigner, SignatureEncoding};
-    use rsa_08::PublicKeyParts;
     let master = SigningKey::generate(&mut OsRng);
     let payload = NotaryPayload {
-        notary_verifying_key: blind_rsa_signatures::PublicKey(sk.to_public_key()),
+        notary_verifying_key: notary_public(sk),
         info: INFO.to_string(),
     };
     let notary = NotaryCertificateV1 {
@@ -463,18 +463,35 @@ fn chain_with_notary_key(sk: &rsa_08::RsaPrivateKey, salt: usize) -> (Vec<u8>, V
     };
     let ghost = SigningKey::generate(&mut OsRng).verifying_key();
     let msg = Armorable::to_bytes(&ghost).unwrap();
-    let signer =
-        rsa_08::pss::SigningKey::<rsa_08::sha2::Sha384>::new_with_salt_len(sk.clone(), salt);
-    let sig = signer.sign_with_rng(&mut OsRng, &msg).to_vec();
-    // Left-pad to the modulus length, as blind-rsa-signatures does.
-    let mut padded = vec![0u8; sk.size() - sig.len()];
-    padded.extend_from_slice(&sig);
     let cert = GhostkeyCertificateV1 {
         notary,
         verifying_key: ghost,
-        signature: RsaSignature(padded),
+        signature: pss_sign(sk, salt, &msg),
     };
     (bytes_of(&cert), master.verifying_key())
+}
+
+/// A notary RSA key of `bits` bits with public exponent `e`, of a shape the
+/// issuing code never makes.
+fn rsa_key(bits: usize, e: u32) -> rsa::PrivateKey {
+    rsa::PrivateKey::new_with_exp(&mut DefaultRng, bits, rsa::BoxedUint::from(e)).unwrap()
+}
+
+/// `sk`'s public half as ghostkey_lib holds a notary key.
+fn notary_public(sk: &rsa::PrivateKey) -> NotaryPublicKey {
+    NotaryPublicKey(RawPublicKey::new(sk.to_public_key()))
+}
+
+/// RSA-PSS SHA-384 over `msg` with salt length `salt`, left-padded to the
+/// modulus length as blind-rsa-signatures pads.
+fn pss_sign(sk: &rsa::PrivateKey, salt: usize, msg: &[u8]) -> RsaSignature {
+    use rsa::signature::{RandomizedSigner, SignatureEncoding};
+    use rsa::traits::PublicKeyParts;
+    let signer = rsa::pss::SigningKey::<rsa::sha2::Sha384>::new_with_salt_len(sk.clone(), salt);
+    let sig = signer.sign_with_rng(&mut DefaultRng, msg).to_vec();
+    let mut padded = vec![0u8; sk.size() - sig.len()];
+    padded.extend_from_slice(&sig);
+    RsaSignature(padded)
 }
 
 #[test]
@@ -483,7 +500,7 @@ fn any_pss_salt_length_agrees() {
     // signature, whatever its options say; so does this crate. Every
     // certificate issued so far uses 48.
     let c = chain(INFO);
-    let sk = c.notary_keypair.sk.0.clone();
+    let sk: rsa::PrivateKey = c.notary_sk.0.as_ref().clone();
     for salt in [0, 1, 20, 32, 48, 64, 206] {
         let (bytes, master) = chain_with_notary_key(&sk, salt);
         assert_eq!(
@@ -499,12 +516,11 @@ fn notary_key_shapes_within_the_limits_agree() {
     // Modulus lengths that are not a multiple of 8 bits exercise the
     // encoded-message length arithmetic; e = 3 is the other exponent
     // blind-rsa-signatures signs with.
-    use rsa_08::BigUint;
     let keys = [
-        rsa_08::RsaPrivateKey::new(&mut OsRng, 2049).unwrap(),
-        rsa_08::RsaPrivateKey::new(&mut OsRng, 2050).unwrap(),
-        rsa_08::RsaPrivateKey::new(&mut OsRng, 3072).unwrap(),
-        rsa_08::RsaPrivateKey::new_with_exp(&mut OsRng, 2048, &BigUint::from(3u32)).unwrap(),
+        rsa_key(2049, 65537),
+        rsa_key(2050, 65537),
+        rsa_key(3072, 65537),
+        rsa_key(2048, 3),
     ];
     for (i, sk) in keys.iter().enumerate() {
         let (bytes, master) = chain_with_notary_key(sk, 48);
@@ -788,31 +804,34 @@ fn difference_weak_ghost_key_certificate() {
     let mut cert = c.cert.clone();
     cert.verifying_key = weak;
     cert.signature =
-        unblinded_rsa_sign(&c.notary_keypair, &Armorable::to_bytes(&weak).unwrap()).unwrap();
+        unblinded_rsa_sign(&c.notary_sk, &Armorable::to_bytes(&weak).unwrap()).unwrap();
     let bytes = bytes_of(&cert);
     assert_eq!(reference(&bytes, &master), Ok(INFO.to_string()));
     assert_eq!(ours(&bytes, &master), Err(Error::WeakGhostKey));
 }
 
 #[test]
-fn difference_rsa_signature_not_reduced() {
+fn unreduced_rsa_signature_is_refused_by_both() {
     // s + n, where it still fits the modulus length, is the same signature to
-    // a verifier that reduces modulo n. RFC 8017 says to refuse it. Whether
+    // a verifier that reduces modulo n. RFC 8017 says to refuse it. This was
+    // a difference from ghostkey_lib 0.2 (rsa 0.8 reduced it); ghostkey_lib
+    // 0.3 (rsa 0.10) refuses it too. Whether
     // s + n fits depends on the key and the signature, so this searches a few
     // keys and many signatures; for one key it fails only if none of 64
     // signatures fits, and that needs a modulus within a few percent of
     // 2^2048, for all four keys.
-    use rsa_08::{BigUint, PublicKeyParts};
+    use rsa::traits::PublicKeyParts;
     for _ in 0..4 {
         let c = chain(INFO);
         let master = c.master.verifying_key();
-        let n = c.notary_keypair.pk.0.n().clone();
-        let size = c.notary_keypair.pk.0.size();
+        let pk: &rsa::PublicKey = c.notary.payload.notary_verifying_key.0.as_ref();
+        let n = pk.n().as_ref().to_be_bytes().to_vec();
+        let size = pk.size();
         for _ in 0..64 {
             let ghost = SigningKey::generate(&mut OsRng).verifying_key();
-            let sig = unblinded_rsa_sign(&c.notary_keypair, &Armorable::to_bytes(&ghost).unwrap())
-                .unwrap();
-            let bigger = (BigUint::from_bytes_be(&sig.0) + &n).to_bytes_be();
+            let sig =
+                unblinded_rsa_sign(&c.notary_sk, &Armorable::to_bytes(&ghost).unwrap()).unwrap();
+            let bigger = add_be(&sig.0, &n);
             if bigger.len() != size {
                 continue;
             }
@@ -822,12 +841,26 @@ fn difference_rsa_signature_not_reduced() {
             assert_eq!(ours(&bytes_of(&cert), &master), Ok(INFO.to_string()));
             cert.signature = RsaSignature(bigger);
             let bytes = bytes_of(&cert);
-            assert_eq!(reference(&bytes, &master), Ok(INFO.to_string()));
-            assert_eq!(ours(&bytes, &master), Err(Error::GhostKeySignature));
+            assert_eq!(assert_agree(&bytes, &master), Err(Error::GhostKeySignature));
             return;
         }
     }
     panic!("no signature had room above its modulus");
+}
+
+/// `a + b` for big-endian unsigned integers, with no leading zero byte.
+fn add_be(a: &[u8], b: &[u8]) -> Vec<u8> {
+    let len = a.len().max(b.len()) + 1;
+    let at = |x: &[u8], i: usize| if i < x.len() { x[x.len() - 1 - i] } else { 0 };
+    let mut out = vec![0u8; len];
+    let mut carry = 0u16;
+    for i in 0..len {
+        let s = at(a, i) as u16 + at(b, i) as u16 + carry;
+        out[len - 1 - i] = s as u8;
+        carry = s >> 8;
+    }
+    let first = out.iter().position(|&x| x != 0).unwrap_or(out.len());
+    out.split_off(first)
 }
 
 #[test]
@@ -885,12 +918,7 @@ fn difference_notary_key_outside_the_limits() {
     // ghostkey_lib verifies under any key the master signed. This crate
     // takes only what blind-rsa-signatures would issue under: 2048 to 4096
     // bits, e = 3 or 65537.
-    use rsa_08::BigUint;
-    let keys = [
-        rsa_08::RsaPrivateKey::new(&mut OsRng, 1024).unwrap(),
-        rsa_08::RsaPrivateKey::new(&mut OsRng, 2047).unwrap(),
-        rsa_08::RsaPrivateKey::new_with_exp(&mut OsRng, 2048, &BigUint::from(5u32)).unwrap(),
-    ];
+    let keys = [rsa_key(1024, 65537), rsa_key(2047, 65537), rsa_key(2048, 5)];
     for (i, sk) in keys.iter().enumerate() {
         let (bytes, master) = chain_with_notary_key(sk, 48);
         assert_eq!(reference(&bytes, &master), Ok(INFO.to_string()), "key {i}");
@@ -927,7 +955,7 @@ fn largest_notary_key_fits_the_size_limit() {
     // each signature byte of 24 or more, so the bound is checked against the
     // worst case too, not only this signature.
     use ghostkey_verify::MAX_CERTIFICATE_BYTES;
-    let sk = rsa_08::RsaPrivateKey::new(&mut OsRng, 4096).unwrap();
+    let sk = rsa_key(4096, 65537);
     let (bytes, master) = chain_with_notary_key(&sk, 48);
     assert_eq!(assert_agree(&bytes, &master), Ok(INFO.to_string()));
     let cert = GhostkeyCertificate::from_cbor(&bytes).unwrap();
@@ -951,8 +979,10 @@ fn largest_notary_key_fits_the_size_limit() {
 
 /// A certificate whose RSA signature is a CBOR byte string: half the size of
 /// its canonical array, so it fits MAX_CERTIFICATE_BYTES as sent and not once
-/// re-encoded. Lean otherwise (a one-digit modulus: it only has to parse), so
-/// a genuine certificate fits beside it in one text.
+/// re-encoded. Lean otherwise (a one-digit modulus: it only has to parse, and
+/// 65539 is the smallest odd one above e that rsa 0.10 will hold, which
+/// ghostkey_lib 0.3 needs to decode it), so a genuine certificate fits beside
+/// it in one text.
 fn oversized_decoy(c: &Chain) -> Vec<u8> {
     use ciborium::Value;
     let mut v: Value = ciborium::de::from_reader(bytes_of(&c.cert).as_slice()).unwrap();
@@ -962,7 +992,7 @@ fn oversized_decoy(c: &Chain) -> Vec<u8> {
             "delegate_verifying_key",
         ),
         "n",
-    ) = Value::Array(vec![Value::Integer(1.into())]);
+    ) = Value::Array(vec![Value::Integer(65539.into())]);
     *field(field(field(&mut v, "delegate"), "payload"), "info") = Value::Text("x".into());
     *field(&mut v, "signature") = Value::Bytes(vec![0xff; 1500]);
     let mut cbor = Vec::new();

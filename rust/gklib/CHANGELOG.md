@@ -1,5 +1,57 @@
 # Changelog
 
+## 0.3.0 — rsa 0.10 / blind-rsa-signatures 0.19
+
+`blind-rsa-signatures` goes from 0.15.1 to 0.19.0, which moves `rsa` from
+0.8.2 to 0.10.0.
+
+### Source API
+
+- New module `blind_rsa`. The notary keys are `blind_rsa::PublicKey` and
+  `blind_rsa::SecretKey`, newtypes around `blind-rsa-signatures`' keys with
+  the scheme fixed to SHA-384, PSS (48-byte salt), no message randomizer:
+  what 0.2 used with `Options::default()` and `randomize_msg = false`. They
+  deref to the upstream key types (`blind`, `finalize`, `blind_sign`,
+  `to_der`). `PublicKey::finalize_with_secret` unblinds with only the
+  blinding secret, and `PublicKey::verify_signature` verifies a finalized
+  signature.
+- `NotaryPayload::notary_verifying_key` is a `blind_rsa::PublicKey`;
+  `NotaryCertificateV1::new` returns a `blind_rsa::SecretKey`;
+  `GhostkeyCertificateV1::signature` is `blind_rsa::Signature`.
+- `util::unblinded_rsa_sign` takes the `SecretKey` instead of a `KeyPair`.
+- The 0.15 `Options` argument is gone; upstream `BlindedMessage` is now
+  `BlindMessage`.
+
+### Wire format: unchanged
+
+Certificates, notary certificates and notary signing key files serialize
+exactly as 0.2 wrote them. `rsa` 0.10 serializes keys differently from 0.8,
+so `blind_rsa::PublicKey` and `SecretKey` implement serde themselves, in
+`rsa` 0.8's form. The type names are what keep the PEM label of a signing key
+file `SECRET_KEY_V1`. The blind-signing protocol is the same RFC 9474 variant,
+so a browser built on either version works with a server built on either.
+
+`tests/blind_rsa_015_compat.rs` checks this against fixtures written by 0.2.0
+and, live, against ghostkey_lib 0.2.0 from crates.io: an old notary key file
+loads and signs to the same bytes, old and new clients and servers
+interoperate in all four combinations, certificates from either version verify
+under the other and re-encode to the same bytes, and a production certificate
+verifies against the real master key.
+
+### Verification: two inputs no genuine certificate contains
+
+- An RSA signature that is not reduced modulo n (the signature plus a
+  multiple of the modulus, still fitting the modulus length) is refused, per
+  RFC 8017. 0.2 accepted it. `ghostkey-verify` already refused it.
+- A notary key that `rsa` 0.10 cannot hold (an even modulus, a modulus not
+  larger than its exponent, or an exponent outside 2..2^33) now fails when the
+  certificate is decoded instead of when it is verified. In an armoured text
+  holding more than one block, such a block is now skipped like any other
+  undecodable block.
+
+The salt length is still read from the signature, as 0.2 did, rather than
+fixed at 48.
+
 ## 0.2.0 — delegate → notary rename
 
 The PKI intermediate signing key has been renamed from "delegate" to

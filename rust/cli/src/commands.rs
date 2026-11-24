@@ -1,7 +1,7 @@
-use blind_rsa_signatures::SecretKey as RSASigningKey;
 use colored::Colorize;
 use ed25519_dalek::*;
 use ghostkey_lib::armorable::*;
+use ghostkey_lib::blind_rsa::SecretKey as RSASigningKey;
 use ghostkey_lib::errors::GhostkeyError;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use ghostkey_lib::notary_certificate::NotaryCertificateV1;

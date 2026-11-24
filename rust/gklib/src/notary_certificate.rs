@@ -15,12 +15,9 @@
 use super::errors::GhostkeyError;
 use super::util::{sign_with_hash, verify_with_hash};
 use crate::armorable::Armorable;
+use crate::blind_rsa::{PublicKey as RSAVerifyingKey, SecretKey as RSASigningKey};
 use crate::FREENET_MASTER_VERIFYING_KEY_BASE64;
-use blind_rsa_signatures::{
-    KeyPair as RSAKeyPair, PublicKey as RSAVerifyingKey, SecretKey as RSASigningKey,
-};
 use ed25519_dalek::*;
-use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -42,11 +39,11 @@ impl NotaryCertificateV1 {
         master_signing_key: &SigningKey,
         info: &String,
     ) -> Result<(Self, RSASigningKey), Box<GhostkeyError>> {
-        let notary_keypair = RSAKeyPair::generate(&mut OsRng, 2048)
-            .map_err(|e| GhostkeyError::RSAError(e.to_string()))?;
+        let (notary_verifying_key, notary_signing_key) =
+            RSASigningKey::generate().map_err(|e| GhostkeyError::RSAError(e.to_string()))?;
 
         let payload = NotaryPayload {
-            notary_verifying_key: notary_keypair.pk,
+            notary_verifying_key,
             info: info.clone(),
         };
 
@@ -57,7 +54,7 @@ impl NotaryCertificateV1 {
             signature: Signature::from(signature),
         };
 
-        Ok((certificate, notary_keypair.sk))
+        Ok((certificate, notary_signing_key))
     }
 
     /// Verifies the notary certificate using the master verifying key. If the
@@ -85,6 +82,7 @@ impl NotaryCertificateV1 {
 mod tests {
     use super::*;
     use crate::util::create_keypair;
+    use rand_core::OsRng;
 
     #[test]
     fn test_notary_certificate_creation_and_verification() {

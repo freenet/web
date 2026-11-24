@@ -1,6 +1,6 @@
 [package]
 name = "ghostkey_lib"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "A library for working with Freenet's Ghost Keys"
 license = "MIT OR Apache-2.0"
@@ -13,8 +13,16 @@ base64 = "0.22.1"
 ciborium = "0.2.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_bytes = "0.11"
-blind-rsa-signatures = "=0.15.1"
+blind-rsa-signatures = "=0.19.0"
 rand = "0.8.5"
 rand_core = "0.6"
 sha2 = "0.11.0-pre.4"
 serde-reflection = "0.4.0"
+
+[dev-dependencies]
+# The pre-0.3 implementation, for the cross-version tests in
+# tests/blind_rsa_015_compat.rs: the code every certificate issued so far, and
+# every deployed browser client and verifier, was built from.
+ghostkey_lib_02 = { package = "ghostkey_lib", version = "=0.2.0" }
+blind_rsa_015 = { package = "blind-rsa-signatures", version = "=0.15.1" }
+serde_json = "1"

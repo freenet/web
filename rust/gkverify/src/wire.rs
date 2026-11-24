@@ -41,7 +41,8 @@ pub(crate) struct NotaryPayloadWire {
     pub info: String,
 }
 
-/// `blind_rsa_signatures::PublicKey`, a newtype around `rsa` 0.8's
+/// `ghostkey_lib::blind_rsa::PublicKey`, which serializes as
+/// `blind_rsa_signatures` 0.15's `PublicKey` did: a newtype around `rsa` 0.8's
 /// `RsaPublicKey`.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub(crate) struct RsaPublicKeyWire(pub RsaPublicKeyFields);
@@ -160,7 +161,7 @@ impl BigUintWire {
 impl RsaPublicKeyWire {
     /// The key, if it is within the accepted parameters: an odd modulus of
     /// 2048 to 4096 bits and a public exponent of 3 or 65537.
-    pub(crate) fn to_rsa(&self) -> Result<rsa::RsaPublicKey, Error> {
+    pub(crate) fn to_rsa(&self) -> Result<rsa::PublicKey, Error> {
         let RsaPublicKeyFields { n, e } = &self.0;
         let e_ok = matches!(e.digits.as_slice(), [3] | [65537]);
         let n = n.to_be_bytes();
@@ -172,10 +173,10 @@ impl RsaPublicKeyWire {
             return Err(Error::NotaryKey);
         }
         let e = BoxedUint::from(e.digits[0]);
-        rsa::RsaPublicKey::new_with_max_size(
+        rsa::PublicKey::new_with_size_limits(
             BoxedUint::from_be_slice_vartime(&n),
             e,
-            MAX_NOTARY_KEY_BITS,
+            rsa::PublicKey::MIN_SIZE..=MAX_NOTARY_KEY_BITS,
         )
         .map_err(|_| Error::NotaryKey)
     }
@@ -226,7 +227,7 @@ mod tests {
         );
     }
 
-    fn key(n_words: usize, e: u32) -> Result<rsa::RsaPublicKey, Error> {
+    fn key(n_words: usize, e: u32) -> Result<rsa::PublicKey, Error> {
         // An odd number with its top bit set, `n_words * 32` bits long.
         let mut n = vec![0x1357_9bdf_u32; n_words];
         n[0] |= 1;

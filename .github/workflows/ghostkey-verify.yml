@@ -127,3 +127,28 @@ jobs:
         run: |
           cargo check --lib
           cargo check --lib --target wasm32-unknown-unknown
+
+  # ghostkey_lib's own tests, which nothing else in CI runs. They include
+  # tests/blind_rsa_015_compat.rs: certificates, notary key files and blind
+  # signatures exchanged with ghostkey_lib 0.2.0 from crates.io, the code every
+  # Ghost Key so far was issued with, in both directions.
+  gklib:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: rust/gklib
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust/gklib
+      - name: Formatting
+        run: cargo fmt -- --check
+      - name: Test
+        run: cargo test

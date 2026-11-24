@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 
-use blind_rsa_signatures::BlindedMessage;
+use ghostkey_lib::blind_rsa::BlindMessage as BlindedMessage;
 use serde::{Deserialize, Serialize};
 use stripe::{Client, PaymentIntent, PaymentIntentStatus};
 
@@ -204,7 +204,7 @@ fn same_notary(client_cert: &str, notary: &Notary) -> Result<bool, CertificateEr
     let Ok(client_cert) = NotaryCertificateV1::from_base64(client_cert) else {
         return Ok(false);
     };
-    let der = |k: &blind_rsa_signatures::PublicKey| {
+    let der = |k: &ghostkey_lib::blind_rsa::PublicKey| {
         k.to_der()
             .map_err(|e| CertificateError::MiscError(e.to_string()))
     };

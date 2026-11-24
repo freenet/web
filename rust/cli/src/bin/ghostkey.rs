@@ -1,4 +1,3 @@
-use blind_rsa_signatures::SecretKey as RSASigningKey;
 use clap::{Arg, ArgAction, Command};
 use colored::Colorize;
 use ed25519_dalek::*;
@@ -9,6 +8,7 @@ use ghostkey::commands::{
     NOTARY_SIGNING_KEY_FILENAME,
 };
 use ghostkey_lib::armorable::Armorable;
+use ghostkey_lib::blind_rsa::SecretKey as RSASigningKey;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use ghostkey_lib::notary_certificate::NotaryCertificateV1;
 use log::info;

@@ -9,8 +9,9 @@
 
 use std::path::{Path, PathBuf};
 
-use blind_rsa_signatures::{BlindSignature, BlindedMessage, Options, SecretKey as RSASigningKey};
-use rand_core::OsRng;
+use ghostkey_lib::blind_rsa::{
+    BlindMessage as BlindedMessage, BlindSignature, SecretKey as RSASigningKey,
+};
 
 use ghostkey_lib::armorable::*;
 use ghostkey_lib::notary_certificate::NotaryCertificateV1;
@@ -256,10 +257,8 @@ pub(crate) fn sign_with_notary_key(
     blinded_ghostkey: &BlindedMessage,
     notary_signing_key: &RSASigningKey,
 ) -> Result<BlindSignature, CertificateError> {
-    let options = Options::default();
-
     let blind_sig = notary_signing_key
-        .blind_sign(&mut OsRng, blinded_ghostkey, &options)
+        .blind_sign(blinded_ghostkey)
         .map_err(|e| CertificateError::MiscError(format!("Failed to blind sign: {}", e)))?;
 
     Ok(blind_sig)
@@ -281,7 +280,7 @@ mod tests {
     /// info string so a test can tell which pair it got back.
     fn write_pair(dir: &Path, amount: u64, info: &str) {
         std::fs::create_dir_all(dir).unwrap();
-        let master = ed25519_dalek::SigningKey::generate(&mut OsRng);
+        let master = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
         let (cert, key) = NotaryCertificateV1::new(&master, &info.to_string()).unwrap();
         cert.to_file(&dir.join(NamingScheme::Notary.cert_filename(amount)))
             .unwrap();

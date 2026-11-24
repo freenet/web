@@ -45,8 +45,9 @@
 //!   notary key issued is exactly 2048 bits with e = 65537. This bounds the
 //!   cost of a check.
 //! * An RSA signature must be smaller than the modulus (RFC 8017, 5.2.2).
-//!   `ghostkey_lib` reduces it instead, so it also accepts the signature plus
-//!   a multiple of the modulus when that still fits the modulus length.
+//!   `ghostkey_lib` 0.2 reduces it instead, so it also accepts the signature
+//!   plus a multiple of the modulus when that still fits the modulus length.
+//!   (`ghostkey_lib` 0.3, on `rsa` 0.10, refuses it as this crate does.)
 //!
 //! The payload signature check, [`verify_payload_signature`], is Ed25519
 //! `verify_strict`, as `freenet-bitcoin`'s inbox contract uses for
