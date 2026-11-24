@@ -460,23 +460,42 @@ fn require_strict_permissions(file_path: &Path) -> Result<(), GhostkeyError> {
 /// `notary_signing_key` (or the legacy `delegate_signing_key`); the
 /// certificate is the same name with `signing_key` replaced by `certificate`.
 pub fn check_notary_keys_cmd(dir: &Path) -> i32 {
-    fn walk(dir: &Path, out: &mut Vec<PathBuf>) -> std::io::Result<()> {
-        for entry in fs::read_dir(dir)? {
-            let path = entry?.path();
-            if path.is_dir() {
+    /// Collects key files under `dir`. Symlinks are not followed, so a link
+    /// loop (or a link to `/`) cannot make it walk forever.
+    fn walk(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), String> {
+        let entries = fs::read_dir(dir).map_err(|e| format!("{}: {}", dir.display(), e))?;
+        for entry in entries {
+            let entry = entry.map_err(|e| format!("{}: {}", dir.display(), e))?;
+            let path = entry.path();
+            let file_type = entry
+                .file_type()
+                .map_err(|e| format!("{}: {}", path.display(), e))?;
+            if file_type.is_symlink() {
+                eprintln!(
+                    "{} {}: symlink, not followed",
+                    "skip".yellow(),
+                    path.display()
+                );
+            } else if file_type.is_dir() {
                 walk(&path, out)?;
-            } else if path.file_name().and_then(|n| n.to_str()).is_some_and(|n| {
-                (n.starts_with("notary_signing_key") || n.starts_with("delegate_signing_key"))
-                    && n.ends_with(".pem")
-            }) {
-                out.push(path);
+            } else {
+                let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
+                    eprintln!("{} {}: name is not UTF-8", "skip".yellow(), path.display());
+                    continue;
+                };
+                if (name.starts_with("notary_signing_key")
+                    || name.starts_with("delegate_signing_key"))
+                    && name.ends_with(".pem")
+                {
+                    out.push(path);
+                }
             }
         }
         Ok(())
     }
     let mut keys = Vec::new();
     if let Err(e) = walk(dir, &mut keys) {
-        eprintln!("{} to read {}: {}", "Failed".red(), dir.display(), e);
+        eprintln!("{} to read {}", "Failed".red(), e);
         return 1;
     }
     keys.sort();

@@ -183,7 +183,10 @@ check "check-notary-keys accepts the whole schedule" "\"$GHOSTKEY\" check-notary
 cp "$(find $D -name 'notary_signing_key_*' | sort | head -1)" "$tmp/other_key"
 victim=$(find $D -name 'notary_signing_key_*' | sort | tail -1)
 cp "$tmp/other_key" "$victim"
-check "check-notary-keys refuses a key that is not its certificate's" "! \"$GHOSTKEY\" check-notary-keys --notary-dir $D >$tmp/check 2>&1"
+check "check-notary-keys refuses a key that is not its certificate's" "! \"$GHOSTKEY\" check-notary-keys --notary-dir $D >$tmp/check 2>&1 && grep -q 'does not belong' $tmp/check"
+mkdir -p "$tmp/loop/sub" && ln -s .. "$tmp/loop/sub/a" && ln -s .. "$tmp/loop/sub/b"
+cp "$tmp/other_key" "$tmp/loop/notary_signing_key_1.pem"
+check "check-notary-keys does not follow symlinks" "timeout 20 \"$GHOSTKEY\" check-notary-keys --notary-dir $tmp/loop >$tmp/check 2>&1; [ \$? -eq 1 ] && grep -q 'not followed' $tmp/check"
 
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
