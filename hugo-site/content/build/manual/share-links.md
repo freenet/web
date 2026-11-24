@@ -56,7 +56,7 @@ https://freenet.org/open#6FzSeAUKcqJrveKyU8RJgGKc5jRB1Z2juvxXtwTA4Em9/#store=Ab3
 with the rest. A first-time visitor from an unfamiliar link should see exactly one obvious thing to
 click, not a row of equally-weighted unknowns. The four possible buttons are:
 
-- **Open on this computer** (the default primary button): the target on the visitor's own local peer
+- **Open in my Freenet (this computer)** (shown under the primary button on desktop, under "Other ways to open" on phones and tablets): the target on the visitor's own local peer
   (`http://127.0.0.1:7509/v1/contract/web/<contract-id>/...`), for anyone who already has Freenet
   installed and running.
 - **Use in your browser**: the same target on `try.freenet.org`, a peer we host, for anyone who
@@ -80,8 +80,9 @@ a dead end.
 
 ## Choosing the primary button: `?via=`
 
-By default the primary button is **Open on this computer**, on the assumption that most people
-following a link already have Freenet. If your audience mostly doesn't, for example a link posted to
+By default the primary button is the hosted **Open on try.freenet.org** option. The page never probes
+for a local node (Chrome would show a permission prompt for that), so it cannot tell whether
+Freenet is installed. If your audience mostly doesn't, for example a link posted to
 Facebook or a general audience, add `?via=` before the `#`:
 
 ```
@@ -97,10 +98,10 @@ https://freenet.org/open?via=browser#<contract-id>/<path>?<query>#<app-fragment>
   `try.freenet.org` is one shared peer, this suits occasional or small-audience sharing rather than
   a high-traffic post. [freenet-core#5773](https://github.com/freenet/freenet-core/issues/5773)
   tracks scaling it up. A `LOCAL_ONLY` app (the Ghost Key vault) never redirects: the page shows
-  **Open on this computer** with a note explaining why, and the link-making tool won't produce a
+  **Open in my Freenet (this computer)** with a note explaining why, and the link-making tool won't produce a
   `?via=browser` link for it.
-- **`?via=local`**: same as no `via` at all (spelled out for clarity in a generated link). **Open on
-  this computer** stays the primary button.
+- **`?via=local`**: makes **Open in my Freenet (this computer)** the primary button. Use it when you
+  know your audience runs Freenet.
 - **`?via=app`**: makes **Open in Freenet** the primary button instead. Only worth setting if you
   know your audience is already on 0.2.140 or newer; on an older release the button
   simply won't do anything, same as today.

@@ -35,6 +35,11 @@ jobs:
           node-version: '22'
       - name: Page JS against the shared vectors
         run: node hugo-site/tests/open-link-vectors.test.mjs
+      - name: No local-node request on page load (headless Chromium)
+        run: |
+          npm install --no-save --no-package-lock playwright@1.49.1
+          npx playwright install --with-deps chromium
+          node hugo-site/tests/open-link-no-probe.browser.mjs
       - name: Vector copy matches freenet-core main
         run: |
           curl -fsSL https://raw.githubusercontent.com/freenet/freenet-core/main/crates/core/tests/data/share-link-vectors.json \
