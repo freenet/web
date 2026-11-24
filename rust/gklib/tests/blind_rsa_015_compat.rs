@@ -350,6 +350,112 @@ fn signatures_verify_across_versions() {
         .unwrap();
 }
 
+/// Verdicts on signatures the issuing code never makes, old against new:
+/// other PSS salt lengths and wrong lengths agree; a signature not reduced
+/// modulo n is the one documented change (old accepted, new refuses).
+#[test]
+fn odd_signature_verdicts_old_against_new() {
+    use ghostkey_lib::blind_rsa::reexports::rsa;
+    use rsa::signature::{RandomizedSigner, SignatureEncoding};
+    use rsa::traits::PublicKeyParts;
+
+    let old_kp = blind_rsa_015::KeyPair::generate(&mut OsRng, 2048).unwrap();
+    let old_bytes = old_armor::Armorable::to_bytes(&old_kp.sk).unwrap();
+    let sk: SecretKey = ciborium::de::from_reader(old_bytes.as_slice()).unwrap();
+    let pk = sk.public_key().unwrap();
+    let raw: &rsa::PrivateKey = sk.0.as_ref();
+    let size = raw.size();
+    let msg = b"a ghost key";
+
+    let old_ok = |sig: &[u8]| {
+        old_kp
+            .pk
+            .verify(
+                &blind_rsa_015::Signature(sig.to_vec()),
+                None,
+                msg,
+                &old_options(),
+            )
+            .is_ok()
+    };
+    let new_ok = |sig: &[u8]| pk.verify_signature(&Signature(sig.to_vec()), msg).is_ok();
+    let pad = |sig: Vec<u8>| {
+        let mut out = vec![0u8; size - sig.len()];
+        out.extend_from_slice(&sig);
+        out
+    };
+
+    for salt in [0, 1, 20, 32, 48, 64, 100] {
+        let signer =
+            rsa::pss::SigningKey::<rsa::sha2::Sha384>::new_with_salt_len(raw.clone(), salt);
+        let sig = pad(signer.sign_with_rng(&mut DefaultRng, msg).to_vec());
+        assert!(old_ok(&sig), "old refused salt {salt}");
+        assert!(new_ok(&sig), "new refused salt {salt}");
+
+        for bad in [sig[1..].to_vec(), [&[0u8][..], &sig].concat(), Vec::new()] {
+            assert!(!old_ok(&bad) && !new_ok(&bad), "length {}", bad.len());
+        }
+        let mut flipped = sig.clone();
+        flipped[size / 2] ^= 1;
+        assert!(!old_ok(&flipped) && !new_ok(&flipped));
+    }
+
+    // s + n, when it still fits the modulus length. Whether it fits depends
+    // on the key and the signature; with n at least 3/4 of 2^2048 a key whose
+    // 128 tries all miss is rare, and sixteen such keys in a row are not seen.
+    for attempt in 0..16 {
+        let old_kp = if attempt == 0 {
+            old_kp.clone()
+        } else {
+            blind_rsa_015::KeyPair::generate(&mut OsRng, 2048).unwrap()
+        };
+        let old_bytes = old_armor::Armorable::to_bytes(&old_kp.sk).unwrap();
+        let sk: SecretKey = ciborium::de::from_reader(old_bytes.as_slice()).unwrap();
+        let pk = sk.public_key().unwrap();
+        let raw: &rsa::PrivateKey = sk.0.as_ref();
+        let n = raw.n().as_ref().to_be_bytes().to_vec();
+        let old_ok = |sig: &[u8]| {
+            old_kp
+                .pk
+                .verify(
+                    &blind_rsa_015::Signature(sig.to_vec()),
+                    None,
+                    msg,
+                    &old_options(),
+                )
+                .is_ok()
+        };
+        let new_ok = |sig: &[u8]| pk.verify_signature(&Signature(sig.to_vec()), msg).is_ok();
+        for _ in 0..128 {
+            let sig = ghostkey_lib::util::unblinded_rsa_sign(&sk, msg).unwrap().0;
+            let bigger = add_be(&sig, &n);
+            if bigger.len() != size {
+                continue;
+            }
+            assert!(old_ok(&sig) && new_ok(&sig));
+            assert!(old_ok(&bigger), "ghostkey_lib 0.2 accepted s + n");
+            assert!(!new_ok(&bigger), "0.3 refuses s + n (RFC 8017)");
+            return;
+        }
+    }
+    panic!("no signature had room above its modulus");
+}
+
+/// `a + b` for big-endian unsigned integers, with no leading zero byte.
+fn add_be(a: &[u8], b: &[u8]) -> Vec<u8> {
+    let len = a.len().max(b.len()) + 1;
+    let at = |x: &[u8], i: usize| if i < x.len() { x[x.len() - 1 - i] } else { 0 };
+    let mut out = vec![0u8; len];
+    let mut carry = 0u16;
+    for i in 0..len {
+        let s = at(a, i) as u16 + at(b, i) as u16 + carry;
+        out[len - 1 - i] = s as u8;
+        carry = s >> 8;
+    }
+    let first = out.iter().position(|&x| x != 0).unwrap_or(out.len());
+    out.split_off(first)
+}
+
 /// Writes `tests/fixtures/blind_rsa_015/` with the OLD code. Kept for the
 /// record; regenerating replaces the frozen evidence, so do not do it unless
 /// the fixtures themselves are wrong.

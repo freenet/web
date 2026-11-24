@@ -466,6 +466,29 @@ mod tests {
         assert!(super::same_notary(&quoted_b64, &quoted).unwrap());
         assert!(!super::same_notary(&other_b64, &quoted).unwrap());
         assert!(!super::same_notary("not a certificate", &quoted).unwrap());
+
+        // A certificate encoded by the code before the rsa 0.10 migration, as
+        // a browser that fetched it earlier sends it back.
+        let fixtures = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../gklib/tests/fixtures/blind_rsa_015");
+        let old = super::Notary {
+            certificate: super::NotaryCertificateV1::from_file(
+                &fixtures.join("notary_certificate.pem"),
+            )
+            .unwrap(),
+            signing_key: ghostkey_lib::blind_rsa::SecretKey::from_file(
+                &fixtures.join("notary_signing_key.pem"),
+            )
+            .unwrap(),
+            period: None,
+        };
+        let transcript: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(fixtures.join("transcript.json")).unwrap(),
+        )
+        .unwrap();
+        let old_b64 = transcript["notary_certificate_base64"].as_str().unwrap();
+        assert!(super::same_notary(old_b64, &old).unwrap());
+        assert!(!super::same_notary(old_b64, &quoted).unwrap());
     }
 
     #[test]

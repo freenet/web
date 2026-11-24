@@ -2,10 +2,10 @@ use clap::{Arg, ArgAction, Command};
 use colored::Colorize;
 use ed25519_dalek::*;
 use ghostkey::commands::{
-    generate_ghost_key_cmd, generate_master_key_cmd, generate_notary_cmd, resolve_notary_file,
-    sign_message_cmd, verify_ghost_key_cmd, verify_notary_cmd, verify_signed_message_cmd,
-    LEGACY_DELEGATE_CERT_FILENAME, LEGACY_DELEGATE_SIGNING_KEY_FILENAME, NOTARY_CERT_FILENAME,
-    NOTARY_SIGNING_KEY_FILENAME,
+    check_notary_keys_cmd, generate_ghost_key_cmd, generate_master_key_cmd, generate_notary_cmd,
+    resolve_notary_file, sign_message_cmd, verify_ghost_key_cmd, verify_notary_cmd,
+    verify_signed_message_cmd, LEGACY_DELEGATE_CERT_FILENAME, LEGACY_DELEGATE_SIGNING_KEY_FILENAME,
+    NOTARY_CERT_FILENAME, NOTARY_SIGNING_KEY_FILENAME,
 };
 use ghostkey_lib::armorable::Armorable;
 use ghostkey_lib::blind_rsa::SecretKey as RSASigningKey;
@@ -23,6 +23,7 @@ const CMD_GENERATE_GHOST_KEY: &str = "generate-ghost-key";
 const CMD_VERIFY_GHOST_KEY: &str = "verify-ghost-key";
 const CMD_SIGN_MESSAGE: &str = "sign-message";
 const CMD_VERIFY_SIGNED_MESSAGE: &str = "verify-signed-message";
+const CMD_CHECK_NOTARY_KEYS: &str = "check-notary-keys";
 
 // Legacy subcommand names — still parsed via clap aliases for backward
 // compatibility, warned on via pre-parse in main().
@@ -177,6 +178,20 @@ fn run() -> i32 {
                         .help("The file containing the notary certificate")
                         .required(true)
                         .value_name("FILE"),
+                ),
+        )
+        .subcommand(
+            Command::new(CMD_CHECK_NOTARY_KEYS)
+                .about(
+                    "Loads every notary signing key under a directory with its certificate, \
+                     and signs and verifies a test message with each. Writes nothing.",
+                )
+                .arg(
+                    Arg::new(ARG_NOTARY_DIR)
+                        .long(ARG_NOTARY_DIR)
+                        .help("The directory to search, recursively")
+                        .required(true)
+                        .value_name("DIR"),
                 ),
         )
         .subcommand(
@@ -336,6 +351,9 @@ fn run() -> i32 {
             };
             verify_notary_cmd(&master_verifying_key, &notary_certificate)
         }
+        Some((CMD_CHECK_NOTARY_KEYS, sub_matches)) => check_notary_keys_cmd(Path::new(
+            sub_matches.get_one::<String>(ARG_NOTARY_DIR).unwrap(),
+        )),
         Some((CMD_GENERATE_GHOST_KEY, sub_matches)) => {
             let notary_dir = sub_matches.get_one::<String>(ARG_NOTARY_DIR).unwrap();
             let notary_dir_path = Path::new(notary_dir);

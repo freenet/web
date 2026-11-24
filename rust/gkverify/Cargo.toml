@@ -42,7 +42,6 @@ ed25519-dalek = { version = "2.1", features = ["rand_core", "serde"] }
 rand = "0.8.5"
 ciborium = "0.2.2"
 
-
 # The differential tests run thousands of RSA operations; unoptimized
 # bignum arithmetic would take minutes.
 [profile.dev.package."*"]

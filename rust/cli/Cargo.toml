@@ -1,6 +1,6 @@
 [package]
 name = "ghostkey"
-version = "0.1.9"
+version = "0.2.0"
 edition = "2021"
 description = "A command-line tool for Freenet Ghost Key operations"
 license = "MIT OR Apache-2.0"

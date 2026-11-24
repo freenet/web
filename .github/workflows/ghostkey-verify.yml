@@ -131,7 +131,9 @@ jobs:
   # ghostkey_lib's own tests, which nothing else in CI runs. They include
   # tests/blind_rsa_015_compat.rs: certificates, notary key files and blind
   # signatures exchanged with ghostkey_lib 0.2.0 from crates.io, the code every
-  # Ghost Key so far was issued with, in both directions.
+  # Ghost Key so far was issued with, in both directions. Like the job above
+  # it has no lockfile and resolves fresh dependencies on every run, the
+  # weekly one included, so a red run can be an upstream release.
   gklib:
     runs-on: ubuntu-latest
     timeout-minutes: 30

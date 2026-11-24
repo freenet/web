@@ -179,6 +179,11 @@ check "September's pair is dated 1 July" \
 
 check "no scratch or partial directories left" "[ -z \"\$(find $D $P -maxdepth 1 -type d -name '.*')\" ]"
 check "signing keys are private" "[ -z \"\$(find $D -name 'notary_signing_key_*' ! -perm 600)\" ]"
+check "check-notary-keys accepts the whole schedule" "\"$GHOSTKEY\" check-notary-keys --notary-dir $D >$tmp/check 2>&1"
+cp "$(find $D -name 'notary_signing_key_*' | sort | head -1)" "$tmp/other_key"
+victim=$(find $D -name 'notary_signing_key_*' | sort | tail -1)
+cp "$tmp/other_key" "$victim"
+check "check-notary-keys refuses a key that is not its certificate's" "! \"$GHOSTKEY\" check-notary-keys --notary-dir $D >$tmp/check 2>&1"
 
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

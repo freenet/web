@@ -110,8 +110,9 @@ impl PublicKey {
     /// The salt length is read from the signature rather than fixed at 48,
     /// as `blind-rsa-signatures` 0.15 (and so ghostkey_lib 0.2 and
     /// `ghostkey-verify`) verified. 0.19's own `verify` insists on 48, which
-    /// every issued certificate uses; keeping the old rule means this
-    /// migration changes no verifier's verdict.
+    /// every issued certificate uses. Unlike 0.2, a signature not reduced
+    /// modulo n is refused (see the CHANGELOG); no honestly issued
+    /// certificate gets a different verdict.
     pub fn verify_signature(&self, sig: &Signature, msg: impl AsRef<[u8]>) -> Result<(), Error> {
         use rsa::signature::Verifier as _;
         let key: &rsa::PublicKey = self.0.as_ref();

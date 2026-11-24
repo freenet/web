@@ -55,6 +55,16 @@ serde attributes, the armour, or `verify` must keep it in agreement: its
 differential tests run against this crate (`cd rust/gkverify && cargo test`),
 and CI runs them whenever `rust/gklib/**` changes.
 
+## Notary RSA keys: frozen serialized form
+`src/blind_rsa.rs` wraps `blind-rsa-signatures`' keys in `PublicKey` /
+`SecretKey` newtypes whose serde writes `rsa` 0.8's form, not the current
+`rsa`'s. The notary public key is inside the payload the master key signs, and
+gkapi's notary signing key files on disk are in this form, so do not switch
+these to upstream serde. Do not rename the types either: `Armorable` takes
+the PEM label from the type name, and signing key files are `SECRET_KEY_V1`.
+`tests/blind_rsa_015_compat.rs` (fixtures written by 0.2.0, plus live
+round trips against ghostkey_lib 0.2.0 from crates.io) must stay green.
+
 ## Browser Integration
 - `rust/gkwasm/` exposes Ghost Key functionality to the browser (wasm-bindgen).
 - WebAssembly output is copied to `hugo-site/static/wasm/`.
