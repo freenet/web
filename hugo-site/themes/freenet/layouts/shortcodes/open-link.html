@@ -797,9 +797,10 @@
       // clicking the ordinary "Use in your browser" button hits the exact
       // same limitation, since it's a normal link to the same host, and
       // this page already discloses try.freenet.org can be "slow or busy
-      // sometimes". Fixing it for real would mean a network reachability
-      // check before redirecting, which trades away the "no network request
-      // of its own" property for a rare case. What this ordering DOES buy:
+      // sometimes". Fixing it for real would mean a reachability check of
+      // try.freenet.org before redirecting (the only request this page makes
+      // is the local-node probe), which is not worth it for a rare case.
+      // What this ordering DOES buy:
       // if the redirect is ever skipped or blocked by something outside
       // normal navigation (an extension, a future browser policy), the
       // visitor is left looking at a fully-populated, working page instead
