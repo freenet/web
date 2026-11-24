@@ -288,15 +288,12 @@
     <details id="open-link-more" class="open-link-more">
       <summary>Other ways to open</summary>
       <div id="open-link-more-list" class="open-link-buttons">
-        <!-- "Open on this computer" is the default primary (highlighted)
-             button until peers have auto-updated to a release with the
-             freenet: link handler (freenet-core#5726, first shipped in
-             0.2.140). Until then "Open in Freenet" does nothing for a
-             visitor on an older release. Swap the default in
-             primaryOptionIdForVia() below once most peers have it. -->
+        <!-- "Open in Freenet" (the freenet: scheme) does nothing for a
+             visitor on a release older than 0.2.140 (freenet-core#5726), so
+             it is not the default primary. See defaultLayout() below. -->
         <div class="open-link-option" id="open-link-opt-local">
           <a id="open-link-local" class="button" href="#" target="_blank" rel="noopener noreferrer"
-            >Open on this computer</a
+            >Open in my Freenet (this computer)</a
           >
           <p class="open-link-note">
             Use this if Freenet is already installed and running on this computer.
@@ -564,7 +561,7 @@
 
     function primaryOptionIdForVia(via) {
       if (via === "app") return "open-link-opt-scheme";
-      // No hint: handled by defaultLayout() (depends on local-node probe).
+      // No hint: handled by defaultLayout().
       // "browser" normally never reaches here -- processFragment() redirects
       // before rendering the page at all (see below) -- but map it anyway as
       // a sane fallback rather than falling through to a default that
@@ -609,67 +606,34 @@
           : "Use in your browser (try.freenet.org)";
     }
 
-    // Does this computer run a Freenet node? There is no API for asking, so
-    // this makes one no-cors request to the node's fixed loopback address
-    // (the same host the "Open on this computer" button targets). Any HTTP
-    // response, whatever its status, means something is listening on 7509;
-    // connection refused or a timeout means no node. Nothing from the
-    // fragment is ever sent, and the result is only used to pick which
-    // button is primary. The page works without it: a failed or missing
-    // probe leaves the no-node layout, which still offers every option.
-    var PROBE_TIMEOUT_MS = 1500;
-    // processFragment() runs more than once per page (immediately, on
-    // DOMContentLoaded and on hashchange); the node does not change between
-    // those, so ask once and share the answer.
-    var probeStarted = false;
-    var nodeFound = false;
-    var nodeWaiters = [];
-    function probeLocalNode(onResult) {
-      if (nodeFound) return onResult(true);
-      nodeWaiters.push(onResult);
-      if (probeStarted || typeof fetch !== "function") return;
-      probeStarted = true;
-      var done = false;
-      var onFound = function () {
-        nodeFound = true;
-        var waiters = nodeWaiters;
-        nodeWaiters = [];
-        for (var w = 0; w < waiters.length; w++) waiters[w](true);
-      };
-      var controller = typeof AbortController === "function" ? new AbortController() : null;
-      var timer = setTimeout(function () {
-        if (controller) controller.abort();
-      }, PROBE_TIMEOUT_MS);
-      fetch("http://127.0.0.1:7509/", {
-        mode: "no-cors",
-        cache: "no-store",
-        credentials: "omit",
-        signal: controller ? controller.signal : undefined,
-      }).then(
-        function () {
-          clearTimeout(timer);
-          if (!done) {
-            done = true;
-            onFound();
-          }
-        },
-        function () {
-          clearTimeout(timer);
-        },
-      );
+    // Default layout with no ?via= hint. The page never probes for a local
+    // node: Chrome's Local Network Access shows a permission prompt for any
+    // fetch() from a public page to 127.0.0.1, and a prompt before the visitor
+    // has done anything is worse than not knowing. The hosted demo is primary;
+    // "Open in my Freenet (this computer)" is a plain link (a top-level
+    // navigation to loopback does not prompt) shown beneath it on desktop, and
+    // tucked under "Other ways to open" where Freenet cannot run (phones and
+    // tablets). A local-only app has no hosted option at all.
+    function isMobileDevice() {
+      try {
+        var nav = window.navigator || {};
+        var ua = nav.userAgent || "";
+        if (/Android|iPhone|iPad|iPod|Mobile/i.test(ua)) return true;
+        // iPadOS reports a desktop Mac user agent; tell it apart by touch.
+        if (/Macintosh/.test(ua) && nav.maxTouchPoints > 1) return true;
+      } catch (e) {
+        // Unknown platform: treat as desktop (both options stay reachable).
+      }
+      return false;
     }
 
-    // Default layout with no ?via= hint. Without a local node the hosted
-    // demo is primary, next to "Get Freenet"; with one, opening locally is
-    // primary and the hosted demo stays visible beneath it. A local-only app
-    // has no hosted option at all.
-    function defaultLayout(hasLocalNode, localOnly) {
+    function defaultLayout(localOnly) {
       if (localOnly) {
         layoutButtons("open-link-opt-local", ["open-link-opt-quickstart"]);
-      } else if (hasLocalNode) {
-        layoutButtons("open-link-opt-local", ["open-link-opt-try"]);
-      } else {
+      } else if (isMobileDevice()) {
         layoutButtons("open-link-opt-try", ["open-link-opt-quickstart"]);
+      } else {
+        layoutButtons("open-link-opt-try", ["open-link-opt-local"]);
       }
     }
 
@@ -774,13 +738,7 @@
       var primaryId = primaryOptionIdForVia(viaParam);
       if (localOnly && primaryId === "open-link-opt-try") primaryId = "open-link-opt-local";
       if (viaParam === null) {
-        // No author hint: choose by whether a local node answers. Lay out
-        // for "no node" now, and switch if the probe finds one.
-        defaultLayout(false, localOnly);
-        var probedHash = window.location.hash;
-        probeLocalNode(function () {
-          if (window.location.hash === probedHash) defaultLayout(true, localOnly);
-        });
+        defaultLayout(localOnly);
       } else {
         layoutButtons(primaryId);
       }
@@ -798,8 +756,8 @@
       // same limitation, since it's a normal link to the same host, and
       // this page already discloses try.freenet.org can be "slow or busy
       // sometimes". Fixing it for real would mean a reachability check of
-      // try.freenet.org before redirecting (the only request this page makes
-      // is the local-node probe), which is not worth it for a rare case.
+      // try.freenet.org before redirecting (this page makes no
+      // requests of its own), which is not worth it for a rare case.
       // What this ordering DOES buy:
       // if the redirect is ever skipped or blocked by something outside
       // normal navigation (an extension, a future browser policy), the

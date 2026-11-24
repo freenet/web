@@ -40,7 +40,7 @@ if (!match) throw new Error("no <script> block in open-link.html");
 // way, since none of them depend on classList/appendChild/querySelector
 // output for anything other than the two "who is this for" radios, which
 // the stub below backs with real shared, mutable state.
-function runPage({ hash = "", search = "", fetchImpl } = {}) {
+function runPage({ hash = "", search = "", fetchImpl, userAgent = "", maxTouchPoints = 0 } = {}) {
   const elements = {};
   function makeElement(id) {
     const elListeners = {};
@@ -106,6 +106,7 @@ function runPage({ hash = "", search = "", fetchImpl } = {}) {
   const window = {
     location: { hash, search, replace: (url) => (replacedTo = url) },
     addEventListener: (ev, fn) => (windowListeners[ev] = fn),
+    navigator: { userAgent, maxTouchPoints },
   };
   vm.runInNewContext(match[1], {
     document,
@@ -344,7 +345,7 @@ let localOnlyFailures = 0;
 }
 console.log(`local-only checks, ${localOnlyFailures} failures`);
 
-// --- Default layout: hosted demo primary unless a local node answers ------
+// --- Default layout: hosted demo primary, no probe ever -------------------
 let layoutFailures = 0;
 {
   const check = (cond, what) => {
@@ -355,62 +356,68 @@ let layoutFailures = 0;
   };
   const primaryOf = (el) => el("open-link-primary-slot").lastAppended?.id;
   const secondaryOf = (el) => el("open-link-secondary-slot").lastAppended?.id;
-  const settle = () => new Promise((r) => setTimeout(r, 20));
   const H = "#" + OTHER + "/?room=abc";
   const TRY = `https://try.freenet.org/v1/contract/web/${OTHER}/?room=abc`;
+  const DESKTOP = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36";
+  const ANDROID = "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36";
+  const IPHONE = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148";
+  const IPADOS = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/17.0 Safari/605.1.15";
 
-  // No fetch at all (old browser / test stub): no-node layout.
-  let p = runPage({ hash: H });
-  check(primaryOf(p.el) === "open-link-opt-try", `no probe: primary ${primaryOf(p.el)}`);
-  check(secondaryOf(p.el) === "open-link-opt-quickstart", `no probe: secondary ${secondaryOf(p.el)}`);
+  // No request of any kind on load, whatever the platform or ?via= hint.
+  for (const [name, ua, touch] of [
+    ["desktop", DESKTOP, 0],
+    ["android", ANDROID, 5],
+    ["iphone", IPHONE, 5],
+    ["ipados", IPADOS, 5],
+  ]) {
+    for (const search of ["", "?via=app", "?via=local", "?via=browser"]) {
+      const calls = [];
+      const p = runPage({
+        hash: H,
+        search,
+        userAgent: ua,
+        maxTouchPoints: touch,
+        fetchImpl: (url) => (calls.push(url), Promise.resolve({})),
+      });
+      check(calls.length === 0, `${name} ${search}: fetch on load ${JSON.stringify(calls)}`);
+      void p;
+    }
+  }
+
+  // Desktop: hosted demo primary, "my Freenet" visible beneath it.
+  let p = runPage({ hash: H, userAgent: DESKTOP });
+  check(primaryOf(p.el) === "open-link-opt-try", `desktop: primary ${primaryOf(p.el)}`);
+  check(secondaryOf(p.el) === "open-link-opt-local", `desktop: secondary ${secondaryOf(p.el)}`);
   check(p.el("open-link-try").href === TRY, `try href ${p.el("open-link-try").href}`);
   check(
     p.el("open-link-try").textContent === "Open on try.freenet.org (no install needed)",
     `try label ${p.el("open-link-try").textContent}`,
   );
 
-  // Probe refused: stays on the no-node layout.
-  p = runPage({ hash: H, fetchImpl: () => Promise.reject(new Error("refused")) });
-  await settle();
-  check(primaryOf(p.el) === "open-link-opt-try", `refused: primary ${primaryOf(p.el)}`);
+  // Mobile and tablets: hosted demo primary, local option not promoted.
+  for (const [name, ua, touch] of [
+    ["android", ANDROID, 5],
+    ["iphone", IPHONE, 5],
+    ["ipados", IPADOS, 5],
+  ]) {
+    p = runPage({ hash: H, userAgent: ua, maxTouchPoints: touch });
+    check(primaryOf(p.el) === "open-link-opt-try", `${name}: primary ${primaryOf(p.el)}`);
+    check(
+      secondaryOf(p.el) === "open-link-opt-quickstart",
+      `${name}: secondary ${secondaryOf(p.el)}`,
+    );
+  }
+  // A touchless Mac is a desktop.
+  p = runPage({ hash: H, userAgent: IPADOS, maxTouchPoints: 0 });
+  check(secondaryOf(p.el) === "open-link-opt-local", `mac: secondary ${secondaryOf(p.el)}`);
 
-  // Probe succeeds: local is primary, hosted demo stays visible, and the
-  // probe only ever asks the fixed loopback address (nothing from the hash).
-  let probed = [];
-  p = runPage({
-    hash: H,
-    fetchImpl: (url) => (probed.push(url), Promise.resolve({})),
-  });
-  await settle();
-  check(primaryOf(p.el) === "open-link-opt-local", `node: primary ${primaryOf(p.el)}`);
-  check(secondaryOf(p.el) === "open-link-opt-try", `node: secondary ${secondaryOf(p.el)}`);
-  check(
-    p.el("open-link-try").textContent === "Use in your browser (try.freenet.org)",
-    `node: try label ${p.el("open-link-try").textContent}`,
-  );
-  check(
-    probed.length === 1 && probed[0] === "http://127.0.0.1:7509/",
-    `probe URLs ${JSON.stringify(probed)}`,
-  );
-
-  // Explicit author hints are never overridden by the probe.
-  p = runPage({ hash: H, search: "?via=app", fetchImpl: () => Promise.resolve({}) });
-  await settle();
+  // Explicit author hints still choose the primary.
+  p = runPage({ hash: H, search: "?via=app" });
   check(primaryOf(p.el) === "open-link-opt-scheme", `via=app: primary ${primaryOf(p.el)}`);
 
-  // Local-only app: local primary with or without a node, hosted never shown.
+  // Local-only app: local primary, hosted never shown.
   p = runPage({ hash: "#" + VAULT + "/" });
   check(primaryOf(p.el) === "open-link-opt-local", `vault: primary ${primaryOf(p.el)}`);
-
-  // A probe that answers after the fragment changed must not re-lay-out for
-  // the old link.
-  let release;
-  p = runPage({ hash: H, fetchImpl: () => new Promise((r) => (release = r)) });
-  p.navigate("#" + VAULT + "/");
-  release({});
-  await settle();
-  check(primaryOf(p.el) === "open-link-opt-local", `stale probe: primary ${primaryOf(p.el)}`);
-  check(secondaryOf(p.el) !== "open-link-opt-try", "stale probe re-showed hosted option");
 }
 console.log(`layout checks, ${layoutFailures} failures`);
 
