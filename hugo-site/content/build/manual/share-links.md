@@ -100,8 +100,8 @@ https://freenet.org/open?via=browser#<contract-id>/<path>?<query>#<app-fragment>
   tracks scaling it up. A `LOCAL_ONLY` app (the Ghost Key vault) never redirects: the page shows
   **Open in my Freenet (this computer)** with a note explaining why, and the link-making tool won't produce a
   `?via=browser` link for it.
-- **`?via=local`**: same as no `via` at all (spelled out for clarity in a generated link). **Open on
-  this computer** stays the primary button.
+- **`?via=local`**: makes **Open in my Freenet (this computer)** the primary button. Use it when you
+  know your audience runs Freenet.
 - **`?via=app`**: makes **Open in Freenet** the primary button instead. Only worth setting if you
   know your audience is already on 0.2.140 or newer; on an older release the button
   simply won't do anything, same as today.
