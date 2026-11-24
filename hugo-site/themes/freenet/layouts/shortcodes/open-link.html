@@ -62,6 +62,10 @@
     padding: 1rem 1.25rem !important;
   }
 
+  .open-link-secondary {
+    margin-top: 0.75rem;
+  }
+
   .open-link-more {
     margin-top: 0.5rem;
   }
@@ -276,6 +280,9 @@
          default, or by ?via=) is MOVED here, not cloned, so its real id,
          href and click behavior come with it. See layoutButtons(). -->
     <div id="open-link-primary-slot" class="open-link-primary"></div>
+    <!-- Options promoted out of "Other ways to open" so they are visible
+         without expanding anything. Also filled by layoutButtons(). -->
+    <div id="open-link-secondary-slot" class="open-link-buttons open-link-secondary"></div>
     <p id="open-link-local-only" class="open-link-note" style="display: none"></p>
 
     <details id="open-link-more" class="open-link-more">
@@ -296,7 +303,7 @@
           </p>
         </div>
         <div class="open-link-option" id="open-link-opt-try">
-          <a id="open-link-try" class="button" href="#" target="_blank" rel="noopener noreferrer"
+          <a id="open-link-try" class="button" href="#" rel="noopener noreferrer"
             >Use in your browser</a
           >
           <p class="open-link-note">
@@ -557,6 +564,7 @@
 
     function primaryOptionIdForVia(via) {
       if (via === "app") return "open-link-opt-scheme";
+      // No hint: handled by defaultLayout() (depends on local-node probe).
       // "browser" normally never reaches here -- processFragment() redirects
       // before rendering the page at all (see below) -- but map it anyway as
       // a sane fallback rather than falling through to a default that
@@ -571,7 +579,9 @@
     // never a duplicate-id button on the page. Rebuilds the "more" list into
     // canonical order first, so re-running this on a hashchange never leaves
     // ordering from a previous ?via= value behind.
-    function layoutButtons(primaryId) {
+    function layoutButtons(primaryId, secondaryIds) {
+      secondaryIds = secondaryIds || [];
+      var secondarySlot = document.getElementById("open-link-secondary-slot");
       var moreList = document.getElementById("open-link-more-list");
       var primarySlot = document.getElementById("open-link-primary-slot");
 
@@ -585,6 +595,82 @@
       var primaryNode = document.getElementById(primaryId);
       primaryNode.querySelector("a").classList.add("is-primary", "open-link-primary-btn");
       primarySlot.appendChild(primaryNode);
+
+      for (var k = 0; k < secondaryIds.length; k++) {
+        var secNode = document.getElementById(secondaryIds[k]);
+        if (secNode) secondarySlot.appendChild(secNode);
+      }
+
+      // The hosted option's label depends on whether it is the main action.
+      var tryLink = document.getElementById("open-link-try");
+      tryLink.textContent =
+        primaryId === "open-link-opt-try"
+          ? "Open on try.freenet.org (no install needed)"
+          : "Use in your browser (try.freenet.org)";
+    }
+
+    // Does this computer run a Freenet node? There is no API for asking, so
+    // this makes one no-cors request to the node's fixed loopback address
+    // (the same host the "Open on this computer" button targets). Any HTTP
+    // response, whatever its status, means something is listening on 7509;
+    // connection refused or a timeout means no node. Nothing from the
+    // fragment is ever sent, and the result is only used to pick which
+    // button is primary. The page works without it: a failed or missing
+    // probe leaves the no-node layout, which still offers every option.
+    var PROBE_TIMEOUT_MS = 1500;
+    // processFragment() runs more than once per page (immediately, on
+    // DOMContentLoaded and on hashchange); the node does not change between
+    // those, so ask once and share the answer.
+    var probeStarted = false;
+    var nodeFound = false;
+    var nodeWaiters = [];
+    function probeLocalNode(onResult) {
+      if (nodeFound) return onResult(true);
+      nodeWaiters.push(onResult);
+      if (probeStarted || typeof fetch !== "function") return;
+      probeStarted = true;
+      var done = false;
+      var onFound = function () {
+        nodeFound = true;
+        var waiters = nodeWaiters;
+        nodeWaiters = [];
+        for (var w = 0; w < waiters.length; w++) waiters[w](true);
+      };
+      var controller = typeof AbortController === "function" ? new AbortController() : null;
+      var timer = setTimeout(function () {
+        if (controller) controller.abort();
+      }, PROBE_TIMEOUT_MS);
+      fetch("http://127.0.0.1:7509/", {
+        mode: "no-cors",
+        cache: "no-store",
+        credentials: "omit",
+        signal: controller ? controller.signal : undefined,
+      }).then(
+        function () {
+          clearTimeout(timer);
+          if (!done) {
+            done = true;
+            onFound();
+          }
+        },
+        function () {
+          clearTimeout(timer);
+        },
+      );
+    }
+
+    // Default layout with no ?via= hint. Without a local node the hosted
+    // demo is primary, next to "Get Freenet"; with one, opening locally is
+    // primary and the hosted demo stays visible beneath it. A local-only app
+    // has no hosted option at all.
+    function defaultLayout(hasLocalNode, localOnly) {
+      if (localOnly) {
+        layoutButtons("open-link-opt-local", ["open-link-opt-quickstart"]);
+      } else if (hasLocalNode) {
+        layoutButtons("open-link-opt-local", ["open-link-opt-try"]);
+      } else {
+        layoutButtons("open-link-opt-try", ["open-link-opt-quickstart"]);
+      }
     }
 
     // The top lede (outside this shortcode, in content/open/_index.md) reads
@@ -687,7 +773,17 @@
       // whatever ?via= asked for.
       var primaryId = primaryOptionIdForVia(viaParam);
       if (localOnly && primaryId === "open-link-opt-try") primaryId = "open-link-opt-local";
-      layoutButtons(primaryId);
+      if (viaParam === null) {
+        // No author hint: choose by whether a local node answers. Lay out
+        // for "no node" now, and switch if the probe finds one.
+        defaultLayout(false, localOnly);
+        var probedHash = window.location.hash;
+        probeLocalNode(function () {
+          if (window.location.hash === probedHash) defaultLayout(true, localOnly);
+        });
+      } else {
+        layoutButtons(primaryId);
+      }
 
       // Populate and show the normal page BEFORE calling location.replace()
       // below, rather than redirecting first and rendering never. This does
@@ -701,9 +797,10 @@
       // clicking the ordinary "Use in your browser" button hits the exact
       // same limitation, since it's a normal link to the same host, and
       // this page already discloses try.freenet.org can be "slow or busy
-      // sometimes". Fixing it for real would mean a network reachability
-      // check before redirecting, which trades away the "no network request
-      // of its own" property for a rare case. What this ordering DOES buy:
+      // sometimes". Fixing it for real would mean a reachability check of
+      // try.freenet.org before redirecting (the only request this page makes
+      // is the local-node probe), which is not worth it for a rare case.
+      // What this ordering DOES buy:
       // if the redirect is ever skipped or blocked by something outside
       // normal navigation (an extension, a future browser policy), the
       // visitor is left looking at a fully-populated, working page instead
