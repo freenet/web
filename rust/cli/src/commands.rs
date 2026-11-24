@@ -460,27 +460,38 @@ fn require_strict_permissions(file_path: &Path) -> Result<(), GhostkeyError> {
 /// `notary_signing_key` (or the legacy `delegate_signing_key`); the
 /// certificate is the same name with `signing_key` replaced by `certificate`.
 pub fn check_notary_keys_cmd(dir: &Path) -> i32 {
-    /// Collects key files under `dir`. Symlinks are not followed, so a link
-    /// loop (or a link to `/`) cannot make it walk forever.
-    fn walk(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), String> {
+    /// Collects key files under `dir`. Symlinks to files are followed;
+    /// symlinks to directories are not, so a link loop (or a link to `/`)
+    /// cannot make the walk run forever. Anything skipped is counted, and
+    /// makes the check fail: a pass must mean every pair was checked.
+    fn walk(dir: &Path, out: &mut Vec<PathBuf>, skipped: &mut usize) -> Result<(), String> {
         let entries = fs::read_dir(dir).map_err(|e| format!("{}: {}", dir.display(), e))?;
         for entry in entries {
             let entry = entry.map_err(|e| format!("{}: {}", dir.display(), e))?;
             let path = entry.path();
-            let file_type = entry
+            let mut file_type = entry
                 .file_type()
                 .map_err(|e| format!("{}: {}", path.display(), e))?;
             if file_type.is_symlink() {
-                eprintln!(
-                    "{} {}: symlink, not followed",
-                    "skip".yellow(),
-                    path.display()
-                );
-            } else if file_type.is_dir() {
-                walk(&path, out)?;
+                file_type = fs::metadata(&path)
+                    .map_err(|e| format!("{}: {}", path.display(), e))?
+                    .file_type();
+                if file_type.is_dir() {
+                    eprintln!(
+                        "{} {}: symlink to a directory, not followed",
+                        "SKIP".red(),
+                        path.display()
+                    );
+                    *skipped += 1;
+                    continue;
+                }
+            }
+            if file_type.is_dir() {
+                walk(&path, out, skipped)?;
             } else {
                 let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
-                    eprintln!("{} {}: name is not UTF-8", "skip".yellow(), path.display());
+                    eprintln!("{} {}: name is not UTF-8", "SKIP".red(), path.display());
+                    *skipped += 1;
                     continue;
                 };
                 if (name.starts_with("notary_signing_key")
@@ -494,7 +505,8 @@ pub fn check_notary_keys_cmd(dir: &Path) -> i32 {
         Ok(())
     }
     let mut keys = Vec::new();
-    if let Err(e) = walk(dir, &mut keys) {
+    let mut skipped = 0;
+    if let Err(e) = walk(dir, &mut keys, &mut skipped) {
         eprintln!("{} to read {}", "Failed".red(), e);
         return 1;
     }
@@ -524,8 +536,13 @@ pub fn check_notary_keys_cmd(dir: &Path) -> i32 {
             eprintln!("{} {}: {}", "FAIL".red(), key_path.display(), e);
         }
     }
-    println!("{} notary key pairs checked, {} failed", keys.len(), failed);
-    if keys.is_empty() || failed > 0 {
+    println!(
+        "{} notary key pairs checked, {} failed, {} entries skipped",
+        keys.len(),
+        failed,
+        skipped
+    );
+    if keys.is_empty() || failed > 0 || skipped > 0 {
         1
     } else {
         0

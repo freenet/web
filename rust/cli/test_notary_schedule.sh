@@ -187,6 +187,15 @@ check "check-notary-keys refuses a key that is not its certificate's" "! \"$GHOS
 mkdir -p "$tmp/loop/sub" && ln -s .. "$tmp/loop/sub/a" && ln -s .. "$tmp/loop/sub/b"
 cp "$tmp/other_key" "$tmp/loop/notary_signing_key_1.pem"
 check "check-notary-keys does not follow symlinks" "timeout 20 \"$GHOSTKEY\" check-notary-keys --notary-dir $tmp/loop >$tmp/check 2>&1; [ \$? -eq 1 ] && grep -q 'not followed' $tmp/check"
+mkdir -p "$tmp/linked/real"
+good=$(find $D -name 'notary_signing_key_*' | sort | head -1)
+cp "$good" "$tmp/linked/real/notary_signing_key_5.pem"
+cp "${good/signing_key/certificate}" "$tmp/linked/real/notary_certificate_5.pem"
+ln -s real/notary_signing_key_5.pem "$tmp/linked/notary_signing_key_6.pem"
+ln -s real/notary_certificate_5.pem "$tmp/linked/notary_certificate_6.pem"
+check "check-notary-keys follows symlinked key files" "\"$GHOSTKEY\" check-notary-keys --notary-dir $tmp/linked >$tmp/check 2>&1 && grep -q '^2 notary key pairs checked, 0 failed, 0 entries skipped' $tmp/check"
+ln -s real "$tmp/linked/2026-12"
+check "check-notary-keys fails on a symlinked directory it skipped" "! \"$GHOSTKEY\" check-notary-keys --notary-dir $tmp/linked >$tmp/check 2>&1 && grep -q '1 entries skipped' $tmp/check"
 
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
