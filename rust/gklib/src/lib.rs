@@ -1,4 +1,5 @@
 pub mod armorable;
+pub mod blind_rsa;
 /// Deprecated module path. Use [`notary_certificate`] instead. Will be removed in a future release.
 #[allow(deprecated)]
 pub mod delegate_certificate;

@@ -24,7 +24,8 @@
 //! Parsing and the chain check reproduce `ghostkey_lib` 0.2's
 //! `GhostkeyCertificateV1::from_armored_string`, `from_bytes` and `verify`,
 //! including the exact bytes the master key signs (the CBOR re-encoding of the
-//! notary payload), and a differential test suite holds the two together. The
+//! notary payload), and a differential test suite holds this crate together
+//! with `ghostkey_lib` 0.3, which keeps 0.2's wire format. The
 //! intentional differences all refuse something `ghostkey_lib` accepts and no
 //! genuine certificate contains. The agreement is between the two as built
 //! against the same versions of `ciborium`, `serde` and `ed25519-dalek`, which
@@ -45,8 +46,9 @@
 //!   notary key issued is exactly 2048 bits with e = 65537. This bounds the
 //!   cost of a check.
 //! * An RSA signature must be smaller than the modulus (RFC 8017, 5.2.2).
-//!   `ghostkey_lib` reduces it instead, so it also accepts the signature plus
-//!   a multiple of the modulus when that still fits the modulus length.
+//!   `ghostkey_lib` 0.2 reduces it instead, so it also accepts the signature
+//!   plus a multiple of the modulus when that still fits the modulus length.
+//!   (`ghostkey_lib` 0.3, on `rsa` 0.10, refuses it as this crate does.)
 //!
 //! The payload signature check, [`verify_payload_signature`], is Ed25519
 //! `verify_strict`, as `freenet-bitcoin`'s inbox contract uses for

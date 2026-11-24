@@ -10,6 +10,9 @@ use std::path::PathBuf;
 
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
 use ghostkey_lib::armorable::Armorable;
+use ghostkey_lib::blind_rsa::{
+    DefaultRng, PublicKey as NotaryPublicKey, RawPublicKey, Signature as RsaSignature,
+};
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use ghostkey_lib::notary_certificate::NotaryCertificateV1;
 use ghostkey_lib::signed_message::SignedMessage;
@@ -111,32 +114,49 @@ fn with_nested_unknown_field(cert: &GhostkeyCertificateV1, depth: usize) -> Stri
 /// `NotaryCertificateV1::new`, which only makes 2048-bit e = 65537 keys, and
 /// signed with rsa's PSS directly, since blind-rsa-signatures' blind signing
 /// does not produce a valid signature under a 2049-bit key.
-fn cert_under_notary_key(master: &SigningKey, sk: &rsa_08::RsaPrivateKey) -> (String, SigningKey) {
+fn cert_under_notary_key(master: &SigningKey, sk: &rsa::PrivateKey) -> (String, SigningKey) {
     use ghostkey_lib::notary_certificate::NotaryPayload;
     let payload = NotaryPayload {
-        notary_verifying_key: blind_rsa_signatures::PublicKey(sk.to_public_key()),
+        notary_verifying_key: notary_public(sk),
         info: INFO.to_string(),
     };
     let notary = NotaryCertificateV1 {
         signature: master.sign(&payload.to_bytes().unwrap()),
         payload,
     };
-    use rsa_08::signature::{RandomizedSigner, SignatureEncoding};
-    use rsa_08::PublicKeyParts;
     let ghost = SigningKey::generate(&mut OsRng);
     let msg = Armorable::to_bytes(&ghost.verifying_key()).unwrap();
-    let signer = rsa_08::pss::SigningKey::<rsa_08::sha2::Sha384>::new_with_salt_len(sk.clone(), 48);
-    let sig = signer.sign_with_rng(&mut OsRng, &msg).to_vec();
-    let mut padded = vec![0u8; sk.size() - sig.len()];
-    padded.extend_from_slice(&sig);
     let cert = GhostkeyCertificateV1 {
         notary,
         verifying_key: ghost.verifying_key(),
-        signature: blind_rsa_signatures::Signature(padded),
+        signature: pss_sign(sk, 48, &msg),
     };
     // The reference accepts it too, or the vector tests nothing.
     assert!(cert.verify(&Some(master.verifying_key())).is_ok());
     (cert.to_armored_string().unwrap(), ghost)
+}
+
+/// A notary RSA key of `bits` bits with public exponent `e`, of a shape the
+/// issuing code never makes.
+fn rsa_key(bits: usize, e: u32) -> rsa::PrivateKey {
+    rsa::PrivateKey::new_with_exp(&mut DefaultRng, bits, rsa::BoxedUint::from(e)).unwrap()
+}
+
+/// `sk`'s public half as ghostkey_lib holds a notary key.
+fn notary_public(sk: &rsa::PrivateKey) -> NotaryPublicKey {
+    NotaryPublicKey(RawPublicKey::new(sk.to_public_key()))
+}
+
+/// RSA-PSS SHA-384 over `msg` with salt length `salt`, left-padded to the
+/// modulus length as blind-rsa-signatures pads.
+fn pss_sign(sk: &rsa::PrivateKey, salt: usize, msg: &[u8]) -> RsaSignature {
+    use rsa::signature::{RandomizedSigner, SignatureEncoding};
+    use rsa::traits::PublicKeyParts;
+    let signer = rsa::pss::SigningKey::<rsa::sha2::Sha384>::new_with_salt_len(sk.clone(), salt);
+    let sig = signer.sign_with_rng(&mut DefaultRng, msg).to_vec();
+    let mut padded = vec![0u8; sk.size() - sig.len()];
+    padded.extend_from_slice(&sig);
+    RsaSignature(padded)
 }
 
 #[test]
@@ -144,7 +164,6 @@ fn write_wasm_vectors() {
     let master = SigningKey::generate(&mut OsRng);
     let (notary, notary_sk) = NotaryCertificateV1::new(&master, &INFO.to_string()).unwrap();
     let (cert, ghost) = GhostkeyCertificateV1::new(&notary, &notary_sk);
-    let keypair = blind_rsa_signatures::KeyPair::new(notary_sk.public_key().unwrap(), notary_sk);
     let pem = |c: &GhostkeyCertificateV1| c.to_armored_string().unwrap();
     let payload = b"a ScopedPayload, as the vault returned it".to_vec();
     let sig = ghost.sign(&payload).to_bytes();
@@ -155,14 +174,17 @@ fn write_wasm_vectors() {
     let mut wrong_rsa = cert.clone();
     let other = SigningKey::generate(&mut OsRng).verifying_key();
     wrong_rsa.signature =
-        unblinded_rsa_sign(&keypair, &Armorable::to_bytes(&other).unwrap()).unwrap();
+        unblinded_rsa_sign(&notary_sk, &Armorable::to_bytes(&other).unwrap()).unwrap();
 
     let mut weak = cert.clone();
     let mut identity = [0u8; 32];
     identity[0] = 1;
     weak.verifying_key = VerifyingKey::from_bytes(&identity).unwrap();
-    weak.signature =
-        unblinded_rsa_sign(&keypair, &Armorable::to_bytes(&weak.verifying_key).unwrap()).unwrap();
+    weak.signature = unblinded_rsa_sign(
+        &notary_sk,
+        &Armorable::to_bytes(&weak.verifying_key).unwrap(),
+    )
+    .unwrap();
 
     let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let production =
@@ -259,15 +281,8 @@ fn write_wasm_vectors() {
     // Notary keys the issuing code never makes but the crate accepts: e = 3,
     // and a modulus whose length is not a multiple of 8 bits.
     for (name, sk) in [
-        (
-            "notary-e3",
-            rsa_08::RsaPrivateKey::new_with_exp(&mut OsRng, 2048, &rsa_08::BigUint::from(3u32))
-                .unwrap(),
-        ),
-        (
-            "notary-2049-bits",
-            rsa_08::RsaPrivateKey::new(&mut OsRng, 2049).unwrap(),
-        ),
+        ("notary-e3", rsa_key(2048, 3)),
+        ("notary-2049-bits", rsa_key(2049, 65537)),
     ] {
         let (cert, ghost) = cert_under_notary_key(&master, &sk);
         vectors.push(Vector {

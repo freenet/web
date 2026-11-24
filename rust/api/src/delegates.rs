@@ -9,8 +9,9 @@
 
 use std::path::{Path, PathBuf};
 
-use blind_rsa_signatures::{BlindSignature, BlindedMessage, Options, SecretKey as RSASigningKey};
-use rand_core::OsRng;
+use ghostkey_lib::blind_rsa::{
+    BlindMessage as BlindedMessage, BlindSignature, SecretKey as RSASigningKey,
+};
 
 use ghostkey_lib::armorable::*;
 use ghostkey_lib::notary_certificate::NotaryCertificateV1;
@@ -256,10 +257,8 @@ pub(crate) fn sign_with_notary_key(
     blinded_ghostkey: &BlindedMessage,
     notary_signing_key: &RSASigningKey,
 ) -> Result<BlindSignature, CertificateError> {
-    let options = Options::default();
-
     let blind_sig = notary_signing_key
-        .blind_sign(&mut OsRng, blinded_ghostkey, &options)
+        .blind_sign(blinded_ghostkey)
         .map_err(|e| CertificateError::MiscError(format!("Failed to blind sign: {}", e)))?;
 
     Ok(blind_sig)
@@ -281,7 +280,7 @@ mod tests {
     /// info string so a test can tell which pair it got back.
     fn write_pair(dir: &Path, amount: u64, info: &str) {
         std::fs::create_dir_all(dir).unwrap();
-        let master = ed25519_dalek::SigningKey::generate(&mut OsRng);
+        let master = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
         let (cert, key) = NotaryCertificateV1::new(&master, &info.to_string()).unwrap();
         cert.to_file(&dir.join(NamingScheme::Notary.cert_filename(amount)))
             .unwrap();
@@ -534,6 +533,49 @@ mod tests {
         assert_eq!(
             NamingScheme::LegacyDelegate.signing_key_filename(20),
             "delegate_signing_key_20.pem"
+        );
+    }
+
+    /// A notary pair written by the code before the rsa 0.10 migration
+    /// (ghostkey_lib 0.2.0, blind-rsa-signatures 0.15.1), loaded and used the
+    /// way `/sign-certificate` does: the blind signature for a blinded message
+    /// an old browser sent must be the bytes the old gkapi returned. Fixtures:
+    /// rust/gklib/tests/fixtures/blind_rsa_015.
+    #[test]
+    fn a_notary_pair_written_before_the_rsa_upgrade_signs_identically() {
+        use ghostkey_lib::armorable::Armorable;
+        let fixtures =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../gklib/tests/fixtures/blind_rsa_015");
+        let transcript: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(fixtures.join("transcript.json")).unwrap(),
+        )
+        .unwrap();
+        let field = |k: &str| transcript[k].as_str().unwrap().to_string();
+
+        let dir = tempdir().unwrap();
+        let month = dir.path().join("2026-10");
+        std::fs::create_dir_all(&month).unwrap();
+        std::fs::copy(
+            fixtures.join("notary_certificate.pem"),
+            month.join(NamingScheme::Notary.cert_filename(20)),
+        )
+        .unwrap();
+        std::fs::copy(
+            fixtures.join("notary_signing_key.pem"),
+            month.join(NamingScheme::Notary.signing_key_filename(20)),
+        )
+        .unwrap();
+
+        let notary = quoted_notary_in(dir.path(), 20, Some("2026-10")).unwrap();
+        assert_eq!(
+            notary.certificate.to_base64().unwrap(),
+            field("notary_certificate_base64")
+        );
+        let blinded = BlindedMessage::from_base64(&field("blinded_ghost_key_base64")).unwrap();
+        let blind_sig = sign_with_notary_key(&blinded, &notary.signing_key).unwrap();
+        assert_eq!(
+            blind_sig.to_base64().unwrap(),
+            field("blind_signature_base64")
         );
     }
 }

@@ -1,7 +1,7 @@
-use blind_rsa_signatures::SecretKey as RSASigningKey;
 use colored::Colorize;
 use ed25519_dalek::*;
 use ghostkey_lib::armorable::*;
+use ghostkey_lib::blind_rsa::SecretKey as RSASigningKey;
 use ghostkey_lib::errors::GhostkeyError;
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use ghostkey_lib::notary_certificate::NotaryCertificateV1;
@@ -448,4 +448,103 @@ fn require_strict_permissions(file_path: &Path) -> Result<(), GhostkeyError> {
         .into());
     }
     Ok(())
+}
+
+/// Load every notary signing key under `dir` (recursively) with the
+/// certificate beside it, check that they belong together, and sign and
+/// verify a throwaway message with each. Writes nothing.
+///
+/// For checking a directory of keys made by an older `ghostkey` (for example
+/// gkapi's notary schedule) before deploying a build that reads them.
+/// Signing keys are the `.pem` files whose name starts with
+/// `notary_signing_key` (or the legacy `delegate_signing_key`); the
+/// certificate is the same name with `signing_key` replaced by `certificate`.
+pub fn check_notary_keys_cmd(dir: &Path) -> i32 {
+    /// Collects key files under `dir`. Symlinks to files are followed;
+    /// symlinks to directories are not, so a link loop (or a link to `/`)
+    /// cannot make the walk run forever. Anything skipped is counted, and
+    /// makes the check fail: a pass must mean every pair was checked.
+    fn walk(dir: &Path, out: &mut Vec<PathBuf>, skipped: &mut usize) -> Result<(), String> {
+        let entries = fs::read_dir(dir).map_err(|e| format!("{}: {}", dir.display(), e))?;
+        for entry in entries {
+            let entry = entry.map_err(|e| format!("{}: {}", dir.display(), e))?;
+            let path = entry.path();
+            let mut file_type = entry
+                .file_type()
+                .map_err(|e| format!("{}: {}", path.display(), e))?;
+            if file_type.is_symlink() {
+                file_type = fs::metadata(&path)
+                    .map_err(|e| format!("{}: {}", path.display(), e))?
+                    .file_type();
+                if file_type.is_dir() {
+                    eprintln!(
+                        "{} {}: symlink to a directory, not followed",
+                        "SKIP".red(),
+                        path.display()
+                    );
+                    *skipped += 1;
+                    continue;
+                }
+            }
+            if file_type.is_dir() {
+                walk(&path, out, skipped)?;
+            } else {
+                let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
+                    eprintln!("{} {}: name is not UTF-8", "SKIP".red(), path.display());
+                    *skipped += 1;
+                    continue;
+                };
+                if (name.starts_with("notary_signing_key")
+                    || name.starts_with("delegate_signing_key"))
+                    && name.ends_with(".pem")
+                {
+                    out.push(path);
+                }
+            }
+        }
+        Ok(())
+    }
+    let mut keys = Vec::new();
+    let mut skipped = 0;
+    if let Err(e) = walk(dir, &mut keys, &mut skipped) {
+        eprintln!("{} to read {}", "Failed".red(), e);
+        return 1;
+    }
+    keys.sort();
+    let mut failed = 0;
+    for key_path in &keys {
+        let name = key_path.file_name().unwrap().to_string_lossy();
+        let cert_path = key_path.with_file_name(name.replace("signing_key", "certificate"));
+        let check = || -> Result<(), String> {
+            let key = RSASigningKey::from_file(key_path).map_err(|e| format!("key: {e}"))?;
+            let cert = NotaryCertificateV1::from_file(&cert_path)
+                .map_err(|e| format!("certificate {}: {e}", cert_path.display()))?;
+            let public = key.public_key().map_err(|e| format!("key: {e}"))?;
+            if public != cert.payload.notary_verifying_key {
+                return Err("key does not belong to the certificate".into());
+            }
+            let msg = b"check-notary-keys";
+            let sig = ghostkey_lib::util::unblinded_rsa_sign(&key, msg)
+                .map_err(|e| format!("signing: {e}"))?;
+            cert.payload
+                .notary_verifying_key
+                .verify_signature(&sig, msg)
+                .map_err(|e| format!("verifying: {e}"))
+        };
+        if let Err(e) = check() {
+            failed += 1;
+            eprintln!("{} {}: {}", "FAIL".red(), key_path.display(), e);
+        }
+    }
+    println!(
+        "{} notary key pairs checked, {} failed, {} entries skipped",
+        keys.len(),
+        failed,
+        skipped
+    );
+    if keys.is_empty() || failed > 0 || skipped > 0 {
+        1
+    } else {
+        0
+    }
 }

@@ -3,9 +3,7 @@ use super::errors::GhostkeyError::{RSAError, SignatureVerificationError};
 use super::notary_certificate::NotaryCertificateV1;
 use super::util::{create_keypair, unblinded_rsa_sign};
 use crate::armorable::Armorable;
-use blind_rsa_signatures::{
-    KeyPair, Options, SecretKey as RSASigningKey, Signature as RSASignature,
-};
+use crate::blind_rsa::{SecretKey as RSASigningKey, Signature as RSASignature};
 use ed25519_dalek::*;
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
@@ -29,10 +27,6 @@ impl GhostkeyCertificateV1 {
         notary_certificate: &NotaryCertificateV1,
         notary_signing_key: &RSASigningKey,
     ) -> (Self, SigningKey) {
-        let notary_keypair = KeyPair::new(
-            notary_signing_key.public_key().unwrap(),
-            notary_signing_key.clone(),
-        );
         let (ghost_signing_key, ghost_verifying_key) = create_keypair(&mut OsRng).unwrap();
         let ghost_signing_key = SigningKey::from(ghost_signing_key);
         let ghost_verifying_key = VerifyingKey::from(ghost_verifying_key);
@@ -42,7 +36,7 @@ impl GhostkeyCertificateV1 {
                 notary: notary_certificate.clone(),
                 verifying_key: ghost_verifying_key.clone(),
                 signature: unblinded_rsa_sign(
-                    &notary_keypair,
+                    notary_signing_key,
                     &Armorable::to_bytes(&ghost_verifying_key).unwrap(),
                 )
                 .unwrap(),
@@ -66,11 +60,9 @@ impl GhostkeyCertificateV1 {
             .notary
             .payload
             .notary_verifying_key
-            .verify(
+            .verify_signature(
                 &self.signature,
-                None,
                 Armorable::to_bytes(&self.verifying_key).unwrap(),
-                &Options::default(),
             )
             .map_err(|e| RSAError(format!("Failed to verify ghostkey: {}", e)));
 

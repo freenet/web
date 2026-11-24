@@ -1,14 +1,15 @@
 use base64::prelude::*;
 use base64::Engine;
-use blind_rsa_signatures::{BlindSignature, Options, Secret};
 use ed25519_dalek::{Signer, Verifier};
 use ghostkey_lib::armorable::Armorable;
+use ghostkey_lib::blind_rsa::reexports::rand::{rngs::StdRng, SeedableRng as _};
+use ghostkey_lib::blind_rsa::{BlindSignature, Secret};
 use ghostkey_lib::ghost_key_certificate::GhostkeyCertificateV1;
 use ghostkey_lib::notary_certificate::NotaryCertificateV1;
 use ghostkey_lib::signed_message::SignedMessage;
 use ghostkey_lib::util::create_keypair;
 use ghostkey_lib::FREENET_MASTER_VERIFYING_KEY_BASE64;
-use rand::SeedableRng;
+use rand::{RngCore, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 
 #[cfg(target_arch = "wasm32")]
@@ -45,16 +46,23 @@ fn generate_keypair_and_blind_core(
     let verifying_key_bytes = Armorable::to_bytes(&ec_verifying_key)
         .map_err(|_| "Failed to convert verifying key to bytes".to_string())?;
 
+    // blind-rsa-signatures takes a rand_core 0.10 RNG, ed25519-dalek a 0.6
+    // one. Seed the former from the latter, so the 32-byte seed from the
+    // browser's crypto.getRandomValues stays the only entropy.
+    let mut blind_seed = [0u8; 32];
+    rng.fill_bytes(&mut blind_seed);
+    let mut blind_rng = StdRng::from_seed(blind_seed);
+
     let blinding_result = notary_certificate
         .payload
         .notary_verifying_key
-        .blind(&mut rng, verifying_key_bytes, false, &Options::default())
+        .blind(&mut blind_rng, verifying_key_bytes)
         .map_err(|_| "Blinding operation failed".to_string())?;
 
     Ok(KeypairAndBlindResult {
         ec_signing_key: ec_signing_key.to_base64().unwrap(),
         ec_verifying_key: ec_verifying_key.to_base64().unwrap(),
-        blinded_signing_key: blinding_result.blind_msg.to_base64().unwrap(),
+        blinded_signing_key: blinding_result.blind_message.to_base64().unwrap(),
         blinding_secret: BASE64_STANDARD.encode(blinding_result.secret.0),
     })
 }
@@ -125,13 +133,7 @@ fn generate_ghost_key_certificate_core(
         .map_err(|_| "Failed to convert verifying key to bytes".to_string())?;
 
     let unblinded_signature = notary_verifying_key
-        .finalize(
-            &blind_signature,
-            &blinding_secret,
-            None,
-            verifying_key_bytes,
-            &Options::default(),
-        )
+        .finalize_with_secret(&blind_signature, blinding_secret, verifying_key_bytes)
         .map_err(|e| format!("Unblinding operation failed: {}", e))?;
 
     let ghost_key_certificate = GhostkeyCertificateV1 {
@@ -192,6 +194,7 @@ pub fn wasm_generate_ghost_key_certificate(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ghostkey_lib::blind_rsa::BlindMessage;
 
     #[test]
     fn test_round_trip() {
@@ -205,10 +208,8 @@ mod tests {
         let result =
             generate_keypair_and_blind_core(notary_certificate_base64.clone(), seed).unwrap();
 
-        let blinded_signing_key = BlindSignature::from_base64(&result.blinded_signing_key).unwrap();
-        let blinded_signature = notary_signing_key
-            .blind_sign(&mut rng, blinded_signing_key, &Options::default())
-            .unwrap();
+        let blinded_signing_key = BlindMessage::from_base64(&result.blinded_signing_key).unwrap();
+        let blinded_signature = notary_signing_key.blind_sign(blinded_signing_key).unwrap();
 
         let generated = generate_ghost_key_certificate_core(
             notary_certificate_base64,
@@ -245,10 +246,8 @@ mod tests {
             generate_keypair_and_blind_core(notary_certificate_base64.clone(), seed).unwrap();
 
         let blinded_signing_key =
-            BlindSignature::from_base64(&keypair_result.blinded_signing_key).unwrap();
-        let blinded_signature = notary_signing_key
-            .blind_sign(&mut rng, blinded_signing_key, &Options::default())
-            .unwrap();
+            BlindMessage::from_base64(&keypair_result.blinded_signing_key).unwrap();
+        let blinded_signature = notary_signing_key.blind_sign(blinded_signing_key).unwrap();
 
         let cert_result = generate_ghost_key_certificate_core(
             notary_certificate_base64,
@@ -292,10 +291,8 @@ mod tests {
             generate_keypair_and_blind_core(notary_certificate_base64.clone(), seed).unwrap();
 
         let blinded_signing_key =
-            BlindSignature::from_base64(&keypair_result.blinded_signing_key).unwrap();
-        let blinded_signature = notary_signing_key
-            .blind_sign(&mut rng, blinded_signing_key, &Options::default())
-            .unwrap();
+            BlindMessage::from_base64(&keypair_result.blinded_signing_key).unwrap();
+        let blinded_signature = notary_signing_key.blind_sign(blinded_signing_key).unwrap();
 
         let cert_result = generate_ghost_key_certificate_core(
             notary_certificate_base64,

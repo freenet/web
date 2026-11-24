@@ -35,7 +35,8 @@ fn check(cert_pem: &str, scoped_payload: &[u8], signature: &[u8]) -> Result<u64,
 
 Parsing and the chain check reproduce
 [`ghostkey_lib`](https://crates.io/crates/ghostkey_lib) 0.2 exactly, including
-the bytes the master key signs, and differential tests against it cover valid
+the bytes the master key signs, and differential tests against ghostkey_lib
+from this repository (0.3, which keeps 0.2's wire format) cover valid
 chains, tampered info, wrong master keys, wrong RSA signatures, swapped keys,
 re-encoded and mutated certificates, armour variants, and recorded certificates
 (including one under the production master key). The differences are
@@ -47,18 +48,17 @@ deliberate, and each refuses something no genuine certificate contains:
   refused;
 - the notary RSA key must have an odd 2048 to 4096 bit modulus and exponent 3
   or 65537;
-- an RSA signature must be below the modulus.
+- an RSA signature must be below the modulus (ghostkey_lib 0.2 reduced it
+  modulo n; 0.3 refuses it too).
 
 Payload signatures use Ed25519 `verify_strict`.
 
 ## Dependencies
 
-- `rsa` is the 0.10 release candidate, pinned exactly (`=0.10.0-rc.19`): the
-  stable 0.9 line pulls in `rand` through `num-bigint-dig`'s `prime` feature,
-  and release candidates change API between themselves. Cargo allows one
-  `rsa` 0.10 per build, so a crate that depends on this one cannot also use a
-  different `rsa` 0.10 release. This crate moves to `rsa` 0.10.0 when it is
-  released ([freenet/web#213](https://github.com/freenet/web/issues/213)).
+- `rsa` is 0.10 (0.10.0 or later; 0.1.0 pinned `=0.10.0-rc.19`): the 0.9
+  line pulls in `rand` through `num-bigint-dig`'s `prime` feature. Cargo
+  allows one `rsa` 0.10 per build, so a crate that pins an `rsa` 0.10 release
+  candidate cannot use this release.
 - Do not enable `rsa`'s `getrandom` feature in a contract: it brings in
   `getrandom` through feature unification, which this crate cannot prevent.
 - `ed25519-dalek` is 2.x, the version ghostkey-common, freenet-bitcoin and
