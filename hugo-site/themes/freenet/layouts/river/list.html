@@ -22,8 +22,7 @@
         <a class="rv-btn rv-btn-primary" href="{{ "try/" | relURL }}">Try River in your browser
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
-        <a class="rv-btn rv-btn-ghost" href="{{ "quickstart/" | relURL }}">Install Freenet</a>
-        <a class="rv-btn rv-btn-ghost" href="#choose">Other ways to use River</a>
+        <a class="rv-btn rv-btn-ghost rv-hero-desktop" href="#desktop">Get the desktop app</a>
       </div>
       <p class="rv-platform">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
@@ -61,6 +60,9 @@
 </header>
 
 <!-- ============ CHOOSE: three ways to use River ============ -->
+{{/* The served HTML shows all three options, so it works without JS, in previews and for crawlers.
+     The script below only adds `rv-phone` on phones (collapsing options 2 and 3 behind the
+     summary) and names the visitor's OS on the desktop download button. */}}
 <section class="rv-section" id="choose">
   <div class="rv-wrap">
     <div class="rv-head rv-center">
@@ -77,23 +79,58 @@
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
       </div>
-      <div class="rv-step rv-opt">
-        <p class="rv-eyebrow">Freenet already running on this computer</p>
-        <h3 class="rv-step-t">Open River in your own node</h3>
-        <p>Click an invite and River opens in your browser, on your own peer. If you do not have Freenet yet, the install steps are on the same page.</p>
-        <a class="rv-btn rv-btn-ghost" href="{{ "quickstart/#step-2-join-the-room" | relURL }}">Get an invite</a>
-      </div>
-      <div class="rv-step rv-opt" id="desktop">
-        <p class="rv-eyebrow">Windows, macOS and Linux &middot; early release</p>
-        <h3 class="rv-step-t">Download the desktop app</h3>
-        <p>A native River app (version 0.1.0). It needs a Freenet node, and if it finds none on your computer it offers to install Freenet for you.</p>
-        <p class="rv-opt-os"><b>macOS:</b> universal build, signed and notarized.<br><b>Windows:</b> zip with a signed <code>river.exe</code>, no installer.<br><b>Linux:</b> tarball, not code-signed, needs <code>libfontconfig</code>.</p>
-        <a class="rv-btn rv-btn-ghost" href="https://github.com/freenet/river/releases/tag/river-desktop-v0.1.0">Download the desktop app
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </a>
-      </div>
+      <details class="rv-more" open>
+        <summary>On a computer you can also run your own Freenet peer or get the desktop app</summary>
+        <div class="rv-more-grid">
+          <div class="rv-step rv-opt">
+            <p class="rv-eyebrow">Freenet already running on this computer</p>
+            <h3 class="rv-step-t">Open River in your own node</h3>
+            <p>Click an invite and River opens in your browser, on your own peer.</p>
+            <a class="rv-btn rv-btn-ghost" href="{{ "quickstart/#step-2-join-the-room" | relURL }}">Open River in your node</a>
+            <p class="rv-opt-note">Don't have Freenet yet? <a href="{{ "quickstart/" | relURL }}">Install it</a>.</p>
+          </div>
+          <div class="rv-step rv-opt" id="desktop">
+            <p class="rv-eyebrow">Windows, macOS and Linux &middot; early release</p>
+            <h3 class="rv-step-t">Get the desktop app</h3>
+            <p>River in its own window. It stays in the system tray, shows notifications and an unread badge, and can start at login. It needs a Freenet node, and if it finds none on your computer it offers to install Freenet for you.</p>
+            <a class="rv-btn rv-btn-ghost" id="rv-dl" href="https://github.com/freenet/river/releases/tag/river-desktop-v0.1.0">Download the desktop app
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <p class="rv-opt-note" id="rv-dl-others">Downloads: <a href="https://github.com/freenet/river/releases/tag/river-desktop-v0.1.0" data-os="macOS">macOS</a>, <a href="https://github.com/freenet/river/releases/tag/river-desktop-v0.1.0" data-os="Windows">Windows</a>, <a href="https://github.com/freenet/river/releases/tag/river-desktop-v0.1.0" data-os="Linux">Linux</a>. Version 0.1.0.</p>
+            <p class="rv-opt-note">macOS is signed and notarized. Windows is a zip with a signed <code>river.exe</code>, no installer. Linux is a tarball, not code-signed, and needs <code>libfontconfig</code>.</p>
+          </div>
+        </div>
+      </details>
     </div>
   </div>
+  <script>
+  (function(){
+    try{
+      var d=document.documentElement, n=navigator, ud=n.userAgentData, ua=n.userAgent||'';
+      var phone = ud && typeof ud.mobile==='boolean' ? ud.mobile
+        : (window.matchMedia && matchMedia('(pointer: coarse)').matches && window.innerWidth<768);
+      if(phone){
+        d.classList.add('rv-phone');
+        var m=document.querySelector('#choose .rv-more'); if(m) m.removeAttribute('open');
+        return;
+      }
+      var plat=((ud&&ud.platform)||'')+' '+ua, os='';
+      if(/Android|iPhone|iPad|iPod|CrOS/i.test(plat)||(/Mac/.test(plat)&&n.maxTouchPoints>1)) os='';
+      else if(/Mac/i.test(plat)) os='macOS';
+      else if(/Win/i.test(plat)) os='Windows';
+      else if(/Linux|X11/i.test(plat)) os='Linux';
+      if(os){
+        var b=document.getElementById('rv-dl'), t=b&&b.firstChild;
+        if(t) t.nodeValue='Download for '+os+' ';
+        var o=document.querySelector('#rv-dl-others');
+        if(o){
+          var l=[].filter.call(o.querySelectorAll('a'),function(a){return a.dataset.os!==os;}).map(function(a){return a.outerHTML;});
+          o.innerHTML='Other platforms: '+l.join(', ')+'. Version 0.1.0.';
+        }
+      }
+    }catch(e){}
+  })();
+  </script>
 </section>
 
 <!-- ============ HOW IT WORKS (explainer) ============ -->
