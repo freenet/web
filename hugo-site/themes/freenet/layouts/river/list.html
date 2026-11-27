@@ -63,6 +63,10 @@
 {{/* The served HTML shows all three options, so it works without JS, in previews and for crawlers.
      The script below only adds `rv-phone` on phones (collapsing options 2 and 3 behind the
      summary) and names the visitor's OS on the desktop download button. */}}
+{{- /* Desktop app release: bump `$ver` here for a new version (one line). */ -}}
+{{- $ver := "0.1.0" -}}
+{{- $rel := printf "https://github.com/freenet/river/releases/tag/river-desktop-v%s" $ver -}}
+{{- $dl := printf "https://github.com/freenet/river/releases/download/river-desktop-v%s/River-%s-" $ver $ver -}}
 <section class="rv-section" id="choose">
   <div class="rv-wrap">
     <div class="rv-head rv-center">
@@ -93,10 +97,10 @@
             <p class="rv-eyebrow">Windows, macOS and Linux &middot; early release</p>
             <h3 class="rv-step-t">Get the desktop app</h3>
             <p>River in its own window. It stays in the system tray, shows notifications and an unread badge, and can start at login. It needs a Freenet node, and if it finds none on your computer it offers to install Freenet for you.</p>
-            <a class="rv-btn rv-btn-ghost" id="rv-dl" href="https://github.com/freenet/river/releases/tag/river-desktop-v0.1.0">Download the desktop app
+            <a class="rv-btn rv-btn-ghost" id="rv-dl" href="{{ $rel }}">Download the desktop app
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </a>
-            <p class="rv-opt-note" id="rv-dl-others">Downloads: <a href="https://github.com/freenet/river/releases/tag/river-desktop-v0.1.0" data-os="macOS">macOS</a>, <a href="https://github.com/freenet/river/releases/tag/river-desktop-v0.1.0" data-os="Windows">Windows</a>, <a href="https://github.com/freenet/river/releases/tag/river-desktop-v0.1.0" data-os="Linux">Linux</a>. Version 0.1.0.</p>
+            <p class="rv-opt-note" id="rv-dl-others">Downloads: <a href="{{ $dl }}macos-universal.zip" data-os="macOS">macOS</a>, <a href="{{ $dl }}windows-x86_64.zip" data-os="Windows">Windows</a>, <a href="{{ $dl }}linux-x86_64.tar.gz" data-os="Linux">Linux</a>. Version {{ $ver }}. <a href="{{ $rel }}" class="rv-rel">All downloads and release notes</a>.</p>
             <p class="rv-opt-note">macOS is signed and notarized. Windows is a zip with a signed <code>river.exe</code>, no installer. Linux is a tarball, not code-signed, and needs <code>libfontconfig</code>.</p>
           </div>
         </div>
@@ -120,13 +124,23 @@
       else if(/Win/i.test(plat)) os='Windows';
       else if(/Linux|X11/i.test(plat)) os='Linux';
       if(os){
-        var b=document.getElementById('rv-dl'), t=b&&b.firstChild;
-        if(t) t.nodeValue='Download for '+os+' ';
-        var o=document.querySelector('#rv-dl-others');
-        if(o){
-          var l=[].filter.call(o.querySelectorAll('a'),function(a){return a.dataset.os!==os;}).map(function(a){return a.outerHTML;});
-          o.innerHTML='Other platforms: '+l.join(', ')+'. Version 0.1.0.';
+        var b=document.getElementById('rv-dl'), o=document.getElementById('rv-dl-others');
+        var all=[].slice.call(o.querySelectorAll('a[data-os]')), mine=all.filter(function(a){return a.dataset.os===os;})[0];
+        var rel=o.querySelector('.rv-rel').href;
+        // No Windows on ARM or Linux aarch64 build exists: keep the release page there.
+        var noBuild=(os==='Linux'&&/aarch64|arm/i.test(ua));
+        function apply(href){
+          b.firstChild.nodeValue=href===rel?'Download the desktop app ':'Download for '+os+' ';
+          b.href=href;
         }
+        if(!noBuild&&mine) apply(mine.href);
+        else apply(rel);
+        if(os==='Windows'&&ud&&ud.getHighEntropyValues) ud.getHighEntropyValues(['architecture']).then(function(v){
+          if(/arm/i.test(v.architecture||'')) apply(rel);
+        }).catch(function(){});
+        var keep=all.filter(function(a){return a!==mine;}).map(function(a){return a.outerHTML;});
+        var ver=o.textContent.match(/Version \d+(\.\d+)*/)[0];
+        o.innerHTML='Other platforms: '+keep.join(', ')+'. '+ver+'. <a href="'+rel+'" class="rv-rel">All downloads and release notes</a>.';
       }
     }catch(e){}
   })();
