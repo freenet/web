@@ -23,8 +23,14 @@ hostname = "gw1.freenet.org:31337"
 # that key would have preserved nothing (the address changes either way, so peers
 # reconnect regardless, and ring Location is address-derived) while making a peer
 # with a stale copy of this file fail a handshake against gw1.
+#
+# `native = true`: joiners on v0.2.167 or newer try a QUIC-native join here
+# first and fall back to the usual join on any failure. gw2 alone carries the
+# mark for a trial before phase D (UDP removal); gw1 stays unmarked as the
+# comparison. Rollback: delete this line. Releases older than v0.2.167 ignore it.
 [[gateways]]
 public_key = "keys/public.gw2.pem"
+native = true
 
 [gateways.address]
 hostname = "gw2.freenet.org:31338"
