@@ -18,7 +18,7 @@
 
   // Event type colors (matches dashboard)
   const COLORS = {
-    connect:   '#7ecfef',
+    connect:   '#85c8e6',
     put:       '#fbbf24',
     get:       '#34d399',
     update:    '#a78bfa',
@@ -43,8 +43,8 @@
 
   function ringColor()   { return isDark() ? '#1a2a2a' : '#d0d8e0'; }
   function glowColor()   { return isDark() ? 'rgba(0, 212, 170, 0.08)' : 'rgba(0, 140, 120, 0.06)'; }
-  function peerColor()   { return isDark() ? '#007FFF' : '#3388dd'; }
-  function peerGlow()    { return isDark() ? 'rgba(0, 127, 255, 0.18)' : 'rgba(0, 100, 200, 0.12)'; }
+  function peerColor()   { return isDark() ? '#3a7bcb' : '#3388dd'; }
+  function peerGlow()    { return isDark() ? 'rgba(58, 123, 203, 0.18)' : 'rgba(0, 100, 200, 0.12)'; }
   function gwColor()     { return '#f59e0b'; }
   function labelColor()  { return isDark() ? '#484f58' : '#8090a0'; }
   function innerRing()   { return isDark() ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)'; }
@@ -216,7 +216,7 @@
     var dark = isDark();
     var alpha = dark ? 0.09 : 0.05;
 
-    ctx.strokeStyle = dark ? 'rgba(0, 127, 255, ' + alpha + ')' : 'rgba(0, 80, 180, ' + alpha + ')';
+    ctx.strokeStyle = dark ? 'rgba(58, 123, 203, ' + alpha + ')' : 'rgba(0, 80, 180, ' + alpha + ')';
     ctx.beginPath();
     for (var i = 0; i < connections.length; i++) {
       var c = connections[i];
