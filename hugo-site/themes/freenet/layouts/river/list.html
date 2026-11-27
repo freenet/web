@@ -22,7 +22,7 @@
         <a class="rv-btn rv-btn-primary" href="{{ "try/" | relURL }}">Try River in your browser
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
-        <a class="rv-btn rv-btn-ghost" href="{{ "quickstart/" | relURL }}">Install Freenet</a>
+        <a class="rv-btn rv-btn-ghost rv-hero-desktop" href="#desktop">Get the desktop app</a>
       </div>
       <p class="rv-platform">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
@@ -58,6 +58,94 @@
     </div>
   </div>
 </header>
+
+<!-- ============ CHOOSE: three ways to use River ============ -->
+{{/* The served HTML shows all three options, so it works without JS, in previews and for crawlers.
+     The script below only adds `rv-phone` on phones (collapsing options 2 and 3 behind the
+     summary) and names the visitor's OS on the desktop download button. */}}
+{{- /* Desktop app release: bump `$ver` here for a new version (one line). */ -}}
+{{- $ver := "0.1.0" -}}
+{{- $rel := printf "https://github.com/freenet/river/releases/tag/river-desktop-v%s" $ver -}}
+{{- $dl := printf "https://github.com/freenet/river/releases/download/river-desktop-v%s/River-%s-" $ver $ver -}}
+<section class="rv-section" id="choose">
+  <div class="rv-wrap">
+    <div class="rv-head rv-center">
+      <p class="rv-eyebrow"><span class="rv-np">Three ways in</span><span class="rv-po">On your phone</span></p>
+      <h2 class="rv-h2"><span class="rv-np">Pick how you want to use River</span><span class="rv-po">River works in your phone's browser</span></h2>
+      <p class="rv-head-sub"><span class="rv-np">You do not have to install anything to look around. The other two options are for when you want your own Freenet peer.</span><span class="rv-po">Nothing to install. The desktop app and your own Freenet peer need a computer.</span></p>
+    </div>
+    <div class="rv-steps">
+      <div class="rv-step rv-opt rv-opt-main">
+        <p class="rv-eyebrow">Nothing to install</p>
+        <h3 class="rv-step-t">Try it in your browser</h3>
+        <p>Opens the live Freenet Official room right now, with no account. It runs on a peer we host, so your keys live with us until you install Freenet.</p>
+        <a class="rv-btn rv-btn-primary" href="{{ "try/" | relURL }}">Try River in your browser
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <details class="rv-more" open>
+        <summary>On a computer you can also run your own Freenet peer or get the desktop app</summary>
+        <div class="rv-more-grid">
+          <div class="rv-step rv-opt">
+            <p class="rv-eyebrow">Freenet already running on this computer</p>
+            <h3 class="rv-step-t">Open River in your own node</h3>
+            <p>Click an invite and River opens in your browser, on your own peer.</p>
+            <a class="rv-btn rv-btn-ghost" href="{{ "quickstart/#step-2-join-the-room" | relURL }}">Open River in your node</a>
+            <p class="rv-opt-note">Don't have Freenet yet? <a href="{{ "quickstart/" | relURL }}">Install it</a>.</p>
+          </div>
+          <div class="rv-step rv-opt" id="desktop">
+            <p class="rv-eyebrow">Windows, macOS and Linux &middot; early release</p>
+            <h3 class="rv-step-t">Get the desktop app</h3>
+            <p>River in its own window. It stays in the system tray, shows notifications and an unread badge, and can start at login. It needs a Freenet node, and if it finds none on your computer it offers to install Freenet for you.</p>
+            <a class="rv-btn rv-btn-ghost" id="rv-dl" href="{{ $rel }}">Download the desktop app
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <p class="rv-opt-note" id="rv-dl-others">Downloads: <a href="{{ $dl }}macos-universal.zip" data-os="macOS">macOS</a>, <a href="{{ $dl }}windows-x86_64.zip" data-os="Windows">Windows</a>, <a href="{{ $dl }}linux-x86_64.tar.gz" data-os="Linux">Linux</a>. Version {{ $ver }}. <a href="{{ $rel }}" class="rv-rel">All downloads and release notes</a>.</p>
+            <p class="rv-opt-note">macOS is signed and notarized. Windows is a zip with a signed <code>river.exe</code>, no installer. Linux is a tarball, not code-signed, and needs <code>libfontconfig</code>.</p>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+  <script>
+  (function(){
+    try{
+      var d=document.documentElement, n=navigator, ud=n.userAgentData, ua=n.userAgent||'';
+      var phone = ud && typeof ud.mobile==='boolean' ? ud.mobile
+        : (window.matchMedia && matchMedia('(pointer: coarse)').matches && window.innerWidth<768);
+      if(phone){
+        d.classList.add('rv-phone');
+        var m=document.querySelector('#choose .rv-more'); if(m) m.removeAttribute('open');
+        return;
+      }
+      var plat=((ud&&ud.platform)||'')+' '+ua, os='';
+      if(/Android|iPhone|iPad|iPod|CrOS/i.test(plat)||(/Mac/.test(plat)&&n.maxTouchPoints>1)) os='';
+      else if(/Mac/i.test(plat)) os='macOS';
+      else if(/Win/i.test(plat)) os='Windows';
+      else if(/Linux|X11/i.test(plat)) os='Linux';
+      if(os){
+        var b=document.getElementById('rv-dl'), o=document.getElementById('rv-dl-others');
+        var all=[].slice.call(o.querySelectorAll('a[data-os]')), mine=all.filter(function(a){return a.dataset.os===os;})[0];
+        var rel=o.querySelector('.rv-rel').href;
+        // No Windows on ARM or Linux aarch64 build exists: keep the release page there.
+        var noBuild=(os==='Linux'&&/aarch64|arm/i.test(ua));
+        function apply(href){
+          b.firstChild.nodeValue=href===rel?'Download the desktop app ':'Download for '+os+' ';
+          b.href=href;
+        }
+        if(!noBuild&&mine) apply(mine.href);
+        else apply(rel);
+        if(os==='Windows'&&ud&&ud.getHighEntropyValues) ud.getHighEntropyValues(['architecture']).then(function(v){
+          if(/arm/i.test(v.architecture||'')) apply(rel);
+        }).catch(function(){});
+        var keep=all.filter(function(a){return a!==mine;}).map(function(a){return a.outerHTML;});
+        var ver=o.textContent.match(/Version \d+(\.\d+)*/)[0];
+        o.innerHTML='Other platforms: '+keep.join(', ')+'. '+ver+'. <a href="'+rel+'" class="rv-rel">All downloads and release notes</a>.';
+      }
+    }catch(e){}
+  })();
+  </script>
+</section>
 
 <!-- ============ HOW IT WORKS (explainer) ============ -->
 <section class="rv-band" id="how">
@@ -134,7 +222,7 @@
     <div class="rv-head rv-center">
       <p class="rv-eyebrow">Getting in</p>
       <h2 class="rv-h2">You install Freenet, not River</h2>
-      <p class="rv-head-sub">River isn't a separate app to download. You install Freenet once, and any number of apps, River included, run on top of it and open right in your browser.</p>
+      <p class="rv-head-sub">In the browser, River isn't a separate app to download. You install Freenet once, and any number of apps, River included, run on top of it and open right in your browser.</p>
     </div>
     <ol class="rv-steps">
       <li class="rv-step">
